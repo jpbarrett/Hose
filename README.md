@@ -1,2 +1,2 @@
-# Hose
+# Hose = Haystack Observatory Spectrometer Experiment
 
