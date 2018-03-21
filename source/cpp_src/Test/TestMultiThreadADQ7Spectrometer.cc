@@ -175,6 +175,7 @@ int main(int argc, char** argv)
             break;
             case('i'):
             channel = atoi(optarg);
+            break;
             default:
                 std::cout<<usage<<std::endl;
             return 1;
