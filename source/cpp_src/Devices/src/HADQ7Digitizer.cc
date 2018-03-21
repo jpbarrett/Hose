@@ -116,12 +116,11 @@ HADQ7Digitizer::InitializeImpl()
     //CHECKADQ(ADQ_SetTestPatternMode(fADQControlUnit,fADQDeviceNumber, test_pattern));
     CHECKADQ(ADQ_SetStreamStatus(fADQControlUnit, fADQDeviceNumber, 1));
     CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 2, 1)); //RAW mode
-    //CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 3, 1*fEnableA + 2*fEnableB)); //mask
-    // CHECKADQ(ADQ_ContinuousStreamingSetup(fADQControlUnit, fADQDeviceNumber, 1*fEnableA + 2*fEnableB) );
-    unsigned char mask = 0X01;
-    CHECKADQ(ADQ_ContinuousStreamingSetup(fADQControlUnit, fADQDeviceNumber, mask) );
-    CHECKADQ(ADQ_SetTriggerMode(fADQControlUnit, fADQDeviceNumber, ADQ_EXT_TRIGGER_MODE));
+    CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 3, 1*fEnableA + 2*fEnableB)); //mask
+    CHECKADQ(ADQ_SetTriggerMode(fADQControlUnit, fADQDeviceNumber,  ADQ_SW_TRIGGER_MODE));
+    //CHECKADQ(ADQ_SetTriggerMode(fADQControlUnit, fADQDeviceNumber, ADQ_EXT_TRIGGER_MODE));
     CHECKADQ(ADQ_StopStreaming(fADQControlUnit, fADQDeviceNumber));
+
 
     fCounter = 0;
 
@@ -134,6 +133,7 @@ HADQ7Digitizer::AcquireImpl()
     //Enable streaming
     CHECKADQ(ADQ_SetStreamStatus(fADQControlUnit, fADQDeviceNumber, 1));
     CHECKADQ(ADQ_StopStreaming(fADQControlUnit, fADQDeviceNumber));
+
 
     fForceTerminate = false;
     fSignalTerminate = false;
