@@ -231,10 +231,10 @@ int main(int argc, char** argv)
     size_t now_sec = spectrum_vec.back().GetStartTime();
 
     //calculate the start time of this spectral averages
-    double sample_index = spectrum_vec.back().GetLeadingSampleIndex();
+    double sample_index = spectrum_vec.back().GetLeadingSampleIndex() + spectrum_vec.back().GetSampleLength();
     double stime = sample_index / sample_rate;
 
-    double time_diff = (now_sec - start_sec) + stime;
+    double time_diff = (double)(now_sec - start_sec) + stime;
 
     std::cout<<"total time from first to last sample (s): "<<time_diff<<std::endl;
 
