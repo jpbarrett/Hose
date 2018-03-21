@@ -107,13 +107,13 @@ HADQ7Digitizer::InitializeImpl()
 
     //from the raw streaming example
     unsigned int sample_skip = fDecimationFactor;
-    unsigned int test_pattern = 0; //0 or 2
+    unsigned int test_pattern = 2; //0 or 2
 
     std::cout<<"\nSetting up streaming..."<<std::endl;
 
     //Enable streaming
     CHECKADQ(ADQ_SetSampleSkip(fADQControlUnit, fADQDeviceNumber, sample_skip));
-    //CHECKADQ(ADQ_SetTestPatternMode(fADQControlUnit,fADQDeviceNumber, test_pattern));
+    CHECKADQ(ADQ_SetTestPatternMode(fADQControlUnit,fADQDeviceNumber, test_pattern));
     CHECKADQ(ADQ_SetStreamStatus(fADQControlUnit, fADQDeviceNumber, 1));
     CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 2, 1)); //RAW mode
     CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 3, 1*fEnableA + 2*fEnableB)); //mask
