@@ -107,7 +107,7 @@ HADQ7Digitizer::InitializeImpl()
 
     //from the raw streaming example
     unsigned int sample_skip = fDecimationFactor;
-    unsigned int test_pattern = 2; //0 or 2
+    unsigned int test_pattern = 0; //0 or 2
 
     std::cout<<"\nSetting up streaming..."<<std::endl;
 
