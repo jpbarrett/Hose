@@ -99,7 +99,7 @@ HDummyDigitizerSigned::fill_function()
     
     for(unsigned int i=0; i<n; i++)
     {
-        buf[i] = 32768;// i%4;// (*fUniformDistribution)(*fGenerator) +  sarr[(i+fCounter)%napp];
+        buf[i] = fCounter + i;// i%4;// (*fUniformDistribution)(*fGenerator) +  sarr[(i+fCounter)%napp];
         //buf[i] = sarr[(i+fCounter)%napp];
     }
 }

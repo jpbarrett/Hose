@@ -252,12 +252,12 @@ HADQ7Digitizer::TransferImpl()
 int
 HADQ7Digitizer::FinalizeImpl()
 {
-    // bool threads_busy = true;
-    // while(fMemcpyArgQueue.size() != 0 || threads_busy )
-    // {
-    //     if( AllThreadsAreIdle() ){threads_busy = false;}
-    //     else{ threads_busy = true; }
-    // }
+    bool threads_busy = true;
+    while(fMemcpyArgQueue.size() != 0 || threads_busy )
+    {
+        if( AllThreadsAreIdle() ){threads_busy = false;}
+        else{ threads_busy = true; }
+    }
 
     //increment the sample counter
     this->fBuffer->GetMetaData()->SetLeadingSampleIndex(fCounter);
