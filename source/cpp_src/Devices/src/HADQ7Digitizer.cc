@@ -118,7 +118,8 @@ HADQ7Digitizer::InitializeImpl()
     CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 2, 1)); //RAW mode
     //CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 3, 1*fEnableA + 2*fEnableB)); //mask
     // CHECKADQ(ADQ_ContinuousStreamingSetup(fADQControlUnit, fADQDeviceNumber, 1*fEnableA + 2*fEnableB) );
-    CHECKADQ(ADQ_ContinuousStreamingSetup(fADQControlUnit, fADQDeviceNumber, 1) );
+    unsigned char mask = 0X01;
+    CHECKADQ(ADQ_ContinuousStreamingSetup(fADQControlUnit, fADQDeviceNumber, mask) );
     CHECKADQ(ADQ_SetTriggerMode(fADQControlUnit, fADQDeviceNumber, ADQ_EXT_TRIGGER_MODE));
     CHECKADQ(ADQ_StopStreaming(fADQControlUnit, fADQDeviceNumber));
 
