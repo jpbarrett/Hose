@@ -127,6 +127,9 @@ HADQ7Digitizer::InitializeImpl()
     CHECKADQ(ADQ_StopStreaming(fADQControlUnit, fADQDeviceNumber));
 
 
+    //wait for the card to catch up
+    sleep(1000);
+
     fCounter = 0;
 
     return true;
