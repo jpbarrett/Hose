@@ -415,7 +415,7 @@ HADQ7Digitizer::ReadLoop()
             //do the memcpy
             SetIdleIndicatorFalse();
             //memcpy(dest, src, sz);
-            char v = 0XFF;
+            char v = 0X7F;
             memset(dest,v,sz);
             SetIdleIndicatorTrue();
         }
