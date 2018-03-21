@@ -133,14 +133,14 @@ class HSpectrumObject
         {
             std::ofstream outfile;
             outfile.open(filename.c_str(), std::ios::out | std::ios::binary);
-            outfile << *this;
-            // outfile.write( (const char*) &fStartTime, sizeof(uint64_t) );
-            // outfile.write( (const char*) &fSampleRate, sizeof(uint64_t) );
-            // outfile.write( (const char*) &fLeadingSampleIndex, sizeof(uint64_t) );
-            // outfile.write( (const char*) &fSampleLength, sizeof(size_t) );
-            // outfile.write( (const char*) &fNAverages, sizeof(size_t) );
-            // outfile.write( (const char*) &fSpectrumLength, sizeof(size_t) );
-            // outfile.write( (const char*) fSpectrumData, sizeof(XSpectrumType)*fSpectrumLength );
+//            outfile << *this;
+            outfile.write( (const char*) &fStartTime, sizeof(uint64_t) );
+            outfile.write( (const char*) &fSampleRate, sizeof(uint64_t) );
+            outfile.write( (const char*) &fLeadingSampleIndex, sizeof(uint64_t) );
+            outfile.write( (const char*) &fSampleLength, sizeof(size_t) );
+            outfile.write( (const char*) &fNAverages, sizeof(size_t) );
+            outfile.write( (const char*) &fSpectrumLength, sizeof(size_t) );
+            outfile.write( (const char*) fSpectrumData, sizeof(XSpectrumType)*fSpectrumLength );
             outfile.close();
         }
 
@@ -149,19 +149,19 @@ class HSpectrumObject
             std::ifstream infile;
             infile.open(filename.c_str(), std::ifstream::binary);
 
-            infile >> *this;
+            //infile >> *this;
 
-            // infile.read( (char*) &fStartTime, sizeof(uint64_t) );
-            // infile.read( (char*) &fSampleRate, sizeof(uint64_t) );
-            // infile.read( (char*) &fLeadingSampleIndex, sizeof(uint64_t) );
-            // infile.read( (char*) &fSampleLength, sizeof(size_t) );
-            // infile.read( (char*) &fNAverages, sizeof(size_t) );
-            // infile.read( (char*) &fSpectrumLength, sizeof(size_t) );
+            infile.read( (char*) &fStartTime, sizeof(uint64_t) );
+            infile.read( (char*) &fSampleRate, sizeof(uint64_t) );
+            infile.read( (char*) &fLeadingSampleIndex, sizeof(uint64_t) );
+            infile.read( (char*) &fSampleLength, sizeof(size_t) );
+            infile.read( (char*) &fNAverages, sizeof(size_t) );
+            infile.read( (char*) &fSpectrumLength, sizeof(size_t) );
 
-            // //allocate some spectrum space
-            // ReleaseSpectrumData();
-            // AllocateSpectrum();
-            // infile.read( (char*) fSpectrumData, sizeof(XSpectrumType)*fSpectrumLength );
+            //allocate some spectrum space
+            ReleaseSpectrumData();
+            AllocateSpectrum();
+            infile.read( (char*) fSpectrumData, sizeof(XSpectrumType)*fSpectrumLength );
             infile.close();
         }
 
