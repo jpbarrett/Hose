@@ -169,6 +169,7 @@ HADQ7Digitizer::AcquireImpl()
 
     //arm card for external triggers
     CHECKADQ(ADQ_StartStreaming(fADQControlUnit, fADQDeviceNumber));
+    CHECKADQ(ADQ_SWTrig(fADQControlUnit, fADQDeviceNumber));
 }
 
 void
