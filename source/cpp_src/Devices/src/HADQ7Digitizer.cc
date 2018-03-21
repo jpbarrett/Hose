@@ -113,10 +113,12 @@ HADQ7Digitizer::InitializeImpl()
 
     //Enable streaming
     CHECKADQ(ADQ_SetSampleSkip(fADQControlUnit, fADQDeviceNumber, sample_skip));
-    CHECKADQ(ADQ_SetTestPatternMode(fADQControlUnit,fADQDeviceNumber, test_pattern));
+    //CHECKADQ(ADQ_SetTestPatternMode(fADQControlUnit,fADQDeviceNumber, test_pattern));
     CHECKADQ(ADQ_SetStreamStatus(fADQControlUnit, fADQDeviceNumber, 1));
     CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 2, 1)); //RAW mode
-    CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 3, 1*fEnableA + 2*fEnableB)); //mask
+    //CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 3, 1*fEnableA + 2*fEnableB)); //mask
+    // CHECKADQ(ADQ_ContinuousStreamingSetup(fADQControlUnit, fADQDeviceNumber, 1*fEnableA + 2*fEnableB) );
+    CHECKADQ(ADQ_ContinuousStreamingSetup(fADQControlUnit, fADQDeviceNumber, 1) );
     CHECKADQ(ADQ_SetTriggerMode(fADQControlUnit, fADQDeviceNumber, ADQ_EXT_TRIGGER_MODE));
     CHECKADQ(ADQ_StopStreaming(fADQControlUnit, fADQDeviceNumber));
 
@@ -274,7 +276,7 @@ HADQ7Digitizer::StopImpl()
     //join the read threads
     JoinThreads();
     //Disable XDAM testpattern if it was enabled
-    CHECKADQ(ADQ_SetDMATest(fADQControlUnit, fADQDeviceNumber, 0x50, 0));
+    //CHECKADQ(ADQ_SetDMATest(fADQControlUnit, fADQDeviceNumber, 0x50, 0));
     CHECKADQ(ADQ_StopStreaming(fADQControlUnit, fADQDeviceNumber));
 }
 
@@ -414,9 +416,9 @@ HADQ7Digitizer::ReadLoop()
         {
             //do the memcpy
             SetIdleIndicatorFalse();
-            //memcpy(dest, src, sz);
-            char v = 0X7F;
-            memset(dest,v,sz);
+            memcpy(dest, src, sz);
+            // char v = 0X7F;
+            // memset(dest,v,sz);
             SetIdleIndicatorTrue();
         }
 
