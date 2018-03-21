@@ -32,6 +32,8 @@ HADQ7Digitizer::HADQ7Digitizer():
     fSampleRate(0.0),
     fSampleRateMHz(0.0),
     fNChannels(0),
+    fEnableA(1),
+    fEnableB(0),
     fNThreads(6),
     fSignalTerminate(false),
     fForceTerminate(true),
@@ -104,9 +106,6 @@ HADQ7Digitizer::InitializeImpl()
     std::cout<<"Temperatures:\n\tLocal: "<<tlocal<<"\n\tADC0: "<<tr1<<"\n\tADC1: "<<tr2<<"\n\tFPGA: "<<tr3<<"\n\tPCB diode: "<<tr4<<"\n"<<std::endl;
 
     //from the raw streaming example
-
-    unsigned int en_A = 1;
-    unsigned int en_B = 0;
     unsigned int sample_skip = fDecimationFactor;
     unsigned int test_pattern = 0; //0 or 2
 
@@ -117,7 +116,7 @@ HADQ7Digitizer::InitializeImpl()
     CHECKADQ(ADQ_SetTestPatternMode(fADQControlUnit,fADQDeviceNumber, test_pattern));
     CHECKADQ(ADQ_SetStreamStatus(fADQControlUnit, fADQDeviceNumber, 1));
     CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 2, 1)); //RAW mode
-    CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 3, 1*en_A + 2*en_B)); //mask
+    CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 3, 1*fEnableA + 2*fEnableB)); //mask
     CHECKADQ(ADQ_SetTriggerMode(fADQControlUnit, fADQDeviceNumber, ADQ_EXT_TRIGGER_MODE));
     CHECKADQ(ADQ_StopStreaming(fADQControlUnit, fADQDeviceNumber));
 

@@ -49,6 +49,9 @@ class HADQ7Digitizer: public HDigitizer< ADQ7_SAMPLE_TYPE, HADQ7Digitizer >
         HADQ7Digitizer();
         virtual ~HADQ7Digitizer();
 
+        void SelectChannelA(){fEnableA = 1; fEnableB = 0;};
+        void SelectChannelB(){fEnableA = 0; fEnableB = 1;};
+
         void SetDecimationFactor(unsigned int factor);
 
         void SetNThreads(unsigned int n){fNThreads = n;};
@@ -102,6 +105,8 @@ class HADQ7Digitizer: public HDigitizer< ADQ7_SAMPLE_TYPE, HADQ7Digitizer >
 	    //global sample counter, zeroed at the start of an aquisition
     	uint64_t fCounter;
         std::time_t fAcquisitionStartTime;
+        int fEnableA;
+        int fEnableB;
 
 
         //thread pool stuff for read-out

@@ -118,8 +118,8 @@ int main(int argc, char** argv)
     "\t -m, --n-averages         (number of spectra to average together)\n"
     "\t -c, --chunks             (number of pre-allocated buffers)\n"
     "\t -a, --acquire-threads    (number of acquisition threads)\n"
-    "\t -p, --process-threads (number of processing threads)\n"
-    "\t -o, --output-directory   (output directory to store data) \n"
+    "\t -p, --process-threads    (number of processing threads)\n"
+    "\t -i, --input-channel      (select channel 1 (A) or 2 (B), default=1)\n"
     ;
 
     //set defaults
@@ -129,6 +129,7 @@ int main(int argc, char** argv)
     unsigned int n_averages = 1024;
     unsigned int acq_threads = 4;
     unsigned int proc_threads = 4;
+    unsigned int channel = 1;
     std::string o_dir =  DATA_INSTALL_DIR;
 
     static struct option longOptions[] =
@@ -140,10 +141,10 @@ int main(int argc, char** argv)
         {"chunks", required_argument, 0, 'c'},
         {"acquire-threads", required_argument, 0, 'a'},
         {"process-threads", required_argument, 0, 'p'},
-        {"output-directory", required_argument, 0, 'o'},
+        {"input-channel", required_argument, 0, 'i'},
     };
 
-    static const char *optString = "hs:n:m:c:a:p:o:";
+    static const char *optString = "hs:n:m:c:a:p:i:";
 
     while(1)
     {
@@ -172,8 +173,8 @@ int main(int argc, char** argv)
             case('p'):
             proc_threads = atoi(optarg);
             break;
-            case('o'):
-            o_dir = std::string(optarg);
+            case('i'):
+            channel = atoi(optarg);
             default:
                 std::cout<<usage<<std::endl;
             return 1;
@@ -185,6 +186,14 @@ int main(int argc, char** argv)
     //dummy digitizer
     HADQ7Digitizer dummy;
     dummy.SetNThreads(acq_threads);
+    if(channel == 1 )
+    {
+        dummy.SelectChannelA();
+    }
+    else 
+    {
+        dummy.SelectChannelB();
+    }
     dummy.SetDecimationFactor(sample_skip);
     bool initval = dummy.Initialize();
 
