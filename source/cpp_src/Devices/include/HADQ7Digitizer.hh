@@ -49,6 +49,8 @@ class HADQ7Digitizer: public HDigitizer< ADQ7_SAMPLE_TYPE, HADQ7Digitizer >
         HADQ7Digitizer();
         virtual ~HADQ7Digitizer();
 
+        void EnableTestPattern(){fTestPattern = 2;};
+        void DisableTestPattern(){fTestPattern = 0;};
         void SelectChannelA(){fEnableA = 1; fEnableB = 0;};
         void SelectChannelB(){fEnableA = 0; fEnableB = 1;};
 
@@ -107,6 +109,7 @@ class HADQ7Digitizer: public HDigitizer< ADQ7_SAMPLE_TYPE, HADQ7Digitizer >
         std::time_t fAcquisitionStartTime;
         int fEnableA;
         int fEnableB;
+        unsigned int fTestPattern;
 
 
         //thread pool stuff for read-out

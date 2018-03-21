@@ -120,6 +120,7 @@ int main(int argc, char** argv)
     "\t -a, --acquire-threads    (number of acquisition threads)\n"
     "\t -p, --process-threads    (number of processing threads)\n"
     "\t -i, --input-channel      (select channel 1 (A) or 2 (B), default=1)\n"
+    "\t -t, --test-pattern       (enable test pattern)\n"
     ;
 
     //set defaults
@@ -130,6 +131,7 @@ int main(int argc, char** argv)
     unsigned int acq_threads = 4;
     unsigned int proc_threads = 4;
     unsigned int channel = 1;
+    bool enable_test = false;
     std::string o_dir =  DATA_INSTALL_DIR;
 
     static struct option longOptions[] =
@@ -142,9 +144,10 @@ int main(int argc, char** argv)
         {"acquire-threads", required_argument, 0, 'a'},
         {"process-threads", required_argument, 0, 'p'},
         {"input-channel", required_argument, 0, 'i'},
+        {"test-pattern", required_argument, 0, 't'},
     };
 
-    static const char *optString = "hs:n:m:c:a:p:i:";
+    static const char *optString = "hs:n:m:c:a:p:i:t";
 
     while(1)
     {
@@ -176,6 +179,9 @@ int main(int argc, char** argv)
             case('i'):
             channel = atoi(optarg);
             break;
+            case('t'):
+            enable_test = true;
+            break;
             default:
                 std::cout<<usage<<std::endl;
             return 1;
@@ -186,15 +192,15 @@ int main(int argc, char** argv)
 
     //dummy digitizer
     HADQ7Digitizer dummy;
+
     dummy.SetNThreads(acq_threads);
-    if(channel == 1 )
-    {
-        dummy.SelectChannelA();
-    }
-    else 
-    {
-        dummy.SelectChannelB();
-    }
+
+    if(channel == 1 ){dummy.SelectChannelA();}
+    else{ dummy.SelectChannelB(); }
+
+    if(enable_test){dummy.EnableTestPattern();}
+    else{dummy.DisableTestPattern();}
+
     dummy.SetDecimationFactor(sample_skip);
     bool initval = dummy.Initialize();
 
