@@ -578,7 +578,7 @@ bool HADQ7Digitizer::InitializeBoardInterface()
 
 
 
-    CHECKADQ( ADQ_SetClockSource( fADQControlUnit, fADQDeviceNumber, 2) );
+    CHECKADQ( ADQ_SetClockSource( fADQControlUnit, fADQDeviceNumber, 1) );
     // //set test pattermode 
     // CHECKADQ(ADQ_SetTestPatternMode(adq_cu,adq_num, 2));
 
