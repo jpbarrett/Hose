@@ -212,17 +212,35 @@ int main(int argc, char** argv)
     g->Draw("ALP");
     c->Update();
 
+/*
     std::string name2("spectrogram");
     TCanvas* c2 = new TCanvas(name2.c_str(),name2.c_str(), 50, 50, 950, 850);
     c2->cd();
     c2->SetFillColor(0);
     c2->SetRightMargin(0.2);
 
+*/
 
-    double last_sample_index = spectrum_vec.back().GetLeadingSampleIndex();// + spectrum_vec.back().GetSampleLength();
-    double last_stime = last_sample_index / sample_rate;
+    //double last_sample_index = spectrum_vec.back().GetLeadingSampleIndex();// + spectrum_vec.back().GetSampleLength();
+    //double last_stime = last_sample_index / sample_rate;
     //TH2D* g2d = new TH2D("h2","", 256, 0.0, last_stime+1, 256, 0, (spec_length-1)*spec_res/1e6 );
-     
+
+
+    
+    size_t start_sec = spectrum_vec[0].GetStartTime();
+    size_t now_sec = spectrum_vec.back().GetStartTime();
+
+    //calculate the start time of this spectral averages
+    double sample_index = spectrum_vec.back().GetLeadingSampleIndex();
+    double stime = sample_index / sample_rate;
+
+    double time_diff = (now_sec - start_sec) + stime;
+
+    std::cout<<"total time from first to last sample (s): "<<time_diff<<std::endl;
+
+
+
+/*
     TGraph2D* g2d = new TGraph2D();
     //g2d->SetTitle("Spectrogram; Count; Frequency (MHz); Power (dB)");
     size_t count = 0;
@@ -271,6 +289,7 @@ int main(int argc, char** argv)
     g2d->Draw("COLZ");
 
     c2->Update();
+*/
 
     App->Run();
 }
