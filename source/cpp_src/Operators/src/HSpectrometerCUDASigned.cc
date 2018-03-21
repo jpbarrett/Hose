@@ -87,7 +87,7 @@ HSpectrometerCUDASigned::ProcessLoop()
             {
                 std::lock_guard<std::mutex> lock( tail->fMutex );
 
-                if(tail->GetMetaData()->GetLeadingSampleIndex() % ( 100*tail->GetArrayDimension(0) ) == 0 )
+                //if(tail->GetMetaData()->GetLeadingSampleIndex() % ( 100*tail->GetArrayDimension(0) ) == 0 )
                 {
                     std::thread::id this_id = std::this_thread::get_id();
                     std::stringstream ss;
@@ -98,6 +98,9 @@ HSpectrometerCUDASigned::ProcessLoop()
                     ss << tail->GetMetaData()->GetLeadingSampleIndex();
                     std::cout<<ss.str()<<std::endl;
                 }
+
+                //print the first couple samples 
+                std::cout<<"samples = "<<(*tail)[0]<<", "<<(*tail)[1]<<", "<<(*tail)[2]<<std::endl;
 
                 //call Juha's process_vector routine
                 process_vector_no_output_s(tail->GetData(), sdata, tail->GetMetaData()->GetLeadingSampleIndex() );
