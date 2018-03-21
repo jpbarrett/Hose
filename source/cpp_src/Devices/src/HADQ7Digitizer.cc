@@ -576,6 +576,9 @@ bool HADQ7Digitizer::InitializeBoardInterface()
 
     std::cout<<"n of device channels = "<<nof_channels<<std::endl;
 
+
+
+    CHECKADQ( ADQ_SetClockSource( fADQControlUnit, fADQDeviceNumber, 2) );
     // //set test pattermode 
     // CHECKADQ(ADQ_SetTestPatternMode(adq_cu,adq_num, 2));
 
