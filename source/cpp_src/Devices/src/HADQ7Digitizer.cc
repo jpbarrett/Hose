@@ -128,7 +128,7 @@ HADQ7Digitizer::InitializeImpl()
 
 
     //wait for the card to catch up
-    sleep(1000);
+    sleep(1);
 
     fCounter = 0;
 
