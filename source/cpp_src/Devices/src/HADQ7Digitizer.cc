@@ -117,8 +117,8 @@ HADQ7Digitizer::InitializeImpl()
     CHECKADQ(ADQ_SetStreamStatus(fADQControlUnit, fADQDeviceNumber, 1));
     CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 2, 1)); //RAW mode
     CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 3, 1*fEnableA + 2*fEnableB)); //mask
-    CHECKADQ(ADQ_SetTriggerMode(fADQControlUnit, fADQDeviceNumber,  ADQ_SW_TRIGGER_MODE));
-    //CHECKADQ(ADQ_SetTriggerMode(fADQControlUnit, fADQDeviceNumber, ADQ_EXT_TRIGGER_MODE));
+    //CHECKADQ(ADQ_SetTriggerMode(fADQControlUnit, fADQDeviceNumber,  ADQ_SW_TRIGGER_MODE));
+    CHECKADQ(ADQ_SetTriggerMode(fADQControlUnit, fADQDeviceNumber, ADQ_EXT_TRIGGER_MODE));
     CHECKADQ(ADQ_StopStreaming(fADQControlUnit, fADQDeviceNumber));
 
 
@@ -169,7 +169,7 @@ HADQ7Digitizer::AcquireImpl()
 
     //arm card for external triggers
     CHECKADQ(ADQ_StartStreaming(fADQControlUnit, fADQDeviceNumber));
-    CHECKADQ(ADQ_SWTrig(fADQControlUnit, fADQDeviceNumber));
+    //CHECKADQ(ADQ_SWTrig(fADQControlUnit, fADQDeviceNumber));
 }
 
 void
