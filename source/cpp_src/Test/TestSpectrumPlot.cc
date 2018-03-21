@@ -20,6 +20,8 @@
 
 using namespace hose;
 
+double eps = 1e-15;
+
 struct less_than_spec
 {
     inline bool operator() (const std::pair< std::string, std::pair<uint64_t, uint64_t > >& file_int1, const std::pair< std::string, std::pair<uint64_t, uint64_t > >& file_int2)
@@ -203,7 +205,7 @@ int main(int argc, char** argv)
     {
         for(unsigned int j=0; j<spec_length-1; j++)
         {
-            g->SetPoint(j, j*spec_res/1e6, std::log10( avespec[j] ) );
+            g->SetPoint(j, j*spec_res/1e6, std::log10( avespec[j] + eps ) );
         }
     }
     
@@ -243,9 +245,9 @@ int main(int argc, char** argv)
         double smax = 0;
         for(unsigned int j=0; j<spectrum_vec[n].GetSpectrumLength()-1; j++)
         {
-            if( std::log10( spec_valn[j] ) > smax){smax = std::log10( spec_valn[j] ); } ;
+            if( std::log10( spec_valn[j] ) > smax){smax = std::log10( spec_valn[j] + eps ); } ;
             //g2d->Fill(stime, j*spec_res/1e6, std::log10(spec_valn[j] + 0.0001 )  );
-            g2d->SetPoint(count++, time_diff, j*spec_res/1e6, std::log10( spec_valn[j]) );
+            g2d->SetPoint(count++, time_diff, j*spec_res/1e6, std::log10( spec_valn[j] + eps) );
         }
         //std::cout<<"smax = "<<smax<<std::endl;
     }

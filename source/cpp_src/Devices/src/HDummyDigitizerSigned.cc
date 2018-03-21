@@ -60,7 +60,7 @@ HDummyDigitizerSigned::TransferImpl()
     fill_function();
     this->fBuffer->GetMetaData()->SetAquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
     //set the sample rate
-    this->fBuffer->GetMetaData()->SetSampleRate(1000000); //fake rate of 1MHz
+    this->fBuffer->GetMetaData()->SetSampleRate(2500000000);
 }
 
 int
@@ -99,7 +99,7 @@ HDummyDigitizerSigned::fill_function()
     
     for(unsigned int i=0; i<n; i++)
     {
-        buf[i] = (*fUniformDistribution)(*fGenerator) +  sarr[(i+fCounter)%napp];
+        buf[i] = 32768;// i%4;// (*fUniformDistribution)(*fGenerator) +  sarr[(i+fCounter)%napp];
         //buf[i] = sarr[(i+fCounter)%napp];
     }
 }

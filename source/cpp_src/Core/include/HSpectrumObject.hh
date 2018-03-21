@@ -133,13 +133,14 @@ class HSpectrumObject
         {
             std::ofstream outfile;
             outfile.open(filename.c_str(), std::ios::out | std::ios::binary);
-            outfile.write( (const char*) &fStartTime, sizeof(uint64_t) );
-            outfile.write( (const char*) &fSampleRate, sizeof(uint64_t) );
-            outfile.write( (const char*) &fLeadingSampleIndex, sizeof(uint64_t) );
-            outfile.write( (const char*) &fSampleLength, sizeof(size_t) );
-            outfile.write( (const char*) &fNAverages, sizeof(size_t) );
-            outfile.write( (const char*) &fSpectrumLength, sizeof(size_t) );
-            outfile.write( (const char*) fSpectrumData, sizeof(XSpectrumType)*fSpectrumLength );
+            outfile << *this;
+            // outfile.write( (const char*) &fStartTime, sizeof(uint64_t) );
+            // outfile.write( (const char*) &fSampleRate, sizeof(uint64_t) );
+            // outfile.write( (const char*) &fLeadingSampleIndex, sizeof(uint64_t) );
+            // outfile.write( (const char*) &fSampleLength, sizeof(size_t) );
+            // outfile.write( (const char*) &fNAverages, sizeof(size_t) );
+            // outfile.write( (const char*) &fSpectrumLength, sizeof(size_t) );
+            // outfile.write( (const char*) fSpectrumData, sizeof(XSpectrumType)*fSpectrumLength );
             outfile.close();
         }
 
@@ -147,17 +148,20 @@ class HSpectrumObject
         {
             std::ifstream infile;
             infile.open(filename.c_str(), std::ifstream::binary);
-            infile.read( (char*) &fStartTime, sizeof(uint64_t) );
-            infile.read( (char*) &fSampleRate, sizeof(uint64_t) );
-            infile.read( (char*) &fLeadingSampleIndex, sizeof(uint64_t) );
-            infile.read( (char*) &fSampleLength, sizeof(size_t) );
-            infile.read( (char*) &fNAverages, sizeof(size_t) );
-            infile.read( (char*) &fSpectrumLength, sizeof(size_t) );
 
-            //allocate some spectrum space
-            ReleaseSpectrumData();
-            AllocateSpectrum();
-            infile.read( (char*) fSpectrumData, sizeof(XSpectrumType)*fSpectrumLength );
+            infile >> *this;
+
+            // infile.read( (char*) &fStartTime, sizeof(uint64_t) );
+            // infile.read( (char*) &fSampleRate, sizeof(uint64_t) );
+            // infile.read( (char*) &fLeadingSampleIndex, sizeof(uint64_t) );
+            // infile.read( (char*) &fSampleLength, sizeof(size_t) );
+            // infile.read( (char*) &fNAverages, sizeof(size_t) );
+            // infile.read( (char*) &fSpectrumLength, sizeof(size_t) );
+
+            // //allocate some spectrum space
+            // ReleaseSpectrumData();
+            // AllocateSpectrum();
+            // infile.read( (char*) fSpectrumData, sizeof(XSpectrumType)*fSpectrumLength );
             infile.close();
         }
 
@@ -179,7 +183,7 @@ class HSpectrumObject
 };
 
 template< typename XSpectrumType, typename XStreamType >
-HSpectrumObject<XSpectrumType>& operator>>(XStreamType& s, HSpectrumObject<XSpectrumType>& aData)
+XStreamType& operator>>(XStreamType& s, HSpectrumObject<XSpectrumType>& aData)
 {
     uint64_t start_time; 
     uint64_t sample_rate;
@@ -216,18 +220,18 @@ HSpectrumObject<XSpectrumType>& operator>>(XStreamType& s, HSpectrumObject<XSpec
 template< typename XSpectrumType, typename XStreamType >
 XStreamType& operator<<(XStreamType& s, const HSpectrumObject<XSpectrumType>& aData)
 {
-    s << aData.GetStartTime();
-    s << aData.GetSampleRate();
-    s << aData.GetLeadingSampleIndex();
-    s << aData.GetSampleLength();
-    s << aData.GetNAverages();
-    s << aData.GetSpectrumLength();
+    s << aData.GetStartTime() << ' ';
+    s << aData.GetSampleRate() << ' ';
+    s << aData.GetLeadingSampleIndex() << ' ';
+    s << aData.GetSampleLength() << ' ';
+    s << aData.GetNAverages() << ' ';
+    s << aData.GetSpectrumLength() << ' ';
 
     const XSpectrumType* spec = aData.GetSpectrumData();
     size_t n = aData.GetSpectrumLength();
     for(size_t i=0; i<n; i++)
     {
-        s << spec[i];
+        s << spec[i] << ' ';
     }
 
     return s;
