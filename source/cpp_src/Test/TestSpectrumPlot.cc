@@ -64,15 +64,20 @@ int main(int argc, char** argv)
 
     //look for spectrum files in this directory
     DIR *dpdf;
-    struct dirent *epdf;
+    struct dirent* epdf = NULL;
     dpdf = opendir(data_dir.c_str());
     if (dpdf != NULL)
     {
-        while (epdf = readdir(dpdf))
+        do
         {
+            epdf = readdir(dpdf);
             //std::cout << epdf->d_name << std::endl;
-            allFiles.push_back( data_dir + "/" + std::string(epdf->d_name) );
+            if(epdf != NULL)
+            {
+                allFiles.push_back( data_dir + "/" + std::string(epdf->d_name) );
+            }
         }
+        while(epdf != NULL);
     }
     closedir(dpdf);
 
@@ -81,20 +86,21 @@ int main(int argc, char** argv)
     {
         //std::cout<< *it <<std::endl;
         std::string fname =  it->substr(it->find_last_of("\\/")+1, fname.size() - 1);
-        std::cout<<fname<<std::endl;
+        //std::cout<<"fname = "<<fname<<std::endl;
         size_t fext_location = fname.find( std::string(".bin") );
         if( fext_location != std::string::npos)
         {
             size_t underscore_location = fname.find(std::string("_"));
-            std::cout<<"fext_location = "<<fext_location<<std::endl;
-            std::cout<<"underscore_location = "<<underscore_location<<std::endl;
+            //std::cout<<"fext_location = "<<fext_location<<std::endl;
+            //std::cout<<"underscore_location = "<<underscore_location<<std::endl;
 
             //strip out the leading integer
             std::string acq_second = fname.substr(0, underscore_location);
-            std::string n_samples = fname.substr(underscore_location, fext_location);
+            std::string n_samples = fname.substr(underscore_location+1, fname.size() - 1 );
+            n_samples = n_samples.substr(0, n_samples.size() - 4 );
 
-            std::cout<<"acq sec = "<<acq_second<<std::endl;
-            std::cout<<" n samp = "<<n_samples<<std::endl;
+            //std::cout<<"acq sec = "<<acq_second<<std::endl;
+            //std::cout<<"n samp = "<<n_samples<<std::endl;
 
             std::stringstream ss1;
             ss1 << acq_second;
