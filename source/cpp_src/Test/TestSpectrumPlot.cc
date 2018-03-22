@@ -96,6 +96,7 @@ int main(int argc, char** argv)
             ss2 << n_samples;
             uint64_t val_ns;
             ss2 >> val_ns;
+            std::cout<<"adding file at: sec:"<<val_sec<<" and ns: "<<val_ns<<std::endl;
             specFiles.push_back( std::pair< std::string, std::pair<uint64_t, uint64_t > >(*it, std::pair< uint64_t, uint64_t >(val_sec, val_ns ) ) ); 
         }
     }
