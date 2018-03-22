@@ -236,6 +236,9 @@ int main(int argc, char** argv)
 
     double time_diff = (double)(now_sec - start_sec) + stime;
 
+
+    std::cout<<"seconds difference = "<<(double)(now_sec - start_sec)<<std::endl;
+    std::cout<<"sub sec difference = "<<stime<<std::endl;
     std::cout<<"total time from first to last sample (s): "<<time_diff<<std::endl;
 
 
