@@ -74,7 +74,7 @@ int main(int argc, char** argv)
             //std::cout << epdf->d_name << std::endl;
             if(epdf != NULL)
             {
-                allFiles.push_back( data_dir + "/" + std::string(epdf->d_name) );
+                allFiles.push_back( data_dir  + std::string(epdf->d_name) );
             }
         }
         while(epdf != NULL);
@@ -84,7 +84,7 @@ int main(int argc, char** argv)
     //strip everything that isnt a bin file
     for(auto it = allFiles.begin(); it != allFiles.end(); it++)
     {
-        //std::cout<< *it <<std::endl;
+        std::cout<< *it <<std::endl;
         std::string fname =  it->substr(it->find_last_of("\\/")+1, fname.size() - 1);
         //std::cout<<"fname = "<<fname<<std::endl;
         size_t fext_location = fname.find( std::string(".bin") );
