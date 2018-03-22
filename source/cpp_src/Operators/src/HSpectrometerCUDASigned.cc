@@ -87,7 +87,7 @@ HSpectrometerCUDASigned::ProcessLoop()
             {
                 std::lock_guard<std::mutex> lock( tail->fMutex );
 
-                //if(tail->GetMetaData()->GetLeadingSampleIndex() % ( 100*tail->GetArrayDimension(0) ) == 0 )
+                if(tail->GetMetaData()->GetLeadingSampleIndex() % ( 100*tail->GetArrayDimension(0) ) == 0 )
                 {
                     std::thread::id this_id = std::this_thread::get_id();
                     std::stringstream ss;
@@ -99,25 +99,25 @@ HSpectrometerCUDASigned::ProcessLoop()
                     std::cout<<ss.str()<<std::endl;
                 }
 
-                //print the first couple samples 
-                std::size_t tmp = 0;
-                std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-
-                std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-
-
-                tmp+=1000;
-
-                std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
+                // //print the first couple samples 
+                // std::size_t tmp = 0;
+                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
+                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
+                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
+                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
+                // 
+                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
+                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
+                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
+                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
+                // 
+                // 
+                // tmp+=1000;
+                // 
+                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
+                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
+                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
+                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
 
                 //call Juha's process_vector routine
                 process_vector_no_output_s(tail->GetData(), sdata, tail->GetMetaData()->GetLeadingSampleIndex() );
