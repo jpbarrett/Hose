@@ -84,10 +84,17 @@ int main(int argc, char** argv)
         if( fext_location != std::string::npos)
         {
             size_t underscore_location = it->find(std::string("_"));
+            std::cout<<"fext_location = "<<fext_location<<std::endl;
+            std::cout<<"underscore_location = "<<underscore_location<<std::endl;
 
             //strip out the leading integer
             std::string acq_second = it->substr(0, underscore_location);
             std::string n_samples = it->substr(underscore_location, fext_location);
+
+
+            std::cout<<"acq sec = "<<acq_second<<std::endl;
+            std::cout<<" n samp = "<<n_samples<<std::endl;
+
             std::stringstream ss1;
             ss1 << acq_second;
             uint64_t val_sec;
