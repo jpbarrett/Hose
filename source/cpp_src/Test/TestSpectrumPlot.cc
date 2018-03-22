@@ -86,8 +86,9 @@ int main(int argc, char** argv)
     {
         std::cout<< *it <<std::endl;
         std::string fname =  it->substr(it->find_last_of("\\/")+1, fname.size() - 1);
-        //std::cout<<"fname = "<<fname<<std::endl;
+        std::cout<<"fname = "<<fname<<std::endl;
         size_t fext_location = fname.find( std::string(".bin") );
+        std::cout<<"fext location = "<<fext_location<<std::endl;
         if( fext_location != std::string::npos)
         {
             size_t underscore_location = fname.find(std::string("_"));
