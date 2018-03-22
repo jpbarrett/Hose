@@ -85,7 +85,7 @@ int main(int argc, char** argv)
     for(auto it = allFiles.begin(); it != allFiles.end(); it++)
     {
         std::cout<< *it <<std::endl;
-        std::string fname =  it->substr(it->find_last_of("\\/")+1, fname.size() - 1);
+        std::string fname =  it->substr(it->find_last_of("\\/")+1, it->size() - 1);
         std::cout<<"fname = "<<fname<<std::endl;
         size_t fext_location = fname.find( std::string(".bin") );
         std::cout<<"fext location = "<<fext_location<<std::endl;
