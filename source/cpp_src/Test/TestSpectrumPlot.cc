@@ -81,6 +81,7 @@ int main(int argc, char** argv)
     {
         //std::cout<< *it <<std::endl;
         std::string fname =  it->substr(0, it->find_last_of("\\/"));
+        std::cout<<"fname"<<std::endl;
         size_t fext_location = fname.find( std::string(".bin") );
         if( fext_location != std::string::npos)
         {
