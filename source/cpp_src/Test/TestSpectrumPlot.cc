@@ -80,17 +80,17 @@ int main(int argc, char** argv)
     for(auto it = allFiles.begin(); it != allFiles.end(); it++)
     {
         //std::cout<< *it <<std::endl;
-        size_t fext_location = it->find( std::string(".bin") );
+        std::string fname =  it->substr(0, it->find_last_of("\\/"));
+        size_t fext_location = fname.find( std::string(".bin") );
         if( fext_location != std::string::npos)
         {
-            size_t underscore_location = it->find(std::string("_"));
+            size_t underscore_location = fname.find(std::string("_"));
             std::cout<<"fext_location = "<<fext_location<<std::endl;
             std::cout<<"underscore_location = "<<underscore_location<<std::endl;
 
             //strip out the leading integer
             std::string acq_second = it->substr(0, underscore_location);
             std::string n_samples = it->substr(underscore_location, fext_location);
-
 
             std::cout<<"acq sec = "<<acq_second<<std::endl;
             std::cout<<" n samp = "<<n_samples<<std::endl;
