@@ -76,7 +76,7 @@ typedef struct spectrometer_output_str_s {
 } spectrometer_output_s;
 
 extern "C" void process_vector_s(int16_t *d_in, spectrometer_data_s *d, uint64_t t0, spectrometer_output_s *o, char const *dname_results);
-extern "C" void process_vector_no_output_s(int16_t *d_in, spectrometer_data_s *d, uint64_t t0);
+extern "C" void process_vector_no_output_s(int16_t *d_in, spectrometer_data_s *d);
 extern "C" spectrometer_data_s *new_spectrometer_data_s(int data_length, int spectrum_length);
 extern "C" spectrometer_output_s *new_spectrometer_output_s();
 extern "C" void free_spectrometer_data_s(spectrometer_data_s *d);

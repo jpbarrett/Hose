@@ -191,12 +191,17 @@ HADQ7Digitizer::TransferImpl()
     unsigned int samples_to_collect = this->fBuffer->GetArrayDimension(0);
     unsigned int buffers_filled = 0;
     int collect_result = 0;
-    unsigned int timeout = 0;
+
+    #ifdef TIMEOUT_WHEN_POLLING
+        unsigned int timeout = 0;
+    #endif
 
     //start timer
-    timespec start;
-    timespec end;
-	clock_gettime(CLOCK_REALTIME, &start);
+    #ifdef DEBUG_TIMER
+        timespec start;
+        timespec end;
+    	clock_gettime(CLOCK_REALTIME, &start);
+    #endif
 
     while (samples_to_collect > 0)
     {
@@ -205,20 +210,36 @@ HADQ7Digitizer::TransferImpl()
         do
         {
             collect_result = ADQ_GetTransferBufferStatus(fADQControlUnit, fADQDeviceNumber, &buffers_filled);
+            #ifdef TIMEOUT_WHEN_POLLING
+                if( (buffers_filled == 0) && (collect_result) )
+                {
+                    timeout++;
+                    if(timeout > 1000000)
+                    {
+                        std::cout<<"Error: Time out during data aquisition!"<<std::endl;
+                        //stop the card aquisition and bail out
+                        fErrorCode = 1;
+                        samples_to_collect = 0;
+                        return;
+                    }
+                    usleep(1);
+                }
+            #endif
         }
-        while( (buffers_filled == 0) && (collect_result) );
+        while( (buffers_filled == 0) && (collect_result) && (!fErrorCode));
 
         collect_result = ADQ_CollectDataNextPage(fADQControlUnit, fADQDeviceNumber);
         samples_in_buffer = MIN(ADQ_GetSamplesPerPage(fADQControlUnit, fADQDeviceNumber), samples_to_collect);
 
-        if (ADQ_GetStreamOverflow(fADQControlUnit, fADQDeviceNumber))
+        if(ADQ_GetStreamOverflow(fADQControlUnit, fADQDeviceNumber))
         {
             fErrorCode = 1;
-            //std::cout<<"Warning: Streaming Overflow 1!"<<std::endl;
+            std::cout<<"Warning: Card streaming overflow!"<<std::endl;
             collect_result = 0;
+            samples_to_collect = 0;
         }
 
-        if (collect_result)
+        if(collect_result)
         {
             //push the mempy arguments to the thread pool queue
             void* dest = (void*) &( (this->fBuffer->GetData())[n_samples_collect-samples_to_collect]);
@@ -231,29 +252,30 @@ HADQ7Digitizer::TransferImpl()
         }
         else
         {
-            //std::cout<<"Collect next data page failed!"<<std::endl;
+            std::cout<<"Warning: Collect next data page failed!"<<std::endl;
             fErrorCode = 2;
             samples_to_collect = 0;
         }
     }
-    // 
-    // //stop timer and print
-    // clock_gettime(CLOCK_REALTIME, &end);
-    // 
-    // timespec temp;
-    // if( (end.tv_nsec-start.tv_nsec) < 0)
-    // {
-    //     temp.tv_sec = end.tv_sec-start.tv_sec-1;
-    //     temp.tv_nsec = (1000000000+end.tv_nsec)-start.tv_nsec;
-    // }
-    // else
-    // {
-    //     temp.tv_sec = end.tv_sec-start.tv_sec;
-    //     temp.tv_nsec = end.tv_nsec-start.tv_nsec;
-    // }
-	//std::cout << temp.tv_sec << "." << temp.tv_nsec << " sec for xfer "<<std::endl;
-    //std::cout<<"to collect: "<<this->fBuffer->GetArrayDimension(0)<<" samples."<<std::endl;
+
+    #ifdef DEBUG_TIMER
+        //stop timer and print
+        clock_gettime(CLOCK_REALTIME, &end);
         
+        timespec temp;
+        if( (end.tv_nsec-start.tv_nsec) < 0)
+        {
+            temp.tv_sec = end.tv_sec-start.tv_sec-1;
+            temp.tv_nsec = (1000000000+end.tv_nsec)-start.tv_nsec;
+        }
+        else
+        {
+            temp.tv_sec = end.tv_sec-start.tv_sec;
+            temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+        }
+    	std::cout << temp.tv_sec << "." << temp.tv_nsec << " sec for xfer "<<std::endl;
+        std::cout<<"to collect: "<<this->fBuffer->GetArrayDimension(0)<<" samples."<<std::endl;
+    #endif
 }
 
 

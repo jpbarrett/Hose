@@ -11,10 +11,7 @@
     #define POLLING_FOR_DATA //Must be defined for PCIe devices under Linux
 #endif
 
-
 #include "ADQAPI.h"
-
-
 
 #include <string>
 #include <stdint.h>
@@ -28,6 +25,11 @@
 #include <ctime>
 
 #include "HDigitizer.hh"
+
+
+//following defines are for debugging
+//#define TIMEOUT_WHEN_POLLING
+//#define DEBUG_TIMER
 
 namespace hose {
 

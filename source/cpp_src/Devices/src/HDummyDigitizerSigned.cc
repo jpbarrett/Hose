@@ -50,8 +50,11 @@ HDummyDigitizerSigned::AcquireImpl()
     ss << DATA_INSTALL_DIR;
     ss << "/";
     ss << fAcquisitionStartTime;
-    int dirstatus;
-    dirstatus = mkdir(ss.str().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    int dirstatus mkdir(ss.str().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    if(dirstatus)
+    {
+        std::cout<<"Problem when attempting to create directory: "<< ss.str() << std::endl;
+    }
 }
 
 void 
@@ -90,12 +93,12 @@ HDummyDigitizerSigned::fill_function()
     unsigned int n = this->fBuffer->GetArrayDimension(0);
     int16_t* buf = this->fBuffer->GetData();
 
-    const unsigned int napp = 10;
-    int16_t sarr[napp];
-    for(unsigned int i=0; i<napp; i++)
-    {
-        sarr[i] = 1000*( std::sin(2.0*M_PI*( ( (double)i )/( (double)napp) ) ) );// + 0.25*std::sin(4.0*M_PI*( ( (double)i )/( (double)napp) ) ) );
-    }
+    // const unsigned int napp = 10;
+    // int16_t sarr[napp];
+    // for(unsigned int i=0; i<napp; i++)
+    // {
+    //     sarr[i] = 1000*( std::sin(2.0*M_PI*( ( (double)i )/( (double)napp) ) ) );// + 0.25*std::sin(4.0*M_PI*( ( (double)i )/( (double)napp) ) ) );
+    // }
     
     for(unsigned int i=0; i<n; i++)
     {

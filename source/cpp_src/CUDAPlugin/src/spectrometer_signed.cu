@@ -382,10 +382,9 @@ extern "C" void free_spectrometer_data_s(spectrometer_data_s *d)
   free(d);
 }
 
-extern "C" void process_vector_no_output_s(int16_t *d_in, spectrometer_data_s *d, uint64_t t0)
+extern "C" void process_vector_no_output_s(int16_t *d_in, spectrometer_data_s *d)
 {
     int n_spectra, data_length, spectrum_length;
-    uint64_t ut_sec;
 
     n_spectra=d->n_spectra;
     data_length=d->data_length;
