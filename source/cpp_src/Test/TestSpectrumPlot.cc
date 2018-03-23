@@ -221,21 +221,20 @@ int main(int argc, char** argv)
     {
         for(unsigned int j=0; j<spec_length-1; j++)
         {
-            g->SetPoint(j, j*spec_res/1e6, std::log10( avespec[j] + eps ) );
+            g->SetPoint(j, j*spec_res/1e6, 10.0*std::log10( avespec[j] + eps ) );
         }
     }
     
     g->Draw("ALP");
     c->Update();
 
-/*
+
     std::string name2("spectrogram");
     TCanvas* c2 = new TCanvas(name2.c_str(),name2.c_str(), 50, 50, 950, 850);
     c2->cd();
     c2->SetFillColor(0);
     c2->SetRightMargin(0.2);
 
-*/
 
     //double last_sample_index = spectrum_vec.back().GetLeadingSampleIndex();// + spectrum_vec.back().GetSampleLength();
     //double last_stime = last_sample_index / sample_rate;
@@ -257,9 +256,6 @@ int main(int argc, char** argv)
     std::cout<<"sub sec difference = "<<stime<<std::endl;
     std::cout<<"total time from first to last sample (s): "<<time_diff<<std::endl;
 
-
-
-/*
     TGraph2D* g2d = new TGraph2D();
     //g2d->SetTitle("Spectrogram; Count; Frequency (MHz); Power (dB)");
     size_t count = 0;
@@ -282,9 +278,9 @@ int main(int argc, char** argv)
         double smax = 0;
         for(unsigned int j=0; j<spectrum_vec[n].GetSpectrumLength()-1; j++)
         {
-            if( std::log10( spec_valn[j] ) > smax){smax = std::log10( spec_valn[j] + eps ); } ;
-            //g2d->Fill(stime, j*spec_res/1e6, std::log10(spec_valn[j] + 0.0001 )  );
-            g2d->SetPoint(count++, time_diff, j*spec_res/1e6, std::log10( spec_valn[j] + eps) );
+            if( std::log10( spec_valn[j] ) > smax){smax = 10.0*std::log10( spec_valn[j] + eps ); } ;
+            //g2d->Fill(stime, j*spec_res/1e6, 10.0*std::log10(spec_valn[j] + 0.0001 )  );
+            g2d->SetPoint(count++, time_diff, j*spec_res/1e6, 10.0*std::log10( spec_valn[j] + eps) );
         }
         //std::cout<<"smax = "<<smax<<std::endl;
     }
@@ -305,10 +301,10 @@ int main(int argc, char** argv)
     g2d->GetHistogram()->GetXaxis()->SetTitle("Time (s)");
     g2d->GetHistogram()->GetXaxis()->CenterTitle();
     g2d->GetHistogram()->GetXaxis()->SetTitleOffset(1.4);
-    g2d->Draw("COLZ");
+    g2d->Draw("P0");
 
     c2->Update();
-*/
+
 
     App->Run();
 }
