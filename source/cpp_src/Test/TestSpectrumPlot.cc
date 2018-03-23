@@ -229,18 +229,6 @@ int main(int argc, char** argv)
     c->Update();
 
 
-    std::string name2("spectrogram");
-    TCanvas* c2 = new TCanvas(name2.c_str(),name2.c_str(), 50, 50, 950, 850);
-    c2->cd();
-    c2->SetFillColor(0);
-    c2->SetRightMargin(0.2);
-
-
-    //double last_sample_index = spectrum_vec.back().GetLeadingSampleIndex();// + spectrum_vec.back().GetSampleLength();
-    //double last_stime = last_sample_index / sample_rate;
-    //TH2D* g2d = new TH2D("h2","", 256, 0.0, last_stime+1, 256, 0, (spec_length-1)*spec_res/1e6 );
-
-
     
     size_t start_sec = spectrum_vec[0].GetStartTime();
     size_t now_sec = spectrum_vec.back().GetStartTime();
@@ -255,6 +243,21 @@ int main(int argc, char** argv)
     std::cout<<"seconds difference = "<<(double)(now_sec - start_sec)<<std::endl;
     std::cout<<"sub sec difference = "<<stime<<std::endl;
     std::cout<<"total time from first to last sample (s): "<<time_diff<<std::endl;
+
+/*
+
+
+    std::string name2("spectrogram");
+    TCanvas* c2 = new TCanvas(name2.c_str(),name2.c_str(), 50, 50, 950, 850);
+    c2->cd();
+    c2->SetFillColor(0);
+    c2->SetRightMargin(0.2);
+
+
+    //double last_sample_index = spectrum_vec.back().GetLeadingSampleIndex();// + spectrum_vec.back().GetSampleLength();
+    //double last_stime = last_sample_index / sample_rate;
+    //TH2D* g2d = new TH2D("h2","", 256, 0.0, last_stime+1, 256, 0, (spec_length-1)*spec_res/1e6 );
+
 
     TGraph2D* g2d = new TGraph2D();
     //g2d->SetTitle("Spectrogram; Count; Frequency (MHz); Power (dB)");
@@ -304,6 +307,7 @@ int main(int argc, char** argv)
     g2d->Draw("P0");
 
     c2->Update();
+*/
 
 
     App->Run();
