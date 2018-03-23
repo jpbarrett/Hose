@@ -181,11 +181,6 @@ int main(int argc, char** argv)
     std::stringstream ss;
     ss <<"Averaged spectrum, acquisition start time: ";
     ss << std::asctime(std::gmtime(&start_time));
-    g->SetTitle(ss.str().c_str());
-    g->GetXaxis()->SetTitle("Frequency (MHz)");
-    g->GetYaxis()->SetTitle("Power (dB)");
-    g->GetYaxis()->CenterTitle();
-    g->GetXaxis()->CenterTitle();
     graph.push_back(g);
 
     double n_samples_per_spec = spectrum_vec[0].GetSampleLength() / spectrum_vec[0].GetNAverages();
@@ -225,6 +220,15 @@ int main(int argc, char** argv)
         }
     }
     
+    g->Draw("ALP");
+    c->Update();
+
+    g->SetTitle(ss.str().c_str());
+    g->GetXaxis()->SetTitle("Frequency (MHz)");
+    g->GetYaxis()->SetTitle("Relative Power (dB)");
+    g->GetYaxis()->CenterTitle();
+    g->GetXaxis()->CenterTitle();
+
     g->Draw("ALP");
     c->Update();
 
