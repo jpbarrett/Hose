@@ -84,6 +84,11 @@ HADQ7Digitizer::InitializeImpl()
         return false;
     }
 
+
+
+    //try to set things up to use channels A&B
+    unsigned int enableAFE_AB = 0x000F;
+    ADQ_SetAfeSwitch(fADQControlUnit, fADQDeviceNumber, enableAFE_AB);
     //get the board sample rate (base clock, assuming no decimation)
     fSampleRate = 0.0;
     ADQ_GetSampleRate(fADQControlUnit, fADQDeviceNumber, 0, &fSampleRate);
@@ -117,6 +122,7 @@ HADQ7Digitizer::InitializeImpl()
     CHECKADQ(ADQ_SetSampleSkip(fADQControlUnit, fADQDeviceNumber, sample_skip));
 
     std::cout<<"setting test pattern mode: "<<fTestPattern<<std::endl;
+
 
     CHECKADQ(ADQ_SetTestPatternMode(fADQControlUnit,fADQDeviceNumber, fTestPattern));
     CHECKADQ(ADQ_SetStreamStatus(fADQControlUnit, fADQDeviceNumber, 1));
