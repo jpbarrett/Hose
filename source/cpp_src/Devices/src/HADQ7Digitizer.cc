@@ -86,9 +86,9 @@ HADQ7Digitizer::InitializeImpl()
 
 
 
-    //try to set things up to use channels A&B
-    unsigned int enableAFE_AB = 0x000F;
-    ADQ_SetAfeSwitch(fADQControlUnit, fADQDeviceNumber, enableAFE_AB);
+    // //try to set things up to use channels A&B
+    // unsigned int enableAFE_AB = 0x000F;
+    // ADQ_SetAfeSwitch(fADQControlUnit, fADQDeviceNumber, enableAFE_AB);
     //get the board sample rate (base clock, assuming no decimation)
     fSampleRate = 0.0;
     ADQ_GetSampleRate(fADQControlUnit, fADQDeviceNumber, 0, &fSampleRate);
