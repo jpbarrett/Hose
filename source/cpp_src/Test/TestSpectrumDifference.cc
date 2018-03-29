@@ -20,6 +20,8 @@
 
 using namespace hose;
 
+double eps = 1e-4;
+
 struct less_than_spec
 {
     inline bool operator() (const std::pair< std::string, std::pair<uint64_t, uint64_t > >& file_int1, const std::pair< std::string, std::pair<uint64_t, uint64_t > >& file_int2)
@@ -166,7 +168,7 @@ int main(int argc, char** argv)
     for(unsigned int i=0; i<spec_diff.size(); i++)
     {
         spec_diff[i] = avespec[0][i] - avespec[1][i];
-        if(spec_diff[i] < 0){spec_diff[i] = 1e-4;}; //clamp positive
+        if(spec_diff[i] < 0){spec_diff[i] = 0;};//1e-4;}; //clamp positive
     }
 
     std::cout<<"starting root plotting"<<std::endl;
@@ -214,16 +216,18 @@ int main(int argc, char** argv)
     ssa <<"Averaged spectrum: ";
     ssa << dir[0];
     ga->SetTitle(ssa.str().c_str());
+    graph.push_back(ga);
+    for(unsigned int j=0; j<avespec[0].size(); j++)
+    {
+        //ga->SetPoint(j, j*spec_res/1e6, avespec[0][j] );
+        ga->SetPoint(j, j*spec_res/1e6, 10.0*std::log10(avespec[0][j] + eps ) );
+    }
+    ga->Draw("ALP");
+    c->Update();
     ga->GetXaxis()->SetTitle("Frequency (MHz)");
     ga->GetYaxis()->SetTitle("Power (a.u)");
     ga->GetYaxis()->CenterTitle();
     ga->GetXaxis()->CenterTitle();
-    graph.push_back(ga);
-
-    for(unsigned int j=0; j<avespec[0].size(); j++)
-    {
-        ga->SetPoint(j, j*spec_res/1e6, avespec[0][j] );
-    }
     ga->Draw("ALP");
     c->Update();
 
@@ -234,15 +238,18 @@ int main(int argc, char** argv)
     ssb <<"Averaged spectrum: ";
     ssb << dir[1];
     gb->SetTitle(ssb.str().c_str());
+    graph.push_back(gb);
+    for(unsigned int j=0; j<avespec[1].size(); j++)
+    {
+        //gb->SetPoint(j, j*spec_res/1e6,  avespec[1][j] );
+        gb->SetPoint(j, j*spec_res/1e6, 10.0*std::log10(avespec[1][j] + eps ) );
+    }
+    gb->Draw("ALP");
+    c->Update();
     gb->GetXaxis()->SetTitle("Frequency (MHz)");
     gb->GetYaxis()->SetTitle("Power (a.u)");
     gb->GetYaxis()->CenterTitle();
     gb->GetXaxis()->CenterTitle();
-    graph.push_back(gb);
-    for(unsigned int j=0; j<avespec[1].size(); j++)
-    {
-        gb->SetPoint(j, j*spec_res/1e6,  avespec[1][j] );
-    }
     gb->Draw("ALP");
     c->Update();
 
@@ -252,15 +259,19 @@ int main(int argc, char** argv)
     std::stringstream ss;
     ss <<"Spectrum difference";
     gc->SetTitle(ss.str().c_str());
+
+    graph.push_back(gc);
+    for(unsigned int j=0; j<spec_diff.size(); j++)
+    {
+        // gc->SetPoint(j, j*spec_res/1e6, spec_diff[j]  );
+        gc->SetPoint(j, j*spec_res/1e6, 10.0*std::log10( spec_diff[j] + eps ) );
+    }
+    gc->Draw("ALP");
+    c->Update();
     gc->GetXaxis()->SetTitle("Frequency (MHz)");
     gc->GetYaxis()->SetTitle("Power (a.u)");
     gc->GetYaxis()->CenterTitle();
     gc->GetXaxis()->CenterTitle();
-    graph.push_back(gc);
-    for(unsigned int j=0; j<spec_diff.size(); j++)
-    {
-        gc->SetPoint(j, j*spec_res/1e6, spec_diff[j]  );
-    }
     gc->Draw("ALP");
     c->Update();
 
