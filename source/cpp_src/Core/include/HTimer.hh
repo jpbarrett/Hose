@@ -28,21 +28,24 @@ class HTimer
         std::string GetName() const {return fName;};
 
         //set the clock type used
-        void MeasureWallclockTime(); //uses CLOCK_REALTIME
+        void MeasureWallclockTime(); //CLOCK_REALTIME
         void MeasureProcessTime(); //CLOCK_PROCESS_CPUTIME_ID
         void MeasureThreadTime(); //CLOCK_THREAD_CPUTIME_ID
 
         void Start();
         void Stop();
 
-        double GetDuration() const;
+        timespec GetDurationAsTimeSpec() const;
+        timespec GetDurationAsDouble() const;
 
-    private:
+    protected:
+
+        timespec GetTimeDifference(const timespec& start, const timespec& stop) const;
 
         std::string fName;
         clockid_t fClockID;
         timespec fStart;
-        timespec fEnd;
+        timespec fStop;
 
 };
 

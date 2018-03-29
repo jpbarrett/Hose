@@ -199,7 +199,7 @@ HADQ7Digitizer::TransferImpl()
     int collect_result = 0;
 
     #ifdef TIMEOUT_WHEN_POLLING
-        unsigned int timeout = 0;
+    unsigned int timeout = 0;
     #endif
 
     //start timer
@@ -212,7 +212,9 @@ HADQ7Digitizer::TransferImpl()
     while (samples_to_collect > 0)
     {
         unsigned int samples_in_buffer;
-        timeout = 0;
+        #ifdef TIMEOUT_WHEN_POLLING
+            timeout = 0;
+        #endif
         do
         {
             collect_result = ADQ_GetTransferBufferStatus(fADQControlUnit, fADQDeviceNumber, &buffers_filled);
