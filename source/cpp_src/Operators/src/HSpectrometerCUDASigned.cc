@@ -122,10 +122,6 @@ HSpectrometerCUDASigned::ProcessLoop()
                 //call Juha's process_vector routine
                 process_vector_no_output_s(tail->GetData(), sdata);
 
-                //free the tail for re-use
-                fBufferPool->PushProducerBuffer( tail );
-
-                
                 //append the averaged spectrum to file associated with this thread
                 std::thread::id this_id = std::this_thread::get_id();
                 std::stringstream ss;
@@ -145,10 +141,16 @@ HSpectrometerCUDASigned::ProcessLoop()
                 spec_data.SetLeadingSampleIndex( tail->GetMetaData()->GetLeadingSampleIndex() );
                 spec_data.SetSampleLength(tail->GetArrayDimension(0));
                 spec_data.SetNAverages( tail->GetArrayDimension(0)/SPECTRUM_LENGTH_S );
+
+                //free the tail for re-use
+                fBufferPool->PushProducerBuffer( tail );
+
                 spec_data.SetSpectrumLength(spectrum_length/2+1); //Fix naming of this
                 spec_data.SetSpectrumData(sdata->spectrum);
                 spec_data.WriteToFile(ss.str());
                 spec_data.ReleaseSpectrumData();
+
+
                 
             }
         }

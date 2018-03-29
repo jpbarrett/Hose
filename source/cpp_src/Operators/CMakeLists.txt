@@ -2,13 +2,8 @@
 #list header files #############################################################
 
 set (HOPERATORS_HEADERFILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/HArrayScalarMultiplier.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/HPointwiseArrayAdder.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/HPointwiseArrayMultiplier.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/HPointwiseArrayConjugateMultiplier.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/HPointwiseArrayReversedConjugateMultiplier.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/HPointwiseArrayScaledAdder.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSimpleMultiThreadedWriter.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumFileWriter.hh
 )
 
 #declare header paths ##########################################################
