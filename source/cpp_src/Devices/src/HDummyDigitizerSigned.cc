@@ -50,7 +50,7 @@ HDummyDigitizerSigned::AcquireImpl()
     ss << DATA_INSTALL_DIR;
     ss << "/";
     ss << fAcquisitionStartTime;
-    int dirstatus mkdir(ss.str().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    int dirstatus = mkdir(ss.str().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     if(dirstatus)
     {
         std::cout<<"Problem when attempting to create directory: "<< ss.str() << std::endl;

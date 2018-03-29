@@ -21,8 +21,8 @@ if (HOSE_ENABLE_TEST)
     )
 
     if(HOSE_USE_CUDA)
-        include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../CUDAPlugin/include)
-        list(APPEND HOSE_TEST_LIBS HCUDAPlugin HCUDAOperators ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
+        include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../CUDASpectrometer/include)
+        list(APPEND HOSE_TEST_LIBS HCUDASpectrometer HCUDAOperators ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
         list(APPEND SOURCE_BASENAMES TestMultiThreadDummySpectrometer)
     endif(HOSE_USE_CUDA)
 
