@@ -7,7 +7,7 @@ if (HOSE_ENABLE_TEST)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Operators/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-    set (HOSE_TEST_LIBS HDevices)
+    set (HOSE_TEST_LIBS HCore HDevices)
 
     if(HOSE_USE_CUDA)
         list(APPEND HOSE_TEST_LIBS HCUDAOperators ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})

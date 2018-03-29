@@ -2,14 +2,12 @@
 
 namespace hose{
 
-HTimer::HTimer()
+HTimer::HTimer():fName("generic_timer")
 {
-
 }
 
-HTimer::HTime(std::string name)
+HTimer::HTimer(std::string name):fName(name)
 {
-
 }
 
 HTimer::~HTimer(){}
@@ -17,7 +15,7 @@ HTimer::~HTimer(){}
 //set the clock type used
 void HTimer::MeasureWallclockTime()
 {
-    fClockID = CLOCK_REALTIME
+    fClockID = CLOCK_REALTIME;
 }
 
 void HTimer::MeasureProcessTime()
@@ -27,7 +25,7 @@ void HTimer::MeasureProcessTime()
 
 void HTimer::MeasureThreadTime()
 {
-    fClockID = CLOCK_THREAD_CPUTIME_ID
+    fClockID = CLOCK_THREAD_CPUTIME_ID;
 }
 
 void HTimer::Start()
@@ -42,7 +40,7 @@ void HTimer::Stop()
 
 
 timespec 
-HTimer::GetTimeDifference(const timespec& start, const timespec& stop)
+HTimer::GetTimeDifference(const timespec& start, const timespec& stop) const
 {
     timespec ret_val;
     if( (stop.tv_nsec-start.tv_nsec) < 0)
@@ -68,8 +66,8 @@ HTimer::GetDurationAsTimeSpec() const
 double HTimer::GetDurationAsDouble() const
 {
     timespec duration = GetTimeDifference(fStart, fStop);
-    double ret_val = timespec.tv_sec;
-    ret_val += ( (double) timespec.tv_nsec )*1e-9;
+    double ret_val = duration.tv_sec;
+    ret_val += ( (double) duration.tv_nsec )*1e-9;
     return ret_val;
 }
 

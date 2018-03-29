@@ -14,14 +14,14 @@
 *Description: time for debugging/performance test, uses clock_gettime
 */
 
-namespace hose{
+namespace hose
+{
 
 class HTimer
 {
     public:
-
         HTimer();
-        HTime(std::string name);
+        HTimer(std::string name);
         virtual ~HTimer();
 
         void SetName(std::string name){fName = name;};
@@ -36,7 +36,7 @@ class HTimer
         void Stop();
 
         timespec GetDurationAsTimeSpec() const;
-        timespec GetDurationAsDouble() const;
+        double GetDurationAsDouble() const;
 
     protected:
 

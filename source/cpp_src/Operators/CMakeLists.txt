@@ -36,7 +36,7 @@ if(HOSE_USE_CUDA)
     )
 
     add_library (HCUDAOperators SHARED ${CUDAOPERATOR_SOURCEFILES})
-    target_link_libraries ( HCUDAOperators HCUDASpectrometer )
+    target_link_libraries ( HCUDAOperators HCore HCUDASpectrometer )
 
     hose_install_headers( ${CUDAOPERATOR_HEADERFILES} )
     hose_install_libraries( HCUDAOperators )
