@@ -3,7 +3,7 @@
 
 set (HOPERATORS_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSimpleMultiThreadedWriter.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumFileWriter.hh
+#    ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumFileWriter.hh
 )
 
 #declare header paths ##########################################################
