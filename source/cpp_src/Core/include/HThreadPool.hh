@@ -1,16 +1,15 @@
 #ifndef HThreadPool_HH__
 #define HThreadPool_HH__
 
-#include <string>
-#include <stdint.h>
-#include <tuple>
 #include <mutex>
 #include <thread>
 #include <vector>
-#include <queue>
+#include <set>
 #include <map>
 #include <utility>
 
+namespace hose
+{
 
 /*
 *File: HThreadPool.hh
@@ -29,74 +28,49 @@ class HThreadPool
 
         void Launch();
 
+        //calling this function will cause threads to exit the process loop once there is no longer work present
         void SignalTerminateOnComplete();
+
+        //calling this function will cause threads to exit as soon as possible
         void ForceTermination();
 
         void Join();
 
+        //thread <-> CPU affinity settings
+        void SetNThreads(unsigned int n);
+        unsigned int GetNThreads() const {return fNThreads;};
 
-    private:
+        //set cpu affinities for a particular thread (default is any thread can be associated with any processor)
+        void AssociateThreadWithAllProcessors(unsigned int local_thread_id);
+        void AssociateThreadWithProcessorSet(unsigned int local_thread_id, const std::set< unsigned int >& cpu_id_set);
+        void AssociateThreadWithSingleProcessor(unsigned int local_thread_id, unsigned int cpu_id);
 
-        virtual void ProcessLoop() = 0;
+        bool AllThreadsAreIdle();
 
+    protected:
 
+        void ProcessLoop();
 
+        virtual void ExecuteThreadTask() = 0; //derived class must define work to be done
+        virtual bool WorkPresent() = 0; //derived class must provide an indicator if there is useful work to be done
+        virtual void Idle(){}; //derived class can define function for threads run while waiting for work
 
-
-
-
-};
-
-#endif /* end of include guard: HThreadPool */
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-        //thread management
-        void LaunchThreads();
-        void JoinThreads();
-        void ReadLoop();
         void InsertIdleIndicator();
         void SetIdleIndicatorFalse();
         void SetIdleIndicatorTrue();
-        bool AllThreadsAreIdle();
 
-        //ADQ API related data
-        bool fBoardInterfaceInitialized;
-        void* fADQControlUnit;
-        unsigned int fADQDeviceNumber;
-        std::string fSerialNumber;
-        int fADQAPIRevision;
-
-        //board data
-        unsigned int fDecimationFactor;
-        double fSampleRate; //sample rate is given in hertz
-        double fSampleRateMHz;
-        unsigned int fNChannels;
-
-        //aquisition configuration, and time stamp
-        unsigned int fNRecords;
-        unsigned int fNSamplesPerRecord;
-	    //global sample counter, zeroed at the start of an aquisition
-    	uint64_t fCounter;
-        std::time_t fAcquisitionStartTime;
-        int fEnableA;
-        int fEnableB;
-        unsigned int fTestPattern;
-
-
-        //thread pool stuff for read-out
+        //thread pool 
+        bool fHasLaunched;
         unsigned int fNThreads;
+        unsigned int fNPhysicalCores;
         bool fSignalTerminate;
         bool fForceTerminate;
-        unsigned int fSleepTime;
-        mutable std::mutex fQueueMutex;
-        std::queue< std::tuple<void*, void*, size_t> > fMemcpyArgQueue;
         std::vector< std::thread > fThreads;
         std::mutex fIdleMutex;
         std::map< std::thread::id, bool > fThreadIdleMap;
 
-        //internal error code, cleared on stop/acquire, indicates board buffer overflow
-        int fErrorCode;
+};
+
+}
+
+#endif /* end of include guard: HThreadPool */

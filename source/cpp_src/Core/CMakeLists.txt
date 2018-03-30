@@ -14,12 +14,14 @@ set (HCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HBufferMetaData.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumObject.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HTimer.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HThreadPool.hh
 )
 
 #list source files #############################################################
 
 set( HCORE_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HTimer.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/HThreadPool.cc
 )
 
 #declare header paths ##########################################################
