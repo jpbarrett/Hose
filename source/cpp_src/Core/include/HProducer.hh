@@ -101,10 +101,10 @@ class HProducer: public HThreadPool
         }
 
         virtual void ConfigureBufferHandler(XProducerBufferHandlerPolicyType& /*handler*/){};
-        virtual void ExecutePreWorkTasks(ProducerBufferPolicyCode /*status_code*/, HLinearBuffer<XBufferItemType>* /*buff*/){};
-        virtual void ExecutePostWorkTasks(ProducerBufferPolicyCode /*status_code*/, HLinearBuffer<XBufferItemType>* /*buff*/){};
+        virtual void ExecutePreWorkTasks(ProducerBufferPolicyCode /*status_code*/, HLinearBuffer<XBufferItemType>* /*buffer*/){};
+        virtual void ExecutePostWorkTasks(ProducerBufferPolicyCode /*status_code*/, HLinearBuffer<XBufferItemType>* /*buffer*/){};
 
-        virtual void GenerateWork(ProducerBufferPolicyCode /*status_code*/, HLinearBuffer<XBufferItemType>* /*buff*/) = 0;
+        virtual void GenerateWork(ProducerBufferPolicyCode /*status_code*/, HLinearBuffer<XBufferItemType>* /*buffer*/) = 0;
 
         bool fStopProduction;
         std::thread fManagementThread;

@@ -55,11 +55,11 @@ class HProducerBufferReleaser
 
 //get a buffer immediately, if no buffer is available fail and return nullptr
 template< XBufferItemType >
-class HProducerBufferHander_Immediate: HProducerBufferReleaser< XBufferItemType >
+class HProducerBufferHandler_Immediate: HProducerBufferReleaser< XBufferItemType >
 {
     public:
-        HProducerBufferHander_Immediate(){;};
-        virtual ~HProducerBufferHander_Immediate(){;};
+        HProducerBufferHandler_Immediate(){;};
+        virtual ~HProducerBufferHandler_Immediate(){;};
 
         ProducerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>* buffer)
         {
@@ -78,11 +78,11 @@ class HProducerBufferHander_Immediate: HProducerBufferReleaser< XBufferItemType 
 
 //wait indefinitely until a buffer is available
 template< XBufferItemType >
-class HProducerBufferHander_Wait: HProducerBufferReleaser< XBufferItemType >
+class HProducerBufferHandler_Wait: HProducerBufferReleaser< XBufferItemType >
 {
     public:
-        HProducerBufferHander_Wait(){;};
-        virtual ~HProducerBufferHander_Wait(){;};
+        HProducerBufferHandler_Wait(){;};
+        virtual ~HProducerBufferHandler_Wait(){;};
 
         ProducerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>* buffer)
         {
@@ -101,11 +101,11 @@ class HProducerBufferHander_Wait: HProducerBufferReleaser< XBufferItemType >
 
 //steal a (unconsumed) consumer buffer to give to the producer
 template< XBufferItemType >
-class HProducerBufferHander_Steal: HProducerBufferReleaser< XBufferItemType >
+class HProducerBufferHandler_Steal: HProducerBufferReleaser< XBufferItemType >
 {
     public:
-        HProducerBufferHander_Steal(){;};
-        virtual ~HProducerBufferHander_Steal(){;};
+        HProducerBufferHandler_Steal(){;};
+        virtual ~HProducerBufferHandler_Steal(){;};
 
         ProducerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>* buffer)
         {
@@ -133,11 +133,11 @@ class HProducerBufferHander_Steal: HProducerBufferReleaser< XBufferItemType >
 
 //wait indefinitely for all consumer buffers to be freed for production, before returning the next buffer
 template< XBufferItemType >
-class HProducerBufferHander_Flush: HProducerBufferReleaser< XBufferItemType >
+class HProducerBufferHandler_Flush: HProducerBufferReleaser< XBufferItemType >
 {
     public:
-        HProducerBufferHander_Flush():fDurationNanoSeconds(500){;};
-        virtual ~HProducerBufferHander_Flush(){;};
+        HProducerBufferHandler_Flush():fDurationNanoSeconds(500){;};
+        virtual ~HProducerBufferHandler_Flush(){;};
 
         void SetSleepDurationNanoSeconds(unsigned int ns){fDurationNanoSeconds = ns;};
         unsigned int GetSleepDurationNanoSeconds() const {return fDurationNanoSeconds};
@@ -183,11 +183,11 @@ class HProducerBufferHander_Flush: HProducerBufferReleaser< XBufferItemType >
 
 //forcefully release all un-reserved consumer buffers for production, then return the next buffer
 template< XBufferItemType >
-class HProducerBufferHander_ForceFlush: HProducerBufferReleaser< XBufferItemType >
+class HProducerBufferHandler_ForceFlush: HProducerBufferReleaser< XBufferItemType >
 {
     public:
-        HProducerBufferHander_ForceFlush(){;};
-        virtual ~HProducerBufferHander_ForceFlush(){;};
+        HProducerBufferHandler_ForceFlush(){;};
+        virtual ~HProducerBufferHandler_ForceFlush(){;};
 
         ProducerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>* buffer)
         {
@@ -223,11 +223,11 @@ class HProducerBufferHander_ForceFlush: HProducerBufferReleaser< XBufferItemType
 
 //wait for buffer until time-out is reached, then fail
 template< XBufferItemType >
-class HProducerBufferHander_WaitWithTimeout: HProducerBufferReleaser< XBufferItemType >
+class HProducerBufferHandler_WaitWithTimeout: HProducerBufferReleaser< XBufferItemType >
 {
     public:
-        HProducerBufferHander_WaitWithTimeout():fNAttempts(100),fDurationNanoSeconds(500){;};
-        virtual ~HProducerBufferHander_WaitWithTimeout(){;};
+        HProducerBufferHandler_WaitWithTimeout():fNAttempts(100),fDurationNanoSeconds(500){;};
+        virtual ~HProducerBufferHandler_WaitWithTimeout(){;};
 
         //total time-out wait time will be fNAttempts*fDurationNanoSeconds
         void SetNAttempts(unsigned int n){fNAttempts = n;};
