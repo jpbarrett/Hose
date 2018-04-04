@@ -6,6 +6,7 @@
 
 #include "HBufferPool.hh"
 #include "HThreadPool.hh"
+#include "HProducerBufferHandlerPolicy.hh"
 
 namespace hose
 {
@@ -19,7 +20,7 @@ namespace hose
 *Description:
 */
 
-template< typename XBufferItemType, typename XProducerBufferHandlerPolicy > 
+template< typename XBufferItemType, typename XProducerBufferHandlerPolicyType > 
 class HProducer: public HThreadPool
 {
     public:
@@ -80,32 +81,35 @@ class HProducer: public HThreadPool
 
         void ProduceWork()
         {
-            XProducerBufferHandlerPolicy bufferHandler;
-            ConfigureBufferHandler(bufferHandler);
-            HLinearBuffer< XBufferItemType >* buff = nullptr;
-            //at some point we need to implement error/exception handling...for now we allow things to fail ungracefully
+            ConfigureBufferHandler(fBufferHandler);
+            HLinearBuffer< XBufferItemType >* buffer = nullptr;
+
             while(!fStopProduction) 
             {
                 //ask the handler for a buffer
-                bufferHandler.ReserveBuffer(fBufferPool, buff);
-                if(buff != nullptr)
-                {
-                    ExecutePreWorkTasks(buff);
-                    GenerateWork(buff);
-                    ExecutePostWorkTasks(buff);
-                    bufferHandler.ReleaseBuffer(fBufferPool, buff);
-                }
+                ProducerBufferPolicyCode status = fBufferHandler.ReserveBuffer(fBufferPool, buffer);
+
+                //prepare things as needed
+                ExecutePreWorkTasks(status, buffer);
+
+                //spawn off work associated with this buffer
+                GenerateWork(status, buffer);
+
+                //release the buffer appropriately
+                ExecutePostWorkTasks(status, buffer);
             }
         }
 
-        virtual void ConfigureBufferHandler(XProducerBufferHandlerPolicy& /*handler*/){};
-        virtual void ExecutePreWorkTasks(HLinearBuffer<XBufferItemType>* /*buff*/){};
-        virtual void GenerateWork(HLinearBuffer<XBufferItemType>* /*buff*/) = 0;
-        virtual void ExecutePostWorkTasks(HLinearBuffer<XBufferItemType>* /*buff*/){};
+        virtual void ConfigureBufferHandler(XProducerBufferHandlerPolicyType& /*handler*/){};
+        virtual void ExecutePreWorkTasks(ProducerBufferPolicyCode /*status_code*/, HLinearBuffer<XBufferItemType>* /*buff*/){};
+        virtual void ExecutePostWorkTasks(ProducerBufferPolicyCode /*status_code*/, HLinearBuffer<XBufferItemType>* /*buff*/){};
+
+        virtual void GenerateWork(ProducerBufferPolicyCode /*status_code*/, HLinearBuffer<XBufferItemType>* /*buff*/) = 0;
 
         bool fStopProduction;
         std::thread fManagementThread;
         HBufferPool<XBufferItemType>* fBufferPool;
+        XProducerBufferHandlerPolicyType fBufferHandler;
 
 
 };

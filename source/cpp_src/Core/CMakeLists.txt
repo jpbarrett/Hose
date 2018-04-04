@@ -15,6 +15,8 @@ set (HCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumObject.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HTimer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HThreadPool.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HProducer.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HProducerBufferHandlerPolicy.hh
 )
 
 #list source files #############################################################
