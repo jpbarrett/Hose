@@ -1,6 +1,10 @@
 #ifndef HProducerBufferHandlerPolicy_HH__
 #define HProducerBufferHandlerPolicy_HH__
 
+#include <chrono>
+#include <thread>
+
+
 #include "HBufferPool.hh"
 #include "HLinearBuffer.hh"
 
@@ -16,191 +20,269 @@ namespace hose
 *Description:
 */
 
+//enum of return codes
+enum class ProducerBufferPolicyCode
+{
+    fail, //failed to reserve buffer
+    success, //successfully reserved (or released) a buffer
+    stolen, //successfully stole a buffer
+    timeout_fail, //failed to reserve a buffer after timing-out
+    flushed, //flushed buffer queue, and then successfully reserved a buffer
+    forced_flushed //forcefully flushed buffer queue, then successfully reserved a buffer
+}
 
-//if no buffer is available, fail and return nullptr
+//base class for releasing buffers (common to all handler policies)
 template< XBufferItemType >
-struct HProducerBufferHander_Fail;
-
-//wait indefinitely until a buffer is available
-template< XBufferItemType >
-struct HProducerBufferHander_Wait;
-
-//wait for buffer until time-out is reached
-template< XBufferItemType >
-struct HProducerBufferHander_WaitWithTimeout
-
-//steal a consumer buffer to use for production
-template< XBufferItemType >
-struct HProducerBufferHander_Steal;
-
-//wait for all consumer buffers to be freed for production, before returning the next buffer
-template< XBufferItemType >
-struct HProducerBufferHander_Flush;
-
-//forcefully release all un-reserved consumer buffers for production, then return the next buffer
-template< XBufferItemType >
-struct HProducerBufferHander_ForceFlush;
-
-
-
-
-
-template< XBufferItemType >
-struct HProducerBufferHander_WaitWithTimeout
+class HProducerBufferReleaser
 {
     public:
+        HProducerBufferReleaser(){;};
+        virtual ~HProducerBufferReleaser(){;};
 
-        void ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer< XBufferItemType >* buff)
+        ProducerBufferPolicyCode ReleaseBufferToProducer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>* buffer)
         {
-            while(pool->GetProducerPoolSize() == 0)
-            {
-                //count up to until we reach the timeout
-            }
+            pool->PushProducerBuffer(buffer);
+            return ProducerBufferPolicyCode::success;
+        }
 
+        ProducerBufferPolicyCode ReleaseBufferToConsumer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>* buffer)
+        {
+            pool->PushConsumerBuffer(buffer);
+            return ProducerBufferPolicyCode::success;
+        }
+};
+
+
+//get a buffer immediately, if no buffer is available fail and return nullptr
+template< XBufferItemType >
+class HProducerBufferHander_Immediate: HProducerBufferReleaser< XBufferItemType >
+{
+    public:
+        HProducerBufferHander_Immediate(){;};
+        virtual ~HProducerBufferHander_Immediate(){;};
+
+        ProducerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>* buffer)
+        {
             if(pool->GetProducerPoolSize() != 0)
             {
-                return = pool->PopProducerBuffer();
+                buffer = pool->PopProducerBuffer();
+                return ProducerBufferPolicyCode::success;
             }
             else
             {   
-                return nullptr;
+                buffer = nullptr;
+                return ProducerBufferPolicyCode::fail;
             }
         }
+};
 
-        void ReleaseBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer< XBufferItemType >* buff)
+//wait indefinitely until a buffer is available
+template< XBufferItemType >
+class HProducerBufferHander_Wait: HProducerBufferReleaser< XBufferItemType >
+{
+    public:
+        HProducerBufferHander_Wait(){;};
+        virtual ~HProducerBufferHander_Wait(){;};
+
+        ProducerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>* buffer)
         {
-
+            while(true)
+            {
+                if(pool->GetProducerPoolSize() != 0)
+                {
+                    buffer = pool->PopProducerBuffer();
+                    return ProducerBufferPolicyCode::success;
+                }
+            };
         }
 
+};
 
-                if(buff != nullptr)
-                    {
-                        dummy->SetBuffer(buff);
-                        if(count == 0 || buff_overflow)
-                        {
-                            dummy->Acquire();
-                            buff_overflow = false;
-                        };
 
-                        dummy->Transfer();
-                        int err_code = dummy->Finalize();
-                        if(err_code != 0)
-                        {
-                            std::cout<<"Card buffer overflow error, temporarily stopping acquire."<<std::endl;
-                            dummy->Stop();
-                            buff_overflow = true;
-                            //put garbage buffer back
-                            pool->PushProducerBuffer(dummy->GetBuffer());
-                            //sleep for a while
-                            nBuffersDropped++;
-                            usleep(500000);
-                        }
-                        else 
-                        {
-                            pool->PushConsumerBuffer(dummy->GetBuffer());
-                            count++;
-                            if(count % 100 == 0){std::cout<<"count = "<<count<<std::endl;}
-                        }
-                    }
+//steal a (unconsumed) consumer buffer to give to the producer
+template< XBufferItemType >
+class HProducerBufferHander_Steal: HProducerBufferReleaser< XBufferItemType >
+{
+    public:
+        HProducerBufferHander_Steal(){;};
+        virtual ~HProducerBufferHander_Steal(){;};
+
+        ProducerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>* buffer)
+        {
+            if(pool->GetProducerPoolSize() != 0)
+            {
+                buffer = pool->PopProducerBuffer();
+                return ProducerBufferPolicyCode::success;
+            }
+            else
+            {   
+                if(pool->GetConsumerPoolSize() != 0)
+                {
+                    buffer = pool->PopConsumerBuffer();
+                    return ProducerBufferPolicyCode::stolen;
                 }
                 else
                 {
-                    std::cout<<"Ring buffer overflow error, temporarily stopping acquire."<<std::endl;
-                    dummy->Stop();
-                    buff_overflow = true;
-                    //put garbage buffer back
-                    pool->PushProducerBuffer(dummy->GetBuffer());
-                    nBuffersDropped++;
-
-                    //wait until buffer pool is replenished 
-                    while(pool->GetConsumerPoolSize() != 0)
-                    {
-                        usleep(10);
-                    }
-
-
-                    /*
-                    //steal a buffer from the consumer pool..however, this requires dropping
-                    //a previous aquisition, so we don't increment the count
-                    HLinearBuffer< HADQ7Digitizer::sample_type >* buff = pool->PopConsumerBuffer();
-                    if(buff != nullptr)
-                    {
-                        nBuffersDropped++;
-                        dummy->SetBuffer(buff);
-                        dummy->Transfer();
-                        dummy->Finalize();
-                        pool->PushConsumerBuffer(dummy->GetBuffer());
-                        count++;
-                        if(count % 100 == 0)
-                        {
-                            std::cout<<"stolen! count = "<<count<<std::endl;
-                        }
-                    }
-                    */
-
-
+                    buffer = nullptr;
+                    return ProducerBufferPolicyCode::fail;
                 }
-
-
+            }
         }
-
-        void ReleaseBuffer(int& /*err_code*/, HLinearBuffer<XBufferItemType>* buff)
-        {
-            fBufferPool->PushConsumerBuffer(buff);
-        }
-
-
-    private:
-
-        HBufferPool<XBufferItemType>* fBufferPool;
 
 };
 
-
-class HClearAndWaitForBuffer
+//wait indefinitely for all consumer buffers to be freed for production, before returning the next buffer
+template< XBufferItemType >
+class HProducerBufferHander_Flush: HProducerBufferReleaser< XBufferItemType >
 {
     public:
-        HProducerBufferHandlerPolicy(HBufferPool<XBufferItemType>* pool ):fBufferPool(pool){};
-        virtual ~HProducerBufferHandlerPolicy();
+        HProducerBufferHander_Flush():fDurationNanoSeconds(500){;};
+        virtual ~HProducerBufferHander_Flush(){;};
 
-        HLinearBuffer<XBufferItemType>* ReserveBuffer(int& error_code);
+        void SetSleepDurationNanoSeconds(unsigned int ns){fDurationNanoSeconds = ns;};
+        unsigned int GetSleepDurationNanoSeconds() const {return fDurationNanoSeconds};
 
-        void ReleaseBuffer(int& /*err_code*/, HLinearBuffer<XBufferItemType>* buff)
+        ProducerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>* buffer)
         {
-            fBufferPool->PushConsumerBuffer(buff);
+            if(pool->GetProducerPoolSize() != 0)
+            {
+                buffer = pool->PopProducerBuffer();
+                return ProducerBufferPolicyCode::success;
+            }
+            else
+            {   
+                //wait for the consumer buffer pool to become empty
+                while( pool->GetConsumerPoolSize() != 0 )
+                {
+                    //sleep for the specified duration if it is non-zero
+                    if(fDurationNanoSeconds != 0)
+                    {
+                        std::this_thread::sleep_for(std::chrono::nanoseconds(fDurationNanoSeconds));
+                    }
+                };
+
+                //producer pool should be full now, so grab buffer
+                if(pool->GetProducerPoolSize() != 0)
+                {
+                    buffer = pool->PopProducerBuffer();
+                    return ProducerBufferPolicyCode::flushed;
+                }
+                else
+                {   
+                    buffer = nullptr;
+                    return ProducerBufferPolicyCode::fail;
+                }
+            }
         }
 
+    protected: 
 
-    private:
-
-        HBufferPool<XBufferItemType>* fBufferPool;
+        unsigned int fDurationNanoSeconds;
 
 };
 
-class HStealBuffer
+//forcefully release all un-reserved consumer buffers for production, then return the next buffer
+template< XBufferItemType >
+class HProducerBufferHander_ForceFlush: HProducerBufferReleaser< XBufferItemType >
 {
     public:
-        HProducerBufferHandlerPolicy(HBufferPool<XBufferItemType>* pool ):fBufferPool(pool){};
-        virtual ~HProducerBufferHandlerPolicy();
+        HProducerBufferHander_ForceFlush(){;};
+        virtual ~HProducerBufferHander_ForceFlush(){;};
 
-        HLinearBuffer<XBufferItemType>* ReserveBuffer(int& error_code)
+        ProducerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>* buffer)
         {
+            if(pool->GetProducerPoolSize() != 0)
+            {
+                buffer = pool->PopProducerBuffer();
+                return ProducerBufferPolicyCode::success;
+            }
+            else
+            {
+                //flush out all of the consumer buffers back into the producer pool w/o consuming them
+                while( pool->GetConsumerPoolSize() != 0 )
+                {
+                    HLinearBuffer< XBufferItemType > temp_buffer = pool->PopConsumerBuffer();
+                    pool->PushProducerBuffer(temp_buffer);
+                };
 
+                //producer pool should be full now, so grab buffer
+                if(pool->GetProducerPoolSize() != 0)
+                {
+                    buffer = pool->PopProducerBuffer();
+                    return ProducerBufferPolicyCode::forced_flushed;
+                }
+                else
+                {   
+                    buffer = nullptr;
+                    return ProducerBufferPolicyCode::fail;
+                }
+            }
         }
-
-
-        void ReleaseBuffer(int& /*err_code*/, HLinearBuffer<XBufferItemType>* buff)
-        {
-            fBufferPool->PushConsumerBuffer(buff);
-        }
-
-    private:
-
-        HBufferPool<XBufferItemType>* fBufferPool;
-
 };
 
 
+//wait for buffer until time-out is reached, then fail
+template< XBufferItemType >
+class HProducerBufferHander_WaitWithTimeout: HProducerBufferReleaser< XBufferItemType >
+{
+    public:
+        HProducerBufferHander_WaitWithTimeout():fNAttempts(100),fDurationNanoSeconds(500){;};
+        virtual ~HProducerBufferHander_WaitWithTimeout(){;};
+
+        //total time-out wait time will be fNAttempts*fDurationNanoSeconds
+        void SetNAttempts(unsigned int n){fNAttempts = n;};
+        unsigned int GetNAttempts() const {return fNAttempts;};
+
+        void SetSleepDurationNanoSeconds(unsigned int ns){fDurationNanoSeconds = ns;};
+        unsigned int GetSleepDurationNanoSeconds() const {return fDurationNanoSeconds};
+
+        ProducerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>* buffer)
+        {
+            if(pool->GetProducerPoolSize() != 0)
+            {
+                buffer = pool->PopProducerBuffer();
+                return ProducerBufferPolicyCode::success;
+            }
+            else
+            {   
+                //wait for the consumer buffer pool to become empty
+                unsigned int count = 0;
+                while( pool->GetProducerPoolSize() != 0 && count < fNAttempts)
+                {
+                    //sleep for the specified duration if it is non-zero
+                    if(fDurationNanoSeconds != 0)
+                    {
+                        std::this_thread::sleep_for(std::chrono::nanoseconds(fDurationNanoSeconds));
+                    }
+
+                    if(pool->GetProducerPoolSize() != 0)
+                    {
+                        buffer = pool->PopProducerBuffer();
+                        return ProducerBufferPolicyCode::success;
+                    }
+
+                    count++;
+                };
+
+                //producer pool should be full now, so grab buffer
+                if(pool->GetProducerPoolSize() != 0)
+                {
+                    buffer = pool->PopProducerBuffer();
+                    return ProducerBufferPolicyCode::success;
+                }
+                else
+                {   
+                    buffer = nullptr;
+                    return ProducerBufferPolicyCode::fail;
+                }
+            }
+        }
+
+    protected: 
+
+        unsigned int fNAttempts;
+        unsigned int fDurationNanoSeconds;
+};
 
 }
 

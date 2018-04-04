@@ -81,6 +81,7 @@ class HProducer: public HThreadPool
         void ProduceWork()
         {
             XProducerBufferHandlerPolicy bufferHandler;
+            ConfigureBufferHandler(bufferHandler);
             HLinearBuffer< XBufferItemType >* buff = nullptr;
             //at some point we need to implement error/exception handling...for now we allow things to fail ungracefully
             while(!fStopProduction) 
@@ -97,6 +98,7 @@ class HProducer: public HThreadPool
             }
         }
 
+        virtual void ConfigureBufferHandler(XProducerBufferHandlerPolicy& /*handler*/){};
         virtual void ExecutePreWorkTasks(HLinearBuffer<XBufferItemType>* /*buff*/){};
         virtual void GenerateWork(HLinearBuffer<XBufferItemType>* /*buff*/) = 0;
         virtual void ExecutePostWorkTasks(HLinearBuffer<XBufferItemType>* /*buff*/){};
