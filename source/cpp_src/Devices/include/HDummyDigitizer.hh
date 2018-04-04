@@ -39,20 +39,17 @@ class HDummyDigitizer: public HDigitizer< XSampleType, HDummyDigitizer >, public
         void StopImpl(){};
         void TearDownImpl(){};
 
-        //needed by the producer interface
+        //needed by the producer interface (organizes calls to digitizer interface)
+        virtual void ExecutePreWorkTasks(ProducerBufferPolicyCode status_code, HLinearBuffer<XBufferItemType>* buffer) override;
         virtual void GenerateWork(ProducerBufferPolicyCode status_code, HLinearBuffer<XBufferItemType>* buffer) override;
         virtual void ExecutePostWorkTasks(ProducerBufferPolicyCode status_code, HLinearBuffer<XBufferItemType>* buffer) override ;
 
         //needed by the thread pool interface
-        virtual void ExecuteThreadTask() override; //derived class must define work to be done
-        virtual bool WorkPresent() override; //derived class must provide an indicator if there is useful work to be done
+        virtual void ExecuteThreadTask() override;
+        virtual bool WorkPresent() override;
 
         //function to actually fill the buffer
         void fill_function();
-
-        
-
-
 
         //random number generator
         std::random_device* fRandom;
@@ -67,7 +64,6 @@ class HDummyDigitizer: public HDigitizer< XSampleType, HDummyDigitizer >, public
 
 
 
-//member function declarations
 template< typename XSampleType >
 bool
 HDummyDigitizer< XSampleType >::InitializeImpl()
@@ -82,17 +78,6 @@ HDummyDigitizer< XSampleType >::AcquireImpl()
 {
     fCounter = 0;
     fAcquisitionStartTime = std::time(nullptr);
-
-    //create data output directory, need to make this configurable and move it elsewhere
-    std::stringstream ss;
-    ss << DATA_INSTALL_DIR;
-    ss << "/";
-    ss << fAcquisitionStartTime;
-    int dirstatus = mkdir(ss.str().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    if(dirstatus)
-    {
-        std::cout<<"Problem when attempting to create directory: "<< ss.str() << std::endl;
-    }
 }
 
 template< typename XSampleType >
@@ -120,6 +105,45 @@ template< typename XSampleType >
 void
 HDummyDigitizer< XSampleType >::GenerateWork(ProducerBufferPolicyCode status_code, HLinearBuffer<XBufferItemType>* buffer)
 {
+    //
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     //configure buffer information, cat time to uint64_t and set, then set the sample rate
     this->fBuffer->GetMetaData()->SetAquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
     this->fBuffer->GetMetaData()->SetSampleRate(fSampleRate); //check that double to uint64_t conversion is OK here

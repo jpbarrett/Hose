@@ -27,9 +27,11 @@ void RunAcquireThread(HADQ7Digitizer* dummy, PoolType* pool, HSpectrometerCUDASi
     {
         if(pool->GetProducerPoolSize() != 0)
         {
+            //resever buffer
             HLinearBuffer< HADQ7Digitizer::sample_type >* buff = pool->PopProducerBuffer();
             if(buff != nullptr)
             {
+                //prework tasks
                 dummy->SetBuffer(buff);
                 if(count == 0 || buff_overflow)
                 {
@@ -37,8 +39,11 @@ void RunAcquireThread(HADQ7Digitizer* dummy, PoolType* pool, HSpectrometerCUDASi
                     buff_overflow = false;
                 };
 
+                //generate work tasks
                 dummy->Transfer();
                 int err_code = dummy->Finalize();
+
+                //post work tasks
                 if(err_code != 0)
                 {
                     std::cout<<"Card buffer overflow error, temporarily stopping acquire."<<std::endl;
