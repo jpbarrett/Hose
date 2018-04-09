@@ -121,6 +121,7 @@ int main(int argc, char** argv)
     "\t -p, --process-threads    (number of processing threads)\n"
     "\t -i, --input-channel      (select channel 1 (A) or 2 (B), default=1)\n"
     "\t -t, --test-pattern       (enable test pattern)\n"
+    "\t -x, --adx-enable         (enable ADX spur reduction)\n"
     ;
 
     //set defaults
@@ -132,6 +133,7 @@ int main(int argc, char** argv)
     unsigned int proc_threads = 4;
     unsigned int channel = 1;
     bool enable_test = false;
+    bool enable_adx = false;
     std::string o_dir =  DATA_INSTALL_DIR;
 
     static struct option longOptions[] =
@@ -145,9 +147,10 @@ int main(int argc, char** argv)
         {"process-threads", required_argument, 0, 'p'},
         {"input-channel", required_argument, 0, 'i'},
         {"test-pattern", required_argument, 0, 't'},
+        {"adx-enable", required_argument, 0, 'x'},
     };
 
-    static const char *optString = "hs:n:m:c:a:p:i:t";
+    static const char *optString = "hs:n:m:c:a:p:i:tx";
 
     while(1)
     {
@@ -182,6 +185,9 @@ int main(int argc, char** argv)
             case('t'):
             enable_test = true;
             break;
+            case('x'):
+            enable_adx = true;
+            break;
             default:
                 std::cout<<usage<<std::endl;
             return 1;
@@ -200,6 +206,9 @@ int main(int argc, char** argv)
 
     if(enable_test){dummy.EnableTestPattern();}
     else{dummy.DisableTestPattern();}
+
+    if(enable_adx){dummy.EnableADX();}
+    else{dummy.DisableADX();};
 
     dummy.SetDecimationFactor(sample_skip);
     bool initval = dummy.Initialize();

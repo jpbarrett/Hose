@@ -35,6 +35,7 @@ HADQ7Digitizer::HADQ7Digitizer():
     fEnableA(1),
     fEnableB(0),
     fTestPattern(0),
+    fADXMode(1),
     fNThreads(6),
     fSignalTerminate(false),
     fForceTerminate(true),
@@ -620,14 +621,17 @@ bool HADQ7Digitizer::InitializeBoardInterface()
     // //set test pattermode 
     // CHECKADQ(ADQ_SetTestPatternMode(adq_cu,adq_num, 2));
 
-    unsigned int adx_mode = 0;
+
     unsigned char addr  = '\0';
-    unsigned int retval = ADQ_SetInterleavingIPBypassMode(fADQControlUnit, fADQDeviceNumber, addr, adx_mode) ;
+    unsigned int retval = ADQ_SetInterleavingIPBypassMode(fADQControlUnit, fADQDeviceNumber, addr, fADXMode) ;
+    std::cout<<"Setting ADX mode to: "<<fADXMode<<std::endl;
+    std::cout<<"ADX set retval = "<<retval<<std::endl;
+
+    unsigned int adx_mode = 0;
+    retval = ADQ_GetInterleavingIPBypassMode(fADQControlUnit, fADQDeviceNumber, addr, &adx_mode) ;
 
     std::cout<<"ADX query retval = "<<retval<<std::endl;
-
     std::cout<<"ADX mode is set to: "<<adx_mode<<std::endl;
-
 
     return true;
 }

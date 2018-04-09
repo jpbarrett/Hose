@@ -53,6 +53,10 @@ class HADQ7Digitizer: public HDigitizer< ADQ7_SAMPLE_TYPE, HADQ7Digitizer >
 
         void EnableTestPattern(){fTestPattern = 2;};
         void DisableTestPattern(){fTestPattern = 0;};
+
+        void EnableADX(){fADXMode = 0;};
+        void DisableADX(){fADXMode = 1;};
+
         void SelectChannelA(){fEnableA = 1; fEnableB = 0;};
         void SelectChannelB(){fEnableA = 0; fEnableB = 1;};
 
@@ -112,6 +116,7 @@ class HADQ7Digitizer: public HDigitizer< ADQ7_SAMPLE_TYPE, HADQ7Digitizer >
         int fEnableA;
         int fEnableB;
         unsigned int fTestPattern;
+        unsigned int fADXMode;
 
 
         //thread pool stuff for read-out
