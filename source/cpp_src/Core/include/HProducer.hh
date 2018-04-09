@@ -28,7 +28,7 @@ class HProducer: public HThreadPool
         HProducer():
             HThreadPool(),
             fStopProduction(false),
-            fThread(),
+            fManagementThread(),
             fBufferPool(nullptr)
         {};
 
@@ -46,7 +46,7 @@ class HProducer: public HThreadPool
 
             //now run the management thread (responsible for generation of work for the thread pool)
             fStopProduction = false;
-            fThread = std::thread(&HProducer::ProduceWork,this);
+            fManagementThread = std::thread(&HProducer::ProduceWork,this);
         }
 
         //stop the producer and join thread
@@ -57,7 +57,7 @@ class HProducer: public HThreadPool
 
             //signal and stop the management thread
             fStopProduction = true;
-            fThread.join();
+            fManagementThread.join();
 
             //join the thread pool
             Join();
@@ -71,7 +71,7 @@ class HProducer: public HThreadPool
 
             //signal and stop the management thread
             fStopProduction = true;
-            fThread.join();
+            fManagementThread.join();
 
             //join the thread pool
             Join();
@@ -87,13 +87,13 @@ class HProducer: public HThreadPool
             while(!fStopProduction) 
             {
                 //prepare things as needed (reserve buffer, etc)
-                ExecutePreWorkTasks(status, buffer);
+                ExecutePreWorkTasks();
 
                 //spawn off work associated with this buffer
-                GenerateWork(status, buffer);
+                GenerateWork();
 
                 //do post-work tasks (release the buffer, etc)
-                ExecutePostWorkTasks(status, buffer);
+                ExecutePostWorkTasks();
             }
 
             ExecutePostProductionTasks();
@@ -101,7 +101,7 @@ class HProducer: public HThreadPool
         }
 
         virtual void ExecutePreProductionTasks(){};
-        virtual void ExecutePostProductionTasks();
+        virtual void ExecutePostProductionTasks(){};
 
         virtual void ConfigureBufferHandler(XProducerBufferHandlerPolicyType& /*handler*/){};
         virtual void ExecutePreWorkTasks(){};

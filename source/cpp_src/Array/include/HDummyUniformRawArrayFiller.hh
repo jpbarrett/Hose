@@ -19,14 +19,14 @@ namespace hose
 template< typename XSampleType, typename XEnableType = void >
 struct HDummyUniformRawArrayFiller
 {
-    void operator(XSampleType* /*array*/, XSampleType /*lower_limit*/, XSampleType /*upper_limit*/, size_t /*len*/){}; //unspecialized default is to do nothing
+    void Fill(XSampleType* /*array*/, XSampleType /*lower_limit*/, XSampleType /*upper_limit*/, size_t /*len*/){}; //unspecialized default is to do nothing
 };
 
 //partial specialization for floating point types
 template< typename XSampleType >
 struct HDummyUniformRawArrayFiller< XSampleType, typename std::enable_if< std::is_floating_point< XSampleType >::value >::type >
 {
-    void operator(XSampleType* array, XSampleType lower_limit, XSampleType upper_limit, size_t len)
+    void Fill(XSampleType* array, XSampleType lower_limit, XSampleType upper_limit, size_t len)
     {
         //random number generator
         std::random_device r_dev;
@@ -35,7 +35,7 @@ struct HDummyUniformRawArrayFiller< XSampleType, typename std::enable_if< std::i
 
         for(size_t i=0; i<len; i++)
         {
-            array[i] = r_dist( mt_generator() );
+            array[i] = r_dist( mt_generator );
         }
     }
 };
@@ -44,7 +44,7 @@ struct HDummyUniformRawArrayFiller< XSampleType, typename std::enable_if< std::i
 template< typename XSampleType >
 struct HDummyUniformRawArrayFiller< XSampleType, typename std::enable_if< std::is_integral< XSampleType >::value >::type >
 {
-    void operator(XSampleType* array, XSampleType lower_limit, XSampleType upper_limit, size_t len)
+    void Fill(XSampleType* array, XSampleType lower_limit, XSampleType upper_limit, size_t len)
     {
         //random number generator
         std::random_device r_dev;
@@ -53,7 +53,7 @@ struct HDummyUniformRawArrayFiller< XSampleType, typename std::enable_if< std::i
 
         for(size_t i=0; i<len; i++)
         {
-            array[i] = r_dist( mt_generator() );
+            array[i] = r_dist( mt_generator );
         }
     }
 };

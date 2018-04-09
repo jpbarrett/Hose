@@ -25,25 +25,32 @@ namespace hose {
 
 
 template< typename XSampleType >
-class HDummyDigitizer: public HDigitizer< XSampleType, HDummyDigitizer >, public HProducer< XSampleType, HProducerBufferHander_Wait >
+class HDummyDigitizer: public HDigitizer< XSampleType, HDummyDigitizer< XSampleType > >, public HProducer< XSampleType, HProducerBufferHandler_Wait< XSampleType > >
 {
     public:
 
         HDummyDigitizer():
-            HDigitizer< uint16_t, HDummyDigitizer >(),
+            HDigitizer< XSampleType, HDummyDigitizer >(),
             fLowerLimit( std::numeric_limits<XSampleType>::min() ),
             fUpperLimit( std::numeric_limits<XSampleType>::max() ),
             fCounter(0),
+            fAcquireActive(false),
+            fBufferCode(HProducerBufferPolicyCode::unset),
             fSleepDurationNanoSeconds(500)
-        {};
+        {
+            this->fAllocator = new HBufferAllocatorNew< XSampleType >();
+        };
 
-        virtual ~HDummyDigitizer(){};
+        virtual ~HDummyDigitizer()
+        {
+            delete this->fAllocator;
+        };
 
         void SetUpperLimit(XSampleType upper_limit){fUpperLimit = upper_limit;};
         void SetLowerLimit(XSampleType lower_limit){fLowerLimit = lower_limit;};
 
         void SetSleepDurationNanoSeconds(unsigned int ns){fSleepDurationNanoSeconds = ns;};
-        unsigned int GetSleepDurationNanoSeconds() const {return fSleepDurationNanoSeconds};
+        unsigned int GetSleepDurationNanoSeconds() const {return fSleepDurationNanoSeconds;};
 
     protected:
 
@@ -58,6 +65,8 @@ class HDummyDigitizer: public HDigitizer< XSampleType, HDummyDigitizer >, public
 
         //'samples' counter and aquire start time stamp
         uint64_t fCounter;
+        bool fAcquireActive;
+        HProducerBufferPolicyCode fBufferCode;
         std::time_t fAcquisitionStartTime;
         unsigned int fSleepDurationNanoSeconds;
 
@@ -94,7 +103,7 @@ void
 HDummyDigitizer< XSampleType >::fill(XSampleType* array, size_t sz)
 {
     HDummyUniformRawArrayFiller< XSampleType > filler;
-    filler(array, fLowerLimit, fUpperLimit, sz);
+    filler.Fill(array, fLowerLimit, fUpperLimit, sz);
 }
 
 
@@ -126,25 +135,26 @@ HDummyDigitizer< XSampleType >::TransferImpl()
     //make a chunk of work for each thread
     size_t buff_size = this->fBuffer->GetArrayDimension(0);
     XSampleType* raw_ptr = this->fBuffer->GetData();
-    size_t chunk_size = buff_size / fNThreads;
-    size_t remainder = buff_size % fNThreads 
+    size_t chunk_size = buff_size / this->fNThreads;
+    size_t remainder = buff_size % this->fNThreads; 
 
     //pile some work into the work queue
-    std::lock_guard< std::mutex > lock(this->fQueueMutex);
-    for(unsigned int i=0; i<fNThreads-1; i++)
+    std::lock_guard< std::mutex > lock(this->fWorkQueueMutex);
+    for(unsigned int i=0; i<this->fNThreads-1; i++)
     {
-        fWorkArgQueue.push( std::make_pair( &(raw_ptr[i*chunk_size]), chunk_size);
+        fWorkArgQueue.push( std::make_pair( &(raw_ptr[i*chunk_size]), chunk_size) );
     }
     //last chunk might have a slightly different size
-    fWorkArgQueue.push( std::make_pair( &(raw_ptr[(fNThreads-1)*chunk_size]), remainder+chunk_size);
+    fWorkArgQueue.push( std::make_pair( &(raw_ptr[(this->fNThreads-1)*chunk_size]), remainder+chunk_size) );
 }
 
 template< typename XSampleType >
 int
 HDummyDigitizer< XSampleType >::FinalizeImpl()
 {
+
     //wait until all the threads are idle
-    while( !AllThreadsAreIdle() || fWorkArgQueue.size() != 0 )
+    while( !( this->AllThreadsAreIdle() ) || fWorkArgQueue.size() != 0 )
     {
         std::this_thread::sleep_for(std::chrono::nanoseconds(fSleepDurationNanoSeconds));
     }
@@ -152,11 +162,10 @@ HDummyDigitizer< XSampleType >::FinalizeImpl()
     //increment the sample counter
     this->fBuffer->GetMetaData()->SetLeadingSampleIndex(fCounter);
     fCounter += this->fBuffer->GetArrayDimension(0);
+    std::cout<<"finalize imple"<<std::endl;
+    std::cout<<"counter = "<<fCounter<<std::endl;
     return 0;
 }
-
-
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -167,9 +176,29 @@ template< typename XSampleType >
 void
 HDummyDigitizer< XSampleType >::ExecutePreWorkTasks()
 {
-    //configure the buffer meta data
-    buffer->GetMetaData()->SetAquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
-    buffer->fBuffer->GetMetaData()->SetSampleRate(2500000000);
+    //get a buffer from the buffer handler
+    HLinearBuffer< XSampleType >* buffer = nullptr;
+    fBufferCode = this->fBufferHandler.ReserveBuffer(this->fBufferPool, buffer);
+    
+    //set the digitizer buffer if succesful
+    if(fBufferCode == HProducerBufferPolicyCode::success)
+    {
+        //successfully got a buffer, assigned it
+        this->SetBuffer(buffer);
+
+        //start aquire if we haven't already
+        if( !fAcquireActive )
+        {
+            this->Acquire();
+            fAcquireActive = true;
+        }
+
+        //configure the buffer meta data
+        this->fBuffer->GetMetaData()->SetAquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
+        this->fBuffer->GetMetaData()->SetSampleRate(2500000000);
+    }
+
+
 }
 
 
@@ -178,9 +207,10 @@ template< typename XSampleType >
 void
 HDummyDigitizer< XSampleType >::GenerateWork()
 {
-    if(status_code == HProducerBufferPolicyCode::success)
+    //we have an active buffer, transfer the data
+    if(fBufferCode == HProducerBufferPolicyCode::success)
     {
-        Transfer();
+        this->Transfer();
     }
 }
 
@@ -188,16 +218,12 @@ template< typename XSampleType >
 void
 HDummyDigitizer< XSampleType >::ExecutePostWorkTasks()
 {
-    int finalize_code = Finalize();
-
-    if(status_code == ProducerBufferPolicyCode::success)
-    {
-        fBufferHandler
+    if(fBufferCode == HProducerBufferPolicyCode::success)
+    {   
+        int finalize_code = this->Finalize(); //handle errors in finalize here
+        fBufferCode = this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, this->fBuffer);
     }
 }
-
-
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -213,7 +239,7 @@ HDummyDigitizer< XSampleType >::ExecuteThreadTask()
     if( fWorkArgQueue.size() != 0 )
     {
         //get lock on mutex for queue modification
-        std::lock_guard< std::mutex > lock(this->fQueueMutex);
+        std::lock_guard< std::mutex > lock(this->fWorkQueueMutex);
         if( fWorkArgQueue.size() != 0 )
         {
             //grab the location in the queue we are going to generate output for
@@ -234,12 +260,29 @@ HDummyDigitizer< XSampleType >::ExecuteThreadTask()
 
 
 template< typename XSampleType >
-void
+bool
 HDummyDigitizer< XSampleType >::WorkPresent()
 {
     return ( fWorkArgQueue.size() != 0 );
 }
 
+
+template< typename XSampleType >
+void
+HDummyDigitizer< XSampleType >::ExecutePreProductionTasks()
+{
+    //initialization may need to be done elsewhere (for example if the allocator to be constructed requires and initiaized card)
+}
+
+
+template< typename XSampleType >
+void
+HDummyDigitizer< XSampleType >::ExecutePostProductionTasks()
+{
+    this->Stop();
+    this->TearDown();
+    fAcquireActive = false;
+}
 
 
 

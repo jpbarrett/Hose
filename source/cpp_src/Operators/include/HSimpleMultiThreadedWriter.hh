@@ -101,6 +101,8 @@ class HSimpleMultiThreadedWriter
                         ss << tail->GetMetaData()->GetLeadingSampleIndex();
                         ss << ".bin";
 
+                        std::cout<<"sample index = "<<tail->GetMetaData()->GetLeadingSampleIndex()<<std::endl;
+
                         std::ofstream out_file;
                         out_file.open (ss.str().c_str(),  std::ios::out | std::ios::binary);
                         out_file.write( (char*)(tail->GetData()), (std::streamsize) ( tail->GetArrayDimension(0) )*sizeof(XBufferItemType) );
