@@ -199,7 +199,7 @@ HADQ7Digitizer::TransferImpl()
     int collect_result = 0;
 
     #ifdef TIMEOUT_WHEN_POLLING
-    unsigned int timeout = 0;
+        unsigned int timeout = 0;
     #endif
 
     //start timer
@@ -213,7 +213,7 @@ HADQ7Digitizer::TransferImpl()
     {
         unsigned int samples_in_buffer;
         #ifdef TIMEOUT_WHEN_POLLING
-            timeout = 0;
+        timeout = 0;
         #endif
         do
         {
@@ -619,6 +619,12 @@ bool HADQ7Digitizer::InitializeBoardInterface()
     CHECKADQ( ADQ_SetClockSource( fADQControlUnit, fADQDeviceNumber, 1) );
     // //set test pattermode 
     // CHECKADQ(ADQ_SetTestPatternMode(adq_cu,adq_num, 2));
+
+    unsigned int adx_mode = -1;
+    CHECKADQ( ADQ_GetInterleavingIPBypassMode(fADQControlUnit, fADQDeviceNumber, 0,&adx_mode) );
+
+    std::cout<<"ADX mode is set to: "<<adx_mode<<std::endl;
+
 
     return true;
 }
