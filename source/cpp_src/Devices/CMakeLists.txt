@@ -14,7 +14,6 @@ set( HDEVICES_HEADERFILES
 )
 
 set( HDEVICES_SOURCEFILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/HDummyDigitizer.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HDummyDigitizerSigned.cc
 )
 

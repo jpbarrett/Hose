@@ -136,11 +136,11 @@ template< XBufferItemType >
 class HProducerBufferHandler_Flush: HProducerBufferReleaser< XBufferItemType >
 {
     public:
-        HProducerBufferHandler_Flush():fDurationNanoSeconds(500){;};
+        HProducerBufferHandler_Flush():fSleepDurationNanoSeconds(500){;};
         virtual ~HProducerBufferHandler_Flush(){;};
 
-        void SetSleepDurationNanoSeconds(unsigned int ns){fDurationNanoSeconds = ns;};
-        unsigned int GetSleepDurationNanoSeconds() const {return fDurationNanoSeconds};
+        void SetSleepDurationNanoSeconds(unsigned int ns){fSleepDurationNanoSeconds = ns;};
+        unsigned int GetSleepDurationNanoSeconds() const {return fSleepDurationNanoSeconds};
 
         ProducerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>* buffer)
         {
@@ -155,9 +155,9 @@ class HProducerBufferHandler_Flush: HProducerBufferReleaser< XBufferItemType >
                 while( pool->GetConsumerPoolSize() != 0 )
                 {
                     //sleep for the specified duration if it is non-zero
-                    if(fDurationNanoSeconds != 0)
+                    if(fSleepDurationNanoSeconds != 0)
                     {
-                        std::this_thread::sleep_for(std::chrono::nanoseconds(fDurationNanoSeconds));
+                        std::this_thread::sleep_for(std::chrono::nanoseconds(fSleepDurationNanoSeconds));
                     }
                 };
 
@@ -177,7 +177,7 @@ class HProducerBufferHandler_Flush: HProducerBufferReleaser< XBufferItemType >
 
     protected: 
 
-        unsigned int fDurationNanoSeconds;
+        unsigned int fSleepDurationNanoSeconds;
 
 };
 
@@ -226,15 +226,15 @@ template< XBufferItemType >
 class HProducerBufferHandler_WaitWithTimeout: HProducerBufferReleaser< XBufferItemType >
 {
     public:
-        HProducerBufferHandler_WaitWithTimeout():fNAttempts(100),fDurationNanoSeconds(500){;};
+        HProducerBufferHandler_WaitWithTimeout():fNAttempts(100),fSleepDurationNanoSeconds(500){;};
         virtual ~HProducerBufferHandler_WaitWithTimeout(){;};
 
-        //total time-out wait time will be fNAttempts*fDurationNanoSeconds
+        //total time-out wait time will be fNAttempts*fSleepDurationNanoSeconds
         void SetNAttempts(unsigned int n){fNAttempts = n;};
         unsigned int GetNAttempts() const {return fNAttempts;};
 
-        void SetSleepDurationNanoSeconds(unsigned int ns){fDurationNanoSeconds = ns;};
-        unsigned int GetSleepDurationNanoSeconds() const {return fDurationNanoSeconds};
+        void SetSleepDurationNanoSeconds(unsigned int ns){fSleepDurationNanoSeconds = ns;};
+        unsigned int GetSleepDurationNanoSeconds() const {return fSleepDurationNanoSeconds};
 
         ProducerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>* buffer)
         {
@@ -250,9 +250,9 @@ class HProducerBufferHandler_WaitWithTimeout: HProducerBufferReleaser< XBufferIt
                 while( pool->GetProducerPoolSize() != 0 && count < fNAttempts)
                 {
                     //sleep for the specified duration if it is non-zero
-                    if(fDurationNanoSeconds != 0)
+                    if(fSleepDurationNanoSeconds != 0)
                     {
-                        std::this_thread::sleep_for(std::chrono::nanoseconds(fDurationNanoSeconds));
+                        std::this_thread::sleep_for(std::chrono::nanoseconds(fSleepDurationNanoSeconds));
                     }
 
                     if(pool->GetProducerPoolSize() != 0)
@@ -281,7 +281,7 @@ class HProducerBufferHandler_WaitWithTimeout: HProducerBufferReleaser< XBufferIt
     protected: 
 
         unsigned int fNAttempts;
-        unsigned int fDurationNanoSeconds;
+        unsigned int fSleepDurationNanoSeconds;
 };
 
 }

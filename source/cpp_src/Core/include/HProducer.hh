@@ -82,29 +82,31 @@ class HProducer: public HThreadPool
         void ProduceWork()
         {
             ConfigureBufferHandler(fBufferHandler);
-            HLinearBuffer< XBufferItemType >* buffer = nullptr;
+            ExecutePreProductionTasks();
 
             while(!fStopProduction) 
             {
-                //ask the handler for a buffer
-                ProducerBufferPolicyCode status = fBufferHandler.ReserveBuffer(fBufferPool, buffer);
-
-                //prepare things as needed
+                //prepare things as needed (reserve buffer, etc)
                 ExecutePreWorkTasks(status, buffer);
 
                 //spawn off work associated with this buffer
                 GenerateWork(status, buffer);
 
-                //release the buffer appropriately
+                //do post-work tasks (release the buffer, etc)
                 ExecutePostWorkTasks(status, buffer);
             }
+
+            ExecutePostProductionTasks();
+
         }
 
-        virtual void ConfigureBufferHandler(XProducerBufferHandlerPolicyType& /*handler*/){};
-        virtual void ExecutePreWorkTasks(ProducerBufferPolicyCode /*status_code*/, HLinearBuffer<XBufferItemType>* /*buffer*/){};
-        virtual void ExecutePostWorkTasks(ProducerBufferPolicyCode /*status_code*/, HLinearBuffer<XBufferItemType>* /*buffer*/){};
+        virtual void ExecutePreProductionTasks(){};
+        virtual void ExecutePostProductionTasks();
 
-        virtual void GenerateWork(ProducerBufferPolicyCode /*status_code*/, HLinearBuffer<XBufferItemType>* /*buffer*/) = 0;
+        virtual void ConfigureBufferHandler(XProducerBufferHandlerPolicyType& /*handler*/){};
+        virtual void ExecutePreWorkTasks(){};
+        virtual void GenerateWork(){};
+        virtual void ExecutePostWorkTasks(){};
 
         bool fStopProduction;
         std::thread fManagementThread;
