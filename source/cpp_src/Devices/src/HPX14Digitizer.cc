@@ -61,12 +61,14 @@ HPX14Digitizer::InitializeImpl()
     if(code != SIG_SUCCESS)
     {
         DumpLibErrorPX14(code, "Failed to set external 10 MHz reference: ", fBoard);
-        //TODO BREAK
-    }
-    else
-    {
+
         std::cout<<"external clock use failed, setting clock to internal ref"<<std::endl;
         code = SetInternalAdcClockReferencePX14(fBoard, PX14CLKREF_INT_10MHZ );
+        if(code != SIG_SUCCESS)
+        {
+            DumpLibErrorPX14(code, "Failed to set INTERNAL 10 MHz reference: ", fBoard);
+        }
+        //TODO BREAK
     }
 
     // std::cout<<"setting internal adc clock rate"<<std::endl;
