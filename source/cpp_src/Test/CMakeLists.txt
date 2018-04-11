@@ -10,6 +10,11 @@ if (HOSE_ENABLE_TEST)
     set (HOSE_TEST_LIBS HCore HDevices)
 
     if(HOSE_USE_CUDA)
+
+        include(FindCUDA)
+        find_package(CUDA REQUIRED)
+        include_directories(${CUDA_INCLUDE_DIRS})
+
         list(APPEND HOSE_TEST_LIBS HCUDAOperators ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
         list(APPEND SOURCE_BASENAMES TestMultiThreadPX14Spectrometer)
     endif(HOSE_USE_CUDA)
