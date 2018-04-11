@@ -3,8 +3,13 @@
 
 #include <stdint.h>
 
+//needed for mkdir
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include <iostream>
 #include <limits>
+#include <sstream>
 #include <queue>
 #include <utility>
 
@@ -129,6 +134,17 @@ HDummyDigitizer< XSampleType >::AcquireImpl()
 {
     fCounter = 0;
     fAcquisitionStartTime = std::time(nullptr);
+
+    //create data output directory, need to make this configurable and move it elsewhere
+    std::stringstream ss;
+    ss << DATA_INSTALL_DIR;
+    ss << "/";
+    ss << fAcquisitionStartTime;
+    int dirstatus = mkdir(ss.str().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    if(dirstatus)
+    {
+        std::cout<<"Problem when attempting to create directory: "<< ss.str() << std::endl;
+    }
 }
 
 template< typename XSampleType >
@@ -282,7 +298,7 @@ template< typename XSampleType >
 void
 HDummyDigitizer< XSampleType >::ExecutePreProductionTasks()
 {
-    //initialization may need to be done elsewhere (for example if the allocator to be constructed requires and initiaized card)
+    //initialization may need to be done elsewhere (for example if the allocator to be constructed requires an initiaized card)
 }
 
 

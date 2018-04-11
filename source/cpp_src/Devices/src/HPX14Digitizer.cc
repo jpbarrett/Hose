@@ -69,13 +69,13 @@ HPX14Digitizer::InitializeImpl()
         code = SetInternalAdcClockReferencePX14(fBoard, PX14CLKREF_INT_10MHZ );
     }
 
-    std::cout<<"setting internal adc clock rate"<<std::endl;
-    code = SetInternalAdcClockRatePX14(fBoard,  fAcquisitionRateMHz);
-    if(code != SIG_SUCCESS)
-    {
-         DumpLibErrorPX14(code, "Failed to set acquisition rate: ", fBoard);
-        //TODO BREAK
-    }
+    // std::cout<<"setting internal adc clock rate"<<std::endl;
+    // code = SetInternalAdcClockRatePX14(fBoard,  fAcquisitionRateMHz);
+    // if(code != SIG_SUCCESS)
+    // {
+    //      DumpLibErrorPX14(code, "Failed to set acquisition rate: ", fBoard);
+    //     //TODO BREAK
+    // }
 
     std::cout<<"setting trigger source to external"<<std::endl;
     code = SetTriggerSourcePX14(fBoard, PX14TRIGSRC_EXT);
@@ -104,7 +104,16 @@ HPX14Digitizer::InitializeImpl()
         this->fAllocator = new HPX14BufferAllocator(fBoard);
 
         //grab the effective sample rate
-PX14API GetEffectiveAcqRatePX14 (HPX14 hBrd, double* pRateMHz);
+        code = GetEffectiveAcqRatePX14(fBoard, &fEffectiveAcquisitionRateMHz);
+        if(code != SIG_SUCCESS)
+        {
+            DumpLibErrorPX14(code, "Could not determine effective ADC sampling rate: ", fBoard);
+            //TODO BREAK
+        }
+        else
+        {
+            std::cout<<"effective ADC sampling rate (MHz) = "<<fEffectiveAcquisitionRateMHz<<std::endl;
+        }
 
         fInitialized = true;
         fArmed = false;

@@ -100,8 +100,8 @@ HSpectrometerCUDASigned::ProcessLoop()
                 }
 
                 // //print the first couple samples 
-                // std::size_t tmp = 0;
-                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
+                std::size_t tmp = 0;
+                std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
                 // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
                 // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
                 // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
@@ -147,6 +147,7 @@ HSpectrometerCUDASigned::ProcessLoop()
 
                 spec_data.SetSpectrumLength(spectrum_length/2+1); //Fix naming of this
                 spec_data.SetSpectrumData(sdata->spectrum);
+                std::cout<<"file name = "<<ss.str()<<std::endl;
                 spec_data.WriteToFile(ss.str());
                 spec_data.ReleaseSpectrumData();
 
