@@ -16,6 +16,10 @@ hose_install_headers (${HOPERATORS_HEADERFILES})
 
 if(HOSE_USE_CUDA)
 
+    include(FindCUDA)
+    find_package(CUDA REQUIRED)
+    include_directories(${CUDA_INCLUDE_DIRS})
+
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Core/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../CUDASpectrometer/include)
 

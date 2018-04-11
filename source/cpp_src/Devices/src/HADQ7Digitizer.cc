@@ -35,6 +35,7 @@ HADQ7Digitizer::HADQ7Digitizer():
     fEnableA(1),
     fEnableB(0),
     fTestPattern(0),
+    fADXMode(1),
     fNThreads(6),
     fSignalTerminate(false),
     fForceTerminate(true),
@@ -199,7 +200,7 @@ HADQ7Digitizer::TransferImpl()
     int collect_result = 0;
 
     #ifdef TIMEOUT_WHEN_POLLING
-    unsigned int timeout = 0;
+        unsigned int timeout = 0;
     #endif
 
     //start timer
@@ -213,7 +214,7 @@ HADQ7Digitizer::TransferImpl()
     {
         unsigned int samples_in_buffer;
         #ifdef TIMEOUT_WHEN_POLLING
-            timeout = 0;
+        timeout = 0;
         #endif
         do
         {
@@ -619,6 +620,30 @@ bool HADQ7Digitizer::InitializeBoardInterface()
     CHECKADQ( ADQ_SetClockSource( fADQControlUnit, fADQDeviceNumber, 1) );
     // //set test pattermode 
     // CHECKADQ(ADQ_SetTestPatternMode(adq_cu,adq_num, 2));
+
+    unsigned char addr  = '\0';
+    unsigned int retval = ADQ_SetInterleavingIPBypassMode(fADQControlUnit, fADQDeviceNumber, addr, fADXMode) ;
+    if(retval != 0)
+    {
+        std::cout<<"Setting ADX mode to: "<<fADXMode<<std::endl;
+        std::cout<<"ADX set retval = "<<retval<<std::endl;
+    }
+    else
+    {
+        std::cout<<"ADQ_SetInterleavingIPBypassMode failed"<<std::endl;
+    }
+
+    unsigned int adx_mode = 10;
+    retval = ADQ_GetInterleavingIPBypassMode(fADQControlUnit, fADQDeviceNumber, addr, &adx_mode) ;
+    if(retval != 0)
+    {
+        std::cout<<"ADX query retval = "<<retval<<std::endl;
+        std::cout<<"ADX mode is set to: "<<adx_mode<<std::endl;
+    }
+    else
+    {
+        std::cout<<"ADQ_GetInterleavingIPBypassMode failed, state unknown."<<std::endl;
+    }
 
     return true;
 }

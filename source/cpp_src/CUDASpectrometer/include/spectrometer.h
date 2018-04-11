@@ -16,6 +16,8 @@
 #include <cuComplex.h>
 #include <cufft.h>
 #include <stdint.h>
+#include <cuda_runtime_api.h>
+#include <cuda.h>
 
 // GPU parallelization 
 #define N_BLOCKS 8      
