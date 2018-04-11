@@ -63,6 +63,11 @@ HPX14Digitizer::InitializeImpl()
         DumpLibErrorPX14(code, "Failed to set external 10 MHz reference: ", fBoard);
         //TODO BREAK
     }
+    else
+    {
+        std::cout<<"external clock use failed, setting clock to internal ref"<<std::endl;
+        code = SetInternalAdcClockReferencePX14(fBoard, PX14CLKREF_INT_10MHZ );
+    }
 
     std::cout<<"setting internal adc clock rate"<<std::endl;
     code = SetInternalAdcClockRatePX14(fBoard,  fAcquisitionRateMHz);
@@ -97,6 +102,10 @@ HPX14Digitizer::InitializeImpl()
         std::cout<<"success"<<std::endl;
         if(this->fAllocator){delete this->fAllocator;};
         this->fAllocator = new HPX14BufferAllocator(fBoard);
+
+        //grab the effective sample rate
+PX14API GetEffectiveAcqRatePX14 (HPX14 hBrd, double* pRateMHz);
+
         fInitialized = true;
         fArmed = false;
         return true;
@@ -142,7 +151,7 @@ HPX14Digitizer::TransferImpl()
     }
 }
 
-int 
+HDigitizerErrorCode 
 HPX14Digitizer::FinalizeImpl()
 {
     //std::cout<<"finalizing"<<std::endl;
@@ -156,9 +165,9 @@ HPX14Digitizer::FinalizeImpl()
     if( GetFifoFullFlagPX14(fBoard) )
     {
         std::cout<<"board FIFO buffer full"<<std::endl;
-        return 1;
+        return HDigitizerErrorCode::card_buffer_overflow;
     }
-    return 0;
+    return HDigitizerErrorCode::success;
 }
 
 void HPX14Digitizer::StopImpl()

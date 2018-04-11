@@ -103,8 +103,15 @@ class HSimpleMultiThreadedWriter
 
                         std::cout<<"sample index = "<<tail->GetMetaData()->GetLeadingSampleIndex()<<std::endl;
 
+                        std::cout<<"sample val = "<<(tail->GetData())[0]<<std::endl;
+
                         std::ofstream out_file;
                         out_file.open (ss.str().c_str(),  std::ios::out | std::ios::binary);
+                        //out_file.open (ss.str().c_str(),  std::ios::out );
+                        // for(unsigned int i=0; i< tail->GetArrayDimension(0); i++)
+                        // {
+                        //     out_file << (tail->GetData())[i];
+                        // }
                         out_file.write( (char*)(tail->GetData()), (std::streamsize) ( tail->GetArrayDimension(0) )*sizeof(XBufferItemType) );
                         out_file.close();
 

@@ -38,8 +38,9 @@ int main(int /*argc*/, char** /*argv*/)
 
     dummy.StartProduction();
 
-    //wait a second 
-    sleep(1);
+    //wait 
+    //usleep(5000);
+    usleep(100000); //0.1 sec
 
     dummy.StopProduction();
 

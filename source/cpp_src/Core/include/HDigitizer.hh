@@ -17,6 +17,16 @@ namespace hose {
 *Description:
 */
 
+//enum of return codes
+enum class HDigitizerErrorCode
+{
+    success,
+    card_buffer_overflow,
+    host_buffer_overflow,
+    unknown
+};
+
+
 template< typename XSampleType, typename XConcreteDigitizerType >
 class HDigitizer
 {
@@ -89,10 +99,10 @@ class HDigitizer
         }
 
         //finish transfer to buffer, this is a blocking call
-        int Finalize()
+        HDigitizerErrorCode Finalize()
         {
             std::lock_guard<std::mutex> lock( fMutex );
-            int ret_val = static_cast< XConcreteDigitizerType* >(this)->FinalizeImpl();
+            HDigitizerErrorCode ret_val = static_cast< XConcreteDigitizerType* >(this)->FinalizeImpl();
             //release lock on this buffer
             if(fHaveBufferLock && fBuffer != nullptr)
             {

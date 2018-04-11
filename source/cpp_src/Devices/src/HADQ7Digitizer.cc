@@ -288,7 +288,7 @@ HADQ7Digitizer::TransferImpl()
 }
 
 
-int
+HDigitizerErrorCode
 HADQ7Digitizer::FinalizeImpl()
 {
     bool threads_busy = true;
@@ -304,7 +304,14 @@ HADQ7Digitizer::FinalizeImpl()
 
     //return any error codes which might have arisen during streaming
     //if were buffer overflows/page errors we need to stop and restart the acquisition 
-    return fErrorCode;
+    if(!fErrorCode)
+    {
+        return HDigitizerErrorCode::success;
+    }
+    else
+    {
+        return HDigitizerErrorCode::card_buffer_overflow;
+    }
 
     //have finished filling the buffer at this point, but the card is still streaming
     //better get back to work fast...

@@ -78,7 +78,7 @@ class HADQ7Digitizer: public HDigitizer< ADQ7_SAMPLE_TYPE, HADQ7Digitizer >
         bool InitializeImpl();
         void AcquireImpl();
         void TransferImpl();
-        int FinalizeImpl();
+        HDigitizerErrorCode FinalizeImpl();
         void StopImpl();
         void TearDownImpl();
 

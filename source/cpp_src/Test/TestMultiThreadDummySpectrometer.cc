@@ -6,26 +6,29 @@
 #include <thread>
 #include <unistd.h>
 
-#include "HDummyDigitizerSigned.hh"
+#include "HDummyDigitizer.hh"
 #include "HBufferPool.hh"
 #include "HSpectrometerCUDASigned.hh"
 #include "HCudaHostBufferAllocator.hh"
 
 using namespace hose;
 
-using PoolType = HBufferPool< HDummyDigitizerSigned::sample_type >;
+using PoolType = HBufferPool< short >;
 uint64_t vector_length = SPECTRUM_LENGTH_S*128;
-uint64_t nAcq = 10;
+uint64_t nAcq = 1;
 unsigned int n_dropped = 0;
 
-void RunAcquireThread(HDummyDigitizerSigned* dummy, PoolType* pool, HSpectrometerCUDASigned* spec)
+
+
+
+void RunAcquireThread(HDummyDigitizer< short >* dummy, PoolType* pool, HSpectrometerCUDASigned* spec)
 {
     unsigned int count = 0;
     while(count < nAcq)
     {
         if(pool->GetProducerPoolSize() != 0)
         {
-            HLinearBuffer< HDummyDigitizerSigned::sample_type >* buff = pool->PopProducerBuffer();
+            HLinearBuffer< short >* buff = pool->PopProducerBuffer();
             if(buff != nullptr)
             {
                 dummy->SetBuffer(buff);
@@ -41,7 +44,7 @@ void RunAcquireThread(HDummyDigitizerSigned* dummy, PoolType* pool, HSpectromete
         {
             //steal a buffer from the consumer pool..however, this requires dropping
             //a previous aquisition, so we don't increment the count
-            HLinearBuffer< HDummyDigitizerSigned::sample_type >* buff = pool->PopConsumerBuffer();
+            HLinearBuffer< short >* buff = pool->PopConsumerBuffer();
             if(buff != nullptr)
             {
                 dummy->SetBuffer(buff);
@@ -63,14 +66,18 @@ void RunAcquireThread(HDummyDigitizerSigned* dummy, PoolType* pool, HSpectromete
 
 
 
+
+
+
 int main(int /*argc*/, char** /*argv*/)
 {
+
     //dummy digitizer
-    HDummyDigitizerSigned dummy;
-    bool initval = dummy.Initialize();
+    HDummyDigitizer< short > dummy;
+    dummy.Initialize();
 
     //create buffer pool
-    HCudaHostBufferAllocator< HDummyDigitizerSigned::sample_type >* balloc = new HCudaHostBufferAllocator<  HDummyDigitizerSigned::sample_type >();
+    HCudaHostBufferAllocator< short >* balloc = new HCudaHostBufferAllocator<  short >();
     PoolType* pool = new PoolType( balloc );
 
     //allocate space

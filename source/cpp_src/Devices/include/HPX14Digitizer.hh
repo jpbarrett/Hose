@@ -48,6 +48,7 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >
 
         HPX14 fBoard;
         unsigned int fBoardNumber; //board id
+        double fEffectiveAcquisitionRate; //effective aquisition rate
         unsigned int fAcquisitionRateMHz; //sampling frequency in MHz
         bool fConnected;
         bool fInitialized;
@@ -58,7 +59,7 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >
         bool InitializeImpl();
         void AcquireImpl();
         void TransferImpl();
-        int FinalizeImpl();
+        HDigitizerErrorCode FinalizeImpl();
         void StopImpl();
         void TearDownImpl();
 

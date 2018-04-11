@@ -41,10 +41,10 @@ void RunAcquireThread(HADQ7Digitizer* dummy, PoolType* pool, HSpectrometerCUDASi
 
                 //generate work tasks
                 dummy->Transfer();
-                int err_code = dummy->Finalize();
+                HDigitizerErrorCode err_code = dummy->Finalize();
 
                 //post work tasks
-                if(err_code != 0)
+                if(err_code != HDigitizerErrorCode::success)
                 {
                     std::cout<<"Card buffer overflow error, temporarily stopping acquire."<<std::endl;
                     dummy->Stop();

@@ -3,14 +3,17 @@
 
 #include <stdint.h>
 
+#include <iostream>
 #include <limits>
 #include <queue>
 #include <utility>
+
 
 #include "HDummyUniformRawArrayFiller.hh"
 
 #include "HDigitizer.hh"
 #include "HProducer.hh"
+#include "HBufferAllocatorNew.hh"
 
 namespace hose {
 
@@ -78,7 +81,7 @@ class HDummyDigitizer: public HDigitizer< XSampleType, HDummyDigitizer< XSampleT
         bool InitializeImpl(); //initialize the digitizer
         void AcquireImpl(); //start acquisition (arm trigger, etc)
         void TransferImpl(); //transfer buffer data
-        int FinalizeImpl(); //finalize a buffer, check for errors, etc
+        HDigitizerErrorCode FinalizeImpl(); //finalize a buffer, check for errors, etc
         void StopImpl(){}; //temporarily stop card acquisition
         void TearDownImpl(){}; //tear down the digitizer
 
@@ -149,7 +152,7 @@ HDummyDigitizer< XSampleType >::TransferImpl()
 }
 
 template< typename XSampleType >
-int
+HDigitizerErrorCode
 HDummyDigitizer< XSampleType >::FinalizeImpl()
 {
 
@@ -164,8 +167,14 @@ HDummyDigitizer< XSampleType >::FinalizeImpl()
     fCounter += this->fBuffer->GetArrayDimension(0);
     std::cout<<"finalize imple"<<std::endl;
     std::cout<<"counter = "<<fCounter<<std::endl;
-    return 0;
+    return HDigitizerErrorCode::success;
 }
+
+
+
+
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -210,6 +219,7 @@ HDummyDigitizer< XSampleType >::GenerateWork()
     //we have an active buffer, transfer the data
     if(fBufferCode == HProducerBufferPolicyCode::success)
     {
+        std::cout<<"transferring..."<<std::endl;
         this->Transfer();
     }
 }
@@ -220,7 +230,8 @@ HDummyDigitizer< XSampleType >::ExecutePostWorkTasks()
 {
     if(fBufferCode == HProducerBufferPolicyCode::success)
     {   
-        int finalize_code = this->Finalize(); //handle errors in finalize here
+        HDigitizerErrorCode finalize_code = this->Finalize(); 
+        // TODO handle errors in finalize here
         fBufferCode = this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, this->fBuffer);
     }
 }
@@ -279,6 +290,7 @@ template< typename XSampleType >
 void
 HDummyDigitizer< XSampleType >::ExecutePostProductionTasks()
 {
+    std::cout<<"executing post production tasks"<<std::endl;
     this->Stop();
     this->TearDown();
     fAcquireActive = false;
