@@ -1,6 +1,6 @@
 #include "HPX14Digitizer.hh"
 
-#define USE_SOFTWARE_TRIGGER
+#define USE_SOFTWARE_TRIGGER 1
 
 namespace hose
 {
