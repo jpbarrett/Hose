@@ -28,10 +28,9 @@ int main(int /*argc*/, char** /*argv*/)
     px14.SetBufferPool(&pool);
 
     HSimpleMultiThreadedWriter< HPX14Digitizer::sample_type  > m_writer;
-    m_writer.SetNThreads(1); 
-    m_writer.SetSleepMicroSeconds(1);
+    m_writer.SetNThreads(2);
     m_writer.SetBufferPool(&pool);
-    m_writer.LaunchThreads();
+    m_writer.StartConsumption();
 
     px14.StartProduction();
 
@@ -41,9 +40,8 @@ int main(int /*argc*/, char** /*argv*/)
 
     px14.StopProduction();
 
-    m_writer.SignalTerminateOnComplete();
 
-    m_writer.JoinThreads();
+    m_writer.StopConsumption();
 
     return 0;
 }
