@@ -6,7 +6,7 @@ namespace hose
 
 HPX14Digitizer::HPX14Digitizer():
     fBoardNumber(1),
-    fAcquisitionRateMHz(200),
+    fAcquisitionRateMHz(0),
     fConnected(false),
     fInitialized(false),
     fArmed(false)
@@ -106,7 +106,7 @@ HPX14Digitizer::InitializeImpl()
         this->fAllocator = new HPX14BufferAllocator(fBoard);
 
         //grab the effective sample rate
-        code = GetEffectiveAcqRatePX14(fBoard, &fEffectiveAcquisitionRateMHz);
+        code = GetEffectiveAcqRatePX14(fBoard, &fAcquisitionRateMHz);
         if(code != SIG_SUCCESS)
         {
             DumpLibErrorPX14(code, "Could not determine effective ADC sampling rate: ", fBoard);
@@ -114,7 +114,7 @@ HPX14Digitizer::InitializeImpl()
         }
         else
         {
-            std::cout<<"effective ADC sampling rate (MHz) = "<<fEffectiveAcquisitionRateMHz<<std::endl;
+            std::cout<<"effective ADC sampling rate (MHz) = "<<fAcquisitionRateMHz<<std::endl;
         }
 
         fInitialized = true;
@@ -130,22 +130,15 @@ HPX14Digitizer::AcquireImpl()
     fCounter = 0;
     //time handling is quick and dirty, need to improve this (i.e if we are close to a second-roll over, etc)
     //Note: that the acquisition starts on the next second tick (with the trigger)
-    //POSIX expectation is seconds since unix epoch (1970, but this is no guaranteed)
-    std::time_t result = std::time(nullptr);
-    //cast to a uint64_t and set
-    this->fBuffer->GetMetaData()->SetAquisitionStartSecond( (uint64_t) result );
-    //set the sample rate
-    this->fBuffer->GetMetaData()->SetSampleRate(fEffectiveAcquisitionRateMHz*1000000);
+    //POSIX expectation is seconds since unix epoch (1970, but this is not guaranteed)
+    fAcquisitionStartTime = std::time(nullptr);
 
-    //std::cout<<"acquire"<<std::endl;
     int code = BeginBufferedPciAcquisitionPX14(fBoard);
     if(code != SIG_SUCCESS)
     {
         DumpLibErrorPX14(code, "Failed to arm recording: ", fBoard);
-        //TODO BREAK
+        fAcquisitionStartTime = 0;
     }
-
-    //get/code time of current recording epoch
 
     fArmed = true;
 }
@@ -213,4 +206,101 @@ HPX14Digitizer::TearDownImpl()
     fInitialized = false;
 }
 
+//required by the producer interface
+void 
+HPX14Digitizer::ExecutePreProductionTasks()
+{
+    //does nothing for now
 }
+
+void 
+HPX14Digitizer::ExecutePostProductionTasks()
+{
+    std::cout<<"executing post production tasks"<<std::endl;
+    this->Stop();
+    this->TearDown();
+    fAcquireActive = false;
+}
+
+void 
+HPX14Digitizer::ExecutePreWorkTasks()
+{
+    //get a buffer from the buffer handler
+    HLinearBuffer< XSampleType >* buffer = nullptr;
+    fBufferCode = this->fBufferHandler.ReserveBuffer(this->fBufferPool, buffer);
+    
+    //set the digitizer buffer if succesful
+    if(fBufferCode == HProducerBufferPolicyCode::success)
+    {
+        //successfully got a buffer, assigned it
+        this->SetBuffer(buffer);
+
+        //start aquire if we haven't already
+        if( !fAcquireActive )
+        {
+            this->Acquire();
+            fAcquireActive = true;
+        }
+
+        //configure the buffer meta data
+        this->fBuffer->GetMetaData()->SetAquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
+        this->fBuffer->GetMetaData()->SetSampleRate(fAcquisitionRateMHz*1000000);
+    }
+    else
+    {
+        //buffer acquisition error, stop if needed
+        if(fAcquireActive)
+        {
+            this->Stop();
+            fAcquireActive = false;
+        }
+    }
+
+}
+
+void 
+HPX14Digitizer::GenerateWork()
+{
+    //we have an active buffer, transfer the data
+    if(fBufferCode == HProducerBufferPolicyCode::success)
+    {
+        std::cout<<"transferring..."<<std::endl;
+        this->Transfer();
+    }
+}
+
+void 
+HPX14Digitizer::ExecutePostWorkTasks()
+{
+    if(fBufferCode == HProducerBufferPolicyCode::success)
+    {   
+        HDigitizerErrorCode finalize_code = this->Finalize(); 
+        if(finalize_code == HDigitizerErrorCode::success)
+        {
+            fBufferCode = this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, this->fBuffer);
+        }
+        else
+        {
+            //some error occurred, stop production so we can re-start
+            this->Stop();
+            fAcquireActive = false;
+        }
+    }
+}
+
+//needed by the thread pool interface
+void 
+HPX14Digitizer::ExecuteThreadTask()
+{
+    //do nothing
+}
+
+bool 
+HPX14Digitizer::WorkPresent();
+{
+    return false; //we do not need the thread pool model
+}
+
+
+
+} //end of namespace

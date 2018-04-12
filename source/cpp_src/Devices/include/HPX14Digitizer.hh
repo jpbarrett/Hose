@@ -12,6 +12,7 @@ extern "C"
 #include <mutex>
 
 #include "HDigitizer.hh"
+#include "HProducer.hh"
 #include "HPX14BufferAllocator.hh"
 
 namespace hose {
@@ -26,12 +27,11 @@ namespace hose {
 */
 
 
-class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >
+class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  public HProducer< px14_sample_t, HProducerBufferHandler_Steal< px14_sample_t > >
 {
     public:
         HPX14Digitizer();
         virtual ~HPX14Digitizer();
-
 
         //methods to configure board
         void SetBoardNumber(unsigned int n){fBoardNumber = n;};
@@ -48,11 +48,11 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >
 
         HPX14 fBoard;
         unsigned int fBoardNumber; //board id
-        double fEffectiveAcquisitionRateMHz; //effective aquisition rate
-        unsigned int fAcquisitionRateMHz; //sampling frequency in MHz
+        double fAcquisitionRateMHz; //effective sampling frequency in MHz
         bool fConnected;
         bool fInitialized;
         bool fArmed;
+        bool fAcquireActive;
         bool fBufferLocked;
 
         //required by digitizer interface
@@ -63,8 +63,20 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >
         void StopImpl();
         void TearDownImpl();
 
-    	//global sample counter
-    	uint64_t fCounter;
+        //required by the producer interface
+        virtual void ExecutePreProductionTasks() override; //'initialize' the digitizer
+        virtual void ExecutePostProductionTasks() override; //teardown the digitizer
+        virtual void ExecutePreWorkTasks() override; //grab a buffer start acquire if we haven't already
+        virtual void GenerateWork() override; //execute a transfer into buffer
+        virtual void ExecutePostWorkTasks() override; //finalize the transfer, release the buffer
+
+        //needed by the thread pool interface
+        virtual void ExecuteThreadTask() override; //do thread work assoicated with fill the buffer
+        virtual bool WorkPresent() override; //check if we have buffer filling work to do
+
+        //global sample counter
+        uint64_t fCounter;
+        std::time_t fAcquisitionStartTime;
 
 };
 
