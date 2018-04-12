@@ -12,10 +12,6 @@
 
 using namespace hose;
 
-using PoolType = HBufferPool< HPX14Digitizer::sample_type >;
-
-#define HPX14Digitizer::sample_type int
-
 int main(int /*argc*/, char** /*argv*/)
 {
     //px14 digitizer
