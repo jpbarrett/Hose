@@ -180,12 +180,11 @@ HDummyDigitizer< XSampleType >::FinalizeImpl()
 
     std::cout<<"in finalize"<<std::endl;
     //wait until all the threads are idle
-    while( ( !( this->AllThreadsAreIdle() ) || ( fWorkArgQueue.size() != 0 )  ) && !(this->fForceTerminate) )
+    while( !( this->AllThreadsAreIdle() ) && !(this->fForceTerminate) )
     {
         //std::cout<<"thread idle? "<<this->AllThreadsAreIdle()<<std::endl;
         //std::cout<<"work remaining: "<<fWorkArgQueue.size()<<std::endl;
-        usleep(100);
-        // std::this_thread::sleep_for(std::chrono::nanoseconds(fSleepDurationNanoSeconds));
+        std::this_thread::sleep_for(std::chrono::nanoseconds(fSleepDurationNanoSeconds));
     }
 
     //increment the sample counter
@@ -267,20 +266,16 @@ HDummyDigitizer< XSampleType >::ExecuteThreadTask()
 
     std::cout<<"doing thread task"<<std::endl;
 
+    std::lock_guard< std::mutex > lock(this->fWorkQueueMutex);
     if( fWorkArgQueue.size() != 0 )
     {
-        //get lock on mutex for queue modification
-        std::lock_guard< std::mutex > lock(this->fWorkQueueMutex);
-        if( fWorkArgQueue.size() != 0 )
-        {
-            //grab the location in the queue we are going to generate output for
-            auto dest_len_pair = fWorkArgQueue.front();
-            dest = dest_len_pair.first;
-            sz = dest_len_pair.second;
-            fWorkArgQueue.pop();
+        //grab the location in the queue we are going to generate output for
+        auto dest_len_pair = fWorkArgQueue.front();
+        dest = dest_len_pair.first;
+        sz = dest_len_pair.second;
+        fWorkArgQueue.pop();
 
         std::cout<<" popping work : size = "<<fWorkArgQueue.size()<<std::endl;
-        }
     }
     else
     {
@@ -300,7 +295,15 @@ template< typename XSampleType >
 bool
 HDummyDigitizer< XSampleType >::WorkPresent()
 {
-    return ( fWorkArgQueue.size() != 0 );
+    std::lock_guard< std::mutex > lock(this->fWorkQueueMutex);
+    if(fWorkArgQueue.size() > 0)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 
