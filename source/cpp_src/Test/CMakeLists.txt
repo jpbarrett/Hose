@@ -14,9 +14,8 @@ if (HOSE_ENABLE_TEST)
         include(FindCUDA)
         find_package(CUDA REQUIRED)
         include_directories(${CUDA_INCLUDE_DIRS})
-
         list(APPEND HOSE_TEST_LIBS HCUDAOperators ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
-        list(APPEND SOURCE_BASENAMES TestMultiThreadPX14Spectrometer)
+
     endif(HOSE_USE_CUDA)
 
     set(SOURCE_BASENAMES
@@ -67,10 +66,10 @@ if (HOSE_ENABLE_TEST)
         find_package(PX14400 REQUIRED)
         include_directories(${PX14400_INCLUDE_DIRS})
         list(APPEND HOSE_TEST_LIBS ${PX14400_LIBRARIES})
-        list(APPEND SOURCE_BASENAMES TestPX14DigitizerInterface)
+        list(APPEND SOURCE_BASENAMES TestPX14DigitizerInterface TestMultiThreadPX14)
 
         if(HOSE_USE_DIGITAL_RF)
-            list(APPEND SOURCE_BASENAMES TestMultiThreadPX14DRF TestMultiThreadPX14)
+            list(APPEND SOURCE_BASENAMES TestMultiThreadPX14DRF)
         endif()
 
         if(HOSE_USE_CUDA)
