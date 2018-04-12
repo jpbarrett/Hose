@@ -10,12 +10,9 @@ set(HDEVICES_LIBS HCore)
 
 set( HDEVICES_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HDummyDigitizer.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/HDummyDigitizerSigned.hh
 )
 
-set( HDEVICES_SOURCEFILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/HDummyDigitizerSigned.cc
-)
+set( HDEVICES_SOURCEFILES )
 
 if (HOSE_USE_PX14)
     find_package(PX14400 REQUIRED)
