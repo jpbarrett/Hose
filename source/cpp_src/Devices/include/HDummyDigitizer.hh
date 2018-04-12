@@ -222,8 +222,6 @@ HDummyDigitizer< XSampleType >::ExecutePreWorkTasks()
         this->fBuffer->GetMetaData()->SetAquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
         this->fBuffer->GetMetaData()->SetSampleRate(2500000000);
     }
-
-
 }
 
 

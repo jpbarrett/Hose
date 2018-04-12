@@ -50,7 +50,6 @@ void RunAcquireThread(HADQ7Digitizer* dummy, PoolType* pool, HSimpleMultiThreade
             }
         }
     }
-    writer->SignalTerminateOnComplete();
 };
 
 
@@ -72,13 +71,13 @@ int main(int /*argc*/, char** /*argv*/)
     HSimpleMultiThreadedWriter< HADQ7Digitizer::sample_type > m_writer;
 
     std::thread acq(RunAcquireThread, &dummy, &pool, &m_writer);
-    m_writer.SetNThreads(32);
-    m_writer.SetSleepMicroSeconds(1);
+    m_writer.SetNThreads(2);
     m_writer.SetBufferPool(&pool);
-    m_writer.LaunchThreads();
-
+    m_writer.StartConsumption();
+    
     acq.join();
-    m_writer.JoinThreads();
+
+    m_writer.StopConsumption();
 
     return 0;
 }

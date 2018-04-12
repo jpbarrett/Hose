@@ -3,9 +3,11 @@
 
 #include <mutex>
 #include <thread>
+#include <unistd.h>
 
 #include "HBufferPool.hh"
 #include "HThreadPool.hh"
+#include "HConsumerBufferHandlerPolicy.hh"
 
 namespace hose
 {
@@ -19,7 +21,7 @@ namespace hose
 *Description:
 */
 
-template< typename XBufferItemType > 
+template< typename XBufferItemType, typename XConsumerBufferHandlerPolicyType > 
 class HConsumer: public HThreadPool
 {
     public:
@@ -27,50 +29,50 @@ class HConsumer: public HThreadPool
         HConsumer():
             HThreadPool(),
             fStopConsumption(false),
-            fThread(),
+            fConsumptionManagementThread(),
             fBufferPool(nullptr)
         {};
 
         virtual ~HConsumer(){};
 
-        void SetBufferPool(HBufferPool<XBufferItemType>* buffer_pool);
+        void SetBufferPool(HBufferPool<XBufferItemType>* buffer_pool){fBufferPool = buffer_pool;};
         HBufferPool<XBufferItemType>* GetBufferPool() {return fBufferPool;};
         const HBufferPool<XBufferItemType>* GetBufferPool() const {return fBufferPool;};
 
         //start the producer running (in a separate thread in the background)
-        void Start()
+        void StartConsumption()
         {
             //launch the work threads in the thread pool
             Launch();
 
             //now run the management thread (responsible for generation of work for the thread pool)
             fStopConsumption = false;
-            fThread = std::thread(&HConsumer::ConsumeWork,this);
+            fConsumptionManagementThread = std::thread(&HConsumer::ConsumeWork,this);
         }
 
         //stop the producer and join thread
-        void Stop()
+        void StopConsumption()
         {
             //signal termination to thread pool
             SignalTerminateOnComplete();
 
             //signal and stop the management thread
             fStopConsumption = true;
-            fThread.join();
+            fConsumptionManagementThread.join();
 
             //join the thread pool
             Join();
         }
 
         //stop the producer and join thread
-        void ForceStop()
+        void ForceStopConsumption()
         {
             //kill the thread pool
             ForceTermination();
 
             //signal and stop the management thread
             fStopConsumption = true;
-            fThread.join();
+            fConsumptionManagementThread.join();
 
             //join the thread pool
             Join();
@@ -78,7 +80,7 @@ class HConsumer: public HThreadPool
 
     protected:
 
-        void ProduceWork()
+        void ConsumeWork()
         {
             while(!fStopConsumption)
             {
@@ -86,11 +88,12 @@ class HConsumer: public HThreadPool
             }
         }
 
-        virtual void ManageWork() = 0;
+        virtual void ManageWork(){ usleep(10); }; //manages work items for the threads (this may do nothing if all threads can do work independently)
 
         bool fStopConsumption;
-        std::thread fManagementThread;
+        std::thread fConsumptionManagementThread;
         HBufferPool<XBufferItemType>* fBufferPool;
+        XConsumerBufferHandlerPolicyType fBufferHandler;
 
 
 };

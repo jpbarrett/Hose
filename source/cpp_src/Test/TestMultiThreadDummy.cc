@@ -32,21 +32,14 @@ int main(int /*argc*/, char** /*argv*/)
 
     HSimpleMultiThreadedWriter< DUMMY_SAMPLE_TYPE  > m_writer;
     m_writer.SetNThreads(1);
-    m_writer.SetSleepMicroSeconds(1);
     m_writer.SetBufferPool(&pool);
-    m_writer.LaunchThreads();
+    m_writer.StartConsumption();
 
     dummy.StartProduction();
-
-    //wait 
-    //usleep(5000);
     usleep(100000); //0.1 sec
-
     dummy.StopProduction();
 
-    m_writer.SignalTerminateOnComplete();
-
-    m_writer.JoinThreads();
+    m_writer.StopConsumption();
 
     return 0;
 }

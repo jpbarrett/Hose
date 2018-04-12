@@ -294,7 +294,6 @@ HPX14Digitizer::GenerateWork()
     //we have an active buffer, transfer the data
     if(fBufferCode == HProducerBufferPolicyCode::success)
     {
-        std::cout<<"transferring..."<<std::endl;
         this->Transfer();
     }
 }

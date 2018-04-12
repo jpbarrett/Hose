@@ -28,7 +28,7 @@ class HProducer: public HThreadPool
         HProducer():
             HThreadPool(),
             fStopProduction(false),
-            fManagementThread(),
+            fProductionManagementThread(),
             fBufferPool(nullptr)
         {};
 
@@ -46,7 +46,7 @@ class HProducer: public HThreadPool
 
             //now run the management thread (responsible for generation of work for the thread pool)
             fStopProduction = false;
-            fManagementThread = std::thread(&HProducer::ProduceWork,this);
+            fProductionManagementThread = std::thread(&HProducer::ProduceWork,this);
         }
 
         //stop the producer and join thread
@@ -57,7 +57,7 @@ class HProducer: public HThreadPool
 
             //signal and stop the management thread
             fStopProduction = true;
-            fManagementThread.join();
+            fProductionManagementThread.join();
 
             //join the thread pool
             Join();
@@ -71,7 +71,7 @@ class HProducer: public HThreadPool
 
             //signal and stop the management thread
             fStopProduction = true;
-            fManagementThread.join();
+            fProductionManagementThread.join();
 
             //join the thread pool
             Join();
@@ -109,7 +109,7 @@ class HProducer: public HThreadPool
         virtual void ExecutePostWorkTasks(){};
 
         bool fStopProduction;
-        std::thread fManagementThread;
+        std::thread fProductionManagementThread;
         HBufferPool<XBufferItemType>* fBufferPool;
         XProducerBufferHandlerPolicyType fBufferHandler;
 
