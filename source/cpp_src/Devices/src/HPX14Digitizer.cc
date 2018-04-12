@@ -48,7 +48,7 @@ HPX14Digitizer::InitializeImpl()
     }
 
     std::cout<<"set active channels to one"<<std::endl;
-    //currently we only do single channel, dual channel requicode de-interleaving
+    //currently we only do single channel, dual channel requires de-interleaving
     code = SetActiveChannelsPX14(fBoard, PX14CHANNEL_ONE);
     if(code != SIG_SUCCESS)
     {
@@ -135,7 +135,7 @@ HPX14Digitizer::AcquireImpl()
     //cast to a uint64_t and set
     this->fBuffer->GetMetaData()->SetAquisitionStartSecond( (uint64_t) result );
     //set the sample rate
-    this->fBuffer->GetMetaData()->SetSampleRate(fAcquisitionRateMHz*1000000);
+    this->fBuffer->GetMetaData()->SetSampleRate(fEffectiveAcquisitionRateMHz*1000000);
 
     //std::cout<<"acquire"<<std::endl;
     int code = BeginBufferedPciAcquisitionPX14(fBoard);
