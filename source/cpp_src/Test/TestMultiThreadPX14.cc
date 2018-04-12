@@ -15,7 +15,7 @@ using namespace hose;
 int main(int /*argc*/, char** /*argv*/)
 {
     //px14 digitizer
-    HPX14Digitizer< HPX14Digitizer::sample_type > px14;
+    HPX14Digitizer px14;
     px14.Initialize();
 
     //create pool buffer
