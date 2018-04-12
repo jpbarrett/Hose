@@ -1,5 +1,6 @@
 #include "HPX14Digitizer.hh"
 
+#define USE_SOFTWARE_TRIGGER
 
 namespace hose
 {
@@ -82,13 +83,24 @@ HPX14Digitizer::InitializeImpl()
     //     //TODO BREAK
     // }
 
-    std::cout<<"setting trigger source to external"<<std::endl;
-    code = SetTriggerSourcePX14(fBoard, PX14TRIGSRC_EXT);
-    if(code != SIG_SUCCESS)
-    {
-        DumpLibErrorPX14(code, "Failed to set external triggering: ", fBoard);
-        //TODO BREAK
-    }
+    #ifdef USE_SOFTWARE_TRIGGER
+        std::cout<<"setting trigger source to internal"<<std::endl;
+        code = SetTriggerSourcePX14(fBoard, PX14TRIGSRC_INT_CH1);
+        if(code != SIG_SUCCESS)
+        {
+            DumpLibErrorPX14(code, "Failed to set internal triggering: ", fBoard);
+            //TODO BREAK
+        }
+
+    #else
+        std::cout<<"setting trigger source to external"<<std::endl;
+        code = SetTriggerSourcePX14(fBoard, PX14TRIGSRC_EXT);
+        if(code != SIG_SUCCESS)
+        {
+            DumpLibErrorPX14(code, "Failed to set external triggering: ", fBoard);
+            //TODO BREAK
+        }
+    #else
 
     std::cout<<"setting time stamp mode"<<std::endl;
     //set up time stamp mode  (get a timestamp for every event on external trigger)
@@ -143,7 +155,20 @@ HPX14Digitizer::AcquireImpl()
         fAcquisitionStartTime = 0;
     }
 
-    fArmed = true;
+    #ifdef USE_SOFTWARE_TRIGGER
+        if(!fArmed)
+        {
+            int code = IssueSoftwareTriggerPX14(fBoard);
+            if(code != SIG_SUCCESS)
+            {
+                DumpLibErrorPX14(code, "Failed to issue software trigger: ", fBoard);
+                fAcquisitionStartTime = 0;
+            }
+            fArmed = true;
+        }
+    #else
+        fArmed = true;
+    #endif
 }
 
 void 
@@ -242,7 +267,10 @@ HPX14Digitizer::ExecutePreWorkTasks()
         if( !fAcquireActive )
         {
             this->Acquire();
-            fAcquireActive = true;
+            if(fArmed)
+            {
+                fAcquireActive = true;
+            }
         }
 
         //configure the buffer meta data
