@@ -171,7 +171,7 @@ namespace hose
 */
 
 template< typename XBufferItemType >
-class HSimpleMultiThreadedWriter: public HConsumer< XBufferItemType, HConsumerBufferHandler_Wait< XBufferItemType> >
+class HSimpleMultiThreadedWriter: public HConsumer< XBufferItemType, HConsumerBufferHandler_Immediate< XBufferItemType> >
 {
     public:
 
@@ -189,7 +189,7 @@ class HSimpleMultiThreadedWriter: public HConsumer< XBufferItemType, HConsumerBu
                 //grab a buffer to process
                 HConsumerBufferPolicyCode buffer_code = this->fBufferHandler.ReserveBuffer(this->fBufferPool, tail);
 
-                if(buffer_code == HConsumerBufferPolicyCode::success)
+                if(buffer_code == HConsumerBufferPolicyCode::success && tail != nullptr)
                 {
                     std::lock_guard<std::mutex> lock( tail->fMutex );
 
@@ -207,7 +207,7 @@ class HSimpleMultiThreadedWriter: public HConsumer< XBufferItemType, HConsumerBu
                     out_file.close();
 
                     //free the tail for re-use
-                    this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, tail);
+                    this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
                 }
             }
         }
@@ -216,6 +216,12 @@ class HSimpleMultiThreadedWriter: public HConsumer< XBufferItemType, HConsumerBu
         {
             return ( this->fBufferPool->GetConsumerPoolSize() != 0 );
         }
+
+        virtual void Idle() override
+        {
+            usleep(10);
+        }
+
 
 };
 

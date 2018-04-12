@@ -218,17 +218,21 @@ HThreadPool::ProcessLoop()
     //register this thread with the idle indicator
     InsertIdleIndicator();
 
+
     //loop until we are done
     while( !fForceTerminate && (!fSignalTerminate || WorkPresent() ) )
     {
+        //std::cout<<"looping"<<std::endl;
         if( WorkPresent() )
         {
+            //std::cout<<"got work to do"<<std::endl;
             SetIdleIndicatorFalse();
             ExecuteThreadTask(); //perform granular unit of work
             SetIdleIndicatorTrue();
         }
         else
         {
+            SetIdleIndicatorTrue();
             Idle();
         }
     }

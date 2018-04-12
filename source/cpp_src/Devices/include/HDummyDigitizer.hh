@@ -100,7 +100,7 @@ class HDummyDigitizer: public HDigitizer< XSampleType, HDummyDigitizer< XSampleT
         //needed by the thread pool interface
         virtual void ExecuteThreadTask() override; //do thread work assoicated with fill the buffer
         virtual bool WorkPresent() override; //check if we have buffer filling work to do
-
+        virtual void Idle() override;
 };
 
 
@@ -151,6 +151,7 @@ template< typename XSampleType >
 void
 HDummyDigitizer< XSampleType >::TransferImpl()
 {
+    std::cout<<"in x-fer impl"<<std::endl;
     //make a chunk of work for each thread
     size_t buff_size = this->fBuffer->GetArrayDimension(0);
     XSampleType* raw_ptr = this->fBuffer->GetData();
@@ -161,10 +162,15 @@ HDummyDigitizer< XSampleType >::TransferImpl()
     std::lock_guard< std::mutex > lock(this->fWorkQueueMutex);
     for(unsigned int i=0; i<this->fNThreads-1; i++)
     {
+        std::cout<<"thread "<<i<<" work added"<<std::endl;
         fWorkArgQueue.push( std::make_pair( &(raw_ptr[i*chunk_size]), chunk_size) );
     }
     //last chunk might have a slightly different size
     fWorkArgQueue.push( std::make_pair( &(raw_ptr[(this->fNThreads-1)*chunk_size]), remainder+chunk_size) );
+
+    std::cout<<"done xfer"<<std::endl;
+    
+
 }
 
 template< typename XSampleType >
@@ -172,25 +178,23 @@ HDigitizerErrorCode
 HDummyDigitizer< XSampleType >::FinalizeImpl()
 {
 
+    std::cout<<"in finalize"<<std::endl;
     //wait until all the threads are idle
-    while( !( this->AllThreadsAreIdle() ) || fWorkArgQueue.size() != 0 )
+    while( ( !( this->AllThreadsAreIdle() ) || ( fWorkArgQueue.size() != 0 )  ) && !(this->fForceTerminate) )
     {
-        std::this_thread::sleep_for(std::chrono::nanoseconds(fSleepDurationNanoSeconds));
+        //std::cout<<"thread idle? "<<this->AllThreadsAreIdle()<<std::endl;
+        //std::cout<<"work remaining: "<<fWorkArgQueue.size()<<std::endl;
+        usleep(100);
+        // std::this_thread::sleep_for(std::chrono::nanoseconds(fSleepDurationNanoSeconds));
     }
 
     //increment the sample counter
     this->fBuffer->GetMetaData()->SetLeadingSampleIndex(fCounter);
     fCounter += this->fBuffer->GetArrayDimension(0);
-    std::cout<<"finalize imple"<<std::endl;
+    std::cout<<"finalize impl"<<std::endl;
     std::cout<<"counter = "<<fCounter<<std::endl;
     return HDigitizerErrorCode::success;
 }
-
-
-
-
-
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -261,6 +265,8 @@ HDummyDigitizer< XSampleType >::ExecuteThreadTask()
     XSampleType* dest = nullptr;
     size_t sz = 0;
 
+    std::cout<<"doing thread task"<<std::endl;
+
     if( fWorkArgQueue.size() != 0 )
     {
         //get lock on mutex for queue modification
@@ -272,7 +278,13 @@ HDummyDigitizer< XSampleType >::ExecuteThreadTask()
             dest = dest_len_pair.first;
             sz = dest_len_pair.second;
             fWorkArgQueue.pop();
+
+        std::cout<<" popping work : size = "<<fWorkArgQueue.size()<<std::endl;
         }
+    }
+    else
+    {
+        std::cout<<" no work to do: arg size = "<<fWorkArgQueue.size()<<std::endl;
     }
 
     if( dest != nullptr && sz != 0)
@@ -308,6 +320,13 @@ HDummyDigitizer< XSampleType >::ExecutePostProductionTasks()
     this->Stop();
     this->TearDown();
     fAcquireActive = false;
+}
+
+template< typename XSampleType >
+void
+HDummyDigitizer< XSampleType >::Idle()
+{
+    usleep(1);
 }
 
 

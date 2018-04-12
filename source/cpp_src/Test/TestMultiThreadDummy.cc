@@ -19,6 +19,7 @@ int main(int /*argc*/, char** /*argv*/)
 {
     //dummy digitizer
     HDummyDigitizer< DUMMY_SAMPLE_TYPE > dummy;
+    dummy.SetNThreads(2);
     dummy.Initialize();
 
     //create pool buffer
@@ -36,7 +37,9 @@ int main(int /*argc*/, char** /*argv*/)
     m_writer.StartConsumption();
 
     dummy.StartProduction();
-    usleep(100000); //0.1 sec
+    usleep(10); //0.1 sec
+
+    std::cout<<"stopping"<<std::endl;
     dummy.StopProduction();
 
     m_writer.StopConsumption();
