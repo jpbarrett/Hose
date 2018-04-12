@@ -9,7 +9,10 @@ HPX14Digitizer::HPX14Digitizer():
     fAcquisitionRateMHz(0),
     fConnected(false),
     fInitialized(false),
-    fArmed(false)
+    fArmed(false),
+    fCounter(0),
+    fAcquireActive(false),
+    fBufferCode(HProducerBufferPolicyCode::unset)
 {
     this->fAllocator = nullptr;
 }
@@ -226,7 +229,7 @@ void
 HPX14Digitizer::ExecutePreWorkTasks()
 {
     //get a buffer from the buffer handler
-    HLinearBuffer< XSampleType >* buffer = nullptr;
+    HLinearBuffer< px14_sample_t >* buffer = nullptr;
     fBufferCode = this->fBufferHandler.ReserveBuffer(this->fBufferPool, buffer);
     
     //set the digitizer buffer if succesful
@@ -296,7 +299,7 @@ HPX14Digitizer::ExecuteThreadTask()
 }
 
 bool 
-HPX14Digitizer::WorkPresent();
+HPX14Digitizer::WorkPresent()
 {
     return false; //we do not need the thread pool model
 }

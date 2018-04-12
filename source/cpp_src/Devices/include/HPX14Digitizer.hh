@@ -52,7 +52,6 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
         bool fConnected;
         bool fInitialized;
         bool fArmed;
-        bool fAcquireActive;
         bool fBufferLocked;
 
         //required by digitizer interface
@@ -76,7 +75,10 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
 
         //global sample counter
         uint64_t fCounter;
+        bool fAcquireActive;
+        HProducerBufferPolicyCode fBufferCode;
         std::time_t fAcquisitionStartTime;
+
 
 };
 
