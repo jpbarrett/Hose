@@ -36,10 +36,9 @@ int main(int /*argc*/, char** /*argv*/)
 
     //wait 
     //usleep(5000);
-    usleep(100000); //0.1 sec
+    usleep(1000);
 
     px14.StopProduction();
-
 
     m_writer.StopConsumption();
 
