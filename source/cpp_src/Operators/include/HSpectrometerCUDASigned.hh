@@ -14,7 +14,9 @@
 #include "HLinearBuffer.hh"
 #include "HBufferPool.hh"
 
-#include "spectrometer_signed.h"
+// #include "spectrometer_signed.h"
+#include "spectrometer.h"
+
 
 namespace hose
 {

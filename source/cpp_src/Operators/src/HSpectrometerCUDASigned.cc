@@ -73,7 +73,7 @@ HSpectrometerCUDASigned::ProcessLoop()
     int data_length = fDataLength;
     spectrometer_data_s* sdata = nullptr;
 
-    std::cout<<"data lenght = "<<data_length<<" and spec len = "<<spectrum_length<<std::endl;
+    std::cout<<"data length = "<<data_length<<" and spec len = "<<spectrum_length<<std::endl;
     sdata = new_spectrometer_data_s(data_length, spectrum_length);
 
     while( !fForceTerminate && (!fSignalTerminate || fBufferPool->GetConsumerPoolSize() != 0 ) )

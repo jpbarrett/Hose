@@ -8,12 +8,12 @@ if(HOSE_USE_CUDA)
 
     set(CUDASpectrometer_HEADERFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/include/spectrometer.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/spectrometer_signed.h
+        # ${CMAKE_CURRENT_SOURCE_DIR}/include/spectrometer_signed.h
     )
 
     set(CUDASpectrometer_SOURCEFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/spectrometer.cu
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/spectrometer_signed.cu
+        # ${CMAKE_CURRENT_SOURCE_DIR}/src/spectrometer_signed.cu
     )
 
     #diable C++11 for this directory, because only the newest 7+ CUDA compilers support it
