@@ -13,8 +13,10 @@
 
 #include "HLinearBuffer.hh"
 #include "HBufferPool.hh"
+#include "HConsumerProducer.hh"
 
 #include "spectrometer.h"
+
 
 namespace hose
 {
@@ -28,48 +30,24 @@ namespace hose
 *Description:
 */
 
-class HSpectrometerCUDA
+//template< typename XSourceBufferItemType, typename XSinkBufferItemType, typename XConsumerSourceBufferHandlerPolicyType, typename XProducerSinkBufferHandlerPolicyType > 
+
+class HSpectrometerCUDA: public HConsumerProducer< uint16_t, spectrometer_data, HConsumerBufferHandler_Wait< uint16_t >, HProducerBufferHandler_Steal< spectrometer_data > >
 {
 
     public:
         HSpectrometerCUDA();
         virtual ~HSpectrometerCUDA();
 
-        //set the buffer pool we are working with
-        void SetBufferPool( HBufferPool< uint16_t >* buffer_pool ){ fBufferPool = buffer_pool;};
-
-        void SetNThreads(unsigned int n_threads){fNThreads = n_threads;};
-        unsigned int GetNThreads() const {return fNThreads;};
-
-        void SetSleepMicroSeconds(unsigned int usec){fSleepTime = usec;};
-
-        //create and launch the threads doing the processingroutine
-        void LaunchThreads();
-
-        //signal to the threads to terminate on completion of work
-        void SignalTerminateOnComplete(){fSignalTerminate = true;}
-
-        //force the threads to abandon any remaining work, and terminate immediately
-        void ForceTermination(){fForceTerminate = true;}
-
-        //join and destroy threads
-        void JoinThreads();
-
     private:
 
-        //the data processing loop for each thread
-        void ProcessLoop();
+        virtual void ExecuteThreadTask() override;
+        virtual bool WorkPresent() override;
 
-        //thread data
-        unsigned int fNThreads;
-        bool fSignalTerminate;
-        bool fForceTerminate;
-
-        unsigned int fSleepTime;
-
-        HBufferPool< uint16_t >* fBufferPool;
-
-        std::vector< std::thread > fThreads;
+        //length of the data, needed for workspace allocation
+        size_t fDataLength;
+        //default output directory
+        std::string fOutputDirectory;
 
 };
 

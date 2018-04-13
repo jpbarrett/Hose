@@ -19,6 +19,7 @@ set (HCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HConsumerBufferHandlerPolicy.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HProducer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HConsumer.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HConsumerProducer.hh
 )
 
 #list source files #############################################################

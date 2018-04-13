@@ -123,7 +123,7 @@ HSpectrometerCUDASigned::ProcessLoop()
                 process_vector_no_output_s(tail->GetData(), sdata);
 
                 //append the averaged spectrum to file associated with this thread
-                std::thread::id this_id = std::this_thread::get_id();
+                //std::thread::id this_id = std::this_thread::get_id();
                 std::stringstream ss;
                 //ss << fOutputDirectory;
                 ss << DATA_INSTALL_DIR;

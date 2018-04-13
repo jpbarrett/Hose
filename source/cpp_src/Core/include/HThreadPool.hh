@@ -63,8 +63,8 @@ class HThreadPool
         bool fHasLaunched;
         unsigned int fNThreads;
         unsigned int fNPhysicalCores;
-        bool fSignalTerminate;
-        bool fForceTerminate;
+        volatile bool fSignalTerminate;
+        volatile bool fForceTerminate;
         std::vector< std::thread > fThreads;
         std::mutex fIdleMutex;
         std::map< std::thread::id, bool > fThreadIdleMap;

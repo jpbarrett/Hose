@@ -289,7 +289,7 @@ HPX14Digitizer::ExecutePreWorkTasks()
 }
 
 void 
-HPX14Digitizer::GenerateWork()
+HPX14Digitizer::DoWork()
 {
     //we have an active buffer, transfer the data
     if(fBufferCode == HProducerBufferPolicyCode::success)

@@ -44,16 +44,10 @@
 #define TIMING_PRINT 1
 //#define TEST_SIGNAL 1
 
-
-
-
-
-
 // GPU parallelization
 #define N_BLOCKS_S 8
 #define N_THREADS_S 1024
 #define SAMPLE_RATE_S 10000000000 //10GHz
-
 
 // 5 ms blanking
 //#define BLANKING 2000000
@@ -109,7 +103,6 @@ extern "C" void process_vector_no_output(uint16_t *d_in, spectrometer_data *d);
 extern "C" void process_vector_no_output_s(int16_t *d_in, spectrometer_data_s *d);
 
 extern "C" spectrometer_data *new_spectrometer_data(int data_length, int spectrum_length);
-
 extern "C" spectrometer_data_s *new_spectrometer_data_s(int data_length, int spectrum_length);
 
 extern "C" void free_spectrometer_data(spectrometer_data *d);

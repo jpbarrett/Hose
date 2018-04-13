@@ -61,6 +61,8 @@ class HProducer: public HThreadPool
 
             //join the thread pool
             Join();
+
+            std::cout<<"producer has stopped"<<std::endl;
         }
 
         //stop the producer and join thread
@@ -90,7 +92,7 @@ class HProducer: public HThreadPool
                 ExecutePreWorkTasks();
 
                 //spawn off work associated with this buffer
-                GenerateWork();
+                DoWork();
 
                 //do post-work tasks (release the buffer, etc)
                 ExecutePostWorkTasks();
@@ -105,10 +107,10 @@ class HProducer: public HThreadPool
 
         virtual void ConfigureBufferHandler(XProducerBufferHandlerPolicyType& /*handler*/){};
         virtual void ExecutePreWorkTasks(){};
-        virtual void GenerateWork(){};
+        virtual void DoWork(){};
         virtual void ExecutePostWorkTasks(){};
 
-        bool fStopProduction;
+        volatile bool fStopProduction;
         std::thread fProductionManagementThread;
         HBufferPool<XBufferItemType>* fBufferPool;
         XProducerBufferHandlerPolicyType fBufferHandler;

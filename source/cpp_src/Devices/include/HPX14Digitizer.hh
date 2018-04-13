@@ -66,7 +66,7 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
         virtual void ExecutePreProductionTasks() override; //'initialize' the digitizer
         virtual void ExecutePostProductionTasks() override; //teardown the digitizer
         virtual void ExecutePreWorkTasks() override; //grab a buffer start acquire if we haven't already
-        virtual void GenerateWork() override; //execute a transfer into buffer
+        virtual void DoWork() override; //execute a transfer into buffer
         virtual void ExecutePostWorkTasks() override; //finalize the transfer, release the buffer
 
         //needed by the thread pool interface

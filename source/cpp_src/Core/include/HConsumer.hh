@@ -84,13 +84,13 @@ class HConsumer: public HThreadPool
         {
             while(!fStopConsumption)
             {
-                ManageWork();
+                DoWork();
             }
         }
 
-        virtual void ManageWork(){ usleep(10); }; //manages work items for the threads (this may do nothing if all threads can do work independently)
+        virtual void DoWork(){ usleep(10); }; //manages work items for the threads (this may do nothing if all threads can do work independently)
 
-        bool fStopConsumption;
+        volatile bool fStopConsumption;
         std::thread fConsumptionManagementThread;
         HBufferPool<XBufferItemType>* fBufferPool;
         XConsumerBufferHandlerPolicyType fBufferHandler;
