@@ -43,12 +43,6 @@ class HSpectrometerCUDA: public HConsumerProducer< uint16_t, spectrometer_data, 
 
         virtual void ExecuteThreadTask() override;
         virtual bool WorkPresent() override;
-
-        //length of the data, needed for workspace allocation
-        size_t fDataLength;
-        //default output directory
-        std::string fOutputDirectory;
-
 };
 
 

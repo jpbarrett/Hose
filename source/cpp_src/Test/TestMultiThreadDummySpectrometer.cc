@@ -16,8 +16,6 @@ using namespace hose;
 
 using PoolType = HBufferPool< uint16_t >;
 
-
-
 int main(int /*argc*/, char** /*argv*/)
 {
     size_t vector_length = SPECTRUM_LENGTH_S*128;
@@ -46,6 +44,8 @@ int main(int /*argc*/, char** /*argv*/)
     const size_t sink_n_chunks = 11;
     const size_t sink_items_per_chunk = 1; //THERE CAN BE ONLY ONE!!!
     sink_pool->Allocate(sink_n_chunks, sink_items_per_chunk);
+
+    //TODO add a file writing consumer to drain the spectrum data buffers
 
     HSpectrometerCUDA m_spec;
     m_spec.SetNThreads(1);
