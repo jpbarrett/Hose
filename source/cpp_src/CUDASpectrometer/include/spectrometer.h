@@ -82,6 +82,9 @@ typedef struct spectrometer_data_str_s
   int spectrum_length;
   int data_length;
   int n_spectra;
+  uint64_t acquistion_start_second;
+  uint64_t leading_sample_index;
+  double sample_rate;
 } spectrometer_data_s;
 
 typedef struct spectrometer_data_str 
@@ -97,6 +100,9 @@ typedef struct spectrometer_data_str
   int spectrum_length;
   int data_length;
   int n_spectra;
+  uint64_t acquistion_start_second;
+  uint64_t leading_sample_index;
+  double sample_rate;
 } spectrometer_data;
 
 extern "C" void process_vector_no_output(uint16_t *d_in, spectrometer_data *d);

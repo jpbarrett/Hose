@@ -4,7 +4,11 @@ namespace hose
 {
 
 
-HSimpleMultiThreadedSpectrumDataWriter::HSimpleMultiThreadedSpectrumDataWriter(){};
+HSimpleMultiThreadedSpectrumDataWriter::HSimpleMultiThreadedSpectrumDataWriter()
+{
+    //if unassigned use default data dir
+    fOutputDirectory = std::string(DATA_INSTALL_DIR);
+};
 
 HSimpleMultiThreadedSpectrumDataWriter::~HSimpleMultiThreadedSpectrumDataWriter(){};
 
@@ -15,9 +19,8 @@ HSimpleMultiThreadedSpectrumDataWriter::SetOutputDirectory(std::string output_di
 }
 
 
-
 void 
-HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask() override
+HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
 {
     //get a buffer from the buffer handler
     HLinearBuffer< spectrometer_data >* tail = nullptr;
@@ -30,18 +33,40 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask() override
         {
             std::lock_guard<std::mutex> lock( tail->fMutex );
 
-            std::stringstream ss;
-            ss << "./";
-            ss << tail->GetMetaData()->GetLeadingSampleIndex();
-            ss << ".bin";
+            //initialize the thread workspace
+            spectrometer_data* sdata = nullptr;
 
-            std::ofstream out_file;
-            out_file.open (ss.str().c_str(),  std::ios::out | std::ios::binary);
-            out_file.write( (char*)(tail->GetData()), (std::streamsize) ( tail->GetArrayDimension(0) )*sizeof(spectrometer_data) );
-            out_file.close();
+            //get sdata pointer
+            sdata = &( (tail->GetData())[0] ); //should have buffer size of 1
 
-            //free the tail for re-use
-            this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
+            if(sdata != nullptr)
+            {
+
+                //we rely on acquisitions start time and sample index to uniquely name/stamp a file
+                std::stringstream ss;
+                ss << fOutputDirectory;
+                ss << "/";
+                ss <<  sdata->acquistion_start_second;
+                ss << "_";
+                ss <<  sdata->leading_sample_index;
+                ss << ".bin";
+
+                HSpectrumObject< float > spec_data;
+                spec_data.SetStartTime( sdata->acquistion_start_second );
+                spec_data.SetSampleRate( sdata->sample_rate );
+                spec_data.SetLeadingSampleIndex(  sdata->leading_sample_index );
+                spec_data.SetSampleLength( (sdata->n_spectra)*(sdata->spectrum_length)  );
+                spec_data.SetNAverages( sdata->n_spectra );
+                spec_data.SetSpectrumLength((sdata->spectrum_length)/2+1); //Fix naming of this
+                spec_data.SetSpectrumData(sdata->spectrum);
+                std::cout<<"file name = "<<ss.str()<<std::endl;
+                spec_data.WriteToFile(ss.str());
+                spec_data.ReleaseSpectrumData();
+
+                //free the tail for re-use
+                this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
+
+            }
         }
     }
 }

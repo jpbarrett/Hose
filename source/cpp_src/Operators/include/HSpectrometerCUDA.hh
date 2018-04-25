@@ -27,7 +27,7 @@ namespace hose
 *Author: J. Barrett
 *Email: barrettj@mit.edu
 *Date:
-*Description:
+*Description: unsigned short int version
 */
 
 //template< typename XSourceBufferItemType, typename XSinkBufferItemType, typename XConsumerSourceBufferHandlerPolicyType, typename XProducerSinkBufferHandlerPolicyType > 
@@ -36,13 +36,17 @@ class HSpectrometerCUDA: public HConsumerProducer< uint16_t, spectrometer_data, 
 {
 
     public:
-        HSpectrometerCUDA();
+        HSpectrometerCUDA(size_t spectrum_length, size_t n_averages);  //spec size and averages are fixed at constuction time
         virtual ~HSpectrometerCUDA();
 
     private:
 
         virtual void ExecuteThreadTask() override;
         virtual bool WorkPresent() override;
+
+        size_t fSpectrumLength;
+        size_t fNAverages;
+
 };
 
 

@@ -11,14 +11,17 @@
 #include "HSpectrometerCUDA.hh"
 #include "HCudaHostBufferAllocator.hh"
 #include "HBufferAllocatorSpectrometerDataCUDA.hh"
+#include "HSimpleMultiThreadedSpectrumDataWriter.hh"
 
 using namespace hose;
+
 
 using PoolType = HBufferPool< uint16_t >;
 
 int main(int /*argc*/, char** /*argv*/)
 {
-    size_t vector_length = SPECTRUM_LENGTH_S*128;
+    size_t n_ave = 128;
+    size_t vector_length = SPECTRUM_LENGTH_S*n_ave;
     size_t nAcq = 1;
     unsigned int n_dropped = 0;
 
@@ -45,15 +48,19 @@ int main(int /*argc*/, char** /*argv*/)
     const size_t sink_items_per_chunk = 1; //THERE CAN BE ONLY ONE!!!
     sink_pool->Allocate(sink_n_chunks, sink_items_per_chunk);
 
-    //TODO add a file writing consumer to drain the spectrum data buffers
-
-    HSpectrometerCUDA m_spec;
+    HSpectrometerCUDA m_spec(SPECTRUM_LENGTH, n_ave);
     m_spec.SetNThreads(1);
 
     m_spec.SetSourceBufferPool(source_pool);
     m_spec.SetSinkBufferPool(sink_pool);
 
+    //TODO add a file writing consumer to drain the spectrum data buffers
+    HSimpleMultiThreadedSpectrumDataWriter spec_writer;
+    spec_writer.SetBufferPool(sink_pool);
+    spec_writer.SetNThreads(2);
+
     std::cout<<"starting"<<std::endl;
+    spec_writer.StartConsumption();
     m_spec.StartConsumptionProduction();
     dummy.StartProduction();
 
@@ -63,6 +70,7 @@ int main(int /*argc*/, char** /*argv*/)
     std::cout<<"stopping"<<std::endl;
     dummy.StopProduction();
     m_spec.StopConsumptionProduction();
+    spec_writer.StopConsumption();
 
     sleep(2);
 

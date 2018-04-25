@@ -27,12 +27,12 @@ namespace hose
 *Description:
 */
 
-class HSimpleMultiThreadedSpectrumDataWriter: public HConsumer< spectrometer_data, HConsumerBufferHandler_Immediate< spectrometer_data> >
+class HSimpleMultiThreadedSpectrumDataWriter: public HConsumer< spectrometer_data, HConsumerBufferHandler_Wait< spectrometer_data > >
 {
     public:
 
-        HSimpleMultiThreadedSpectrumDataWriter(){};
-        virtual ~HSimpleMultiThreadedSpectrumDataWriter(){};
+        HSimpleMultiThreadedSpectrumDataWriter();
+        virtual ~HSimpleMultiThreadedSpectrumDataWriter();
 
         void SetOutputDirectory(std::string output_dir);
         std::string GetOutputDirectory() const {return fOutputDirectory;};
@@ -43,6 +43,7 @@ class HSimpleMultiThreadedSpectrumDataWriter: public HConsumer< spectrometer_dat
         virtual bool WorkPresent() override;
         virtual void Idle() override;
 
+        std::string fOutputDirectory;
 
 };
 

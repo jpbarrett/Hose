@@ -28,11 +28,13 @@ if(HOSE_USE_CUDA)
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrometerCUDASigned.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HCudaHostBufferAllocator.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HBufferAllocatorSpectrometerDataCUDA.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/HSimpleMultiThreadedSpectrumDataWriter.hh
     )
 
     set(CUDAOPERATOR_SOURCEFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HSpectrometerCUDA.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HSpectrometerCUDASigned.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/HSimpleMultiThreadedSpectrumDataWriter.cc
     )
 
     add_library (HCUDAOperators SHARED ${CUDAOPERATOR_SOURCEFILES})
