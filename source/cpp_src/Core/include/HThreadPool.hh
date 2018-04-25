@@ -37,7 +37,7 @@ class HThreadPool
         void Join();
 
         //thread <-> CPU affinity settings
-        void SetNThreads(unsigned int n);
+        virtual void SetNThreads(unsigned int n);
         unsigned int GetNThreads() const {return fNThreads;};
 
         //set cpu affinities for a particular thread (default is any thread can be associated with any processor)
