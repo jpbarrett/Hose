@@ -38,6 +38,23 @@ class HBufferMetaData
         uint64_t GetSampleRate() const {return fSampleRate;};
         void SetSampleRate(const uint64_t& rate) {fSampleRate = rate;};
 
+        //for now we are going to stuff the noise-diode tsys data in here
+        //doing otherwise will require some re-architecting of the whole consumer/producer/buffer pool system
+        void SetOnAccumulation(double on_accum){fOnAccum = on_accum;};
+        double GetOnAccumulation() const { return fOnAccum;};
+        void SetOffAccumulation(double off_accum){fOffAccum = off_accum;};
+        double GetOffAccumulation() const { return fOffAccum;};
+
+        void SetOnSquaredAccumulation(double on_saccum){fOnSquaredAccum = on_saccum;};
+        double GetOnSquaredAccumulation() const { return fOnSquaredAccum;};
+        void SetOffSquaredAccumulation(double off_saccum){fOffSquaredAccum = off_saccum;};
+        double GetOffSquaredAccumulation() const { return fOffSquaredAccum;};
+
+        void SetOnCount(double on_count){fOnCount = on_count;};
+        double GetOnCount() const { return fOnCount;};
+        void SetOffCount(double off_count){fOffCount = off_count;};
+        double GetOffCount() const { return fOffCount;};
+
     private:
 
         //seconds since epoch, of the start of the aquisition
@@ -48,6 +65,18 @@ class HBufferMetaData
 
         //sample rate in Hz (integer only, may need to relax this limitation)
         uint64_t fSampleRate;
+
+        //power cal data
+        double fOnAccum;
+        double fOffAccum;
+
+        double fOnSquaredAccum;
+        double fOffSquaredAccum;
+
+        double fOnCount;
+        double fOffCount;
+
+
 };
 
 #endif /* end of include guard: HBufferMetaData */
