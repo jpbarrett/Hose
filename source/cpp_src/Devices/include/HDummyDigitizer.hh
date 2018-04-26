@@ -44,7 +44,8 @@ class HDummyDigitizer: public HDigitizer< XSampleType, HDummyDigitizer< XSampleT
             fCounter(0),
             fAcquireActive(false),
             fBufferCode(HProducerBufferPolicyCode::unset),
-            fSleepDurationNanoSeconds(500)
+            fSleepDurationNanoSeconds(500),
+            fSamplingFrequency(200e6)
         {
             this->fAllocator = new HBufferAllocatorNew< XSampleType >();
         };
@@ -56,6 +57,8 @@ class HDummyDigitizer: public HDigitizer< XSampleType, HDummyDigitizer< XSampleT
 
         void SetUpperLimit(XSampleType upper_limit){fUpperLimit = upper_limit;};
         void SetLowerLimit(XSampleType lower_limit){fLowerLimit = lower_limit;};
+
+        double GetSamplingFrequency() const {return fSamplingFrequency;};
 
         void SetSleepDurationNanoSeconds(unsigned int ns){fSleepDurationNanoSeconds = ns;};
         unsigned int GetSleepDurationNanoSeconds() const {return fSleepDurationNanoSeconds;};
@@ -77,6 +80,7 @@ class HDummyDigitizer: public HDigitizer< XSampleType, HDummyDigitizer< XSampleT
         HProducerBufferPolicyCode fBufferCode;
         std::time_t fAcquisitionStartTime;
         unsigned int fSleepDurationNanoSeconds;
+        double fSamplingFrequency;
 
         //work queue for the thread pool
         mutable std::mutex fWorkQueueMutex;
@@ -210,7 +214,7 @@ HDummyDigitizer< XSampleType >::ExecutePreWorkTasks()
 
         //configure the buffer meta data
         this->fBuffer->GetMetaData()->SetAquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
-        this->fBuffer->GetMetaData()->SetSampleRate(2500000000);
+        this->fBuffer->GetMetaData()->SetSampleRate(fSamplingFrequency);
     }
 }
 

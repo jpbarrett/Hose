@@ -31,21 +31,40 @@ namespace hose
 *Description: Computes the sample RMS, for switched noise source,
 */
 
+
 template< typename XBufferItemType > 
 class HPeriodicPowerCalculator: public HConsumer< XBufferItemType, HConsumerBufferHandler_Wait< XBufferItemType> >
 {
     public:
-        HPeriodicPowerCalculator();
-        virtual ~HPeriodicPowerCalculator();
+
+        HPeriodicPowerCalculator()
+        {
+            fSamplingFrequency = 0.0;
+            fSwitchingFrequency = 0.0;
+            fBlankingPeriod = 0.0;
+            fSecondCount = 0;
+        }
+        virtual ~HPeriodicPowerCalculator(){};
 
         //only 1 thread allowed now
         virtual void SetNThreads(unsigned int /*n*/) override {this->fNThreads = 1;}
+
+        void SetSamplingFrequency(double samp_freq){fSamplingFrequency = samp_freq;};
+        void SetSwitchingFrequency(double switch_freq){fSwitchingFrequency = switch_freq;};
+        void SetBlankingPeriod(double blank_period){fBlankingPeriod = blank_period;}
 
         void Reset()
         {
             //clear the rms data
             fRMSOn.clear();
             fRMSOff.clear();
+            fOnAccum = 0.0;
+            fOffAccum = 0.0;
+            fOnSquaredAccum = 0.0;
+            fOffSquaredAccum = 0.0;
+            fOnCount = 0.0;
+            fOffCount = 0.0;
+            fSecondCount = 0;
         }
 
 
@@ -53,7 +72,7 @@ class HPeriodicPowerCalculator: public HConsumer< XBufferItemType, HConsumerBuff
 
         virtual void ExecuteThreadTask() override
         {
-            //for now we assume fNThreads is 1
+            //for now we assume fNThreads is 1 (could move some of this to the DoWork function and subdivide work for multiple threads )
             //get a buffer from the buffer handler
             HLinearBuffer< XBufferItemType >* tail = nullptr;
             if( this->fBufferPool->GetConsumerPoolSize() != 0 )
@@ -64,17 +83,73 @@ class HPeriodicPowerCalculator: public HConsumer< XBufferItemType, HConsumerBuff
                 if(buffer_code == HConsumerBufferPolicyCode::success && tail != nullptr)
                 {
                     std::lock_guard<std::mutex> lock( tail->fMutex );
-
                     uint64_t leading_sample_index = tail->GetMetaData()->GetLeadingSampleIndex();
-                    uint64_t buffer_size = tail->GetMetaData()->GetArrayDimension(0);
+                    uint64_t buffer_size = tail->GetArrayDimension(0);
+                    XBufferItemType* raw_data = tail->GetData();
 
-                    //determine if there is an averaging period roll-over some where in this buffer
+                    //determine if buffer is the start of a new second (averaging period is always 1 second)
+                    if( leading_sample_index/fSamplingFrequency > fSecondCount)
+                    {
+                        //calculate the on, off rms for the past second and push it into storage
+                        double on_rms = (fOnSquaredAccum/fOnCount) - (fOnAccum/fOnCount)*(fOnAccum/fOnCount);
+                        double off_rms = (fOffSquaredAccum/fOffCount) - (fOffAccum/fOffCount)*(fOffAccum/fOffCount);
+                        fRMSOn.push_back( std::pair< double, unsigned int >(on_rms, leading_sample_index/(uint64_t)fSamplingFrequency - 1 ) );
+                        fRMSOff.push_back( std::pair< double, unsigned int >(off_rms , leading_sample_index/(uint64_t)fSamplingFrequency - 1) );
 
-                    //determine which buffer samples are in the on/of/blanking period
+                        std::cout<<"on rms = "<<on_rms<<std::endl;
+                        std::cout<<"off rms = "<<off_rms<<std::endl;
+
+                        //reset the accumulators
+                        fOnAccum = 0.0;
+                        fOffAccum = 0.0;
+                        fOnSquaredAccum = 0.0;
+                        fOffSquaredAccum = 0.0;
+                        fOnCount = 0.0;
+                        fOffCount = 0.0;
+                        fSecondCount = leading_sample_index/fSamplingFrequency;
+                    }
+
+                    //determine which buffer samples are in the on/of periods
                     //(this assumes the noise diode switching and acquisition triggering was synced with the 1pps signal)
-                    
-                    
+                    std::vector< std::pair<uint64_t, uint64_t> > on_intervals;
+                    std::vector< std::pair<uint64_t, uint64_t> > off_intervals;
+                    GetOnOffIntervals(leading_sample_index, buffer_size, on_intervals, off_intervals);
 
+                    double on_count = 0.0;
+                    double on_accum = 0.0;
+                    double on_squared_accum = 0.0;
+
+                    //loop over the intervals accumulating statistics
+                    for(unsigned int i=0; i<on_intervals.size(); i++)
+                    {
+                        uint64_t begin = on_intervals[i].first;
+                        uint64_t end = on_intervals[i].second;
+                        for(uint64_t sample_index = begin; sample_index < end; sample_index++)
+                        {
+                            double val = raw_data[sample_index];
+                            on_accum += val;
+                            on_squared_accum += val*val;
+                            on_count += 1.0;
+                        }
+                    }
+
+                    double off_count = 0.0;
+                    double off_accum = 0.0;
+                    double off_squared_accum = 0.0;
+
+                    //loop over the intervals accumulating statistics
+                    for(unsigned int i=0; i<off_intervals.size(); i++)
+                    {
+                        uint64_t begin = off_intervals[i].first;
+                        uint64_t end = off_intervals[i].second;
+                        for(uint64_t sample_index = begin; sample_index < end; sample_index++)
+                        {
+                            double val = raw_data[sample_index];
+                            off_accum += val;
+                            off_squared_accum += val*val;
+                            off_count += 1.0;
+                        }
+                    }
 
                     //free the tail for re-use
                     this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
@@ -88,168 +163,104 @@ class HPeriodicPowerCalculator: public HConsumer< XBufferItemType, HConsumerBuff
             return ( this->fBufferPool->GetConsumerPoolSize() != 0 );
         }
 
-        uint64_t GetNextAveragingPeriodRollOverIndex(uint64_t start)
-        {
-            uint64_t sampfreq = fSamplingFrequency;
-            if(start%sampfreq == 0)
-            {
-                return start;
-            }
-            else
-            {
-
-            }
-        }
-
-        std::vector< std::pair<uint64_t, uint64_t> GetOffIntervals(uint64_t start, uint64_t length)
-        {
-            uint64_t sampfreq = fSamplingFrequency;
-            if(start%sampfreq == 0)
-            {
-                return start;
-            }
-            else
-            {
-
-            }
-        }
-
-
-        //returns intervals [x,y) of samples to be included in the 'ON' set, takes the blanking period into account
-        //assumes signal synced such that ON is the first state (at index=0)
+        //returns intervals [x,y) of samples to be included in the ON/OFF sets, does not take the blanking period into account
+        //assumes signal synced such that ON is the first state (at acquisition start, index=0)
         void GetOnOffIntervals(uint64_t start, uint64_t length, 
                                std::vector< std::pair<uint64_t, uint64_t> >& on_intervals, 
                                std::vector< std::pair<uint64_t, uint64_t> >& off_intervals)
         {
-            //determine the offset to the first ON period in the buffer
-            //we assume that if there is any fractional sample offset of the switching signal, it remains within
-            //the blanking period for the entire length of the buffer (TODO check for this)
-            double sampling_period = 1.0/fSamplingFrequency;
-            double switching_period = 1.0/fNoiseDiodeSwitchingFrequency;
-            double time_since_acquisition_start = start*(1.0/fSamplingFrequency);
-            uint64_t n_switching_periods = std::floor( time_since_acquisition_start/switching_period );
-
-            bool on_at_start = false;
-            double first_on_time_offset = time_since_acquisition_start - n_switching_periods*switching_period;
-            double first_off_time_offset = first_on_time_offset + switching_period/2.0;
-            if(first_on_time_offset > switching_period/2.0)
-            {
-                on_at_start = false;
-                first_off_time_offset = first_on_time_offset - switching_period/2.0;
-            }
-
-            if(!on_at_start)
-            {
-                on_intervals.push_back( std::pair<uint64_t, uint64_t>(0) );
-            }
-            else
-            {
-
-            }
-    
-
-
-
-            uint64_t sample_offset = std::floor(time_offset/sampling_period);
-
-            uint64_t n_switch_samples = std::floor( (1.0/fNoiseDiodeSwitchingFrequency)/fSamplingFrequency );
-            uint64_t n_on_samples = n_switch_samples/2;
-            uint64_t n_blank_samples = std::floor(fBlankingPeriod/fSamplingFrequency);  
-
-            
-            //list all of the on -> off transitions 
-            std::vector<uint64_t> ;
-            if(sample_offset > n_on_samples)
-
-            while()
-
-
-
-
-
             on_intervals.clear();
             off_intervals.clear();
-            //take care of the samples before the offset, to make sure we don't loose some useful on samples
-            if(sample_offset > n_on_samples + n_blank_samples)
+
+            double sampling_period = 1.0/fSamplingFrequency;
+            double switching_period = 1.0/fSwitchingFrequency;
+            double buffer_time_length = sampling_period*length;
+            unsigned int n_switching_periods_per_buffer = std::ceil(buffer_time_length/switching_period); //possibly one more than needed, will trim later
+
+            //create the on/off intervals assuming that the buffer start is aligned with the switching frequency (not necessarily true)
+            double lower = 0.0;
+            double upper = switching_period/2.0;
+            std::vector< std::pair<double, double> > on_times;
+            std::vector< std::pair<double, double> > off_times;
+            for(unsigned int i=0; i<n_switching_periods_per_buffer; i++)
             {
-                on_intervals.push_back( std::pair< uint64_t, uint64_t >(0, sample_offset - (n_on_samples + n_blank_samples);) );
+                on_times.push_back( std::pair<double, double>(lower, upper) );
+                lower += switching_period;
+                off_times.push_back( std::pair<double, double>(upper, lower) );
+                upper += switching_period;
             }
 
-            //index the rest of the on intervals
-            uint64_t lower = sample_offset;
-            uint64_t upper = sample_offset + n_switch_samples;
-        
-            
+            double time_since_acquisition_start = start*sampling_period;
+            uint64_t n_switching_periods = std::floor( time_since_acquisition_start/switching_period );
+            double time_remainder = time_since_acquisition_start - n_switching_periods*switching_period;
 
+            //determine number of samples to blank
+            uint64_t blank = std::ceil( (fBlankingPeriod/2.0)*fSamplingFrequency );
 
-
-            while(lower < length)
+            //subtract off the time_remainder from the switching times and ensure it is in the range [0,buffer_time_length]
+            for(unsigned int i=0; i<n_switching_periods_per_buffer; i++)
             {
-                on_intervals.push_back( std::pair< uint64_t, uint64_t>( lower, std::min(upper - n_blank_samples, length) ) );
-                off_intervals.push_back( std::pair< uint64_t, uint64_t>( std::min(lower + n_on_samples + n_blank_samples, ) , std::min(lower + n_on_samples - n_blank_samples, length) ) );
-                lower += n_switch_samples;
+                on_times[i].first -= time_remainder; 
+                on_times[i].first < 0.0 ? 0 : std::min(on_times[i].first, buffer_time_length);
+
+                on_times[i].second -= time_remainder; 
+                on_times[i].second < 0.0 ? 0 : std::min(on_times[i].second, buffer_time_length);
+
+                off_times[i].first -= time_remainder; 
+                off_times[i].first < 0.0 ? 0 : std::min(off_times[i].first, buffer_time_length);
+
+                off_times[i].second -= time_remainder;
+                off_times[i].second < 0.0 ? 0 : std::min(off_times[i].second, buffer_time_length);
             }
+
+            //now convert to sample indices, while removing any time ranges which have a size of zero
+            for(unsigned int i=0; i<n_switching_periods_per_buffer; i++)
+            {
+                if(on_times[i].second - on_times[i].first > 0.0)
+                {
+                    uint64_t begin =  std::floor(on_times[i].first/sampling_period);
+                    uint64_t end = std::floor(on_times[i].second/sampling_period);
+                    //eliminate any intervals which are too short, and correct for blanking period
+                    //yes...we are blanking at the buffer start/stop too, this is trivial amount of data loss that would be a pain to fix
+                    if(end < begin + 2*blank+1)
+                    {
+                        on_intervals.push_back( std::pair<uint64_t, uint64_t>(begin+blank, end-blank) );
+                    }
+                }
+
+                if(off_times[i].second - off_times[i].first > 0.0)
+                {
+                    uint64_t begin =  std::floor(off_times[i].first/sampling_period);
+                    uint64_t end = std::floor(off_times[i].second/sampling_period);
+                    //eliminate any intervals which are too short, and correct for blanking period
+                    //yes...we are blanking at the buffer start/stop too, this is trivial amount of data loss that would be a pain to fix
+                    if(end < begin + 2*blank+1)
+                    {
+                        off_intervals.push_back( std::pair<uint64_t, uint64_t>(begin+blank,end-blank) );
+                    }
+                }
+            }
+
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        bool ContainsRollOver(uint64_t start, uint64_t length)
-        {
-            uint64_t sampfreq = fSamplingFrequency;
-            if(start%sampfreq == 0){return true;}
-            unsigned int interval1 = std::floor( ((double)start)/fSamplingFrequency );
-            unsigned int interval2 = std::floor( ((double)(start + length))/fSamplingFrequency );
-            if(interval1 == interval2)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-        }
-
-        uint64_t GetNextRollOverIndex(uint64_t start, uint64_t length)
-        {
-            uint64_t sampfreq = fSamplingFrequency;
-            if(start%sampfreq == 0){return 0;}
-            
-            if(length < sampfreq)
-            {
-
-            }
-            else
-            {
-
-            }
-
-        }
 
         //data
-        double fAveragingPeriod; //default is 1 second 
         double fSamplingFrequency;
-        double fNoiseDiodeSwitchingFrequency; //frequency at which the noise diode is switched
-        double fBlankingPeriod; // ignore samples within +/- the blanking period about switching time 
+        double fSwitchingFrequency; //frequency at which the noise diode is switched
+        double fBlankingPeriod; // ignore samples within +/- half the blanking period about switching time 
+
+        double fOnAccum;
+        double fOffAccum;
+        double fOnSquaredAccum;
+        double fOffSquaredAccum;
+        double fOnCount;
+        double fOffCount;
+
+        unsigned int fSecondCount;
 
         //extends these vectors as recording goes on, only cleared on reset
-        std::vector< std::pair< double, uint64_t > fRMSOn; //(value of RMS_on over the averaging period, sampling index of start)
-        std::vector< std::pair< double, uint64_t > fRMSOff; //(value of RMS_on over the averaging period, sampling index of start)
+        std::vector< std::pair< double, unsigned int > > fRMSOn; //(value of RMS_on over the averaging period, indexed by seconds from start of acquisition)
+        std::vector< std::pair< double, unsigned int > > fRMSOff; //(value of RMS_on over the averaging period, indexed by seconds from start of acquisition)
 
 };
 
