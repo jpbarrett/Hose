@@ -373,7 +373,7 @@ extern "C" void process_vector_no_output_s(int16_t *d_in, spectrometer_data_s *d
     // copy mem to device
     if (cudaMemcpyAsync(d->ds_in, d_in, sizeof(int16_t)*data_length, cudaMemcpyHostToDevice) != cudaSuccess)
     {
-      fprintf(stderr, "Cuda error: Memory copy failed, tx HtD\n");
+      fprintf(stderr, "Cuda error: Memory copy failed\n");
       exit(EXIT_FAILURE);
     }
 
@@ -429,7 +429,7 @@ extern "C" void process_vector_no_output(uint16_t *d_in, spectrometer_data *d)
     // copy mem to device
     if (cudaMemcpy(d->ds_in, d_in, sizeof(uint16_t)*data_length, cudaMemcpyHostToDevice) != cudaSuccess)
     {
-      fprintf(stderr, "Cuda error: Memory copy failed, tx HtD\n");
+      fprintf(stderr, "Cuda error: Memory copy failed: data len = %d\n", data_length);
       exit(EXIT_FAILURE);
     }
 
