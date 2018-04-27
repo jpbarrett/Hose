@@ -1,6 +1,6 @@
 #include "HPX14Digitizer.hh"
 
-#define USE_SOFTWARE_TRIGGER 1
+//#define USE_SOFTWARE_TRIGGER 1
 
 namespace hose
 {
@@ -174,6 +174,8 @@ void
 HPX14Digitizer::TransferImpl()
 {
     //std::cout<<"transferring"<<std::endl;
+    std::cout<<"size: "<<this->fBuffer->GetArrayDimension(0)<<std::endl;
+    std::cout<<"addr: "<<this->fBuffer->GetData()<<std::endl;
     int code = GetPciAcquisitionDataFastPX14(fBoard, this->fBuffer->GetArrayDimension(0), this->fBuffer->GetData(), PX14_TRUE);
     //std::cout<<"code = "<<code<<std::endl;
     if(code != SIG_SUCCESS)
