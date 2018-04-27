@@ -433,8 +433,8 @@ extern "C" void process_vector_no_output(uint16_t *d_in, spectrometer_data *d)
       exit(EXIT_FAILURE);
     }
 
-    // convert datatype using GPU
-    short_to_float<<< N_BLOCKS_S, N_THREADS_S >>>(d->ds_in, d->d_in, d->d_window, n_spectra, spectrum_length);
+    // // convert datatype using GPU
+    // short_to_float<<< N_BLOCKS_S, N_THREADS_S >>>(d->ds_in, d->d_in, d->d_window, n_spectra, spectrum_length);
 
     // cufft kernel execution
     if (cufftExecR2C(d->plan, (float *)d->d_in, (cufftComplex *)d->d_z_out)
@@ -444,12 +444,12 @@ extern "C" void process_vector_no_output(uint16_t *d_in, spectrometer_data *d)
       exit(EXIT_FAILURE);
     }
 
-    // this needs to be faster:
-    square_and_accumulate_sum<<< 1, N_THREADS_S >>>(d->d_z_out, d->d_spectrum, n_spectra, spectrum_length/2+1);
-    if (cudaGetLastError() != cudaSuccess) {
-       fprintf(stderr, "Cuda error: Kernel failure, square_and_accumulate_sum\n");
-       exit(EXIT_FAILURE);
-    }
+    // // this needs to be faster:
+    // square_and_accumulate_sum<<< 1, N_THREADS_S >>>(d->d_z_out, d->d_spectrum, n_spectra, spectrum_length/2+1);
+    // if (cudaGetLastError() != cudaSuccess) {
+    //    fprintf(stderr, "Cuda error: Kernel failure, square_and_accumulate_sum\n");
+    //    exit(EXIT_FAILURE);
+    // }
 
     // copying device resultant spectrum to host, now able to be manipulated
     if (cudaMemcpy(d->spectrum, d->d_spectrum, sizeof(float) * spectrum_length/2,
