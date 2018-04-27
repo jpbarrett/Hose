@@ -20,7 +20,7 @@ using PoolType = HBufferPool< uint16_t >;
 
 int main(int /*argc*/, char** /*argv*/)
 {
-    size_t n_ave = 128;
+    size_t n_ave = 16;
     size_t vector_length = SPECTRUM_LENGTH*n_ave;
     // size_t vector_length = 1024*n_ave;
     size_t nAcq = 1;
