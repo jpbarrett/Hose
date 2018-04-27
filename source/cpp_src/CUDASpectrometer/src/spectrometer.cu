@@ -420,14 +420,14 @@ extern "C" void process_vector_no_output(uint16_t *d_in, spectrometer_data *d)
 
 
     // ensure empty device spectrum
-    if (cudaMemsetAsync(d->d_spectrum, 0, sizeof(float)*(spectrum_length/2 + 1)) != cudaSuccess)
+    if (cudaMemset(d->d_spectrum, 0, sizeof(float)*(spectrum_length/2 + 1)) != cudaSuccess)
     {
       fprintf(stderr, "Cuda error: Failed to zero device spectrum\n");
         exit(EXIT_FAILURE);
     }
 
     // copy mem to device
-    if (cudaMemcpyAsync(d->ds_in, d_in, sizeof(uint16_t)*data_length, cudaMemcpyHostToDevice) != cudaSuccess)
+    if (cudaMemcpy(d->ds_in, d_in, sizeof(uint16_t)*data_length, cudaMemcpyHostToDevice) != cudaSuccess)
     {
       fprintf(stderr, "Cuda error: Memory copy failed, tx HtD\n");
       exit(EXIT_FAILURE);
