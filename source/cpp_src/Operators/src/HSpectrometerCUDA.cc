@@ -10,7 +10,9 @@ namespace hose
 HSpectrometerCUDA::HSpectrometerCUDA(size_t spectrum_length, size_t n_averages):
     fSpectrumLength(spectrum_length),
     fNAverages(n_averages)
-    {}
+    {
+        fPowerCalc.Reset();
+    }
 
 HSpectrometerCUDA::~HSpectrometerCUDA(){};
 
@@ -57,6 +59,11 @@ HSpectrometerCUDA::ExecuteThreadTask()
                     //lock dem buffers
                     std::lock_guard<std::mutex> sink_lock(sink->fMutex);
                     std::lock_guard<std::mutex> source_lock(source->fMutex);
+
+                    //calculate the noise rms
+                    fPowerCalc.SetBuffer(source);
+                    fPowerCalc.Calculate();
+
 
                     //point the sdata to the buffer object (this is a horrible hack)
                     sdata = &( (sink->GetData())[0] ); //should have buffer size of 1

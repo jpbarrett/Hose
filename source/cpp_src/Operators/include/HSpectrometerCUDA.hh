@@ -17,6 +17,7 @@
 
 #include "spectrometer.h"
 
+#include "HPeriodicPowerCalculator.hh"
 
 namespace hose
 {
@@ -39,6 +40,9 @@ class HSpectrometerCUDA: public HConsumerProducer< uint16_t, spectrometer_data, 
         HSpectrometerCUDA(size_t spectrum_length, size_t n_averages);  //spec size and averages are fixed at constuction time
         virtual ~HSpectrometerCUDA();
 
+        //access to the power calculator for config
+        HPeriodicPowerCalculator< uint16_t >* GetPowerCalculator() {return &fPowerCalc;};
+
     private:
 
         virtual void ExecuteThreadTask() override;
@@ -46,6 +50,8 @@ class HSpectrometerCUDA: public HConsumerProducer< uint16_t, spectrometer_data, 
 
         size_t fSpectrumLength;
         size_t fNAverages;
+
+        HPeriodicPowerCalculator< uint16_t > fPowerCalc;
 
 };
 

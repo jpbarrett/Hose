@@ -9,6 +9,8 @@ set (HARRAY_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HArrayWrapper.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HBinaryArrayOperator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HUnaryArrayOperator.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HDummyUniformRawArrayFiller.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HDummyGaussianRawArrayFiller.hh
 )
 
 #declare header paths ##########################################################

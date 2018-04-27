@@ -15,6 +15,7 @@
 
 
 #include "HDummyUniformRawArrayFiller.hh"
+#include "HDummyGaussianRawArrayFiller.hh"
 
 #include "HDigitizer.hh"
 #include "HProducer.hh"
@@ -39,8 +40,11 @@ class HDummyDigitizer: public HDigitizer< XSampleType, HDummyDigitizer< XSampleT
 
         HDummyDigitizer():
             HDigitizer< XSampleType, HDummyDigitizer >(),
+            fUseUniformDistribution(true),
             fLowerLimit( std::numeric_limits<XSampleType>::min() ),
             fUpperLimit( std::numeric_limits<XSampleType>::max() ),
+            fMean(0),
+            fSigma(0),
             fCounter(0),
             fAcquireActive(false),
             fBufferCode(HProducerBufferPolicyCode::unset),
@@ -55,8 +59,20 @@ class HDummyDigitizer: public HDigitizer< XSampleType, HDummyDigitizer< XSampleT
             delete this->fAllocator;
         };
 
-        void SetUpperLimit(XSampleType upper_limit){fUpperLimit = upper_limit;};
-        void SetLowerLimit(XSampleType lower_limit){fLowerLimit = lower_limit;};
+
+        void SetGaussianDistributionMeanSigma(XSampleType mean, XSampleType sigma)
+        {
+            fMean = mean;
+            fSigma = sigma;
+            fUseUniformDistribution = false;
+        }
+
+        void SetUniformDistributionUpperLowerLimit(XSampleType upper_limit, XSampleType lower_limit)
+        {
+            fUpperLimit = upper_limit;
+            fLowerLimit = lower_limit;
+            fUseUniformDistribution = true;
+        }
 
         double GetSamplingFrequency() const {return fSamplingFrequency;};
 
@@ -70,9 +86,12 @@ class HDummyDigitizer: public HDigitizer< XSampleType, HDummyDigitizer< XSampleT
         //function to actually fill a buffer
         void fill(XSampleType* array, size_t sz);
 
-        //limits on array values
+        //configure noise statistics
+        bool fUseUniformDistribution;
         XSampleType fLowerLimit;
         XSampleType fUpperLimit;
+        XSampleType fMean;
+        XSampleType fSigma;
 
         //'samples' counter and aquire start time stamp
         uint64_t fCounter;
@@ -114,8 +133,16 @@ template< typename XSampleType >
 void
 HDummyDigitizer< XSampleType >::fill(XSampleType* array, size_t sz)
 {
-    HDummyUniformRawArrayFiller< XSampleType > filler;
-    filler.Fill(array, fLowerLimit, fUpperLimit, sz);
+    if(fUseUniformDistribution)
+    {
+        HDummyUniformRawArrayFiller< XSampleType > filler;
+        filler.Fill(array, fLowerLimit, fUpperLimit, sz);
+    }
+    else
+    {
+        HDummyGaussianRawArrayFiller< XSampleType > filler;
+        filler.Fill(array, fMean, fSigma, sz);
+    }
 }
 
 
@@ -176,7 +203,7 @@ HDigitizerErrorCode
 HDummyDigitizer< XSampleType >::FinalizeImpl()
 {
     //wait until all the threads are idle
-    while( !( this->AllThreadsAreIdle() ) && !(this->fForceTerminate) )
+    while( ( WorkPresent() || !( this->AllThreadsAreIdle() ) ) && !(this->fForceTerminate)  )
     {
         std::this_thread::sleep_for(std::chrono::nanoseconds(fSleepDurationNanoSeconds));
     }
@@ -262,6 +289,8 @@ HDummyDigitizer< XSampleType >::ExecuteThreadTask()
         sz = dest_len_pair.second;
         fWorkArgQueue.pop();
     }
+
+    std::cout<<"thread: "<< std::this_thread::get_id()<< " processing: "<<dest<<" and size: "<<sz<<std::endl;
 
     if( dest != nullptr && sz != 0)
     {

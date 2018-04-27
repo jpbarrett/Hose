@@ -28,6 +28,7 @@ int main(int /*argc*/, char** /*argv*/)
 
     //dummy digitizer
     HDummyDigitizer< uint16_t > dummy;
+    dummy.SetNThreads(4);
     dummy.Initialize();
 
     //create source buffer pool
@@ -38,13 +39,14 @@ int main(int /*argc*/, char** /*argv*/)
     const size_t source_items_per_chunk = vector_length;
     source_pool->Allocate(source_n_chunks, source_items_per_chunk);
     dummy.SetBufferPool(source_pool);
+    dummy.SetGaussianDistributionMeanSigma(1000, 10);
 
-    //power calculator
-    HPeriodicPowerCalculator< uint16_t > power_calc;
-    power_calc.SetSamplingFrequency( dummy.GetSamplingFrequency() );
-    power_calc.SetSwitchingFrequency( 80.0 );
-    power_calc.SetBlankingPeriod( 20.0*(1.0/dummy.GetSamplingFrequency()) );
-    power_calc.SetBufferPool(source_pool);
+    // //power calculator
+    //HPeriodicPowerCalculator< uint16_t > power_calc;
+    // power_calc.SetSamplingFrequency( dummy.GetSamplingFrequency() );
+    // power_calc.SetSwitchingFrequency( 80.0 );
+    // power_calc.SetBlankingPeriod( 20.0*(1.0/dummy.GetSamplingFrequency()) );
+    // power_calc.SetBufferPool(source_pool);
 
     //create sink buffer pool
     HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >* sdata_alloc = new HBufferAllocatorSpectrometerDataCUDA<spectrometer_data>();
@@ -61,23 +63,25 @@ int main(int /*argc*/, char** /*argv*/)
     m_spec.SetSourceBufferPool(source_pool);
     m_spec.SetSinkBufferPool(sink_pool);
 
-    //TODO add a file writing consumer to drain the spectrum data buffers
+    m_spec.GetPowerCalculator()->SetSamplingFrequency( dummy.GetSamplingFrequency() );
+    m_spec.GetPowerCalculator()->SetSwitchingFrequency( 80.0 );
+    m_spec.GetPowerCalculator()->SetBlankingPeriod( 20.0*(1.0/dummy.GetSamplingFrequency()) );
+
+    //file writing consumer to drain the spectrum data buffers
     HSimpleMultiThreadedSpectrumDataWriter spec_writer;
     spec_writer.SetBufferPool(sink_pool);
     spec_writer.SetNThreads(2);
 
     std::cout<<"starting"<<std::endl;
     spec_writer.StartConsumption();
-    power_calc.StartConsumption();
     m_spec.StartConsumptionProduction();
     dummy.StartProduction();
 
     //wait 
-    usleep(10000000); //0.1 sec
+    usleep(100000000); //0.1 sec
 
     std::cout<<"stopping"<<std::endl;
     dummy.StopProduction();
-    power_calc.StopConsumption();
     m_spec.StopConsumptionProduction();
     spec_writer.StopConsumption();
 
