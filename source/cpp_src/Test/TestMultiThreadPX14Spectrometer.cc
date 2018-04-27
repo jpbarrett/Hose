@@ -50,7 +50,7 @@ int main(int /*argc*/, char** /*argv*/)
     sdata_alloc->SetSpectrumLength(SPECTRUM_LENGTH);
 
     HBufferPool< spectrometer_data >* sink_pool = new HBufferPool< spectrometer_data >( sdata_alloc );
-    const size_t sink_n_chunks = 4;
+    const size_t sink_n_chunks = 12;
     const size_t sink_items_per_chunk = 1; //THERE CAN BE ONLY ONE!!!
     sink_pool->Allocate(sink_n_chunks, sink_items_per_chunk);
 
