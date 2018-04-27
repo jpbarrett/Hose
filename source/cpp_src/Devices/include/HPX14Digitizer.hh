@@ -37,6 +37,8 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
         void SetBoardNumber(unsigned int n){fBoardNumber = n;};
         unsigned int GetBoardNumber() const {return fBoardNumber;};
 
+        double GetSamplingFrequency() const {return fAcquisitionRateMHz*10e6;};
+
         HPX14 GetBoard() {return fBoard;};
         bool IsInitialized() const {return fInitialized;};
         bool IsConnected() const {return fConnected;};

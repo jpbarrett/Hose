@@ -27,7 +27,7 @@ int main(int /*argc*/, char** /*argv*/)
 
     //digitizer
     HPX14Digitizer dummy;
-    bool initval = dummy.Initialize()
+    bool initval = dummy.Initialize();
 
     std::cout<<"initval = "<<initval<<std::endl;
     std::cout<<"done card init"<<std::endl;
