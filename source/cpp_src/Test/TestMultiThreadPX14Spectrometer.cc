@@ -21,7 +21,8 @@ using PoolType = HBufferPool< uint16_t >;
 int main(int /*argc*/, char** /*argv*/)
 {
     size_t n_ave = 128;
-    size_t vector_length = SPECTRUM_LENGTH_S*n_ave;
+    // size_t vector_length = SPECTRUM_LENGTH_S*n_ave;
+    size_t vector_length = 1024*n_ave;
     size_t nAcq = 1;
     unsigned int n_dropped = 0;
 
@@ -34,8 +35,8 @@ int main(int /*argc*/, char** /*argv*/)
 
     //std::cout<<"allocating cuda host buffs"<<std::endl;
     //create source buffer pool
-    //HCudaHostBufferAllocator< uint16_t >* balloc = new HCudaHostBufferAllocator<  uint16_t >();
-    HBufferPool< uint16_t >* source_pool = new HBufferPool< uint16_t >( dummy.GetAllocator() );
+    HCudaHostBufferAllocator< uint16_t >* balloc = new HCudaHostBufferAllocator<  uint16_t >();
+    HBufferPool< uint16_t >* source_pool = new HBufferPool< uint16_t >( balloc );
 
     const size_t source_n_chunks = 8;
     const size_t source_items_per_chunk = vector_length;
@@ -84,7 +85,7 @@ int main(int /*argc*/, char** /*argv*/)
 
     delete source_pool;
     delete sink_pool;
-//    delete balloc;
+    delete balloc;
     delete sdata_alloc;
 
     return 0;
