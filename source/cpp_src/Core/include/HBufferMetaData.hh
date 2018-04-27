@@ -41,13 +41,25 @@ class HBufferMetaData
         uint64_t GetSampleRate() const {return fSampleRate;};
         void SetSampleRate(const uint64_t& rate) {fSampleRate = rate;};
 
-        //for now we are going to stuff the noise-diode tsys data in here
+        //for now we are going to stuff the noise statistics data in here for estimating tsys w/ the noise diode
         //doing otherwise will require some re-architecting of the whole consumer/producer/buffer pool system
+        void ClearOnAccumulation(){fOnAccumulations.clear();};
         void AppendOnAccumulation( HDataAccumulation accum){ fOnAccumulations.push_back(accum); };
-        std::vector< HDataAccumulation > GetOnAccumulations() {return fOnAccumulations;};
+        void ExtendOnAccumulation( const std::vector< HDataAccumulation >* accum_vec)
+        {
+            fOnAccumulations.reserve( fOnAccumulations.size() + accum_vec->size() );
+            fOnAccumulations.insert( fOnAccumulations.end(), accum_vec->begin(), accum_vec->end() );
+        };
+        std::vector< HDataAccumulation >* GetOnAccumulations() {return &fOnAccumulations;};
 
+        void ClearOffAccumulation(){fOffAccumulations.clear();};
         void AppendOffAccumulation( HDataAccumulation accum){ fOffAccumulations.push_back(accum); };
-        std::vector< HDataAccumulation > GetOffAccumulations() {return fOffAccumulations;};
+        void ExtendOffAccumulation( const std::vector< HDataAccumulation >* accum_vec)
+        {
+            fOffAccumulations.reserve( fOffAccumulations.size() + accum_vec->size() );
+            fOffAccumulations.insert( fOffAccumulations.end(), accum_vec->begin(), accum_vec->end() );
+        };
+        std::vector< HDataAccumulation >* GetOffAccumulations() {return &fOffAccumulations;};
 
 
         HBufferMetaData& operator= (const HBufferMetaData& rhs)
@@ -75,6 +87,7 @@ class HBufferMetaData
         //sample rate in Hz (integer only, may need to relax this limitation)
         uint64_t fSampleRate;
 
+        //data statistics (for noise diode)
         std::vector< HDataAccumulation > fOnAccumulations;
         std::vector< HDataAccumulation > fOffAccumulations;
 };

@@ -13,6 +13,7 @@
 #include <cmath>
 
 #include "HLinearBuffer.hh"
+#include "HDataAccumulation.hh"
 
 namespace hose
 {
@@ -34,12 +35,7 @@ class HPeriodicPowerCalculator
 
         HPeriodicPowerCalculator()
         {
-            fSamplingFrequency = 0.0;
-            fSwitchingFrequency = 0.0;
-            fBlankingPeriod = 0.0;
-            fSecondCount = 0;
             fBuffer = nullptr;
-            Reset();
         }
         virtual ~HPeriodicPowerCalculator(){};
 
@@ -47,25 +43,11 @@ class HPeriodicPowerCalculator
         void SetSwitchingFrequency(double switch_freq){fSwitchingFrequency = switch_freq;};
         void SetBlankingPeriod(double blank_period){fBlankingPeriod = blank_period;}
 
-        void Reset()
-        {
-            //clear the rms data
-            fRMSOn.clear();
-            fRMSOff.clear();
-            fOnAccum = 0.0;
-            fOffAccum = 0.0;
-            fOnSquaredAccum = 0.0;
-            fOffSquaredAccum = 0.0;
-            fOnCount = 0.0;
-            fOffCount = 0.0;
-            fSecondCount = 0;
-            fBuffer = nullptr;
-        }
-
         //buffer getter/setters
         void SetBuffer(HLinearBuffer< XBufferItemType >* buffer)
         {
-            fBuffer = buffer; //assume already locked
+            //assume this buffer already locked externally by the caller
+            fBuffer = buffer; 
         }
 
         void Calculate()
@@ -76,93 +58,58 @@ class HPeriodicPowerCalculator
                 uint64_t buffer_size = fBuffer->GetArrayDimension(0);
                 XBufferItemType* raw_data = fBuffer->GetData();
 
-                //determine if buffer is the start of a new second (averaging period is always 1 second)
-                if( std::floor(leading_sample_index/fSamplingFrequency) > fSecondCount)
-                {
-                    if( std::floor(leading_sample_index/fSamplingFrequency) - fSecondCount > 1)
-                    {
-                        std::cout<<"Error: second skipped!"<<std::endl;
-                    }
-
-                    //calculate the on, off rms for the past second and push it into storage
-                    double on_rms = (fOnSquaredAccum/fOnCount) - (fOnAccum/fOnCount)*(fOnAccum/fOnCount);
-                    double off_rms = (fOffSquaredAccum/fOffCount) - (fOffAccum/fOffCount)*(fOffAccum/fOffCount);
-                    fRMSOn.push_back( std::pair< double, unsigned int >(on_rms, fSecondCount ) );
-                    fRMSOff.push_back( std::pair< double, unsigned int >(off_rms, fSecondCount) );
-
-                    std::cout<<"on rms = "<<on_rms<<std::endl;
-                    std::cout<<"off rms = "<<off_rms<<std::endl;
-                    std::cout<<"second = "<<fSecondCount<<std::endl;
-
-                    //reset the accumulators
-                    fOnAccum = 0.0;
-                    fOffAccum = 0.0;
-                    fOnSquaredAccum = 0.0;
-                    fOffSquaredAccum = 0.0;
-                    fOnCount = 0.0;
-                    fOffCount = 0.0;
-                    fSecondCount++;
-                }
-
                 //determine which buffer samples are in the on/of periods
                 //(this assumes the noise diode switching and acquisition triggering was synced with the 1pps signal)
                 std::vector< std::pair<uint64_t, uint64_t> > on_intervals;
                 std::vector< std::pair<uint64_t, uint64_t> > off_intervals;
                 GetOnOffIntervals(leading_sample_index, buffer_size, on_intervals, off_intervals);
 
-                double on_count = 0.0;
-                double on_accum = 0.0;
-                double on_squared_accum = 0.0;
+                fBuffer->GetMetaData()->ClearOnAccumulation();
+                fBuffer->GetMetaData()->ClearOffAccumulation();
 
-                //loop over the intervals accumulating statistics
+                //loop over the on-intervals accumulating statistics
                 for(unsigned int i=0; i<on_intervals.size(); i++)
                 {
                     uint64_t begin = on_intervals[i].first;
                     uint64_t end = on_intervals[i].second;
+
+                    HDataAccumulation stat;
+                    stat.start_index = leading_sample_index + begin;
+                    stat.stop_index = leading_sample_index + end;
+                    stat.sum_x = 0;
+                    stat.sum_x2 = 0;
+                    stat.count = 0;
                     for(uint64_t sample_index = begin; sample_index < end; sample_index++)
                     {
                         double val = raw_data[sample_index];
-                        on_accum += val;
-                        on_squared_accum += val*val;
-                        on_count += 1.0;
+                        stat.sum_x += val;
+                        stat.sum_x2 += val*val;
+                        stat.count += 1.0;
                     }
+                    fBuffer->GetMetaData()->AppendOnAccumulation(stat);
                 }
 
-                double off_count = 0.0;
-                double off_accum = 0.0;
-                double off_squared_accum = 0.0;
-
-                //loop over the intervals accumulating statistics
+                //loop over the off-intervals accumulating statistics
                 for(unsigned int i=0; i<off_intervals.size(); i++)
                 {
                     uint64_t begin = off_intervals[i].first;
                     uint64_t end = off_intervals[i].second;
+
+                    HDataAccumulation stat;
+                    stat.start_index = leading_sample_index + begin;
+                    stat.stop_index = leading_sample_index + end;
+                    stat.sum_x = 0;
+                    stat.sum_x2 = 0;
+                    stat.count = 0;
                     for(uint64_t sample_index = begin; sample_index < end; sample_index++)
                     {
                         double val = raw_data[sample_index];
-                        off_accum += val;
-                        off_squared_accum += val*val;
-                        off_count += 1.0;
+                        stat.sum_x += val;
+                        stat.sum_x2 += val*val;
+                        stat.count += 1.0;
                     }
+                    fBuffer->GetMetaData()->AppendOffAccumulation(stat);
                 }
-
-                fOnAccum += on_accum;
-                fOffAccum += off_accum;
-
-                fOnSquaredAccum += on_squared_accum;
-                fOffSquaredAccum += off_squared_accum;
-
-                fOnCount += on_count;
-                fOffCount += off_count;
-
-                // std::cout<<"on accum = "<<fOnAccum<<std::endl;
-                // std::cout<<"on squared accum = "<<fOnSquaredAccum<<std::endl;
-                // std::cout<<"on count = "<<fOnCount<<std::endl;
-                // 
-                // std::cout<<"off accum = "<<fOffAccum<<std::endl;
-                // std::cout<<"off squared accum = "<<fOffSquaredAccum<<std::endl;
-                // std::cout<<"off count = "<<fOffCount<<std::endl;
-
             }
         }   
 
@@ -268,19 +215,6 @@ class HPeriodicPowerCalculator
         double fSamplingFrequency;
         double fSwitchingFrequency; //frequency at which the noise diode is switched
         double fBlankingPeriod; // ignore samples within +/- half the blanking period about switching time 
-
-        double fOnAccum;
-        double fOffAccum;
-        double fOnSquaredAccum;
-        double fOffSquaredAccum;
-        double fOnCount;
-        double fOffCount;
-
-        unsigned int fSecondCount;
-
-        //extends these vectors as recording goes on, only cleared on reset
-        std::vector< std::pair< double, unsigned int > > fRMSOn; //(value of RMS_on over the averaging period, indexed by seconds from start of acquisition)
-        std::vector< std::pair< double, unsigned int > > fRMSOff; //(value of RMS_on over the averaging period, indexed by seconds from start of acquisition)
 
         //buffer of data
         HLinearBuffer< XBufferItemType >* fBuffer;

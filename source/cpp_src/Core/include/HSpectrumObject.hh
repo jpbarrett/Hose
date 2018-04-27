@@ -7,6 +7,9 @@
 #include <string>
 #include <fstream>
 #include <istream>
+#include <vector>
+
+#include "HDataAccumulation.hh"
 
 /*
 *File: HSpectrumObject.hh
@@ -129,6 +132,26 @@ class HSpectrumObject
         void SetSpectrumData(XSpectrumType* array){fSpectrumData = array; fDataOwned = false;};
         void ReleaseSpectrumData(){fSpectrumData = nullptr; fDataOwned = true;};
 
+
+        //for now we are going to stuff the noise statistics data in here for estimating tsys w/ the noise diode
+        //doing otherwise will require some re-architecting of the whole consumer/producer/buffer pool system
+        void AppendOnAccumulation( HDataAccumulation accum){ fOnAccumulations.push_back(accum); };
+        void ExtendOnAccumulation( const std::vector< HDataAccumulation >* accum_vec)
+        {
+            fOnAccumulations.reserve( fOnAccumulations.size() + accum_vec->size() );
+            fOnAccumulations.insert( fOnAccumulations.end(), accum_vec->begin(), accum_vec->end() );
+        };
+        std::vector< HDataAccumulation >* GetOnAccumulations() {return &fOnAccumulations;};
+
+        void AppendOffAccumulation( HDataAccumulation accum){ fOffAccumulations.push_back(accum); };
+        void ExtendOffAccumulation( const std::vector< HDataAccumulation >* accum_vec)
+        {
+            fOffAccumulations.reserve( fOffAccumulations.size() + accum_vec->size() );
+            fOffAccumulations.insert( fOffAccumulations.end(), accum_vec->begin(), accum_vec->end() );
+        };
+        std::vector< HDataAccumulation >* GetOffAccumulations() {return &fOffAccumulations;};
+
+
         void WriteToFile(std::string filename)
         {
             std::ofstream outfile;
@@ -141,6 +164,31 @@ class HSpectrumObject
             outfile.write( (const char*) &fNAverages, sizeof(size_t) );
             outfile.write( (const char*) &fSpectrumLength, sizeof(size_t) );
             outfile.write( (const char*) fSpectrumData, sizeof(XSpectrumType)*fSpectrumLength );
+
+            unsigned int on_accum_size = fOnAccumulations.size();
+            outfile.write( (const char*) &on_accum_size, sizeof(unsigned int) );
+            for(unsigned int i=0; i<on_accum_size; i++)
+            {
+                HDataAccumulation stat = fOnAccumulations[i];
+                outfile.write( (const char*) &(stat.sum_x), sizeof(double) );
+                outfile.write( (const char*) &(stat.sum_x2), sizeof(double) );
+                outfile.write( (const char*) &(stat.count), sizeof(double) );
+                outfile.write( (const char*) &(stat.start_index), sizeof(uint64_t) );
+                outfile.write( (const char*) &(stat.stop_index), sizeof(uint64_t) );
+            }
+
+            unsigned int off_accum_size = fOffAccumulations.size();
+            outfile.write( (const char*) &off_accum_size, sizeof(unsigned int) );
+            for(unsigned int i=0; i<off_accum_size; i++)
+            {
+                HDataAccumulation stat = fOffAccumulations[i];
+                outfile.write( (const char*) &(stat.sum_x), sizeof(double) );
+                outfile.write( (const char*) &(stat.sum_x2), sizeof(double) );
+                outfile.write( (const char*) &(stat.count), sizeof(double) );
+                outfile.write( (const char*) &(stat.start_index), sizeof(uint64_t) );
+                outfile.write( (const char*) &(stat.stop_index), sizeof(uint64_t) );
+            }
+
             outfile.close();
         }
 
@@ -162,6 +210,35 @@ class HSpectrumObject
             ReleaseSpectrumData();
             AllocateSpectrum();
             infile.read( (char*) fSpectrumData, sizeof(XSpectrumType)*fSpectrumLength );
+
+            unsigned int on_accum_size;
+            infile.read( (char*) &on_accum_size, sizeof(unsigned int) );
+            fOnAccumulations.reserve(on_accum_size);
+            for(unsigned int i=0; i<on_accum_size; i++)
+            {
+                HDataAccumulation stat;
+                infile.read( (char*) &(stat.sum_x), sizeof(double) );
+                infile.read( (char*) &(stat.sum_x2), sizeof(double) );
+                infile.read( (char*) &(stat.count), sizeof(double) );
+                infile.read( (char*) &(stat.start_index), sizeof(uint64_t) );
+                infile.read( (char*) &(stat.stop_index), sizeof(uint64_t) );
+                fOnAccumulations.push_back(stat);
+            }
+
+            unsigned int off_accum_size;
+            infile.read( (char*) &off_accum_size, sizeof(unsigned int) );
+            fOffAccumulations.reserve(off_accum_size);
+            for(unsigned int i=0; i<off_accum_size; i++)
+            {
+                HDataAccumulation stat;
+                infile.read( (char*) &(stat.sum_x), sizeof(double) );
+                infile.read( (char*) &(stat.sum_x2), sizeof(double) );
+                infile.read( (char*) &(stat.count), sizeof(double) );
+                infile.read( (char*) &(stat.start_index), sizeof(uint64_t) );
+                infile.read( (char*) &(stat.stop_index), sizeof(uint64_t) );
+                fOffAccumulations.push_back(stat);
+           }
+
             infile.close();
         }
 
@@ -180,6 +257,11 @@ class HSpectrumObject
 
         //pointer to spectrum data array, not owned if passed through SetSpectrumData()
         XSpectrumType* fSpectrumData;
+
+        //on/off statistics data
+        std::vector< HDataAccumulation > fOnAccumulations;
+        std::vector< HDataAccumulation > fOffAccumulations;
+
 };
 
 template< typename XSpectrumType, typename XStreamType >

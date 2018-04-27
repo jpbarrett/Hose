@@ -10,9 +10,8 @@ namespace hose
 HSpectrometerCUDA::HSpectrometerCUDA(size_t spectrum_length, size_t n_averages):
     fSpectrumLength(spectrum_length),
     fNAverages(n_averages)
-    {
-        fPowerCalc.Reset();
-    }
+    {};
+
 
 HSpectrometerCUDA::~HSpectrometerCUDA(){};
 
@@ -68,6 +67,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
                     sdata = &( (sink->GetData())[0] ); //should have buffer size of 1
 
                     //set meta data
+                    *( sink->GetMetaData() ) = *( source->GetMetaData() );
                     sdata->sample_rate = source->GetMetaData()->GetSampleRate();
                     sdata->acquistion_start_second = source->GetMetaData()->GetAcquisitionStartSecond();
                     sdata->leading_sample_index = source->GetMetaData()->GetLeadingSampleIndex();

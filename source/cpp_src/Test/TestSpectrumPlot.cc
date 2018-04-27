@@ -138,6 +138,50 @@ int main(int argc, char** argv)
     size_t acq_start = spectrum_vec[0].GetStartTime();
     std::time_t start_time = (std::time_t) acq_start;
     std::cout << "Acq start time = "<< std::asctime(std::gmtime(&start_time));
+
+
+    //look at noise statistics data
+    std::vector< HDataAccumulation > on_accum;
+    std::vector< HDataAccumulation > off_accum;
+    for(unsigned int i=0; i<spectrum_vec.size(); i++)
+    {
+        std::vector<HDataAccumulation>* vec = spectrum_vec[i].GetOnAccumulations();
+        on_accum.insert( on_accum.end(), vec->begin(), vec->end() );
+
+        vec = spectrum_vec[i].GetOffAccumulations();
+        off_accum.insert( off_accum.end(), vec->begin(), vec->end() );
+    }
+
+    double onx, onx2, onN;
+    for(unsigned int i=0; i<on_accum.size(); i++)
+    {
+        onx += on_accum[i].sum_x;
+        onx2 += on_accum[i].sum_x2;
+        onN += on_accum[i].count;
+    }
+    
+    double offx, offx2, offN;
+    for(unsigned int i=0; i<off_accum.size(); i++)
+    {
+        offx += off_accum[i].sum_x;
+        offx2 += off_accum[i].sum_x2;
+        offN += off_accum[i].count;
+    }
+
+    std::cout<<"on x: "<<onx<<" on x2: "<<onx2<<" on count "<<onN<<std::endl;
+    std::cout<<"off x: "<<offx<<" off x2: "<<offx2<<" off count "<<offN<<std::endl;
+
+    double onrms = (onx2/onN) -(onx/onN)*(onx/onN);
+    double offrms = (offx2/offN) -(offx/offN)*(offx/offN);
+
+    double Tsys = std::fabs( offrms/(onrms - offrms) );
+    std::cout<<"tsys in noise diode units (uncal.) = "<<Tsys<<std::endl;
+
+
+
+
+
+
     
     std::cout<<"starting root plotting"<<std::endl;
     

@@ -78,7 +78,7 @@ int main(int /*argc*/, char** /*argv*/)
     dummy.StartProduction();
 
     //wait 
-    usleep(100000000); //0.1 sec
+    usleep(10000000);
 
     std::cout<<"stopping"<<std::endl;
     dummy.StopProduction();
