@@ -29,15 +29,19 @@ int main(int /*argc*/, char** /*argv*/)
     HPX14Digitizer dummy;
     bool initval = dummy.Initialize()
 
+    std::cout<<"done card init"<<std::endl;
+
+    std::cout<<"allocating cuda host buffs"<<std::endl;
     //create source buffer pool
     HCudaHostBufferAllocator< uint16_t >* balloc = new HCudaHostBufferAllocator<  uint16_t >();
     HBufferPool< uint16_t >* source_pool = new HBufferPool< uint16_t >( balloc );
 
-    const size_t source_n_chunks = 64;
+    const size_t source_n_chunks = 8;
     const size_t source_items_per_chunk = vector_length;
     source_pool->Allocate(source_n_chunks, source_items_per_chunk);
     dummy.SetBufferPool(source_pool);
 
+    std::cout<<"allocating cuda dev buffs"<<std::endl;
     //create sink buffer pool
     HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >* sdata_alloc = new HBufferAllocatorSpectrometerDataCUDA<spectrometer_data>();
     sdata_alloc->SetSampleArrayLength(vector_length);
