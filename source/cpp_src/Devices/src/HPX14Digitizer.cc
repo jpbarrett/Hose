@@ -273,7 +273,7 @@ HPX14Digitizer::ExecutePreWorkTasks()
         }
 
         //configure the buffer meta data
-        this->fBuffer->GetMetaData()->SetAquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
+        this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
         this->fBuffer->GetMetaData()->SetSampleRate(fAcquisitionRateMHz*1000000);
     }
     else

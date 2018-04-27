@@ -191,7 +191,7 @@ void
 HADQ7Digitizer::TransferImpl()
 {
     //configure buffer information, cat time to uint64_t and set, then set the sample rate
-    this->fBuffer->GetMetaData()->SetAquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
+    this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
     this->fBuffer->GetMetaData()->SetSampleRate(fSampleRate); //check that double to uint64_t conversion is OK here
 
     unsigned int n_samples_collect  = this->fBuffer->GetArrayDimension(0);

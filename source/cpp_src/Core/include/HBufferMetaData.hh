@@ -2,7 +2,10 @@
 #define HBufferMetaData_HH__
 
 #include <string>
+#include <vector>
 #include <stdint.h>
+
+#include "HDataAccumulation.hh"
 
 /*
 *File: HBufferMetaData.hh
@@ -18,7 +21,7 @@ class HBufferMetaData
     public:
 
         HBufferMetaData():
-            fAquisitionStartSecond(0),
+            fAcquisitionStartSecond(0),
             fSampleIndex(0),
             fSampleRate(0)
         {};
@@ -28,8 +31,8 @@ class HBufferMetaData
         virtual std::string GetName() const {return std::string("BasicMetaData");}
 
         //the integer second (since the epoch) at which the aqcuisition was started
-        uint64_t GetAquisitionStartSecond() const {return fAquisitionStartSecond;};
-        void SetAquisitionStartSecond(const uint64_t& sec) {fAquisitionStartSecond = sec;};
+        uint64_t GetAcquisitionStartSecond() const {return fAcquisitionStartSecond;};
+        void SetAcquisitionStartSecond(const uint64_t& sec) {fAcquisitionStartSecond = sec;};
 
         //sample index relative to start of the aqcuisition
         uint64_t GetLeadingSampleIndex() const {return fSampleIndex;};
@@ -40,25 +43,31 @@ class HBufferMetaData
 
         //for now we are going to stuff the noise-diode tsys data in here
         //doing otherwise will require some re-architecting of the whole consumer/producer/buffer pool system
-        void SetOnAccumulation(double on_accum){fOnAccum = on_accum;};
-        double GetOnAccumulation() const { return fOnAccum;};
-        void SetOffAccumulation(double off_accum){fOffAccum = off_accum;};
-        double GetOffAccumulation() const { return fOffAccum;};
+        void AppendOnAccumulation( HDataAccumulation accum){ fOnAccumulations.push_back(accum); };
+        std::vector< HDataAccumulation > GetOnAccumulations() {return fOnAccumulations;};
 
-        void SetOnSquaredAccumulation(double on_saccum){fOnSquaredAccum = on_saccum;};
-        double GetOnSquaredAccumulation() const { return fOnSquaredAccum;};
-        void SetOffSquaredAccumulation(double off_saccum){fOffSquaredAccum = off_saccum;};
-        double GetOffSquaredAccumulation() const { return fOffSquaredAccum;};
+        void AppendOffAccumulation( HDataAccumulation accum){ fOffAccumulations.push_back(accum); };
+        std::vector< HDataAccumulation > GetOffAccumulations() {return fOffAccumulations;};
 
-        void SetOnCount(double on_count){fOnCount = on_count;};
-        double GetOnCount() const { return fOnCount;};
-        void SetOffCount(double off_count){fOffCount = off_count;};
-        double GetOffCount() const { return fOffCount;};
+
+        HBufferMetaData& operator= (const HBufferMetaData& rhs)
+        {
+            if( this != &rhs)
+            {
+                fAcquisitionStartSecond = rhs.fAcquisitionStartSecond;
+                fSampleIndex = rhs.fSampleIndex;
+                fSampleRate = rhs.fSampleRate;
+                fOnAccumulations = rhs.fOnAccumulations;
+                fOffAccumulations = rhs.fOffAccumulations;
+            }
+            return *this;
+        }
+
 
     private:
 
         //seconds since epoch, of the start of the aquisition
-        uint64_t fAquisitionStartSecond;
+        uint64_t fAcquisitionStartSecond;
 
         //index of the leading sample relative to the start of the aquisition
         uint64_t fSampleIndex;
@@ -66,17 +75,8 @@ class HBufferMetaData
         //sample rate in Hz (integer only, may need to relax this limitation)
         uint64_t fSampleRate;
 
-        //power cal data
-        double fOnAccum;
-        double fOffAccum;
-
-        double fOnSquaredAccum;
-        double fOffSquaredAccum;
-
-        double fOnCount;
-        double fOffCount;
-
-
+        std::vector< HDataAccumulation > fOnAccumulations;
+        std::vector< HDataAccumulation > fOffAccumulations;
 };
 
 #endif /* end of include guard: HBufferMetaData */

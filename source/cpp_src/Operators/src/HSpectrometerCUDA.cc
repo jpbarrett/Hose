@@ -60,17 +60,16 @@ HSpectrometerCUDA::ExecuteThreadTask()
                     std::lock_guard<std::mutex> sink_lock(sink->fMutex);
                     std::lock_guard<std::mutex> source_lock(source->fMutex);
 
-                    //calculate the noise rms
+                    //calculate the noise rms (may eventually need to move this calculation to the GPU)
                     fPowerCalc.SetBuffer(source);
                     fPowerCalc.Calculate();
-
 
                     //point the sdata to the buffer object (this is a horrible hack)
                     sdata = &( (sink->GetData())[0] ); //should have buffer size of 1
 
                     //set meta data
                     sdata->sample_rate = source->GetMetaData()->GetSampleRate();
-                    sdata->acquistion_start_second = source->GetMetaData()->GetAquisitionStartSecond();
+                    sdata->acquistion_start_second = source->GetMetaData()->GetAcquisitionStartSecond();
                     sdata->leading_sample_index = source->GetMetaData()->GetLeadingSampleIndex();
                     sdata->data_length = source->GetArrayDimension(0); //also equal to fSpectrumLength*fNAverages;
                     sdata->spectrum_length = fSpectrumLength;

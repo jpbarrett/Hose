@@ -128,15 +128,15 @@ HSpectrometerCUDASigned::ProcessLoop()
                 //ss << fOutputDirectory;
                 ss << DATA_INSTALL_DIR;
                 ss << "/";
-                ss << tail->GetMetaData()->GetAquisitionStartSecond();
+                ss << tail->GetMetaData()->GetAcquisitionStartSecond();
                 ss << "/";
-                ss << tail->GetMetaData()->GetAquisitionStartSecond();
+                ss << tail->GetMetaData()->GetAcquisitionStartSecond();
                 ss << "_";
                 ss << tail->GetMetaData()->GetLeadingSampleIndex();
                 ss << ".bin";
 
                 HSpectrumObject< float > spec_data;
-                spec_data.SetStartTime( tail->GetMetaData()->GetAquisitionStartSecond() );
+                spec_data.SetStartTime( tail->GetMetaData()->GetAcquisitionStartSecond() );
                 spec_data.SetSampleRate( tail->GetMetaData()->GetSampleRate() );
                 spec_data.SetLeadingSampleIndex( tail->GetMetaData()->GetLeadingSampleIndex() );
                 spec_data.SetSampleLength(tail->GetArrayDimension(0));
