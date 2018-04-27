@@ -32,10 +32,10 @@ int main(int /*argc*/, char** /*argv*/)
     std::cout<<"initval = "<<initval<<std::endl;
     std::cout<<"done card init"<<std::endl;
 
-    std::cout<<"allocating cuda host buffs"<<std::endl;
+    //std::cout<<"allocating cuda host buffs"<<std::endl;
     //create source buffer pool
-    HCudaHostBufferAllocator< uint16_t >* balloc = new HCudaHostBufferAllocator<  uint16_t >();
-    HBufferPool< uint16_t >* source_pool = new HBufferPool< uint16_t >( balloc );
+    //HCudaHostBufferAllocator< uint16_t >* balloc = new HCudaHostBufferAllocator<  uint16_t >();
+    HBufferPool< uint16_t >* source_pool = new HBufferPool< uint16_t >( dummy.GetAllocator() );
 
     const size_t source_n_chunks = 8;
     const size_t source_items_per_chunk = vector_length;
