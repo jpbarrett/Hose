@@ -444,12 +444,12 @@ extern "C" void process_vector_no_output(uint16_t *d_in, spectrometer_data *d)
       exit(EXIT_FAILURE);
     }
 
-    // this needs to be faster:
-    square_and_accumulate_sum<<< 1, N_THREADS_S >>>(d->d_z_out, d->d_spectrum, n_spectra, spectrum_length/2+1);
-    if (cudaGetLastError() != cudaSuccess) {
-       fprintf(stderr, "Cuda error: Kernel failure, square_and_accumulate_sum\n");
-       exit(EXIT_FAILURE);
-    }
+    // // this needs to be faster:
+    // square_and_accumulate_sum<<< 1, N_THREADS_S >>>(d->d_z_out, d->d_spectrum, n_spectra, spectrum_length/2+1);
+    // if (cudaGetLastError() != cudaSuccess) {
+    //    fprintf(stderr, "Cuda error: Kernel failure, square_and_accumulate_sum\n");
+    //    exit(EXIT_FAILURE);
+    // }
 
     // copying device resultant spectrum to host, now able to be manipulated
     if (cudaMemcpy(d->spectrum, d->d_spectrum, sizeof(float) * spectrum_length/2,
