@@ -115,7 +115,6 @@ HPX14Digitizer::InitializeImpl()
     //build our allocator
     if(code == SIG_SUCCESS && fConnected)
     {
-        std::cout<<"success"<<std::endl;
         if(this->fAllocator){delete this->fAllocator;};
         this->fAllocator = new HPX14BufferAllocator(fBoard);
 
@@ -133,6 +132,7 @@ HPX14Digitizer::InitializeImpl()
 
         fInitialized = true;
         fArmed = false;
+        std::cout<<"init success"<<std::endl;
         return true;
     }
     return false;
