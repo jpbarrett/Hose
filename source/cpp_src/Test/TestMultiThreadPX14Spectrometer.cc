@@ -84,7 +84,7 @@ int main(int /*argc*/, char** /*argv*/)
 
     delete source_pool;
     delete sink_pool;
-    delete balloc;
+//    delete balloc;
     delete sdata_alloc;
 
     return 0;
