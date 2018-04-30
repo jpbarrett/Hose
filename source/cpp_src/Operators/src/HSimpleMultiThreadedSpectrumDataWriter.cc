@@ -57,9 +57,12 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                     ss <<  sdata->leading_sample_index;
                     ss << ".bin";
 
+                    std::cout<<"file name = "<<ss.str()<<std::endl;
 
+                    /*
                     std::cout<<"size of on accumulations = "<<tail->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
                     std::cout<<"size of off accumulations = "<<tail->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
+
 
                     HSpectrumObject< float > spec_data;
                     spec_data.SetStartTime( sdata->acquistion_start_second );
@@ -71,9 +74,12 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                     spec_data.SetSpectrumData(sdata->spectrum);
                     spec_data.ExtendOnAccumulation( tail->GetMetaData()->GetOnAccumulations() );
                     spec_data.ExtendOffAccumulation( tail->GetMetaData()->GetOffAccumulations() );
-                    std::cout<<"file name = "<<ss.str()<<std::endl;
+
                     spec_data.WriteToFile(ss.str());
                     spec_data.ReleaseSpectrumData();
+    
+
+                    */
 
                     //free the tail for re-use
                     this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
