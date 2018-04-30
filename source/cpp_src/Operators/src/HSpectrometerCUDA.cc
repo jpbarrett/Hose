@@ -61,7 +61,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
             {
                 if(source != nullptr && sink != nullptr)
                 {
-                    std::unique_lock<std::mutex> source_lock(_mutex, std::try_to_lock);
+                    std::unique_lock<std::mutex> source_lock(source->fMutex, std::try_to_lock);
 
                     if(source_lock.owns_lock())
                     {
