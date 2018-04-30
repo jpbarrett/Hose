@@ -201,7 +201,7 @@ HPX14Digitizer::FinalizeImpl()
         return HDigitizerErrorCode::card_buffer_overflow;
     }
 
-    std::cout<<"done"<<std::endl;
+    //std::cout<<"done"<<std::endl;
     return HDigitizerErrorCode::success;
 }
 
