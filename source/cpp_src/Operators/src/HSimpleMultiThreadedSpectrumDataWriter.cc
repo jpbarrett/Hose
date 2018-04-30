@@ -28,7 +28,6 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
     std::cout<<"writer pro buff pool size = "<<fBufferPool->GetProducerPoolSize()<<std::endl;
     std::cout<<"writer cons buff pool size = "<<fBufferPool->GetConsumerPoolSize()<<std::endl;
 
-
     if( this->fBufferPool->GetConsumerPoolSize() != 0 )
     {
         //grab a buffer to process
@@ -80,17 +79,9 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 
                     //free the tail for re-use
                     this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
+                }
+            }
 
-                }
-            }
-            else
-            {
-                if(tail != nullptr)
-                {
-                    //free the tail back to consumer queue
-                    this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, tail);
-                }
-            }
         }
     }
 }
