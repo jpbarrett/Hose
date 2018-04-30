@@ -214,7 +214,8 @@ class HProducerBufferHandler_ForceFlush: public HProducerBufferReleaser< XBuffer
                 if(pool->GetProducerPoolSize() != 0)
                 {
                     buffer = pool->PopProducerBuffer();
-                    return HProducerBufferPolicyCode::forced_flushed;
+                    return HProducerBufferPolicyCode::success;
+                    //return HProducerBufferPolicyCode::forced_flushed;
                 }
                 else
                 {   
