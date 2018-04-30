@@ -77,9 +77,12 @@ class HBufferPool
                 }
             }
 
-            fAllocated = true;
+            if(fChunks.size() != 0)
+            {
+                fAllocated = true;
+            }
 
-            for(size_t i=0; i<fNChunks; i++ )
+            for(size_t i=0; i<fChunks.size(); i++ )
             {
                 fProducerQueue.push( fChunks[i] );
             }
