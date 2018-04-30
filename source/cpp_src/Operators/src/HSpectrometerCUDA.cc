@@ -92,6 +92,8 @@ HSpectrometerCUDA::ExecuteThreadTask()
                         //release the buffers
                         this->fSourceBufferHandler.ReleaseBufferToProducer(this->fSourceBufferPool, source);
                         this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
+
+                        std::unlock(sink_lock, source_lock);
                     }
                     else
                     {
