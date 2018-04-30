@@ -20,7 +20,7 @@ using PoolType = HBufferPool< uint16_t >;
 
 int main(int /*argc*/, char** /*argv*/)
 {
-    size_t n_ave = 16;
+    size_t n_ave = 128;
     size_t vector_length = SPECTRUM_LENGTH*n_ave;
     // size_t vector_length = 1024*n_ave;
     size_t nAcq = 1;
@@ -38,7 +38,7 @@ int main(int /*argc*/, char** /*argv*/)
     HCudaHostBufferAllocator< uint16_t >* balloc = new HCudaHostBufferAllocator<  uint16_t >();
     HBufferPool< uint16_t >* source_pool = new HBufferPool< uint16_t >( dummy.GetAllocator() );
 
-    const size_t source_n_chunks = 8;
+    const size_t source_n_chunks = 32;
     const size_t source_items_per_chunk = vector_length;
     source_pool->Allocate(source_n_chunks, source_items_per_chunk);
     dummy.SetBufferPool(source_pool);
