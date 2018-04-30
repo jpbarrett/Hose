@@ -33,7 +33,7 @@ int main(int /*argc*/, char** /*argv*/)
     std::cout<<"initval = "<<initval<<std::endl;
     std::cout<<"done card init"<<std::endl;
 
-    //std::cout<<"allocating cuda host buffs"<<std::endl;
+    std::cout<<"allocating cuda host buffs"<<std::endl;
     //create source buffer pool
     HCudaHostBufferAllocator< uint16_t >* balloc = new HCudaHostBufferAllocator<  uint16_t >();
     HBufferPool< uint16_t >* source_pool = new HBufferPool< uint16_t >( dummy.GetAllocator() );
@@ -41,6 +41,8 @@ int main(int /*argc*/, char** /*argv*/)
     const size_t source_n_chunks = 32;
     const size_t source_items_per_chunk = vector_length;
     source_pool->Allocate(source_n_chunks, source_items_per_chunk);
+    std::cout<<"done"<<std::endl;
+
     dummy.SetBufferPool(source_pool);
 
     std::cout<<"allocating cuda dev buffs"<<std::endl;
@@ -53,6 +55,7 @@ int main(int /*argc*/, char** /*argv*/)
     const size_t sink_n_chunks = 8;
     const size_t sink_items_per_chunk = 1; //THERE CAN BE ONLY ONE!!!
     sink_pool->Allocate(sink_n_chunks, sink_items_per_chunk);
+    std::cout<<"done"<<std::endl;
 
     HSpectrometerCUDA m_spec(SPECTRUM_LENGTH, n_ave);
     m_spec.SetNThreads(4);
