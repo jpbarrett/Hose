@@ -72,7 +72,7 @@ int main(int /*argc*/, char** /*argv*/)
     //file writing consumer to drain the spectrum data buffers
     HSimpleMultiThreadedSpectrumDataWriter spec_writer;
     spec_writer.SetBufferPool(sink_pool);
-    spec_writer.SetNThreads(4);
+    spec_writer.SetNThreads(8);
 
     std::cout<<"starting"<<std::endl;
     spec_writer.StartConsumption();
