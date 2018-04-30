@@ -24,6 +24,11 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
 {
     //get a buffer from the buffer handler
     HLinearBuffer< spectrometer_data >* tail = nullptr;
+
+    std::cout<<"writer pro buff pool size = "<<fBufferPool->GetProducerPoolSize()<<std::endl;
+    std::cout<<"writer cons buff pool size = "<<fBufferPool->GetConsumerPoolSize()<<std::endl;
+
+
     if( this->fBufferPool->GetConsumerPoolSize() != 0 )
     {
         //grab a buffer to process
