@@ -59,9 +59,9 @@ HSpectrometerCUDA::ExecuteThreadTask()
                     std::lock_guard<std::mutex> sink_lock(sink->fMutex);
                     std::lock_guard<std::mutex> source_lock(source->fMutex);
 
-                    //calculate the noise rms (may eventually need to move this calculation to the GPU)
-                    fPowerCalc.SetBuffer(source);
-                    fPowerCalc.Calculate();
+                    // //calculate the noise rms (may eventually need to move this calculation to the GPU)
+                    // fPowerCalc.SetBuffer(source);
+                    // fPowerCalc.Calculate();
 
                     //point the sdata to the buffer object (this is a horrible hack)
                     sdata = &( (sink->GetData())[0] ); //should have buffer size of 1
