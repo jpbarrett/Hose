@@ -60,7 +60,7 @@ int main(int /*argc*/, char** /*argv*/)
     std::cout<<"done"<<std::endl;
 
     HSpectrometerCUDA m_spec(FAKE_SPECTRUM_LENGTH, n_ave);
-    m_spec.SetNThreads(1);
+    m_spec.SetNThreads(4);
     for(unsigned int i=0; i<4; i++)
     {
         m_spec.AssociateThreadWithSingleProcessor(i, i+1);
@@ -77,7 +77,7 @@ int main(int /*argc*/, char** /*argv*/)
     //file writing consumer to drain the spectrum data buffers
     HSimpleMultiThreadedSpectrumDataWriter spec_writer;
     spec_writer.SetBufferPool(sink_pool);
-    spec_writer.SetNThreads(1);
+    spec_writer.SetNThreads(4);
     for(unsigned int i=0; i<4; i++)
     {
         spec_writer.AssociateThreadWithSingleProcessor(i, i+5);
