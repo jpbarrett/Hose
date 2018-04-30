@@ -42,9 +42,6 @@ HSpectrometerCUDA::ExecuteThreadTask()
 
     //std::cout<<"executing thread task"<<std::endl;
 
-    // XProducerSinkBufferHandlerPolicyType fSourceBufferHandler;
-    // XConsumerSourceBufferHandlerPolicyType fSinkBufferHandler;
-
     if( fSourceBufferPool->GetConsumerPoolSize() != 0 ) //only do work if there is stuff to process
     {
         //first get a sink buffer from the buffer handler
