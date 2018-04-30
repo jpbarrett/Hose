@@ -23,13 +23,13 @@ namespace hose
 //enum of return codes
 enum class HProducerBufferPolicyCode
 {
-    unset,
-    fail, //failed to reserve buffer
-    success, //successfully reserved (or released) a buffer
-    stolen, //successfully stole a buffer
-    timeout_fail, //failed to reserve a buffer after timing-out
-    flushed, //flushed buffer queue, and then successfully reserved a buffer
-    forced_flushed //forcefully flushed buffer queue, then successfully reserved a buffer
+    unset = 0x0,
+    fail = 0x1, //failed to reserve buffer
+    success = 0x8, //successfully reserved (or released) a buffer
+    stolen = 0x9, //successfully stole a buffer
+    timeout_fail = 0x3 , //failed to reserve a buffer after timing-out
+    flushed = 0xA, //flushed buffer queue, and then successfully reserved a buffer
+    forced_flushed = 0xC //forcefully flushed buffer queue, then successfully reserved a buffer
 };
 
 //base class for releasing buffers (common to all handler policies)
@@ -214,8 +214,7 @@ class HProducerBufferHandler_ForceFlush: public HProducerBufferReleaser< XBuffer
                 if(pool->GetProducerPoolSize() != 0)
                 {
                     buffer = pool->PopProducerBuffer();
-                    return HProducerBufferPolicyCode::success;
-                    //return HProducerBufferPolicyCode::forced_flushed;
+                    return HProducerBufferPolicyCode::forced_flushed;
                 }
                 else
                 {   

@@ -297,7 +297,7 @@ void
 HPX14Digitizer::DoWork()
 {
     //we have an active buffer, transfer the data
-    if(fBufferCode == HProducerBufferPolicyCode::success)
+    if(fBufferCode & HProducerBufferPolicyCode::success)
     {
         this->Transfer();
     }
@@ -306,7 +306,7 @@ HPX14Digitizer::DoWork()
 void 
 HPX14Digitizer::ExecutePostWorkTasks()
 {
-    if(fBufferCode == HProducerBufferPolicyCode::success)
+    if(fBufferCode & HProducerBufferPolicyCode::success)
     {   
         HDigitizerErrorCode finalize_code = this->Finalize(); 
         if(finalize_code == HDigitizerErrorCode::success)
