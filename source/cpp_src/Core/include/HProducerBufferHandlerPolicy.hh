@@ -33,10 +33,11 @@ enum class HProducerBufferPolicyCode: int
     forced_flushed = 0xC //forcefully flushed buffer queue, then successfully reserved a buffer
 };
 
-inline HProducerBufferPolicyCode operator & (HProducerBufferPolicyCode lhs,HProducerBufferPolicyCode rhs)
+//ugly hack
+inline int operator & (HProducerBufferPolicyCode lhs,HProducerBufferPolicyCode rhs)
 
 {
-    return (HProducerBufferPolicyCode)(static_cast<int>(lhs) & static_cast<int>(rhs));
+    return (static_cast<int>(lhs) & static_cast<int>(rhs));
 }
 
 //base class for releasing buffers (common to all handler policies)
