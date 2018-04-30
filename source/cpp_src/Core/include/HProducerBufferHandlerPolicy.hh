@@ -206,6 +206,8 @@ class HProducerBufferHandler_ForceFlush: public HProducerBufferReleaser< XBuffer
                     pool->PushProducerBuffer(temp_buffer);
                 };
 
+                std::cout<<"FLUSHING!!!!!!!!"<<std::endl;
+
                 //producer pool should be full now, so grab buffer
                 if(pool->GetProducerPoolSize() != 0)
                 {
