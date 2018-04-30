@@ -203,9 +203,6 @@ HPX14Digitizer::FinalizeImpl()
 
     std::cout<<"done"<<std::endl;
 
-    std::cout<<"pro buff pool size = "<<fBufferPool->GetProducerPoolSize()<<std::endl;
-    std::cout<<"cons buff pool size = "<<fBufferPool->GetConsumerPoolSize()<<std::endl;
-
     return HDigitizerErrorCode::success;
 }
 
@@ -315,6 +312,10 @@ HPX14Digitizer::ExecutePostWorkTasks()
         if(finalize_code == HDigitizerErrorCode::success)
         {
             fBufferCode = this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, this->fBuffer);
+
+            std::cout<<"digi pro buff pool size = "<<fBufferPool->GetProducerPoolSize()<<std::endl;
+            std::cout<<"digi cons buff pool size = "<<fBufferPool->GetConsumerPoolSize()<<std::endl;
+
         }
         else
         {
