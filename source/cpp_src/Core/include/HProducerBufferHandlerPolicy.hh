@@ -127,7 +127,9 @@ class HProducerBufferHandler_Steal: public HProducerBufferReleaser< XBufferItemT
                 if(pool->GetConsumerPoolSize() != 0)
                 {
                     buffer = pool->PopConsumerBuffer();
+                    std::cout<<"STOLEN "<<std::endl;
                     return HProducerBufferPolicyCode::stolen;
+
                 }
                 else
                 {

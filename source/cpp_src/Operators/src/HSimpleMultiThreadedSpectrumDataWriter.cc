@@ -57,9 +57,8 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                     ss << ".bin";
 
                     std::cout<<"file name = "<<ss.str()<<std::endl;
-                    // std::cout<<"size of on accumulations = "<<tail->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
-                    // std::cout<<"size of off accumulations = "<<tail->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
-
+                    std::cout<<"size of on accumulations = "<<tail->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
+                    std::cout<<"size of off accumulations = "<<tail->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
 
                     HSpectrumObject< float > spec_data;
                     spec_data.SetStartTime( sdata->acquistion_start_second );
