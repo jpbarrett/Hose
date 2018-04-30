@@ -92,7 +92,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
                     }
                     else
                     {
-                            std::cout<<"lock code = "<<lock_code<<std::endl;
+                        std::cout<<"lock code = "<<lock_code<<std::endl;
                     }
                 }
             }
