@@ -27,7 +27,7 @@ namespace hose {
 */
 
 
-class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  public HProducer< px14_sample_t, HProducerBufferHandler_Wait< px14_sample_t > >
+class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  public HProducer< px14_sample_t, HProducerBufferHandler_Steal< px14_sample_t > >
 {
     public:
         HPX14Digitizer();

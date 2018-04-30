@@ -40,7 +40,7 @@ int main(int /*argc*/, char** /*argv*/)
     HCudaHostBufferAllocator< uint16_t >* balloc = new HCudaHostBufferAllocator<  uint16_t >();
     HBufferPool< uint16_t >* source_pool = new HBufferPool< uint16_t >( dummy.GetAllocator() );
 
-    const size_t source_n_chunks = 32;
+    const size_t source_n_chunks = 8;
     const size_t source_items_per_chunk = vector_length;
     source_pool->Allocate(source_n_chunks, source_items_per_chunk);
     std::cout<<"done"<<std::endl;
@@ -60,7 +60,7 @@ int main(int /*argc*/, char** /*argv*/)
     std::cout<<"done"<<std::endl;
 
     HSpectrometerCUDA m_spec(FAKE_SPECTRUM_LENGTH, n_ave);
-    m_spec.SetNThreads(4);
+    m_spec.SetNThreads(1);
     m_spec.SetSourceBufferPool(source_pool);
     m_spec.SetSinkBufferPool(sink_pool);
 
@@ -72,7 +72,7 @@ int main(int /*argc*/, char** /*argv*/)
     //file writing consumer to drain the spectrum data buffers
     HSimpleMultiThreadedSpectrumDataWriter spec_writer;
     spec_writer.SetBufferPool(sink_pool);
-    spec_writer.SetNThreads(8);
+    spec_writer.SetNThreads(1));
 
     std::cout<<"starting"<<std::endl;
     spec_writer.StartConsumption();
