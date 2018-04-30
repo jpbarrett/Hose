@@ -173,9 +173,6 @@ HPX14Digitizer::AcquireImpl()
 void 
 HPX14Digitizer::TransferImpl()
 {
-    //std::cout<<"transferring"<<std::endl;
-    std::cout<<"size: "<<this->fBuffer->GetArrayDimension(0)<<std::endl;
-    std::cout<<"addr: "<<this->fBuffer->GetData()<<std::endl;
     int code = GetPciAcquisitionDataFastPX14(fBoard, this->fBuffer->GetArrayDimension(0), this->fBuffer->GetData(), PX14_TRUE);
     //std::cout<<"code = "<<code<<std::endl;
     if(code != SIG_SUCCESS)
@@ -187,7 +184,6 @@ HPX14Digitizer::TransferImpl()
 HDigitizerErrorCode 
 HPX14Digitizer::FinalizeImpl()
 {
-    std::cout<<"finalizing"<<std::endl;
     //wait for xfer to complete
     int code = WaitForTransferCompletePX14(fBoard);
 
@@ -200,9 +196,6 @@ HPX14Digitizer::FinalizeImpl()
         std::cout<<"board FIFO buffer full"<<std::endl;
         return HDigitizerErrorCode::card_buffer_overflow;
     }
-
-    std::cout<<"done"<<std::endl;
-
     return HDigitizerErrorCode::success;
 }
 
@@ -248,7 +241,6 @@ HPX14Digitizer::ExecutePreProductionTasks()
 void 
 HPX14Digitizer::ExecutePostProductionTasks()
 {
-    std::cout<<"executing post production tasks"<<std::endl;
     this->Stop();
     this->TearDown();
     fAcquireActive = false;
@@ -312,16 +304,11 @@ HPX14Digitizer::ExecutePostWorkTasks()
         if(finalize_code == HDigitizerErrorCode::success)
         {
             fBufferCode = this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, this->fBuffer);
-
-            std::cout<<"digi pro buff pool size = "<<fBufferPool->GetProducerPoolSize()<<std::endl;
-            std::cout<<"digi cons buff pool size = "<<fBufferPool->GetConsumerPoolSize()<<std::endl;
-
         }
         else
         {
             //some error occurred, stop production so we can re-start
             fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
-            std::cout<<"error restarting"<<std::endl;
             this->Stop();
             fAcquireActive = false;
         }

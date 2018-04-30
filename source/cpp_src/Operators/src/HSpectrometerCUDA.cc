@@ -41,9 +41,9 @@ HSpectrometerCUDA::ExecuteThreadTask()
     HLinearBuffer< uint16_t>* source = nullptr;
 
     //std::cout<<"executing thread task"<<std::endl;
-    
-    std::cout<<"sink (out to writer) pro buff pool size = "<<fSinkBufferPool->GetProducerPoolSize()<<std::endl;
-    std::cout<<"source (in from digi) cons buff pool size = "<<fSourceBufferPool->GetConsumerPoolSize()<<std::endl;
+    // 
+    // std::cout<<"sink (out to writer) pro buff pool size = "<<fSinkBufferPool->GetProducerPoolSize()<<std::endl;
+    // std::cout<<"source (in from digi) cons buff pool size = "<<fSourceBufferPool->GetConsumerPoolSize()<<std::endl;
 
     if( fSourceBufferPool->GetConsumerPoolSize() != 0 ) //only do work if there is stuff to process
     {
@@ -60,7 +60,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
 
             if(lock_code == -1)
             {
-                std::cout<<"got a source and sink buffer"<<std::endl;
+                // std::cout<<"got a source and sink buffer"<<std::endl;
 
                 // //calculate the noise rms (may eventually need to move this calculation to the GPU)
                 fPowerCalc.SetBuffer(source);
@@ -80,7 +80,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
 
                 //call Juha's process_vector routine
                 process_vector_no_output(source->GetData(), sdata);
-                std::cout<<"processed on gpu"<<std::endl;
+                // std::cout<<"processed on gpu"<<std::endl;
 
                 source_lock.unlock();
                 sink_lock.unlock();
