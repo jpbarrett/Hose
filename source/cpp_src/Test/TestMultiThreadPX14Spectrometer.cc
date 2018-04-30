@@ -16,12 +16,14 @@
 
 using namespace hose;
 
+#define FAKE_SPECTRUM_LENGTH 65536
+
 using PoolType = HBufferPool< uint16_t >;
 
 int main(int /*argc*/, char** /*argv*/)
 {
-    size_t n_ave = 8;
-    size_t vector_length = SPECTRUM_LENGTH*n_ave;
+    size_t n_ave = 128;
+    size_t vector_length = FAKE_SPECTRUM_LENGTH*n_ave;
     // size_t vector_length = 1024*n_ave;
     size_t nAcq = 1;
     unsigned int n_dropped = 0;
@@ -49,7 +51,7 @@ int main(int /*argc*/, char** /*argv*/)
     //create sink buffer pool
     HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >* sdata_alloc = new HBufferAllocatorSpectrometerDataCUDA<spectrometer_data>();
     sdata_alloc->SetSampleArrayLength(vector_length);
-    sdata_alloc->SetSpectrumLength(SPECTRUM_LENGTH);
+    sdata_alloc->SetSpectrumLength(FAKE_SPECTRUM_LENGTH);
 
     HBufferPool< spectrometer_data >* sink_pool = new HBufferPool< spectrometer_data >( sdata_alloc );
     const size_t sink_n_chunks = 8;
@@ -57,7 +59,7 @@ int main(int /*argc*/, char** /*argv*/)
     sink_pool->Allocate(sink_n_chunks, sink_items_per_chunk);
     std::cout<<"done"<<std::endl;
 
-    HSpectrometerCUDA m_spec(SPECTRUM_LENGTH, n_ave);
+    HSpectrometerCUDA m_spec(FAKE_SPECTRUM_LENGTH, n_ave);
     m_spec.SetNThreads(4);
     m_spec.SetSourceBufferPool(source_pool);
     m_spec.SetSinkBufferPool(sink_pool);
