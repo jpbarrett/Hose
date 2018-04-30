@@ -42,12 +42,16 @@ HSpectrometerCUDA::ExecuteThreadTask()
 
     //std::cout<<"executing thread task"<<std::endl;
 
+    // XProducerSinkBufferHandlerPolicyType fSourceBufferHandler;
+    // XConsumerSourceBufferHandlerPolicyType fSinkBufferHandler;
+
     if( fSourceBufferPool->GetConsumerPoolSize() != 0 ) //only do work if there is stuff to process
     {
         //first get a sink buffer from the buffer handler
         HProducerBufferPolicyCode sink_code = this->fSinkBufferHandler.ReserveBuffer(this->fSinkBufferPool, sink);
         if(sink_code == HProducerBufferPolicyCode::success)
         {
+            std::cout<<"got a sink buffer"<<std::endl;
             //now grab a source buffer
             HConsumerBufferPolicyCode source_code = this->fSourceBufferHandler.ReserveBuffer(this->fSourceBufferPool, source);
             if(source_code == HConsumerBufferPolicyCode::success)
@@ -56,8 +60,9 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 {
                     std::cout<<"got a source and sink buffer"<<std::endl;
                     //lock dem buffers
-                    std::lock_guard<std::mutex> sink_lock(sink->fMutex);
-                    std::lock_guard<std::mutex> source_lock(source->fMutex);
+                    std::scoped_lock<std::mutex> (sink->fMutex, source->fMutex);
+                    // std::lock_guard<std::mutex> sink_lock(sink->fMutex);
+                    // std::lock_guard<std::mutex> source_lock(source->fMutex);
 
                     // //calculate the noise rms (may eventually need to move this calculation to the GPU)
                     fPowerCalc.SetBuffer(source);
