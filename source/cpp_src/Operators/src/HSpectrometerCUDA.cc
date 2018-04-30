@@ -60,7 +60,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 {
                     std::cout<<"got a source and sink buffer"<<std::endl;
                     //lock dem buffers
-                    std::scoped_lock<std::mutex> (sink->fMutex, source->fMutex);
+                    std::scoped_lock<std::mutex> local_lock(sink->fMutex, source->fMutex);
                     // std::lock_guard<std::mutex> sink_lock(sink->fMutex);
                     // std::lock_guard<std::mutex> source_lock(source->fMutex);
 
