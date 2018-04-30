@@ -42,6 +42,11 @@ HSpectrometerCUDA::ExecuteThreadTask()
 
     //std::cout<<"executing thread task"<<std::endl;
 
+    
+    std::cout<<"sink pro buff pool size = "<<fSinkBufferPool->GetProducerPoolSize()<<std::endl;
+    std::cout<<"source cons buff pool size = "<<fSourceBufferPool->GetConsumerPoolSize()<<std::endl;
+
+
     if( fSourceBufferPool->GetConsumerPoolSize() != 0 ) //only do work if there is stuff to process
     {
         //first get a sink buffer from the buffer handler

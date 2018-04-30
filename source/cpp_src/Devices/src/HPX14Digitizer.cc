@@ -319,7 +319,7 @@ HPX14Digitizer::ExecutePostWorkTasks()
         else
         {
             //some error occurred, stop production so we can re-start
-            fBufferCode = this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, this->fBuffer);
+            fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
             std::cout<<"error restarting"<<std::endl;
             this->Stop();
             fAcquireActive = false;
