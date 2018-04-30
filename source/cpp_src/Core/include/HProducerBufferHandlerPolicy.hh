@@ -35,7 +35,6 @@ enum class HProducerBufferPolicyCode: int
 
 //ugly hack
 inline int operator & (HProducerBufferPolicyCode lhs,HProducerBufferPolicyCode rhs)
-
 {
     return (static_cast<int>(lhs) & static_cast<int>(rhs));
 }

@@ -23,10 +23,16 @@ namespace hose
 //enum of return codes
 enum class HConsumerBufferPolicyCode
 {
-    unset,
-    fail, //failed to reserve buffer
-    success, //successfully reserved (or released) a buffer
+    unset = 0x0,
+    fail = 0x1, //failed to reserve buffer
+    success = 0x8, //successfully reserved (or released) a buffer
 };
+
+//ugly hack
+inline int operator & (HConsumerBufferPolicyCode lhs,HConsumerBufferPolicyCode rhs)
+{
+    return (static_cast<int>(lhs) & static_cast<int>(rhs));
+}
 
 //base class for releasing buffers (common to all handler policies)
 template< typename XBufferItemType >

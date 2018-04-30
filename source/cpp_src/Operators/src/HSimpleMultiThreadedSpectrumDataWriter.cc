@@ -33,7 +33,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
         //grab a buffer to process
         HConsumerBufferPolicyCode buffer_code = this->fBufferHandler.ReserveBuffer(this->fBufferPool, tail);
 
-        if(buffer_code == HConsumerBufferPolicyCode::success && tail != nullptr)
+        if(buffer_code & HConsumerBufferPolicyCode::success && tail != nullptr)
         {
 
             std::unique_lock<std::mutex> lock(tail->fMutex, std::try_to_lock);

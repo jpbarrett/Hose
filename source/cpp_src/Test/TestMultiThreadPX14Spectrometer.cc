@@ -84,8 +84,8 @@ int main(int /*argc*/, char** /*argv*/)
     };
 
     std::cout<<"starting"<<std::endl;
-    //spec_writer.StartConsumption();
-    //m_spec.StartConsumptionProduction();
+    spec_writer.StartConsumption();
+    m_spec.StartConsumptionProduction();
     dummy.StartProduction();
 
     //wait 
@@ -93,8 +93,8 @@ int main(int /*argc*/, char** /*argv*/)
 
     std::cout<<"stopping"<<std::endl;
     dummy.StopProduction();
-    //m_spec.StopConsumptionProduction();
-    //spec_writer.StopConsumption();
+    m_spec.StopConsumptionProduction();
+    spec_writer.StopConsumption();
 
     sleep(2);
 
