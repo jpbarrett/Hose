@@ -49,16 +49,18 @@ HSpectrometerCUDA::ExecuteThreadTask()
 
         if(sink_code == HProducerBufferPolicyCode::success && sink != nullptr)
         {
-            std::unique_lock<std::mutex> sink_lock(sink->fMutex, std::try_to_lock);
-            if(sink_lock.owns_lock())
+            std::unique_lock<std::mutex> sink_lock(sink->fMutex, std::defer_lock);
+            //if(sink_lock.owns_lock())
             {
                 std::cout<<"got a sink buffer"<<std::endl;
                 //now grab a source buffer
                 HConsumerBufferPolicyCode source_code = this->fSourceBufferHandler.ReserveBuffer(this->fSourceBufferPool, source);
                 if(source_code == HConsumerBufferPolicyCode::success && source != nullptr)
                 {
-                    std::unique_lock<std::mutex> source_lock(source->fMutex, std::try_to_lock);
-                    if(source_lock.owns_lock())
+                    std::unique_lock<std::mutex> source_lock(source->fMutex, std::defer_lock);
+                    //if(source_lock.owns_lock())
+
+                    if(std::try_lock(sink_lock, source_lock) == -1)
                     {
                         std::cout<<"got a source and sink buffer"<<std::endl;
 
