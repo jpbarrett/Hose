@@ -202,6 +202,10 @@ HPX14Digitizer::FinalizeImpl()
     }
 
     std::cout<<"done"<<std::endl;
+
+    std::cout<<"pro buff pool size = "<<fBufferPool->GetProducerPoolSize()<<std::endl;
+    std::cout<<"cons buff pool size = "<<fBufferPool->GetConsumerPoolSize()<<std::endl;
+
     return HDigitizerErrorCode::success;
 }
 
