@@ -201,7 +201,7 @@ HPX14Digitizer::FinalizeImpl()
         return HDigitizerErrorCode::card_buffer_overflow;
     }
 
-    //std::cout<<"done"<<std::endl;
+    std::cout<<"done"<<std::endl;
     return HDigitizerErrorCode::success;
 }
 
@@ -315,6 +315,8 @@ HPX14Digitizer::ExecutePostWorkTasks()
         else
         {
             //some error occurred, stop production so we can re-start
+            fBufferCode = this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, this->fBuffer);
+            std::cout<<"error restarting"<<std::endl;
             this->Stop();
             fAcquireActive = false;
         }
