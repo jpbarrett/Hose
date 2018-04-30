@@ -60,7 +60,9 @@ HSpectrometerCUDA::ExecuteThreadTask()
                     std::unique_lock<std::mutex> source_lock(source->fMutex, std::defer_lock);
                     //if(source_lock.owns_lock())
 
-                    if(std::try_lock(sink_lock, source_lock) == -1)
+                    int lock_code = std::try_lock(sink_lock, source_lock);
+
+                    if(lock_code) == -1)
                     {
                         std::cout<<"got a source and sink buffer"<<std::endl;
 
@@ -87,6 +89,10 @@ HSpectrometerCUDA::ExecuteThreadTask()
                         //release the buffers
                         this->fSourceBufferHandler.ReleaseBufferToProducer(this->fSourceBufferPool, source);
                         this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
+                    }
+                    else
+                    {
+                            std::cout<<"lock code = "<<lock_code<<std::endl;
                     }
                 }
             }
