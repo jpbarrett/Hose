@@ -76,6 +76,8 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                     spec_data.WriteToFile(ss.str());
                     spec_data.ReleaseSpectrumData();
 
+                    lock.unlock();
+                
                     //free the tail for re-use
                     this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
 

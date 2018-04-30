@@ -89,11 +89,12 @@ HSpectrometerCUDA::ExecuteThreadTask()
                         process_vector_no_output(source->GetData(), sdata);
                         std::cout<<"processed on gpu"<<std::endl;
 
+                        source_lock.unlock();
+                        sink_lock.unlock();
+
                         //release the buffers
                         this->fSourceBufferHandler.ReleaseBufferToProducer(this->fSourceBufferPool, source);
                         this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
-
-                        std::unlock(sink_lock, source_lock);
                     }
                     else
                     {
