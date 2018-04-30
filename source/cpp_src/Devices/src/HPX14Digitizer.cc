@@ -262,7 +262,7 @@ HPX14Digitizer::ExecutePreWorkTasks()
     fBufferCode = this->fBufferHandler.ReserveBuffer(this->fBufferPool, buffer);
     
     //set the digitizer buffer if succesful
-    if(fBufferCode == HProducerBufferPolicyCode::success || fBufferCode == HProducerBufferPolicyCode::stolen || fBufferCode == HProducerBufferPolicyCode::forced_flushed  )
+    if( buffer != nullptr )
     {
         //successfully got a buffer, assigned it
         this->SetBuffer(buffer);
