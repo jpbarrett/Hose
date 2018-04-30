@@ -79,13 +79,13 @@ class HPeriodicPowerCalculator
                     stat.sum_x = 0;
                     stat.sum_x2 = 0;
                     stat.count = 0;
-                    // for(uint64_t sample_index = begin; sample_index < end; sample_index++)
-                    // {
-                    //     double val = raw_data[sample_index];
-                    //     stat.sum_x += val;
-                    //     stat.sum_x2 += val*val;
-                    //     stat.count += 1.0;
-                    // }
+                    for(uint64_t sample_index = begin; sample_index < end; sample_index++)
+                    {
+                        double val = raw_data[sample_index];
+                        stat.sum_x += val;
+                        stat.sum_x2 += val*val;
+                        stat.count += 1.0;
+                    }
                     fBuffer->GetMetaData()->AppendOnAccumulation(stat);
                 }
 
