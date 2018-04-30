@@ -187,7 +187,7 @@ HPX14Digitizer::TransferImpl()
 HDigitizerErrorCode 
 HPX14Digitizer::FinalizeImpl()
 {
-    //std::cout<<"finalizing"<<std::endl;
+    std::cout<<"finalizing"<<std::endl;
     //wait for xfer to complete
     int code = WaitForTransferCompletePX14(fBoard);
 
