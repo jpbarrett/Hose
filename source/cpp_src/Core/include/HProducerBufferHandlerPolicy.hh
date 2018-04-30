@@ -200,13 +200,15 @@ class HProducerBufferHandler_ForceFlush: public HProducerBufferReleaser< XBuffer
             else
             {
                 //flush out all of the consumer buffers back into the producer pool w/o consuming them
+                int count = 0;
                 while( pool->GetConsumerPoolSize() != 0 )
                 {
                     HLinearBuffer< XBufferItemType >* temp_buffer = pool->PopConsumerBuffer();
                     pool->PushProducerBuffer(temp_buffer);
+                    count++;
                 };
 
-                std::cout<<"FLUSHING!!!!!!!!"<<std::endl;
+                std::cout<<"FLUSHED "<<count<<" buffers!!!!!!!!"<<std::endl;
 
                 //producer pool should be full now, so grab buffer
                 if(pool->GetProducerPoolSize() != 0)
