@@ -19,15 +19,15 @@ HPX14BufferAllocator::~HPX14BufferAllocator()
 px14_sample_t* 
 HPX14BufferAllocator::AllocateImpl(size_t size)
 {
-    //std::cout<<"in allocator"<<std::endl;
+    std::cout<<"in allocator"<<std::endl;
     double mem_mb = ( (double)(sizeof(px14_sample_t)*size) )/(1024.0*1024.0);
-    //std::cout<<"buffer size = "<<mem_mb<<std::endl;
+    std::cout<<"buffer size = "<<mem_mb<<std::endl;
     px14_sample_t* ptr = nullptr;
     int code = AllocateDmaBufferPX14(fBoard, size, &ptr);
-	//std::cout<<"code = "<<code<<std::endl;
+	std::cout<<"code = "<<code<<std::endl;
     if( code != SIG_SUCCESS)
     {
-        //TODO print/log error
+        DumpLibErrorPX14(code, "Failed to allocated DMA buffer: ");
         return nullptr;
     }
     else
