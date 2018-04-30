@@ -62,11 +62,12 @@ class HPeriodicPowerCalculator
                 //(this assumes the noise diode switching and acquisition triggering was synced with the 1pps signal)
                 std::vector< std::pair<uint64_t, uint64_t> > on_intervals;
                 std::vector< std::pair<uint64_t, uint64_t> > off_intervals;
-                GetOnOffIntervals(leading_sample_index, buffer_size, on_intervals, off_intervals);
+//                GetOnOffIntervals(leading_sample_index, buffer_size, on_intervals, off_intervals);
 
                 fBuffer->GetMetaData()->ClearOnAccumulation();
                 fBuffer->GetMetaData()->ClearOffAccumulation();
 
+/*
                 //loop over the on-intervals accumulating statistics
                 for(unsigned int i=0; i<on_intervals.size(); i++)
                 {
@@ -110,6 +111,7 @@ class HPeriodicPowerCalculator
                     }
                     fBuffer->GetMetaData()->AppendOffAccumulation(stat);
                 }
+*/
             }
         }   
 
