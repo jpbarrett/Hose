@@ -200,6 +200,8 @@ HPX14Digitizer::FinalizeImpl()
         std::cout<<"board FIFO buffer full"<<std::endl;
         return HDigitizerErrorCode::card_buffer_overflow;
     }
+
+    std::cout<<"done"<<std::endl;
     return HDigitizerErrorCode::success;
 }
 
