@@ -62,7 +62,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
 
                     int lock_code = std::try_lock(sink_lock, source_lock);
 
-                    if(lock_code) == -1)
+                    if(lock_code == -1)
                     {
                         std::cout<<"got a source and sink buffer"<<std::endl;
 
