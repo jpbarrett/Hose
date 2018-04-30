@@ -202,7 +202,7 @@ class HProducerBufferHandler_ForceFlush: public HProducerBufferReleaser< XBuffer
                 //flush out all of the consumer buffers back into the producer pool w/o consuming them
                 while( pool->GetConsumerPoolSize() != 0 )
                 {
-                    HLinearBuffer< XBufferItemType > temp_buffer = pool->PopConsumerBuffer();
+                    HLinearBuffer< XBufferItemType >* temp_buffer = pool->PopConsumerBuffer();
                     pool->PushProducerBuffer(temp_buffer);
                 };
 
