@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <thread>
+#include <type_traits>
 
 
 #include "HBufferPool.hh"
@@ -21,7 +22,7 @@ namespace hose
 */
 
 //enum of return codes
-enum class HProducerBufferPolicyCode
+enum class HProducerBufferPolicyCode: int
 {
     unset = 0x0,
     fail = 0x1, //failed to reserve buffer
@@ -31,6 +32,12 @@ enum class HProducerBufferPolicyCode
     flushed = 0xA, //flushed buffer queue, and then successfully reserved a buffer
     forced_flushed = 0xC //forcefully flushed buffer queue, then successfully reserved a buffer
 };
+
+inline HProducerBufferPolicyCode operator & (HProducerBufferPolicyCode lhs,HProducerBufferPolicyCode rhs)
+
+{
+    return (HProducerBufferPolicyCode)(static_cast<int>(lhs) & static_cast<int>(rhs));
+}
 
 //base class for releasing buffers (common to all handler policies)
 template< typename XBufferItemType >
