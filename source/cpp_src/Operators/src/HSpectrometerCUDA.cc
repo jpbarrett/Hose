@@ -41,18 +41,16 @@ HSpectrometerCUDA::ExecuteThreadTask()
     HLinearBuffer< uint16_t>* source = nullptr;
 
     //std::cout<<"executing thread task"<<std::endl;
-
     
     std::cout<<"sink pro buff pool size = "<<fSinkBufferPool->GetProducerPoolSize()<<std::endl;
     std::cout<<"source cons buff pool size = "<<fSourceBufferPool->GetConsumerPoolSize()<<std::endl;
-
 
     if( fSourceBufferPool->GetConsumerPoolSize() != 0 ) //only do work if there is stuff to process
     {
         //first get a sink buffer from the buffer handler
         HProducerBufferPolicyCode sink_code = this->fSinkBufferHandler.ReserveBuffer(this->fSinkBufferPool, sink);
 
-        if(sink_code == HProducerBufferPolicyCode::success && sink != nullptr)
+        if( (sink_code == HProducerBufferPolicyCode::success || sink_code == HProducerBufferPolicyCode::stolen ) && sink != nullptr)
         {
             std::unique_lock<std::mutex> sink_lock(sink->fMutex, std::defer_lock);
             //if(sink_lock.owns_lock())
