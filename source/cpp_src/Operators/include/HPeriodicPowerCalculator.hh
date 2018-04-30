@@ -67,6 +67,7 @@ class HPeriodicPowerCalculator
                 fBuffer->GetMetaData()->ClearOnAccumulation();
                 fBuffer->GetMetaData()->ClearOffAccumulation();
 
+/*
 
                 //loop over the on-intervals accumulating statistics
                 for(unsigned int i=0; i<on_intervals.size(); i++)
@@ -111,6 +112,9 @@ class HPeriodicPowerCalculator
                     }
                     fBuffer->GetMetaData()->AppendOffAccumulation(stat);
                 }
+
+
+*/
 
             }
         }   
