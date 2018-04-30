@@ -99,6 +99,24 @@ HSpectrometerCUDA::ExecuteThreadTask()
                     else
                     {
                         std::cout<<"lock code = "<<lock_code<<std::endl;
+
+                        if(source != nullptr)
+                        {
+                            this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source);
+                        }
+
+                        if(sink !=nullptr)
+                        {
+                            this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
+                        }
+                    }
+                }
+                else
+                {
+                    //return the sink buffer to where it came frome
+                    if(sink !=nullptr)
+                    {
+                        this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
                     }
                 }
             }
