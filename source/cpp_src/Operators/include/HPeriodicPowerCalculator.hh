@@ -185,14 +185,14 @@ class HPeriodicPowerCalculator
                     uint64_t begin = std::floor(on_times[i].first/sampling_period);
                     uint64_t end = std::floor(on_times[i].second/sampling_period);
 
-                    std::cout<<"XX on interval: "<<i<<" = "<<on_times[i].first<<", "<<on_times[i].second<<std::endl;
-                    std::cout<<"XX on interval discrete: "<<i<<" = "<<begin<<", "<<end<<std::endl;
+                    // std::cout<<"XX on interval: "<<i<<" = "<<on_times[i].first<<", "<<on_times[i].second<<std::endl;
+                    // std::cout<<"XX on interval discrete: "<<i<<" = "<<begin<<", "<<end<<std::endl;
                     //eliminate any intervals which are too short, and correct for blanking period
                     //yes...we are blanking at the buffer start/stop too, this is trivial amount of data loss that would be a pain to fix
                     if(end > begin + 2*blank+1)
                     {
-                        std::cout<<"on interval: "<<i<<" = "<<on_times[i].first<<", "<<on_times[i].second<<std::endl;
-                        std::cout<<"on interval discrete: "<<i<<" = "<<begin<<", "<<end<<std::endl;
+                        // std::cout<<"on interval: "<<i<<" = "<<on_times[i].first<<", "<<on_times[i].second<<std::endl;
+                        // std::cout<<"on interval discrete: "<<i<<" = "<<begin<<", "<<end<<std::endl;
                         on_intervals.push_back( std::pair<uint64_t, uint64_t>(begin+blank, end-blank) );
                     }
                 }
@@ -204,23 +204,26 @@ class HPeriodicPowerCalculator
                     uint64_t end = std::floor(off_times[i].second/sampling_period);
                     //eliminate any intervals which are too short, and correct for blanking period
                     //yes...we are blanking at the buffer start/stop too, this is trivial amount of data loss that would be a pain to fix
-
-                    std::cout<<"XX off interval: "<<i<<" = "<<off_times[i].first<<", "<<off_times[i].second<<std::endl;
-                    std::cout<<"XX off interval discrete: "<<i<<" = "<<begin<<", "<<end<<std::endl;
-
+                    // 
+                    // std::cout<<"XX off interval: "<<i<<" = "<<off_times[i].first<<", "<<off_times[i].second<<std::endl;
+                    // std::cout<<"XX off interval discrete: "<<i<<" = "<<begin<<", "<<end<<std::endl;
+                    // 
 
                     if(end > begin + 2*blank+1)
                     {
-                        std::cout<<"off interval: "<<i<<" = "<<off_times[i].first<<", "<<off_times[i].second<<std::endl;
-                        std::cout<<"off interval discrete: "<<i<<" = "<<begin<<", "<<end<<std::endl;
+                        // std::cout<<"off interval: "<<i<<" = "<<off_times[i].first<<", "<<off_times[i].second<<std::endl;
+                        // std::cout<<"off interval discrete: "<<i<<" = "<<begin<<", "<<end<<std::endl;
                         off_intervals.push_back( std::pair<uint64_t, uint64_t>(begin+blank,end-blank) );
                     }
                 }
             }
 
-            std::cout<<"n on intervals = "<<on_intervals.size()<<std::endl;
-            std::cout<<"n off intervals = "<<off_intervals.size()<<std::endl;
-            std::cout<<"------------------------"<<std::endl;
+            if(on_intervals.size() > 1 || off_intervals.size() > 1 || ( on_intervals.size() == 0 && off_intervals.size() == 0) )
+            {
+                std::cout<<"n on intervals = "<<on_intervals.size()<<std::endl;
+                std::cout<<"n off intervals = "<<off_intervals.size()<<std::endl;
+                std::cout<<"------------------------"<<std::endl;
+            }
 
         }
 
