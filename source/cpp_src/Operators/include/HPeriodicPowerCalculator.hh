@@ -219,11 +219,11 @@ class HPeriodicPowerCalculator
                 }
             }
 
-            if(on_intervals.size() > 1 || off_intervals.size() > 1 || ( on_intervals.size() == 0 && off_intervals.size() == 0) )
-            {
+            // if(on_intervals.size() > 1 || off_intervals.size() > 1 || ( on_intervals.size() == 0 && off_intervals.size() == 0) )
+            // {
                 std::cout<<"n on intervals = "<<on_intervals.size()<<std::endl;
                 std::cout<<"n off intervals = "<<off_intervals.size()<<std::endl;
-            }
+            // }
 
         }
 
