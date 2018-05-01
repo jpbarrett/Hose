@@ -49,69 +49,99 @@ HSpectrometerCUDA::ExecuteThreadTask()
     {
         //first get a sink buffer from the buffer handler
         HProducerBufferPolicyCode sink_code = this->fSinkBufferHandler.ReserveBuffer(this->fSinkBufferPool, sink);
-        HConsumerBufferPolicyCode source_code = this->fSourceBufferHandler.ReserveBuffer(this->fSourceBufferPool, source);
-
-        if( (sink_code & HProducerBufferPolicyCode::success) && (source_code & HConsumerBufferPolicyCode::success) && sink != nullptr && source !=nullptr)
+        if( (sink_code & HProducerBufferPolicyCode::success) && sink != nullptr)
         {
-            std::lock_guard<std::mutex> sink_lock(sink->fMutex);//, std::defer_lock);
-            std::lock_guard<std::mutex> source_lock(source->fMutex);//, std::defer_lock);
-            // 
-            // std::lock(sink_lock, source_lock);
+            std::lock_guard<std::mutex> sink_lock(sink->fMutex);
+        
+            HConsumerBufferPolicyCode source_code = this->fSourceBufferHandler.ReserveBuffer(this->fSourceBufferPool, source);
 
-            // std::cout<<"got a source and sink buffer"<<std::endl;
+            if( (source_code & HConsumerBufferPolicyCode::success) && source !=nullptr)
+            {
 
-            // //calculate the noise rms (may eventually need to move this calculation to the GPU)
-            fPowerCalc.SetBuffer(source);
-            fPowerCalc.Calculate();
+                std::lock_guard<std::mutex> source_lock(source->fMutex);//, std::defer_lock);
+                // 
+                // std::lock(sink_lock, source_lock);
 
-            //point the sdata to the buffer object (this is a horrible hack)
-            sdata = &( (sink->GetData())[0] ); //should have buffer size of 1
+                // std::cout<<"got a source and sink buffer"<<std::endl;
 
-            //set meta data
-            *( sink->GetMetaData() ) = *( source->GetMetaData() );
-            sdata->sample_rate = source->GetMetaData()->GetSampleRate();
-            sdata->acquistion_start_second = source->GetMetaData()->GetAcquisitionStartSecond();
-            sdata->leading_sample_index = source->GetMetaData()->GetLeadingSampleIndex();
-            sdata->data_length = source->GetArrayDimension(0); //also equal to fSpectrumLength*fNAverages;
-            sdata->spectrum_length = fSpectrumLength;
-            sdata->n_spectra = fNAverages;
+                // //calculate the noise rms (may eventually need to move this calculation to the GPU)
+                fPowerCalc.SetBuffer(source);
+                fPowerCalc.Calculate();
 
-            std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<source<<" XX!! size of on accumulations = "<<source->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
-            std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<source<<" XX!! size of off accumulations = "<<source->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
+                //point the sdata to the buffer object (this is a horrible hack)
+                sdata = &( (sink->GetData())[0] ); //should have buffer size of 1
 
-            // 
-            // std::cout<<sink<<" !! size of on accumulations = "<<sink->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
-            // std::cout<<sink<<" !! size of off accumulations = "<<sink->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
+                //set meta data
+                *( sink->GetMetaData() ) = *( source->GetMetaData() );
+                sdata->sample_rate = source->GetMetaData()->GetSampleRate();
+                sdata->acquistion_start_second = source->GetMetaData()->GetAcquisitionStartSecond();
+                sdata->leading_sample_index = source->GetMetaData()->GetLeadingSampleIndex();
+                sdata->data_length = source->GetArrayDimension(0); //also equal to fSpectrumLength*fNAverages;
+                sdata->spectrum_length = fSpectrumLength;
+                sdata->n_spectra = fNAverages;
 
-            std::cout<<"------------"<<std::endl;
+                std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<source<<" XX!! size of on accumulations = "<<source->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
+                std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<source<<" XX!! size of off accumulations = "<<source->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
 
-            //call Juha's process_vector routine
-            process_vector_no_output(source->GetData(), sdata);
-            // std::cout<<"processed on gpu"<<std::endl;
+                // 
+                // std::cout<<sink<<" !! size of on accumulations = "<<sink->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
+                // std::cout<<sink<<" !! size of off accumulations = "<<sink->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
 
-            //release the buffers
-            this->fSourceBufferHandler.ReleaseBufferToProducer(this->fSourceBufferPool, source);
-            this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
+                std::cout<<"------------"<<std::endl;
 
-            // else
-            // {
-            //     std::cout<<"lock code = "<<lock_code<<std::endl;
-            //     this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source);
-            //     this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
-            // }
+                //call Juha's process_vector routine
+                process_vector_no_output(source->GetData(), sdata);
+                // std::cout<<"processed on gpu"<<std::endl;
+
+                //release the buffers
+                this->fSourceBufferHandler.ReleaseBufferToProducer(this->fSourceBufferPool, source);
+                this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
+
+                // else
+                // {
+                //     std::cout<<"lock code = "<<lock_code<<std::endl;
+                //     this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source);
+                //     this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
+                // }
+            }
+            else
+            {
+                if(source != nullptr)
+                {
+                    this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source);
+                }
+
+                if(sink !=nullptr)
+                {
+                   this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
+                }
+
+            }
+
         }
         else
         {
-            // if(source != nullptr)
-            // {
-            //     this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source);
-            // }
-            // 
-            // if(sink !=nullptr)
-            // {
-            //     this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
-            // }
+            if(sink !=nullptr)
+            {
+               this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
+            }
         }
+
+        //     
+        // 
+        // }
+        // else
+        // {
+        //     // if(source != nullptr)
+        //     // {
+        //     //     this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source);
+        //     // }
+        //     // 
+        //     // if(sink !=nullptr)
+        //     // {
+        //     //     this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
+        //     // }
+        // }
 
     }
 
