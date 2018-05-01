@@ -63,8 +63,9 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 std::cout<<"thread: "<< std::this_thread::get_id()<<" locking source: "<<source<< "\n";
 
                 // //calculate the noise rms (may eventually need to move this calculation to the GPU)
-                fPowerCalc.SetBuffer(source);
-                fPowerCalc.Calculate();
+                HPeriodicPowerCalculator< uint16_t > powerCalc;
+                powerCalc.SetBuffer(source);
+                powerCalc.Calculate();
 
                 //point the sdata to the buffer object (this is a horrible hack)
                 sdata = &( (sink->GetData())[0] ); //should have buffer size of 1
