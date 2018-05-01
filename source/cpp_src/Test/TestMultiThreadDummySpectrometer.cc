@@ -63,9 +63,9 @@ int main(int /*argc*/, char** /*argv*/)
     m_spec.SetSourceBufferPool(source_pool);
     m_spec.SetSinkBufferPool(sink_pool);
 
-    m_spec.GetPowerCalculator()->SetSamplingFrequency( dummy.GetSamplingFrequency() );
-    m_spec.GetPowerCalculator()->SetSwitchingFrequency( 80.0 );
-    m_spec.GetPowerCalculator()->SetBlankingPeriod( 20.0*(1.0/dummy.GetSamplingFrequency()) );
+    m_spec.SetSamplingFrequency( dummy.GetSamplingFrequency() );
+    m_spec.SetSwitchingFrequency( 80.0 );
+    m_spec.SetBlankingPeriod( 20.0*(1.0/dummy.GetSamplingFrequency()) );
 
     //file writing consumer to drain the spectrum data buffers
     HSimpleMultiThreadedSpectrumDataWriter spec_writer;
