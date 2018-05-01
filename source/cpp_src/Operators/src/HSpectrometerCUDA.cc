@@ -82,8 +82,8 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 std::cout<<source<<" XX!! size of off accumulations = "<<source->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
 
 
-                std::cout<<"!! size of on accumulations = "<<sink->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
-                std::cout<<"!! size of off accumulations = "<<sink->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
+                std::cout<<sink<<" !! size of on accumulations = "<<sink->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
+                std::cout<<sink<<" !! size of off accumulations = "<<sink->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
 
                 std::cout<<"------------"<<std::endl;
 
