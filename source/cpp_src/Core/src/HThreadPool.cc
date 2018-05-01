@@ -57,10 +57,12 @@ HThreadPool::ForceTermination()
 void 
 HThreadPool::Join()
 {
+    std::cout<<"n threads = "<<fThreads.size()<<std::endl;
     for(unsigned int i=0; i<fThreads.size(); i++)
     {
         std::cout<<"joining thread:"<<i<<std::endl;
         fThreads[i].join();
+        std::cout<<"done thread: "<<i<<std::endl;
     }
     fThreads.clear();
     fThreadIdleMap.clear();
