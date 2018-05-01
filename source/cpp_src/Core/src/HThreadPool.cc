@@ -223,7 +223,11 @@ HThreadPool::ProcessLoop()
     //loop until we are done
     while( !fForceTerminate && (!fSignalTerminate || WorkPresent() ) )
     {
-        //std::cout<<"looping"<<std::endl;
+        if(fSignalTerminate)
+        {
+            std::cout<<"looping"<<std::endl;
+            std::cout<<"work present = "<<WorkPresent()<<std::endl;
+        }
         if( WorkPresent() )
         {
             //std::cout<<"got work to do"<<std::endl;

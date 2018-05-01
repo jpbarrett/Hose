@@ -23,7 +23,11 @@ HSpectrometerCUDA::WorkPresent()
     {
         std::cout<<"work size = "<<fSourceBufferPool->GetConsumerPoolSize()<<std::endl;
     }
-    return (fSourceBufferPool->GetConsumerPoolSize() != 0);
+    if( fSourceBufferPool->GetConsumerPoolSize() == 0)
+    {
+        return false;
+    }
+    return true;
 }
 
 
@@ -118,11 +122,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
                    this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
                 }
             }
-
-
         }
-
-
     }
 
 }
