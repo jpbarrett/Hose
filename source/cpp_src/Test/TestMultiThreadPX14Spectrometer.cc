@@ -101,10 +101,10 @@ int main(int /*argc*/, char** /*argv*/)
 
     std::cout<<"stopping spec"<<std::endl;
 
-    m_spec.StopConsumptionProduction();
+    m_spec.ForceStopConsumptionProduction();
 
     std::cout<<"stopping writer"<<std::endl;
-    spec_writer.StopConsumption();
+    spec_writer.ForceStopConsumption();
 
     sleep(2);
 
