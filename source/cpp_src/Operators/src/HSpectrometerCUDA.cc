@@ -52,7 +52,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
         if( (sink_code & HProducerBufferPolicyCode::success) && sink != nullptr)
         {
             std::lock_guard<std::mutex> sink_lock(sink->fMutex);
-            std::cout<<"thread: "<< std::this_thread::get_id()<<" locking sink: "<<sink<< "\n";
+            //std::cout<<"thread: "<< std::this_thread::get_id()<<" locking sink: "<<sink<< "\n";
         
             HConsumerBufferPolicyCode source_code = this->fSourceBufferHandler.ReserveBuffer(this->fSourceBufferPool, source);
 
@@ -60,7 +60,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
             {
 
                 std::lock_guard<std::mutex> source_lock(source->fMutex);
-                std::cout<<"thread: "<< std::this_thread::get_id()<<" locking source: "<<source<< "\n";
+                //std::cout<<"thread: "<< std::this_thread::get_id()<<" locking source: "<<source<< "\n";
 
                 // //calculate the noise rms (may eventually need to move this calculation to the GPU)
                 HPeriodicPowerCalculator< uint16_t > powerCalc;
@@ -103,15 +103,15 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 //     this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
                 // }
 
-                std::cout<<"thread: "<< std::this_thread::get_id()<<" destroying lock on source: "<<source<< "\n";
-                std::cout<<"thread: "<< std::this_thread::get_id()<<" destroying lock on sink: "<<sink << "\n";
+                //std::cout<<"thread: "<< std::this_thread::get_id()<<" destroying lock on source: "<<source<< "\n";
+                //std::cout<<"thread: "<< std::this_thread::get_id()<<" destroying lock on sink: "<<sink << "\n";
             }
             else
             {
                 if(source != nullptr)
                 {
-                    std::cout<<"thread: "<< std::this_thread::get_id()<<" destroying lock on source: "<<source<< "\n";
-                    std::cout<<"thread: "<< std::this_thread::get_id()<<" destroying lock on sink: "<<sink << "\n";
+                    //std::cout<<"thread: "<< std::this_thread::get_id()<<" destroying lock on source: "<<source<< "\n";
+                    //std::cout<<"thread: "<< std::this_thread::get_id()<<" destroying lock on sink: "<<sink << "\n";
                     this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source);
                 }
 
@@ -128,7 +128,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
         {
             if(sink !=nullptr)
             {
-                std::cout<<"thread: "<< std::this_thread::get_id()<<" destroying lock on sink:"<<sink << "\n";
+                //std::cout<<"thread: "<< std::this_thread::get_id()<<" destroying lock on sink:"<<sink << "\n";
                this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
             }
         }
