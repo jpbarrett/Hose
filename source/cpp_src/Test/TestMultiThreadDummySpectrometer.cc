@@ -59,7 +59,7 @@ int main(int /*argc*/, char** /*argv*/)
     sink_pool->Allocate(sink_n_chunks, sink_items_per_chunk);
 
     HSpectrometerCUDA m_spec(SPECTRUM_LENGTH, n_ave);
-    m_spec.SetNThreads(1);
+    m_spec.SetNThreads(2);
     m_spec.SetSourceBufferPool(source_pool);
     m_spec.SetSinkBufferPool(sink_pool);
 
