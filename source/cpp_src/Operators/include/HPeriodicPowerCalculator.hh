@@ -112,6 +112,13 @@ class HPeriodicPowerCalculator
                     fBuffer->GetMetaData()->AppendOffAccumulation(stat);
                 }
 
+                std::cout<<"YY n on intervals = "<<on_intervals.size()<<std::endl;
+                std::cout<<"YY n off intervals = "<<off_intervals.size()<<std::endl;
+
+                std::cout<<"YY !! size of on accumulations = "<<fBuffer->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
+                std::cout<<"YY !! size of off accumulations = "<<fBuffer->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
+
+
             }
         }   
 
