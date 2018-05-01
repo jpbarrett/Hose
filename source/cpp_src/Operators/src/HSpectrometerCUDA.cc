@@ -19,10 +19,10 @@ HSpectrometerCUDA::~HSpectrometerCUDA(){};
 bool 
 HSpectrometerCUDA::WorkPresent()
 {
-    // if(this->fSignalTerminate)
-    // {
-    //     std::cout<<"work size = "<<fSourceBufferPool->GetConsumerPoolSize()<<std::endl;
-    // }
+    if(this->fSignalTerminate)
+    {
+        std::cout<<"work size = "<<fSourceBufferPool->GetConsumerPoolSize()<<std::endl;
+    }
     return (fSourceBufferPool->GetConsumerPoolSize() != 0);
 }
 
