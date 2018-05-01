@@ -58,11 +58,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
             if( (source_code & HConsumerBufferPolicyCode::success) && source !=nullptr)
             {
 
-                std::lock_guard<std::mutex> source_lock(source->fMutex);//, std::defer_lock);
-                // 
-                // std::lock(sink_lock, source_lock);
-
-                // std::cout<<"got a source and sink buffer"<<std::endl;
+                std::lock_guard<std::mutex> source_lock(source->fMutex);
 
                 // //calculate the noise rms (may eventually need to move this calculation to the GPU)
                 fPowerCalc.SetBuffer(source);
@@ -80,14 +76,14 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 sdata->spectrum_length = fSpectrumLength;
                 sdata->n_spectra = fNAverages;
 
-                std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<source<<" XX!! size of on accumulations = "<<source->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
-                std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<source<<" XX!! size of off accumulations = "<<source->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
+                // std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<source<<" XX!! size of on accumulations = "<<source->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
+                // std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<source<<" XX!! size of off accumulations = "<<source->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
 
                 // 
                 // std::cout<<sink<<" !! size of on accumulations = "<<sink->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
                 // std::cout<<sink<<" !! size of off accumulations = "<<sink->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
 
-                std::cout<<"------------"<<std::endl;
+                // std::cout<<"------------"<<std::endl;
 
                 //call Juha's process_vector routine
                 process_vector_no_output(source->GetData(), sdata);
@@ -126,22 +122,6 @@ HSpectrometerCUDA::ExecuteThreadTask()
                this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
             }
         }
-
-        //     
-        // 
-        // }
-        // else
-        // {
-        //     // if(source != nullptr)
-        //     // {
-        //     //     this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source);
-        //     // }
-        //     // 
-        //     // if(sink !=nullptr)
-        //     // {
-        //     //     this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
-        //     // }
-        // }
 
     }
 
