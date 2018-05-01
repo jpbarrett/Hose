@@ -56,48 +56,46 @@ HSpectrometerCUDA::ExecuteThreadTask()
             std::unique_lock<std::mutex> sink_lock(sink->fMutex, std::defer_lock);
             std::unique_lock<std::mutex> source_lock(source->fMutex, std::defer_lock);
 
-            int lock_code = std::try_lock(sink_lock, source_lock);
+            std::lock(sink_lock, source_lock);
 
-            if(lock_code == -1)
-            {
-                // std::cout<<"got a source and sink buffer"<<std::endl;
+            // std::cout<<"got a source and sink buffer"<<std::endl;
 
-                // //calculate the noise rms (may eventually need to move this calculation to the GPU)
-                fPowerCalc.SetBuffer(source);
-                fPowerCalc.Calculate();
+            // //calculate the noise rms (may eventually need to move this calculation to the GPU)
+            fPowerCalc.SetBuffer(source);
+            fPowerCalc.Calculate();
 
-                //point the sdata to the buffer object (this is a horrible hack)
-                sdata = &( (sink->GetData())[0] ); //should have buffer size of 1
+            //point the sdata to the buffer object (this is a horrible hack)
+            sdata = &( (sink->GetData())[0] ); //should have buffer size of 1
 
-                //set meta data
-                *( sink->GetMetaData() ) = *( source->GetMetaData() );
-                sdata->sample_rate = source->GetMetaData()->GetSampleRate();
-                sdata->acquistion_start_second = source->GetMetaData()->GetAcquisitionStartSecond();
-                sdata->leading_sample_index = source->GetMetaData()->GetLeadingSampleIndex();
-                sdata->data_length = source->GetArrayDimension(0); //also equal to fSpectrumLength*fNAverages;
-                sdata->spectrum_length = fSpectrumLength;
-                sdata->n_spectra = fNAverages;
+            //set meta data
+            *( sink->GetMetaData() ) = *( source->GetMetaData() );
+            sdata->sample_rate = source->GetMetaData()->GetSampleRate();
+            sdata->acquistion_start_second = source->GetMetaData()->GetAcquisitionStartSecond();
+            sdata->leading_sample_index = source->GetMetaData()->GetLeadingSampleIndex();
+            sdata->data_length = source->GetArrayDimension(0); //also equal to fSpectrumLength*fNAverages;
+            sdata->spectrum_length = fSpectrumLength;
+            sdata->n_spectra = fNAverages;
 
-                std::cout<<source<<" XX!! size of on accumulations = "<<source->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
-                std::cout<<source<<" XX!! size of off accumulations = "<<source->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
+            std::cout<<source<<" XX!! size of on accumulations = "<<source->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
+            std::cout<<source<<" XX!! size of off accumulations = "<<source->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
 
 
-                std::cout<<sink<<" !! size of on accumulations = "<<sink->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
-                std::cout<<sink<<" !! size of off accumulations = "<<sink->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
+            std::cout<<sink<<" !! size of on accumulations = "<<sink->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
+            std::cout<<sink<<" !! size of off accumulations = "<<sink->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
 
-                std::cout<<"------------"<<std::endl;
+            std::cout<<"------------"<<std::endl;
 
-                //call Juha's process_vector routine
-                process_vector_no_output(source->GetData(), sdata);
-                // std::cout<<"processed on gpu"<<std::endl;
+            //call Juha's process_vector routine
+            process_vector_no_output(source->GetData(), sdata);
+            // std::cout<<"processed on gpu"<<std::endl;
 
-                source_lock.unlock();
-                sink_lock.unlock();
+            source_lock.unlock();
+            sink_lock.unlock();
 
-                //release the buffers
-                this->fSourceBufferHandler.ReleaseBufferToProducer(this->fSourceBufferPool, source);
-                this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
-            }
+            //release the buffers
+            this->fSourceBufferHandler.ReleaseBufferToProducer(this->fSourceBufferPool, source);
+            this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
+
             // else
             // {
             //     std::cout<<"lock code = "<<lock_code<<std::endl;
