@@ -180,11 +180,15 @@ class HPeriodicPowerCalculator
             {
                 if(on_times[i].second - on_times[i].first > 0.0)
                 {
-                    // std::cout<<"on time first = "<<on_times[i].first<<std::endl;
-                    // std::cout<<"on time second = "<<on_times[i].second<<std::endl;
+                    std::cout<<"on time first = "<<on_times[i].first<<std::endl;
+                    std::cout<<"on time second = "<<on_times[i].second<<std::endl;
 
                     uint64_t begin = std::floor(on_times[i].first/sampling_period);
                     uint64_t end = std::floor(on_times[i].second/sampling_period);
+
+
+                    std::cout<<"begin = "<<begin<<std::endl;
+                    std::cout<<"end = "<<end<<std::endl;
                     //eliminate any intervals which are too short, and correct for blanking period
                     //yes...we are blanking at the buffer start/stop too, this is trivial amount of data loss that would be a pain to fix
                     if(end > begin + 2*blank+1)
