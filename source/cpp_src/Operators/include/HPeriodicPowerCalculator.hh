@@ -113,10 +113,10 @@ class HPeriodicPowerCalculator
                     fBuffer->GetMetaData()->AppendOffAccumulation(stat);
                 }
                 // 
-                // std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<fBuffer<<" YY n on intervals = "<<on_intervals.size()<<std::endl;
-                // std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<fBuffer<<" YY n off intervals = "<<off_intervals.size()<<std::endl;
-                // std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<fBuffer<<" YY !! size of on accumulations = "<<fBuffer->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
-                // std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<fBuffer<<" YY !! size of off accumulations = "<<fBuffer->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
+                 std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<fBuffer<<" YY n on intervals = "<<on_intervals.size()<<std::endl;
+                 std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<fBuffer<<" YY n off intervals = "<<off_intervals.size()<<std::endl;
+                 std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<fBuffer<<" YY !! size of on accumulations = "<<fBuffer->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
+                 std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<fBuffer<<" YY !! size of off accumulations = "<<fBuffer->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
 
 
             }
