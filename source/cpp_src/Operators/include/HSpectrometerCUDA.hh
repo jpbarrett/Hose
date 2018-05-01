@@ -40,8 +40,9 @@ class HSpectrometerCUDA: public HConsumerProducer< uint16_t, spectrometer_data, 
         HSpectrometerCUDA(size_t spectrum_length, size_t n_averages);  //spec size and averages are fixed at constuction time
         virtual ~HSpectrometerCUDA();
 
-        //access to the power calculator for config
-        HPeriodicPowerCalculator< uint16_t >* GetPowerCalculator() {return &fPowerCalc;};
+        void SetSamplingFrequency(double samp_freq){fSamplingFrequency = samp_freq;};
+        void SetSwitchingFrequency(double switch_freq){fSwitchingFrequency = switch_freq;};
+        void SetBlankingPeriod(double blank_period){fBlankingPeriod = blank_period;}
 
     private:
 
@@ -50,6 +51,12 @@ class HSpectrometerCUDA: public HConsumerProducer< uint16_t, spectrometer_data, 
 
         size_t fSpectrumLength;
         size_t fNAverages;
+
+        //data
+        double fSamplingFrequency;
+        double fSwitchingFrequency; //frequency at which the noise diode is switched
+        double fBlankingPeriod; // ignore samples within +/- half the blanking period about switching time 
+
 
 
 };
