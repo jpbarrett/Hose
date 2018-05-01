@@ -106,6 +106,8 @@ HSpectrometerCUDA::ExecuteThreadTask()
             {
                 if(source != nullptr)
                 {
+                    std::cout<<"destroying lock on "<<source<< "\n";
+                    std::cout<<"destroying lock on "<<sink << "\n";
                     this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source);
                 }
 
@@ -116,17 +118,18 @@ HSpectrometerCUDA::ExecuteThreadTask()
 
             }
 
-            std::cout<<"destorying lock on "<<source<< "\n";
+
         }
         else
         {
             if(sink !=nullptr)
             {
+                std::cout<<"destroying lock on "<<sink << "\n";
                this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
             }
         }
 
-        std::cout<<"destorying lock on "<<sink << "\n";
+
     }
 
 }
