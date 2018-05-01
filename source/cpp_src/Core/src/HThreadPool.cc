@@ -243,13 +243,15 @@ HThreadPool::ProcessLoop()
         }
     }
 
+    std::cout<<"finished a"<<std::endl;
+
     if(fSignalTerminate)
     {
         std::cout<<"done looping"<<std::endl;
         std::cout<<"work present = "<<WorkPresent()<<std::endl;
     }
 
-    std::cout<<"finished"<<std::endl;
+    std::cout<<"finished b"<<std::endl;
 }
 
 
