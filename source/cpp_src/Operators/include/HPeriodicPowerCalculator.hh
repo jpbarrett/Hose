@@ -87,6 +87,7 @@ class HPeriodicPowerCalculator
                         stat.sum_x2 += val*val;
                         stat.count += 1.0;
                     }
+                    std::cout<<"appending on"<<std::endl;
                     fBuffer->GetMetaData()->AppendOnAccumulation(stat);
                 }
 
@@ -109,6 +110,7 @@ class HPeriodicPowerCalculator
                         stat.sum_x2 += val*val;
                         stat.count += 1.0;
                     }
+                    std::cout<<"appending off"<<std::endl;
                     fBuffer->GetMetaData()->AppendOffAccumulation(stat);
                 }
 
