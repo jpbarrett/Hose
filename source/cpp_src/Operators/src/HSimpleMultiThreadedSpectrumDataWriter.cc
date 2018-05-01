@@ -56,7 +56,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                     ss <<  sdata->leading_sample_index;
                     ss << ".bin";
 
-                    std::cout<<"file name = "<<ss.str()<<std::endl;
+                    //std::cout<<"file name = "<<ss.str()<<std::endl;
                     // std::cout<<"size of on accumulations = "<<tail->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
                     // std::cout<<"size of off accumulations = "<<tail->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
 
