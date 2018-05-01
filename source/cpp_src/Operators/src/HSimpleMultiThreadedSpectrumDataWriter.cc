@@ -35,7 +35,6 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
 
         if(buffer_code & HConsumerBufferPolicyCode::success && tail != nullptr)
         {
-
             std::lock_guard<std::mutex> lock(tail->fMutex);
             //initialize the thread workspace
             spectrometer_data* sdata = nullptr;
@@ -73,9 +72,10 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 // spec_data.ReleaseSpectrumData();
                 // 
                 //free the tail for re-use
-                this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
+
             }
 
+            this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
 
         }
     }

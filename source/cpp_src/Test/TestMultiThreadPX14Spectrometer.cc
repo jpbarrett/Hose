@@ -93,11 +93,17 @@ int main(int /*argc*/, char** /*argv*/)
     dummy.StartProduction();
 
     //wait 
-    usleep(100000000);
+    usleep(10000000);
 
-    std::cout<<"stopping"<<std::endl;
+    std::cout<<"stopping digitizer"<<std::endl;
+
     dummy.StopProduction();
+
+    std::cout<<"stopping spec"<<std::endl;
+
     m_spec.StopConsumptionProduction();
+
+    std::cout<<"stopping writer"<<std::endl;
     spec_writer.StopConsumption();
 
     sleep(2);
