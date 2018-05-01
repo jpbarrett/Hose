@@ -58,14 +58,15 @@ class HPeriodicPowerCalculator
                 uint64_t buffer_size = fBuffer->GetArrayDimension(0);
                 XBufferItemType* raw_data = fBuffer->GetData();
 
+                fBuffer->GetMetaData()->ClearOnAccumulation();
+                fBuffer->GetMetaData()->ClearOffAccumulation();
+
                 //determine which buffer samples are in the on/of periods
                 //(this assumes the noise diode switching and acquisition triggering was synced with the 1pps signal)
                 std::vector< std::pair<uint64_t, uint64_t> > on_intervals;
                 std::vector< std::pair<uint64_t, uint64_t> > off_intervals;
                 GetOnOffIntervals(leading_sample_index, buffer_size, on_intervals, off_intervals);
 
-                fBuffer->GetMetaData()->ClearOnAccumulation();
-                fBuffer->GetMetaData()->ClearOffAccumulation();
 
                 //loop over the on-intervals accumulating statistics
                 for(unsigned int i=0; i<on_intervals.size(); i++)
@@ -218,12 +219,11 @@ class HPeriodicPowerCalculator
                 }
             }
 
-            // if(on_intervals.size() > 1 || off_intervals.size() > 1 || ( on_intervals.size() == 0 && off_intervals.size() == 0) )
-            // {
-            //     std::cout<<"n on intervals = "<<on_intervals.size()<<std::endl;
-            //     std::cout<<"n off intervals = "<<off_intervals.size()<<std::endl;
-            //     std::cout<<"------------------------"<<std::endl;
-            // }
+            if(on_intervals.size() > 1 || off_intervals.size() > 1 || ( on_intervals.size() == 0 && off_intervals.size() == 0) )
+            {
+                std::cout<<"n on intervals = "<<on_intervals.size()<<std::endl;
+                std::cout<<"n off intervals = "<<off_intervals.size()<<std::endl;
+            }
 
         }
 
