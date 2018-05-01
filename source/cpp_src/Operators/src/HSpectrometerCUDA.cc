@@ -52,6 +52,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
         if( (sink_code & HProducerBufferPolicyCode::success) && sink != nullptr)
         {
             std::lock_guard<std::mutex> sink_lock(sink->fMutex);
+            std::cout<<"locking "<<sink<< "\n";
         
             HConsumerBufferPolicyCode source_code = this->fSourceBufferHandler.ReserveBuffer(this->fSourceBufferPool, source);
 
@@ -59,6 +60,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
             {
 
                 std::lock_guard<std::mutex> source_lock(source->fMutex);
+                std::cout<<"locking "<<source<< "\n";
 
                 // //calculate the noise rms (may eventually need to move this calculation to the GPU)
                 fPowerCalc.SetBuffer(source);
@@ -114,6 +116,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
 
             }
 
+            std::cout<<"destorying lock on "<<source<< "\n";
         }
         else
         {
@@ -123,6 +126,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
             }
         }
 
+        std::cout<<"destorying lock on "<<sink << "\n";
     }
 
 }
