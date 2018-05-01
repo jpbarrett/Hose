@@ -94,7 +94,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 // std::cout<<"------------"<<std::endl;
 
                 //call Juha's process_vector routine
-                //process_vector_no_output(source->GetData(), sdata);
+                process_vector_no_output(source->GetData(), sdata);
                 // std::cout<<"processed on gpu"<<std::endl;
 
                 //release the buffers
