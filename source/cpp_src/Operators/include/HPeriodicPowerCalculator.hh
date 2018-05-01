@@ -58,15 +58,14 @@ class HPeriodicPowerCalculator
                 uint64_t buffer_size = fBuffer->GetArrayDimension(0);
                 XBufferItemType* raw_data = fBuffer->GetData();
 
-                fBuffer->GetMetaData()->ClearOnAccumulation();
-                fBuffer->GetMetaData()->ClearOffAccumulation();
-
                 //determine which buffer samples are in the on/of periods
                 //(this assumes the noise diode switching and acquisition triggering was synced with the 1pps signal)
                 std::vector< std::pair<uint64_t, uint64_t> > on_intervals;
                 std::vector< std::pair<uint64_t, uint64_t> > off_intervals;
                 GetOnOffIntervals(leading_sample_index, buffer_size, on_intervals, off_intervals);
 
+                fBuffer->GetMetaData()->ClearOnAccumulation();
+                fBuffer->GetMetaData()->ClearOffAccumulation();
 
                 //loop over the on-intervals accumulating statistics
                 for(unsigned int i=0; i<on_intervals.size(); i++)
@@ -116,9 +115,8 @@ class HPeriodicPowerCalculator
 
                 std::cout<<"YY n on intervals = "<<on_intervals.size()<<std::endl;
                 std::cout<<"YY n off intervals = "<<off_intervals.size()<<std::endl;
-
-                std::cout<<"YY !! size of on accumulations = "<<fBuffer->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
-                std::cout<<"YY !! size of off accumulations = "<<fBuffer->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
+                std::cout<<fBuffer<<" YY !! size of on accumulations = "<<fBuffer->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
+                std::cout<<fBuffer<<" YY !! size of off accumulations = "<<fBuffer->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
 
 
             }
