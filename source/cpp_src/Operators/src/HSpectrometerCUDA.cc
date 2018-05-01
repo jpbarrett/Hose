@@ -113,29 +113,13 @@ HSpectrometerCUDA::ExecuteThreadTask()
             }
             else
             {
-                if(source != nullptr)
-                {
-                    //std::cout<<"thread: "<< std::this_thread::get_id()<<" destroying lock on source: "<<source<< "\n";
-                    //std::cout<<"thread: "<< std::this_thread::get_id()<<" destroying lock on sink: "<<sink << "\n";
-                    this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source);
-                }
-
                 if(sink !=nullptr)
                 {
                    this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
                 }
-
             }
 
 
-        }
-        else
-        {
-            if(sink !=nullptr)
-            {
-                //std::cout<<"thread: "<< std::this_thread::get_id()<<" destroying lock on sink:"<<sink << "\n";
-               this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
-            }
         }
 
 
