@@ -218,6 +218,10 @@ class HPeriodicPowerCalculator
                 }
             }
 
+            std::cout<<"n on intervals = "<<on_intervals.size()<<std::endl;
+            std::cout<<"n off intervals = "<<off_intervals.size()<<std::endl;
+            std::cout<<"------------------------"<<std::endl;
+
         }
 
 
