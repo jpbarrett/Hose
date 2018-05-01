@@ -61,6 +61,7 @@ class HConsumerProducer: public HThreadPool
             //signal termination to thread pool
             std::cout<<"sending terminate signal"<<std::endl;
             SignalTerminateOnComplete();
+            std::cout<<"term signal = "<<fSignalTerminate<<std::endl;
 
             //signal and stop the management thread
 

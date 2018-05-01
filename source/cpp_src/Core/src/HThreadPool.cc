@@ -241,6 +241,13 @@ HThreadPool::ProcessLoop()
             Idle();
         }
     }
+
+    if(fSignalTerminate)
+    {
+        std::cout<<"done looping"<<std::endl;
+        std::cout<<"work present = "<<WorkPresent()<<std::endl;
+    }
+
 }
 
 
