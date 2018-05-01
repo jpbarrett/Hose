@@ -76,12 +76,12 @@ HSpectrometerCUDA::ExecuteThreadTask()
             sdata->spectrum_length = fSpectrumLength;
             sdata->n_spectra = fNAverages;
 
-            std::cout<<source<<" XX!! size of on accumulations = "<<source->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
-            std::cout<<source<<" XX!! size of off accumulations = "<<source->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
+            std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<source<<" XX!! size of on accumulations = "<<source->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
+            std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<source<<" XX!! size of off accumulations = "<<source->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
 
-
-            std::cout<<sink<<" !! size of on accumulations = "<<sink->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
-            std::cout<<sink<<" !! size of off accumulations = "<<sink->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
+            // 
+            // std::cout<<sink<<" !! size of on accumulations = "<<sink->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
+            // std::cout<<sink<<" !! size of off accumulations = "<<sink->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
 
             std::cout<<"------------"<<std::endl;
 
