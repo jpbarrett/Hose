@@ -59,6 +59,7 @@ HThreadPool::Join()
 {
     for(unsigned int i=0; i<fThreads.size(); i++)
     {
+        std::cout<<"joining thread:"<<i<<std::endl;
         fThreads[i].join();
     }
     fThreads.clear();
