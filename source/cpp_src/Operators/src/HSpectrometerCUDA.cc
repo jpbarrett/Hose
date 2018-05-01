@@ -78,6 +78,10 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 sdata->spectrum_length = fSpectrumLength;
                 sdata->n_spectra = fNAverages;
 
+                std::cout<<"!! size of on accumulations = "<<sink->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
+                std::cout<<"!! size of off accumulations = "<<sink->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
+
+
                 //call Juha's process_vector routine
                 process_vector_no_output(source->GetData(), sdata);
                 // std::cout<<"processed on gpu"<<std::endl;
