@@ -249,6 +249,7 @@ HThreadPool::ProcessLoop()
         std::cout<<"work present = "<<WorkPresent()<<std::endl;
     }
 
+    std::cout<<"finished"<<std::endl;
 }
 
 
