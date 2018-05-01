@@ -54,6 +54,9 @@ class HPeriodicPowerCalculator
         {
             if( fBuffer != nullptr )
             {
+
+                std::lock_guard<std::mutex> buff_lock(fBuffer->fMutex);
+
                 uint64_t leading_sample_index = fBuffer->GetMetaData()->GetLeadingSampleIndex();
                 uint64_t buffer_size = fBuffer->GetArrayDimension(0);
                 XBufferItemType* raw_data = fBuffer->GetData();
