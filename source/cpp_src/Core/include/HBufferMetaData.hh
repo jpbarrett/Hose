@@ -44,7 +44,7 @@ class HBufferMetaData
         //for now we are going to stuff the noise statistics data in here for estimating tsys w/ the noise diode
         //doing otherwise will require some re-architecting of the whole consumer/producer/buffer pool system
         void ClearOnAccumulation(){fOnAccumulations.clear();};
-        void AppendOnAccumulation( HDataAccumulation accum){ ;};//fOnAccumulations.push_back(accum); };
+        void AppendOnAccumulation( HDataAccumulation accum){ fOnAccumulations.push_back(accum); };
         void ExtendOnAccumulation( const std::vector< HDataAccumulation >* accum_vec)
         {
             fOnAccumulations.reserve( fOnAccumulations.size() + accum_vec->size() );
@@ -53,7 +53,7 @@ class HBufferMetaData
         std::vector< HDataAccumulation >* GetOnAccumulations() {return &fOnAccumulations;};
 
         void ClearOffAccumulation(){fOffAccumulations.clear();};
-        void AppendOffAccumulation( HDataAccumulation accum){;};//fOffAccumulations.push_back(accum); };
+        void AppendOffAccumulation( HDataAccumulation accum){ fOffAccumulations.push_back(accum); };
         void ExtendOffAccumulation( const std::vector< HDataAccumulation >* accum_vec)
         {
             fOffAccumulations.reserve( fOffAccumulations.size() + accum_vec->size() );
