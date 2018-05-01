@@ -102,15 +102,15 @@ HSpectrometerCUDA::ExecuteThreadTask()
         }
         else
         {
-            if(source != nullptr)
-            {
-                this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source);
-            }
-
-            if(sink !=nullptr)
-            {
-                this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
-            }
+            // if(source != nullptr)
+            // {
+            //     this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source);
+            // }
+            // 
+            // if(sink !=nullptr)
+            // {
+            //     this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
+            // }
         }
 
     }
