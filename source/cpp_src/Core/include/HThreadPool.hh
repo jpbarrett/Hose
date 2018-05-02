@@ -8,6 +8,8 @@
 #include <map>
 #include <utility>
 
+#include <unistd.h>
+
 namespace hose
 {
 
