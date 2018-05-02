@@ -55,6 +55,7 @@ class HConsumer: public HThreadPool
         {
             //signal termination to thread pool
             SignalTerminateOnComplete();
+            usleep(10000);
 
             //signal and stop the management thread
             fStopConsumption = true;
@@ -69,6 +70,7 @@ class HConsumer: public HThreadPool
         {
             //kill the thread pool
             ForceTermination();
+            usleep(10000);
 
             //signal and stop the management thread
             fStopConsumption = true;
