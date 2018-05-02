@@ -247,7 +247,7 @@ HThreadPool::ProcessLoop()
 
     //register this thread with the idle indicator
     InsertIdleIndicator();
-
+    SetIdleIndicatorTrue();
     //std::cout<<"in process loop"<<std::endl;
 
     //loop until we are done
