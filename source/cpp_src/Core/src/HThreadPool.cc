@@ -57,7 +57,6 @@ HThreadPool::ForceTermination()
 void 
 HThreadPool::Join()
 {
-    std::cout<<"n threads = "<<fThreads.size()<<std::endl;
     unsigned int n_threads = fThreads.size();
     unsigned int n_stopped = 0;
     std::vector<unsigned int> stopped_ids;
@@ -76,20 +75,13 @@ HThreadPool::Join()
                 auto It = fThreadIdleMap.find( fThreads[i].get_id() );
                 if(It->second)
                 {
-                    std::cout<<"joining thread:"<<i<<std::endl;
                     fThreads[i].join();
-                    std::cout<<"done thread: "<<i<<std::endl;
                     n_stopped++;
                     stopped_ids.push_back(i);
-                }
-                else
-                {
-                    std::cout<<"thread: "<<i<<" is not idle"<<std::endl;
                 }
             }
         }
     }
-
 
     fThreads.clear();
     fThreadIdleMap.clear();
@@ -248,16 +240,10 @@ HThreadPool::ProcessLoop()
     //register this thread with the idle indicator
     InsertIdleIndicator();
     SetIdleIndicatorTrue();
-    //std::cout<<"in process loop"<<std::endl;
 
     //loop until we are done
     while( !fForceTerminate && (!fSignalTerminate || WorkPresent() ) )
     {
-        if(fSignalTerminate)
-        {
-            std::cout<<"looping"<<std::endl;
-            std::cout<<"work present = "<<WorkPresent()<<std::endl;
-        }
         if( WorkPresent() )
         {
             //std::cout<<"got work to do"<<std::endl;
@@ -273,16 +259,6 @@ HThreadPool::ProcessLoop()
     }
 
     SetIdleIndicatorTrue();
-
-    std::cout<<"finished a"<<std::endl;
-
-    if(fSignalTerminate || fForceTerminate)
-    {
-        std::cout<<"done looping"<<std::endl;
-        std::cout<<"work present = "<<WorkPresent()<<std::endl;
-    }
-
-    std::cout<<"finished b"<<std::endl;
 }
 
 

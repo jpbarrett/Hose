@@ -54,16 +54,12 @@ class HProducer: public HThreadPool
         {
             //signal termination to thread pool
             SignalTerminateOnComplete();
-            usleep(10000);
-
             //signal and stop the management thread
             fStopProduction = true;
             fProductionManagementThread.join();
 
             //join the thread pool
             Join();
-
-            std::cout<<"producer has stopped"<<std::endl;
         }
 
         //stop the producer and join thread
@@ -71,8 +67,6 @@ class HProducer: public HThreadPool
         {
             //kill the thread pool
             ForceTermination();
-            usleep(10000);
-
             //signal and stop the management thread
             fStopProduction = true;
             fProductionManagementThread.join();

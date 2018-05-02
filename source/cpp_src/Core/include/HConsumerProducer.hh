@@ -59,25 +59,14 @@ class HConsumerProducer: public HThreadPool
         void StopConsumptionProduction()
         {
             //signal termination to thread pool
-            std::cout<<"sending terminate signal"<<std::endl;
             SignalTerminateOnComplete();
-            usleep(10000);
-            std::cout<<"term signal = "<<fSignalTerminate<<std::endl;
 
             //signal and stop the management thread
-
-            std::cout<<"waiting to join management thread"<<std::endl;
             fStopConsumptionProduction = true;
             fManagementThread.join();
 
-            std::cout<<"manager joined"<<std::endl;
-
-
-            std::cout<<"waiting for work threads"<<std::endl;
             //join the thread pool
             Join();
-
-            std::cout<<"consumer/producer has stopped"<<std::endl;
         }
 
         //stop the producer and join thread
