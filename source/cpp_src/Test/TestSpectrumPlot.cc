@@ -152,6 +152,14 @@ int main(int argc, char** argv)
         off_accum.insert( off_accum.end(), vec->begin(), vec->end() );
     }
 
+    //print out the first few on/off accumulation periods
+    for(unsigned int i=0; i<10; i++)
+    {
+        std::cout<<"i = "<<i<<std::endl;
+        std::cout<<"on ["<<on_accum[i].start_index<<", "<<on_accum[i].stop_index<<"]"<<std::endl;
+        std::cout<<"off ["<<off_accum[i].start_index<<", "<<off_accum[i].stop_index<<"]"<<std::endl;
+    }
+
     double onx, onx2, onN;
     for(unsigned int i=0; i<on_accum.size(); i++)
     {
