@@ -50,6 +50,11 @@ class HSpectrometerCUDA: public HConsumerProducer< uint16_t, spectrometer_data, 
         virtual bool WorkPresent() override;
         virtual void Idle() override {;};
 
+        virtual void ConfigureSinkBufferHandler(HConsumerBufferHandler_WaitWithTimeout< uint16_t >& handler)
+        {
+            handler->SetSleepDurationNanoSeconds(0);
+        };
+
         size_t fSpectrumLength;
         size_t fNAverages;
 
