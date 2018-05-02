@@ -58,12 +58,39 @@ void
 HThreadPool::Join()
 {
     std::cout<<"n threads = "<<fThreads.size()<<std::endl;
-    for(unsigned int i=0; i<fThreads.size(); i++)
+    unsigned int n_threads = fThreads.size();
+    unsigned int n_stopped = 0;
+    std::vector<unsigned int> stopped_ids;
+    while(n_stopped != n_threads)
     {
-        std::cout<<"joining thread:"<<i<<std::endl;
-        fThreads[i].join();
-        std::cout<<"done thread: "<<i<<std::endl;
+        for(unsigned int i=0; i<n_threads; i++)
+        {
+            bool have_already_stopped = false;
+            for(unsigned int j=0; j<stopped_ids.size(); j++)
+            {
+                if(stopped_ids[j] == i){have_already_stopped = true;};
+            }
+
+            if(!have_already_stopped)
+            {
+                auto It = fThreadIdleMap.find( fThreads[i].get_id() );
+                if(It->second)
+                {
+                    std::cout<<"joining thread:"<<i<<std::endl;
+                    fThreads[i].join();
+                    std::cout<<"done thread: "<<i<<std::endl;
+                    n_stopped++;
+                    stopped_ids.push_back(i);
+                }
+                else
+                {
+                    std::cout<<"thread: "<<i<<" is not idle"<<std::endl;
+                }
+            }
+        }
     }
+
+
     fThreads.clear();
     fThreadIdleMap.clear();
     fHasLaunched = false;
