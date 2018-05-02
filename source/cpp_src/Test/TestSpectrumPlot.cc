@@ -148,22 +148,26 @@ int main(int argc, char** argv)
         std::vector<HDataAccumulation>* vec = spectrum_vec[i].GetOnAccumulations();
         on_accum.insert( on_accum.end(), vec->begin(), vec->end() );
 
-        std::cout<<"i = "<<i<<std::endl;
-        std::cout<<"spec file leading index "<<spectrum_vec[i].GetLeadingSampleIndex()<<std::endl;
-
-        for(unsigned int j=0; j<vec->size(); j++)
+        if(i <10)
         {
-            std::cout<<"j = "<<i<<std::endl;
-            std::cout<<"on ["<<vec->at(j).start_index<<", "<<vec->at(j).stop_index<<"]"<<std::endl;
-        }
+            std::cout<<"i = "<<i<<std::endl;
+            std::cout<<"spec file leading index "<<spectrum_vec[i].GetLeadingSampleIndex()<<std::endl;
 
-        vec = spectrum_vec[i].GetOffAccumulations();
-        off_accum.insert( off_accum.end(), vec->begin(), vec->end() );
+            for(unsigned int j=0; j<vec->size(); j++)
+            {
+                std::cout<<"j = "<<i<<std::endl;
+                std::cout<<"on ["<<vec->at(j).start_index<<", "<<vec->at(j).stop_index<<"]"<<std::endl;
+            }
 
-        for(unsigned int j=0; j<vec->size(); j++)
-        {
-            std::cout<<"j = "<<i<<std::endl;
-            std::cout<<"off ["<<vec->at(j).start_index<<", "<<vec->at(j).stop_index<<"]"<<std::endl;
+            vec = spectrum_vec[i].GetOffAccumulations();
+            off_accum.insert( off_accum.end(), vec->begin(), vec->end() );
+
+            for(unsigned int j=0; j<vec->size(); j++)
+            {
+                std::cout<<"j = "<<i<<std::endl;
+                std::cout<<"off ["<<vec->at(j).start_index<<", "<<vec->at(j).stop_index<<"]"<<std::endl;
+            }
+
         }
 
     }
