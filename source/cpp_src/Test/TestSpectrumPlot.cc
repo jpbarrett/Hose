@@ -145,11 +145,21 @@ int main(int argc, char** argv)
     std::vector< HDataAccumulation > off_accum;
     for(unsigned int i=0; i<spectrum_vec.size(); i++)
     {
-        std::vector<HDataAccumulation>* vec = spectrum_vec[i].GetOnAccumulations();
+        std::vector<HDataAccumulation>* vec = nullptr;
+
+        vec = spectrum_vec[i].GetOnAccumulations();
         on_accum.insert( on_accum.end(), vec->begin(), vec->end() );
 
-        if(i <10)
+        vec = spectrum_vec[i].GetOffAccumulations();
+        off_accum.insert( off_accum.end(), vec->begin(), vec->end() );
+
+
+        
+
+        //if(i < 10)
         {
+            vec = spectrum_vec[i].GetOnAccumulations();
+
             std::cout<<"i = "<<i<<std::endl;
             std::cout<<"spec file leading index "<<spectrum_vec[i].GetLeadingSampleIndex()<<std::endl;
 
@@ -160,7 +170,7 @@ int main(int argc, char** argv)
             }
 
             vec = spectrum_vec[i].GetOffAccumulations();
-            off_accum.insert( off_accum.end(), vec->begin(), vec->end() );
+
 
             for(unsigned int j=0; j<vec->size(); j++)
             {
