@@ -44,7 +44,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
     HLinearBuffer< spectrometer_data >* sink = nullptr;
     HLinearBuffer< uint16_t>* source = nullptr;
 
-    std::cout<<"thread: "<< std::this_thread::get_id()<<" executing thread task"<<std::endl;
+    //std::cout<<"thread: "<< std::this_thread::get_id()<<" executing thread task"<<std::endl;
     // 
     // std::cout<<"sink (out to writer) pro buff pool size = "<<fSinkBufferPool->GetProducerPoolSize()<<std::endl;
     // std::cout<<"source (in from digi) cons buff pool size = "<<fSourceBufferPool->GetConsumerPoolSize()<<std::endl;

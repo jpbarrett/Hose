@@ -48,6 +48,7 @@ class HSpectrometerCUDA: public HConsumerProducer< uint16_t, spectrometer_data, 
 
         virtual void ExecuteThreadTask() override;
         virtual bool WorkPresent() override;
+        virtual void Idle(){usleep(10);} override;
 
         size_t fSpectrumLength;
         size_t fNAverages;
