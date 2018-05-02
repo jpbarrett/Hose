@@ -247,7 +247,7 @@ HThreadPool::ProcessLoop()
 
     std::cout<<"finished a"<<std::endl;
 
-    if(fSignalTerminate)
+    if(fSignalTerminate || fForceTerminate)
     {
         std::cout<<"done looping"<<std::endl;
         std::cout<<"work present = "<<WorkPresent()<<std::endl;
