@@ -272,6 +272,8 @@ HThreadPool::ProcessLoop()
         }
     }
 
+    SetIdleIndicatorTrue();
+
     std::cout<<"finished a"<<std::endl;
 
     if(fSignalTerminate || fForceTerminate)
