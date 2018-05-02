@@ -134,13 +134,15 @@ class HPeriodicPowerCalculator
             double upper = switching_period/2.0;
             std::vector< std::pair<double, double> > on_times;
             std::vector< std::pair<double, double> > off_times;
-            for(unsigned int i=0; i<n_switching_periods_per_buffer; i++)
+            // for(unsigned int i=0; i<n_switching_periods_per_buffer; i++)
+            do
             {
                 on_times.push_back( std::pair<double, double>(lower, upper) );
                 lower += switching_period;
                 off_times.push_back( std::pair<double, double>(upper, lower) );
                 upper += switching_period;
             }
+            while(lower <= buffer_time_length);
 
             double time_since_acquisition_start = start*sampling_period;
             uint64_t n_switching_periods = std::floor( time_since_acquisition_start/switching_period );
