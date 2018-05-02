@@ -86,7 +86,6 @@ class HPeriodicPowerCalculator
                         stat.sum_x2 += val*val;
                         stat.count += 1.0;
                     }
-                    //std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<fBuffer<<" appending on"<<std::endl;
                     fBuffer->GetMetaData()->AppendOnAccumulation(stat);
                 }
 
@@ -109,16 +108,8 @@ class HPeriodicPowerCalculator
                         stat.sum_x2 += val*val;
                         stat.count += 1.0;
                     }
-                    //std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<fBuffer<<" appending off"<<std::endl;
                     fBuffer->GetMetaData()->AppendOffAccumulation(stat);
                 }
-                // 
-                //  std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<fBuffer<<" YY n on intervals = "<<on_intervals.size()<<std::endl;
-                //  std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<fBuffer<<" YY n off intervals = "<<off_intervals.size()<<std::endl;
-                //  std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<fBuffer<<" YY !! size of on accumulations = "<<fBuffer->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
-                //  std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<fBuffer<<" YY !! size of off accumulations = "<<fBuffer->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
-
-
             }
         }   
 
@@ -138,11 +129,6 @@ class HPeriodicPowerCalculator
             double buffer_time_length = sampling_period*length;
             unsigned int n_switching_periods_per_buffer = std::ceil(buffer_time_length/switching_period); //possibly one more than needed, will trim later
     
-            // std::cout<<"sampling period = "<<sampling_period<<std::endl;
-            // std::cout<<"switching_period = "<<switching_period<<std::endl;
-            // std::cout<<"buffer time length = "<<buffer_time_length<<std::endl;
-            // std::cout<<"n switching_periods per buffer = "<<n_switching_periods_per_buffer<<std::endl;
-
             //create the on/off intervals assuming that the buffer start is aligned with the switching frequency (not necessarily true)
             double lower = 0.0;
             double upper = switching_period/2.0;
@@ -188,19 +174,13 @@ class HPeriodicPowerCalculator
             {
                 if(on_times[i].second - on_times[i].first > 0.0)
                 {
-
-
                     uint64_t begin = std::floor(on_times[i].first/sampling_period);
                     uint64_t end = std::floor(on_times[i].second/sampling_period);
 
-                    // std::cout<<"XX on interval: "<<i<<" = "<<on_times[i].first<<", "<<on_times[i].second<<std::endl;
-                    // std::cout<<"XX on interval discrete: "<<i<<" = "<<begin<<", "<<end<<std::endl;
                     //eliminate any intervals which are too short, and correct for blanking period
                     //yes...we are blanking at the buffer start/stop too, this is trivial amount of data loss that would be a pain to fix
                     if(end > begin + 2*blank+1)
                     {
-                        // std::cout<<"on interval: "<<i<<" = "<<on_times[i].first<<", "<<on_times[i].second<<std::endl;
-                        // std::cout<<"on interval discrete: "<<i<<" = "<<begin<<", "<<end<<std::endl;
                         on_intervals.push_back( std::pair<uint64_t, uint64_t>(begin+blank, end-blank) );
                     }
                 }
@@ -212,26 +192,12 @@ class HPeriodicPowerCalculator
                     uint64_t end = std::floor(off_times[i].second/sampling_period);
                     //eliminate any intervals which are too short, and correct for blanking period
                     //yes...we are blanking at the buffer start/stop too, this is trivial amount of data loss that would be a pain to fix
-                    // 
-                    // std::cout<<"XX off interval: "<<i<<" = "<<off_times[i].first<<", "<<off_times[i].second<<std::endl;
-                    // std::cout<<"XX off interval discrete: "<<i<<" = "<<begin<<", "<<end<<std::endl;
-                    // 
-
                     if(end > begin + 2*blank+1)
                     {
-                        // std::cout<<"off interval: "<<i<<" = "<<off_times[i].first<<", "<<off_times[i].second<<std::endl;
-                        // std::cout<<"off interval discrete: "<<i<<" = "<<begin<<", "<<end<<std::endl;
                         off_intervals.push_back( std::pair<uint64_t, uint64_t>(begin+blank,end-blank) );
                     }
                 }
             }
-
-            // if(on_intervals.size() > 1 || off_intervals.size() > 1 || ( on_intervals.size() == 0 && off_intervals.size() == 0) )
-            // {
-                // std::cout<<"n on intervals = "<<on_intervals.size()<<std::endl;
-                // std::cout<<"n off intervals = "<<off_intervals.size()<<std::endl;
-            // }
-
         }
 
 

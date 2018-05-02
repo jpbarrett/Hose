@@ -25,9 +25,6 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
     //get a buffer from the buffer handler
     HLinearBuffer< spectrometer_data >* tail = nullptr;
 
-    // std::cout<<"writer pro buff pool size = "<<fBufferPool->GetProducerPoolSize()<<std::endl;
-    // std::cout<<"writer cons buff pool size = "<<fBufferPool->GetConsumerPoolSize()<<std::endl;
-
     if( this->fBufferPool->GetConsumerPoolSize() != 0 )
     {
         //grab a buffer to process
@@ -52,10 +49,6 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 ss << "_";
                 ss <<  sdata->leading_sample_index;
                 ss << ".bin";
-
-                //std::cout<<"file name = "<<ss.str()<<std::endl;
-                // std::cout<<"size of on accumulations = "<<tail->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
-                // std::cout<<"size of off accumulations = "<<tail->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
 
                 HSpectrumObject< float > spec_data;
                 spec_data.SetStartTime( sdata->acquistion_start_second );

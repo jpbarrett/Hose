@@ -19,10 +19,6 @@ HSpectrometerCUDA::~HSpectrometerCUDA(){};
 bool 
 HSpectrometerCUDA::WorkPresent()
 {
-    if(this->fSignalTerminate)
-    {
-        std::cout<<"work size = "<<fSourceBufferPool->GetConsumerPoolSize()<<std::endl;
-    }
     if( fSourceBufferPool->GetConsumerPoolSize() == 0)
     {
         return false;
@@ -44,11 +40,6 @@ HSpectrometerCUDA::ExecuteThreadTask()
     HLinearBuffer< spectrometer_data >* sink = nullptr;
     HLinearBuffer< uint16_t>* source = nullptr;
 
-    //std::cout<<"thread: "<< std::this_thread::get_id()<<" executing thread task"<<std::endl;
-    // 
-    // std::cout<<"sink (out to writer) pro buff pool size = "<<fSinkBufferPool->GetProducerPoolSize()<<std::endl;
-    // std::cout<<"source (in from digi) cons buff pool size = "<<fSourceBufferPool->GetConsumerPoolSize()<<std::endl;
-
     if( fSourceBufferPool->GetConsumerPoolSize() != 0 ) //only do work if there is stuff to process
     {
         //first get a sink buffer from the buffer handler
@@ -56,23 +47,19 @@ HSpectrometerCUDA::ExecuteThreadTask()
         if( (sink_code & HProducerBufferPolicyCode::success) && sink != nullptr)
         {
             std::lock_guard<std::mutex> sink_lock(sink->fMutex);
-            //std::cout<<"thread: "<< std::this_thread::get_id()<<" locking sink: "<<sink<< "\n";
-        
+
             HConsumerBufferPolicyCode source_code = this->fSourceBufferHandler.ReserveBuffer(this->fSourceBufferPool, source);
 
             if( (source_code & HConsumerBufferPolicyCode::success) && source !=nullptr)
             {
 
                 std::lock_guard<std::mutex> source_lock(source->fMutex);
-                //std::cout<<"thread: "<< std::this_thread::get_id()<<" locking source: "<<source<< "\n";
 
                 //calculate the noise rms (may eventually need to move this calculation to the GPU)
                 HPeriodicPowerCalculator< uint16_t > powerCalc;
-                
                 powerCalc.SetSamplingFrequency(fSamplingFrequency);
                 powerCalc.SetSwitchingFrequency(fSwitchingFrequency);
                 powerCalc.SetBlankingPeriod(fBlankingPeriod);
-                
                 powerCalc.SetBuffer(source);
                 powerCalc.Calculate();
 
@@ -88,32 +75,12 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 sdata->spectrum_length = fSpectrumLength;
                 sdata->n_spectra = fNAverages;
 
-                // std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<source<<" XX!! size of on accumulations = "<<source->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
-                // std::cout<<"thread: "<< std::this_thread::get_id()<<"  ptr: "<<source<<" XX!! size of off accumulations = "<<source->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
-
-                // 
-                // std::cout<<sink<<" !! size of on accumulations = "<<sink->GetMetaData()->GetOnAccumulations()->size()<<std::endl;
-                // std::cout<<sink<<" !! size of off accumulations = "<<sink->GetMetaData()->GetOffAccumulations()->size()<<std::endl;
-
-                // std::cout<<"------------"<<std::endl;
-
                 //call Juha's process_vector routine
                 process_vector_no_output(source->GetData(), sdata);
-                // std::cout<<"processed on gpu"<<std::endl;
 
                 //release the buffers
                 this->fSourceBufferHandler.ReleaseBufferToProducer(this->fSourceBufferPool, source);
                 this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
-
-                // else
-                // {
-                //     std::cout<<"lock code = "<<lock_code<<std::endl;
-                //     this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source);
-                //     this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
-                // }
-
-                //std::cout<<"thread: "<< std::this_thread::get_id()<<" destroying lock on source: "<<source<< "\n";
-                //std::cout<<"thread: "<< std::this_thread::get_id()<<" destroying lock on sink: "<<sink << "\n";
             }
             else
             {

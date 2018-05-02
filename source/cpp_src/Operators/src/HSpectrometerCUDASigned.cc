@@ -102,22 +102,6 @@ HSpectrometerCUDASigned::ProcessLoop()
                 // //print the first couple samples 
                 std::size_t tmp = 0;
                 std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                // 
-                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                // 
-                // 
-                // tmp+=1000;
-                // 
-                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
-                // std::cout<<"sample @ "<<tmp<<" = "<<(tail->GetData())[tmp]<<std::endl; tmp++;
 
                 //call Juha's process_vector routine
                 process_vector_no_output_s(tail->GetData(), sdata);
