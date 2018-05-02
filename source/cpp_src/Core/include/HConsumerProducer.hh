@@ -99,8 +99,8 @@ class HConsumerProducer: public HThreadPool
 
         void ConsumeProduceWork()
         {
-            // ConfigureSinkBufferHandler(fSinkBufferHandler);
-            // ConfigureSourceBufferHandler(fSourceBufferHandler);
+            ConfigureSinkBufferHandler();
+            ConfigureSourceBufferHandler();
 
             ExecutePreConsumptionProductionTasks();
 
@@ -122,8 +122,8 @@ class HConsumerProducer: public HThreadPool
         virtual void ExecutePreConsumptionProductionTasks(){};
         virtual void ExecutePostConsumptionProductionTasks(){};
 
-        // virtual void ConfigureSinkBufferHandler(XProducerSinkBufferHandlerPolicyType& /*handler*/){};
-        // virtual void ConfigureSourceBufferHandler(XConsumerSourceBufferHandlerPolicyType& /*handler*/){};
+        virtual void ConfigureSinkBufferHandler(){};
+        virtual void ConfigureSourceBufferHandler(){};
         virtual void ExecutePreWorkTasks(){};
         virtual void DoWork(){}; //override if thread tasks are not independent
         virtual void ExecutePostWorkTasks(){};
