@@ -129,6 +129,11 @@ class HPeriodicPowerCalculator
             double buffer_time_length = sampling_period*length;
             unsigned int n_switching_periods_per_buffer = std::ceil(buffer_time_length/switching_period); //possibly one more than needed, will trim later
     
+            double time_since_acquisition_start = start*sampling_period;
+            uint64_t n_switching_periods = std::floor( time_since_acquisition_start/switching_period );
+            double time_remainder = time_since_acquisition_start - n_switching_periods*switching_period;
+
+
             //create the on/off intervals assuming that the buffer start is aligned with the switching frequency (not necessarily true)
             double lower = 0.0;
             double upper = switching_period/2.0;
@@ -142,11 +147,8 @@ class HPeriodicPowerCalculator
                 off_times.push_back( std::pair<double, double>(upper, lower) );
                 upper += switching_period;
             }
-            while(lower <= buffer_time_length);
+            while(lower <= buffer_time_length + time_remainder);
 
-            double time_since_acquisition_start = start*sampling_period;
-            uint64_t n_switching_periods = std::floor( time_since_acquisition_start/switching_period );
-            double time_remainder = time_since_acquisition_start - n_switching_periods*switching_period;
 
             //determine number of samples to blank
             uint64_t blank = std::ceil( (fBlankingPeriod/2.0)*fSamplingFrequency );
@@ -155,19 +157,19 @@ class HPeriodicPowerCalculator
             for(unsigned int i=0; i<n_switching_periods_per_buffer; i++)
             {
                 on_times[i].first -= time_remainder; 
-                if(on_times[i].first < 0.0){on_times[i].first = 0.0;}
+                if(on_times[i].first <= 0.0){on_times[i].first = 0.0;}
                 else{on_times[i].first = std::min(on_times[i].first, buffer_time_length);}
 
                 on_times[i].second -= time_remainder; 
-                if(on_times[i].second < 0.0){on_times[i].second = 0.0;}
+                if(on_times[i].second <= 0.0){on_times[i].second = 0.0;}
                 else{on_times[i].second = std::min(on_times[i].second, buffer_time_length);}
 
                 off_times[i].first -= time_remainder; 
-                if(off_times[i].first < 0.0){off_times[i].first = 0.0;}
+                if(off_times[i].first <= 0.0){off_times[i].first = 0.0;}
                 else{off_times[i].first = std::min(off_times[i].first, buffer_time_length);}
 
                 off_times[i].second -= time_remainder; 
-                if(off_times[i].second < 0.0){off_times[i].second = 0.0;}
+                if(off_times[i].second <= 0.0){off_times[i].second = 0.0;}
                 else{off_times[i].second = std::min(off_times[i].second, buffer_time_length);}
             }
 
