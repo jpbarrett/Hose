@@ -117,6 +117,74 @@ class HConsumerBufferHandler_Wait: public HConsumerBufferReleaser< XBufferItemTy
 
 };
 
+
+//wait for buffer until time-out is reached, then fail
+template< typename XBufferItemType >
+class HConsumerBufferHandler_WaitWithTimeout: public HConsumerBufferReleaser< XBufferItemType >
+{
+    public:
+        HConsumerBufferHandler_WaitWithTimeout():fNAttempts(100),fSleepDurationNanoSeconds(500){;};
+        virtual ~HConsumerBufferHandler_WaitWithTimeout(){;};
+
+        //total time-out wait time will be fNAttempts*fSleepDurationNanoSeconds
+        void SetNAttempts(unsigned int n){fNAttempts = n;};
+        unsigned int GetNAttempts() const {return fNAttempts;};
+
+        void SetSleepDurationNanoSeconds(unsigned int ns){fSleepDurationNanoSeconds = ns;};
+        unsigned int GetSleepDurationNanoSeconds() const {return fSleepDurationNanoSeconds;};
+
+        HConsumerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>*& buffer)
+        {
+            if(pool->GetProducerPoolSize() != 0)
+            {
+                buffer = pool->PopProducerBuffer();
+                return HConsumerBufferPolicyCode::success;
+            }
+            else
+            {   
+                //wait for the consumer buffer pool to become empty
+                unsigned int count = 0;
+                while( pool->GetProducerPoolSize() != 0 && count < fNAttempts)
+                {
+                    //sleep for the specified duration if it is non-zero
+                    if(fSleepDurationNanoSeconds != 0)
+                    {
+                        std::this_thread::sleep_for(std::chrono::nanoseconds(fSleepDurationNanoSeconds));
+                    }
+
+                    if(pool->GetProducerPoolSize() != 0)
+                    {
+                        buffer = pool->PopProducerBuffer();
+                        return HConsumerBufferPolicyCode::success;
+                    }
+
+                    count++;
+                };
+
+                //producer pool should be full now, so grab buffer
+                if(pool->GetProducerPoolSize() != 0)
+                {
+                    buffer = pool->PopProducerBuffer();
+                    return HConsumerBufferPolicyCode::success;
+                }
+                else
+                {   
+                    buffer = nullptr;
+                    return HConsumerBufferPolicyCode::fail;
+                }
+            }
+        }
+
+    protected: 
+
+        unsigned int fNAttempts;
+        unsigned int fSleepDurationNanoSeconds;
+};
+
+
+
+
+
 }
 
 

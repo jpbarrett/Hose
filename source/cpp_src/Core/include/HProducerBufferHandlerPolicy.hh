@@ -250,7 +250,7 @@ class HProducerBufferHandler_WaitWithTimeout: public HProducerBufferReleaser< XB
         void SetSleepDurationNanoSeconds(unsigned int ns){fSleepDurationNanoSeconds = ns;};
         unsigned int GetSleepDurationNanoSeconds() const {return fSleepDurationNanoSeconds;};
 
-        HProducerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>* buffer)
+        HProducerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>*& buffer)
         {
             if(pool->GetProducerPoolSize() != 0)
             {
