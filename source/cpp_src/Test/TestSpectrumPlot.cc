@@ -168,6 +168,10 @@ int main(int argc, char** argv)
         offN += off_accum[i].count;
     }
 
+
+    std::cout<<"N on accum = "<<on_accum.size()<<std::endl;
+    std::cout<<"N off accum = "<<off_accum.size()<<std::endl;
+
     std::cout<<"on x: "<<onx<<" on x2: "<<onx2<<" on count "<<onN<<std::endl;
     std::cout<<"off x: "<<offx<<" off x2: "<<offx2<<" off count "<<offN<<std::endl;
 
