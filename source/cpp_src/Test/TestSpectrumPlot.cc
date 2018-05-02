@@ -148,17 +148,33 @@ int main(int argc, char** argv)
         std::vector<HDataAccumulation>* vec = spectrum_vec[i].GetOnAccumulations();
         on_accum.insert( on_accum.end(), vec->begin(), vec->end() );
 
+        std::cout<<"i = "<<i<<std::endl;
+        std::cout<<"spec file leading index "<<spectrum_vec[i].GetLeadingSampleIndex()<<std::endl;
+
+        for(unsigned int j=0; j<vec->size(); j++)
+        {
+            std::cout<<"j = "<<i<<std::endl;
+            std::cout<<"on ["<<vec->at(j).start_index<<", "<<vec->at(j).stop_index<<"]"<<std::endl;
+        }
+
         vec = spectrum_vec[i].GetOffAccumulations();
         off_accum.insert( off_accum.end(), vec->begin(), vec->end() );
+
+        for(unsigned int j=0; j<vec->size(); j++)
+        {
+            std::cout<<"j = "<<i<<std::endl;
+            std::cout<<"off ["<<vec->at(j).start_index<<", "<<vec->at(j).stop_index<<"]"<<std::endl;
+        }
+
     }
 
-    //print out the first few on/off accumulation periods
-    for(unsigned int i=0; i<10; i++)
-    {
-        std::cout<<"i = "<<i<<std::endl;
-        std::cout<<"on ["<<on_accum[i].start_index<<", "<<on_accum[i].stop_index<<"]"<<std::endl;
-        std::cout<<"off ["<<off_accum[i].start_index<<", "<<off_accum[i].stop_index<<"]"<<std::endl;
-    }
+    // //print out the first few on/off accumulation periods
+    // for(unsigned int i=0; i<10; i++)
+    // {
+    //     std::cout<<"i = "<<i<<std::endl;
+    //     std::cout<<"on ["<<on_accum[i].start_index<<", "<<on_accum[i].stop_index<<"]"<<std::endl;
+    //     std::cout<<"off ["<<off_accum[i].start_index<<", "<<off_accum[i].stop_index<<"]"<<std::endl;
+    // }
 
     double onx, onx2, onN;
     for(unsigned int i=0; i<on_accum.size(); i++)
