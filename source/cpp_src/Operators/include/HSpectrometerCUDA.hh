@@ -33,7 +33,7 @@ namespace hose
 
 //template< typename XSourceBufferItemType, typename XSinkBufferItemType, typename XConsumerSourceBufferHandlerPolicyType, typename XProducerSinkBufferHandlerPolicyType > 
 
-class HSpectrometerCUDA: public HConsumerProducer< uint16_t, spectrometer_data, HConsumerBufferHandler_WaitWithTimeout< uint16_t >, HProducerBufferHandler_Steal< spectrometer_data > >
+class HSpectrometerCUDA: public HConsumerProducer< uint16_t, spectrometer_data, HConsumerBufferHandler_Immediate< uint16_t >, HProducerBufferHandler_Steal< spectrometer_data > >
 {
 
     public:
@@ -50,10 +50,10 @@ class HSpectrometerCUDA: public HConsumerProducer< uint16_t, spectrometer_data, 
         virtual bool WorkPresent() override;
         virtual void Idle() override {;};
 
-        virtual void ConfigureSourceBufferHandler() override
-        {
-            this->fSourceBufferHandler.SetSleepDurationNanoSeconds(0);
-        };
+        // virtual void ConfigureSourceBufferHandler() override
+        // {
+        //     this->fSourceBufferHandler.SetSleepDurationNanoSeconds(0);
+        // };
 
         size_t fSpectrumLength;
         size_t fNAverages;
