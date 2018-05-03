@@ -93,7 +93,7 @@ int main(int /*argc*/, char** /*argv*/)
     dummy.StartProduction();
 
     //wait 
-    usleep(1000000);
+    usleep(10000000);
 
     std::cout<<"stopping digitizer"<<std::endl;
 
