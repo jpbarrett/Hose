@@ -66,6 +66,8 @@ class HPeriodicPowerCalculator
 
                 GetOnOffIntervals(fSamplingFrequency, fSwitchingFrequency, fBlankingPeriod, leading_sample_index, buffer_size, on_intervals, off_intervals);
 
+                std::cout<<"leading index: "<<leading_sample_index<<" n on = "<<on_intervals.size()<<" n off = "<<off_intervals.size()<<std::endl;
+
                 fBuffer->GetMetaData()->ClearOnAccumulation();
                 fBuffer->GetMetaData()->ClearOffAccumulation();
 
