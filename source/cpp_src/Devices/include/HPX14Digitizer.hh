@@ -13,6 +13,7 @@ extern "C"
 
 #include "HDigitizer.hh"
 #include "HProducer.hh"
+#include "HConsumerBufferHandlerPolicy.hh"
 #include "HPX14BufferAllocator.hh"
 
 namespace hose {

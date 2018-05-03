@@ -215,17 +215,29 @@ HPX14Digitizer::TransferImpl()
 
         if(internal_code & HProducerBufferPolicyCode::success && internal_buff != nullptr)
         {
-            //copy the internal buffer to the appropriate section of the external buffer
-            void* src = internal_buff->GetData();
-            void* dest = &( (this->fBufferPool->GetData())[internal_buff->GetLeadingSampleIndex()] );
-            size_t sz = internal_buff->GetMetaData()->GetValidLength();
-
-            if(  dest != nullptr &&  src != nullptr && sz != 0)
+            int code = GetPciAcquisitionDataFastPX14(fBoard, samples_in_buffer, internal_buff->GetData(), PX14_TRUE);
+            if(code != SIG_SUCCESS)
             {
-                //do the memcpy
-                memcpy(dest, src, sz);
+                DumpLibErrorPX14 (code, "\nFailed to obtain PCI acquisition data: ", fBoard);
+                fErrorCode = 1;
             }
+            else
+            {
+                //wait for xfer to complete
+                int code = WaitForTransferCompletePX14(fBoard);
+
+                internal_buff->SetValidLength(samples_in_buffer);
+                internal_buff->SetLeadingSampleIndex(n_samples_collect-samples_to_collect);
+
+                fInternalProducerBufferHandler.ReleaseBufferToConsumer(fInternalBufferPool, internal_buff);
+                internal_buff = nullptr;
+
+                //update samples to collect
+                samples_to_collect -= samples_in_buffer;
+            }
+            if(internal_buff != nullptr){fInternalProducerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);};
         }
+
     }
 
 }
@@ -393,28 +405,21 @@ HPX14Digitizer::ExecuteThreadTask()
 
         if(internal_code & HProducerBufferPolicyCode::success && internal_buff != nullptr)
         {
-            int code = GetPciAcquisitionDataFastPX14(fBoard, samples_in_buffer, internal_buff->GetData(), PX14_TRUE);
-            if(code != SIG_SUCCESS)
+            //copy the internal buffer to the appropriate section of the external buffer
+            void* src = internal_buff->GetData();
+            void* dest = &( (this->fBufferPool->GetData())[internal_buff->GetLeadingSampleIndex()] );
+            size_t sz = internal_buff->GetMetaData()->GetValidLength();
+
+            if( dest != nullptr &&  src != nullptr && sz != 0)
             {
-                DumpLibErrorPX14 (code, "\nFailed to obtain PCI acquisition data: ", fBoard);
-                fErrorCode = 1;
+                //do the memcpy
+                memcpy(dest, src, sz);
             }
-            else
-            {
-                //wait for xfer to complete
-                int code = WaitForTransferCompletePX14(fBoard);
-
-                internal_buff->SetValidLength(samples_in_buffer);
-                internal_buff->SetLeadingSampleIndex(n_samples_collect-samples_to_collect);
-
-                fInternalProducerBufferHandler.ReleaseBufferToConsumer(fInternalBufferPool, internal_buff);
-                internal_buff = nullptr;
-
-                //update samples to collect
-                samples_to_collect -= samples_in_buffer;
-            }
-            if(internal_buff != nullptr){fInternalProducerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);
+            fInternalConsumerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);
+            internal_buff = nullptr;
         }
+        if(internal_buff != nullptr){fInternalConsumerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);};
+
     }
 }
 
