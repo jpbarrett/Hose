@@ -195,7 +195,7 @@ HADQ7Digitizer::TransferImpl()
     this->fBuffer->GetMetaData()->SetSampleRate(fSampleRate); //check that double to uint64_t conversion is OK here
 
     unsigned int n_samples_collect  = this->fBuffer->GetArrayDimension(0);
-    unsigned int samples_to_collect = this->fBuffer->GetArrayDimension(0);
+    int64_t samples_to_collect = this->fBuffer->GetArrayDimension(0);
     unsigned int buffers_filled = 0;
     int collect_result = 0;
 
