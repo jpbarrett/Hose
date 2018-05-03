@@ -197,7 +197,7 @@ HPX14Digitizer::TransferImpl()
 {
     //configure buffer information, cast time to uint64_t and set, then set the sample rate
     this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
-    this->fBuffer->GetMetaData()->SetSampleRate(fSampleRate); //check that double to uint64_t conversion is OK here
+    this->fBuffer->GetMetaData()->SetSampleRate(GetSamplingFrequency()); //check that double to uint64_t conversion is OK here
 
     unsigned int n_samples_collect  = this->fBuffer->GetArrayDimension(0);
     int64_t samples_to_collect = this->fBuffer->GetArrayDimension(0);
@@ -207,7 +207,7 @@ HPX14Digitizer::TransferImpl()
 
     while(samples_to_collect > 0)
     {
-        unsigned int samples_in_buffer = std::min(samples_to_collect, fInternalBufferSize);
+        unsigned int samples_in_buffer = std::min( (unsigned int) samples_to_collect, fInternalBufferSize);
 
         //grab a buffer from the internal pool
         HLinearBuffer< px14_sample_t >* internal_buff = nullptr;
