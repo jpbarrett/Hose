@@ -67,7 +67,7 @@ int main(int /*argc*/, char** /*argv*/)
 
     std::cout<<"sampling freq = "<<dummy.GetSamplingFrequency()<<std::endl;
     m_spec.SetSamplingFrequency( dummy.GetSamplingFrequency() );
-    m_spec.SetSwitchingFrequency( 80.0 );
+    m_spec.SetSwitchingFrequency( 837.0 );
     m_spec.SetBlankingPeriod( 20.0*(1.0/dummy.GetSamplingFrequency()) );
 
     //file writing consumer to drain the spectrum data buffers
