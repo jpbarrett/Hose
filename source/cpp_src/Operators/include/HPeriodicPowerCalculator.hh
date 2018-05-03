@@ -62,7 +62,9 @@ class HPeriodicPowerCalculator
                 //(this assumes the noise diode switching and acquisition triggering was synced with the 1pps signal)
                 std::vector< std::pair<uint64_t, uint64_t> > on_intervals;
                 std::vector< std::pair<uint64_t, uint64_t> > off_intervals;
-                GetOnOffIntervals(leading_sample_index, buffer_size, on_intervals, off_intervals);
+                // GetOnOffIntervals(leading_sample_index, buffer_size, on_intervals, off_intervals);
+
+                GetOnOffIntervals(fSamplingFrequency, fSwitchingFrequency, fBlankingPeriod, leading_sample_index, buffer_size, on_intervals, off_intervals);
 
                 fBuffer->GetMetaData()->ClearOnAccumulation();
                 fBuffer->GetMetaData()->ClearOffAccumulation();
@@ -115,72 +117,115 @@ class HPeriodicPowerCalculator
 
     private:
 
+
         //returns intervals [x,y) of samples to be included in the ON/OFF sets, does not take the blanking period into account
         //assumes signal synced such that ON is the first state (at acquisition start, index=0)
-        void GetOnOffIntervals(uint64_t start, uint64_t length, 
-                               std::vector< std::pair<uint64_t, uint64_t> >& on_intervals, 
-                               std::vector< std::pair<uint64_t, uint64_t> >& off_intervals)
+        void GetOnOffIntervals( double sampling_frequency, 
+                                double switching_frequency, 
+                                double blanking_period,
+                                uint64_t start, 
+                                uint64_t length, 
+                                std::vector< std::pair<uint64_t, uint64_t> >& on_intervals, 
+                                std::vector< std::pair<uint64_t, uint64_t> >& off_intervals)
         {
             on_intervals.clear();
             off_intervals.clear();
+        
+            double sampling_period = 1.0/sampling_frequency;
+            double switching_period = 1.0/switching_frequency;
+            double half_switching_period = switching_period/2.0;
+            double buffer_length = sampling_period*length;
+            double buffer_start = start*sampling_period;
+            double buffer_end = buffer_start + buffer_length;
 
-            double sampling_period = 1.0/fSamplingFrequency;
-            double switching_period = 1.0/fSwitchingFrequency;
-            double buffer_time_length = sampling_period*length;
-            unsigned int n_switching_periods_per_buffer = std::ceil(buffer_time_length/switching_period); //possibly one more than needed, will trim later
-    
-            double time_since_acquisition_start = start*sampling_period;
-            uint64_t n_switching_periods = std::floor( time_since_acquisition_start/switching_period );
-            double time_remainder = time_since_acquisition_start - n_switching_periods*switching_period;
+            //figure out the last/next on/off-times which occured on or before the start/end of this buffer
+            unsigned int a = std::floor(buffer_start/half_switching_period);
+            unsigned int b = std::ceil((buffer_start+sampling_period)/half_switching_period);
+            bool on_at_start = false;
+            if(a % 2 == 0){on_at_start = true;};
 
+            unsigned int c = std::floor((buffer_end)/half_switching_period);
+            unsigned int d = std::ceil( (buffer_end+sampling_period)/half_switching_period);
 
-            //create the on/off intervals assuming that the buffer start is aligned with the switching frequency (not necessarily true)
-            double lower = 0.0;
-            double upper = switching_period/2.0;
             std::vector< std::pair<double, double> > on_times;
             std::vector< std::pair<double, double> > off_times;
-            // for(unsigned int i=0; i<n_switching_periods_per_buffer; i++)
-            do
+
+            //take care of simple cases first
+            if(a == c && b == d)
             {
-                on_times.push_back( std::pair<double, double>(lower, upper) );
-                lower += switching_period;
-                off_times.push_back( std::pair<double, double>(upper, lower) );
-                upper += switching_period;
+                if(on_at_start)
+                {
+                    //entire interval is contained within an on period
+                    on_times.push_back( std::pair<double, double>(0.0, buffer_length) );
+                }
+                else
+                {
+                    //entire interval is contained within an off period
+                    off_times.push_back( std::pair<double, double>(0.0, buffer_length) );
+                }
             }
-            while(lower <= buffer_time_length + time_remainder);
-
-
-            //determine number of samples to blank
-            uint64_t blank = std::ceil( (fBlankingPeriod/2.0)*fSamplingFrequency );
-
-            //subtract off the time_remainder from the switching times and ensure it is in the range [0,buffer_time_length]
-            for(unsigned int i=0; i<n_switching_periods_per_buffer; i++)
+            else if( b == c)
             {
-                on_times[i].first -= time_remainder; 
-                if(on_times[i].first <= 0.0){on_times[i].first = 0.0;}
-                else{on_times[i].first = std::min(on_times[i].first, buffer_time_length);}
-
-                on_times[i].second -= time_remainder; 
-                if(on_times[i].second <= 0.0){on_times[i].second = 0.0;}
-                else{on_times[i].second = std::min(on_times[i].second, buffer_time_length);}
-
-                off_times[i].first -= time_remainder; 
-                if(off_times[i].first <= 0.0){off_times[i].first = 0.0;}
-                else{off_times[i].first = std::min(off_times[i].first, buffer_time_length);}
-
-                off_times[i].second -= time_remainder; 
-                if(off_times[i].second <= 0.0){off_times[i].second = 0.0;}
-                else{off_times[i].second = std::min(off_times[i].second, buffer_time_length);}
+                //there is a single on/off transition during the interval
+                if(on_at_start)
+                {
+                    on_times.push_back( std::pair<double, double>(0.0, b*half_switching_period) );
+                    off_times.push_back( std::pair<double, double>(b*half_switching_period, buffer_length) );
+                }
+                else
+                {
+                    off_times.push_back( std::pair<double, double>(0.0, b*half_switching_period) );
+                    on_times.push_back( std::pair<double, double>(b*half_switching_period, buffer_length) );
+                }
             }
+            else
+            {
+                //there are multiple on-off transitions during the interval
 
+                //take care of the portion between the start and b
+                if(on_at_start)
+                {
+                    on_times.push_back( std::pair<double, double>(0.0, b*half_switching_period) );
+                }
+                else
+                {
+                    off_times.push_back( std::pair<double, double>(0.0, b*half_switching_period) );
+                }
+
+                //take care the multiple switching periods between b and c
+                for(unsigned int i=b; i<c; i++)
+                {
+                    if(i % 2 == 0)
+                    {
+                        on_times.push_back( std::pair<double, double>(i*half_switching_period, (i+1)*half_switching_period) );
+                    }
+                    else
+                    {
+                        off_times.push_back( std::pair<double, double>(i*half_switching_period, (i+1)*half_switching_period) );
+                    }
+                }
+
+                //take care of the portion between c and then end
+                if(c % 2 == 0)
+                {
+                    on_times.push_back( std::pair<double, double>(c*half_switching_period, buffer_length) );
+                }
+                else
+                {
+                    off_times.push_back( std::pair<double, double>(c*half_switching_period, buffer_length) );
+                }
+
+            }
+            
+            uint64_t blank = std::ceil( (blanking_period/2.0)*sampling_frequency ); 
+                
             //now convert to sample indices, while removing any time ranges which have a size of zero
-            for(unsigned int i=0; i<n_switching_periods_per_buffer; i++)
+            for(unsigned int i=0; i<on_times.size(); i++)
             {
                 if(on_times[i].second - on_times[i].first > 0.0)
                 {
                     uint64_t begin = std::floor(on_times[i].first/sampling_period);
                     uint64_t end = std::floor(on_times[i].second/sampling_period);
-
                     //eliminate any intervals which are too short, and correct for blanking period
                     //yes...we are blanking at the buffer start/stop too, this is trivial amount of data loss that would be a pain to fix
                     if(end > begin + 2*blank+1)
@@ -188,10 +233,12 @@ class HPeriodicPowerCalculator
                         on_intervals.push_back( std::pair<uint64_t, uint64_t>(begin+blank, end-blank) );
                     }
                 }
+            }
 
+            for(unsigned int i=0; i<off_times.size(); i++)
+            {
                 if(off_times[i].second - off_times[i].first > 0.0)
                 {
-
                     uint64_t begin =  std::floor(off_times[i].first/sampling_period);
                     uint64_t end = std::floor(off_times[i].second/sampling_period);
                     //eliminate any intervals which are too short, and correct for blanking period
@@ -203,6 +250,71 @@ class HPeriodicPowerCalculator
                 }
             }
         }
+
+
+
+
+        // 
+        // //returns intervals [x,y) of samples to be included in the ON/OFF sets, does not take the blanking period into account
+        // //assumes signal synced such that ON is the first state (at acquisition start, index=0)
+        // void GetOnOffIntervals(uint64_t start, uint64_t length, 
+        //                        std::vector< std::pair<uint64_t, uint64_t> >& on_intervals, 
+        //                        std::vector< std::pair<uint64_t, uint64_t> >& off_intervals)
+        // {
+        //     on_intervals.clear();
+        //     off_intervals.clear();
+        // 
+        //     double sampling_period = 1.0/fSamplingFrequency;
+        //     double switching_period = 1.0/fSwitchingFrequency;
+        //     double buffer_time_length = sampling_period*length;
+        //     unsigned int n_switching_periods_per_buffer = std::ceil(buffer_time_length/switching_period); //possibly one more than needed, will trim later
+        // 
+        //     double time_since_acquisition_start = start*sampling_period;
+        //     uint64_t n_switching_periods = std::floor( time_since_acquisition_start/switching_period );
+        //     double time_remainder = time_since_acquisition_start - n_switching_periods*switching_period;
+        // 
+        // 
+        //     //create the on/off intervals assuming that the buffer start is aligned with the switching frequency (not necessarily true)
+        //     double lower = 0.0;
+        //     double upper = switching_period/2.0;
+        //     std::vector< std::pair<double, double> > on_times;
+        //     std::vector< std::pair<double, double> > off_times;
+        //     // for(unsigned int i=0; i<n_switching_periods_per_buffer; i++)
+        //     do
+        //     {
+        //         on_times.push_back( std::pair<double, double>(lower, upper) );
+        //         lower += switching_period;
+        //         off_times.push_back( std::pair<double, double>(upper, lower) );
+        //         upper += switching_period;
+        //     }
+        //     while(lower <= buffer_time_length + time_remainder);
+        // 
+        // 
+        //     //determine number of samples to blank
+        //     uint64_t blank = std::ceil( (fBlankingPeriod/2.0)*fSamplingFrequency );
+        // 
+        //     //subtract off the time_remainder from the switching times and ensure it is in the range [0,buffer_time_length]
+        //     for(unsigned int i=0; i<n_switching_periods_per_buffer; i++)
+        //     {
+        //         on_times[i].first -= time_remainder; 
+        //         if(on_times[i].first <= 0.0){on_times[i].first = 0.0;}
+        //         else{on_times[i].first = std::min(on_times[i].first, buffer_time_length);}
+        // 
+        //         on_times[i].second -= time_remainder; 
+        //         if(on_times[i].second <= 0.0){on_times[i].second = 0.0;}
+        //         else{on_times[i].second = std::min(on_times[i].second, buffer_time_length);}
+        // 
+        //         off_times[i].first -= time_remainder; 
+        //         if(off_times[i].first <= 0.0){off_times[i].first = 0.0;}
+        //         else{off_times[i].first = std::min(off_times[i].first, buffer_time_length);}
+        // 
+        //         off_times[i].second -= time_remainder; 
+        //         if(off_times[i].second <= 0.0){off_times[i].second = 0.0;}
+        //         else{off_times[i].second = std::min(off_times[i].second, buffer_time_length);}
+        //     }
+        // 
+        //     }
+        // }
 
 
         //data
