@@ -83,16 +83,19 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
         HProducerBufferPolicyCode fBufferCode;
         std::time_t fAcquisitionStartTime;
 
-        //thread pool stuff for read-out, and internal buffer pool
-        HBufferPool< px14_sample_t >* fInternalBufferPool; //buffer pool of px14 allocated buffers (limited to 2MB max size)
-        HProducerBufferHandler_WaitWithTimeout< px14_sample_t > fInternalBufferHandler;
+        //thread pool stuff for read-out, 
+
         mutable std::mutex fQueueMutex;
         std::queue< std::tuple<void*, void*, size_t> > fMemcpyArgQueue;
         //internal error code, cleared on stop/acquire, indicates board buffer overflow
         int fErrorCode;
 
+        //internal DMA buffer pool handling
         unsigned int fNInternalBuffers;
         unsigned int fInternalBufferSize;
+        HBufferPool< px14_sample_t >* fInternalBufferPool; //buffer pool of px14 allocated buffers (limited to 2MB max size)
+        HProducerBufferHandler_WaitWithTimeout< px14_sample_t > fInternalProducerBufferHandler;
+        HConsumerBufferHandler_WaitWithTimeout< px14_sample_t > fInternalConsumerBufferHandler;
 
 
 };
