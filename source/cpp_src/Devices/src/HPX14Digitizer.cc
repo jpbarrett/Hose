@@ -173,10 +173,7 @@ HPX14Digitizer::AcquireImpl()
 void 
 HPX14Digitizer::TransferImpl()
 {
-    // int code = GetPciAcquisitionDataFastPX14(fBoard, this->fBuffer->GetArrayDimension(0), this->fBuffer->GetData(), PX14_TRUE);
-
-    // Obtain fresh PCI acquisition data given normal, non-DMA buffer
-    int code = GetPciAcquisitionDataBufPX14(fBoard, this->fBuffer->GetArrayDimension(0), this->fBuffer->GetData(), PX14_TRUE );
+    int code = GetPciAcquisitionDataFastPX14(fBoard, this->fBuffer->GetArrayDimension(0), this->fBuffer->GetData(), PX14_TRUE);
     //std::cout<<"code = "<<code<<std::endl;
     if(code != SIG_SUCCESS)
     {

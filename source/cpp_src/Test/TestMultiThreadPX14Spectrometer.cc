@@ -38,8 +38,7 @@ int main(int /*argc*/, char** /*argv*/)
     std::cout<<"allocating cuda host buffs"<<std::endl;
     //create source buffer pool
     HCudaHostBufferAllocator< uint16_t >* balloc = new HCudaHostBufferAllocator<  uint16_t >();
-    // HBufferPool< uint16_t >* source_pool = new HBufferPool< uint16_t >( dummy.GetAllocator() );
-    HBufferPool< uint16_t >* source_pool = new HBufferPool< uint16_t >( balloc );
+    HBufferPool< uint16_t >* source_pool = new HBufferPool< uint16_t >( dummy.GetAllocator() );
 
     const size_t source_n_chunks = 32;
     const size_t source_items_per_chunk = vector_length;
