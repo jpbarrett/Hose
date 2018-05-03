@@ -170,16 +170,17 @@ class HPeriodicPowerCalculator
             }
             else if( b == c)
             {
+                std::cout<<"hey"<<std::endl;
                 //there is a single on/off transition during the interval
                 if(on_at_start)
                 {
-                    on_times.push_back( std::pair<double, double>(0.0, b*half_switching_period) );
-                    off_times.push_back( std::pair<double, double>(b*half_switching_period, buffer_length) );
+                    on_times.push_back( std::pair<double, double>(0.0, b*half_switching_period - buffer_start) );
+                    off_times.push_back( std::pair<double, double>(b*half_switching_period - buffer_start, buffer_length) );
                 }
                 else
                 {
-                    off_times.push_back( std::pair<double, double>(0.0, b*half_switching_period) );
-                    on_times.push_back( std::pair<double, double>(b*half_switching_period, buffer_length) );
+                    off_times.push_back( std::pair<double, double>(0.0, b*half_switching_period - buffer_start) );
+                    on_times.push_back( std::pair<double, double>(b*half_switching_period - buffer_start, buffer_length) );
                 }
             }
             else
@@ -189,11 +190,11 @@ class HPeriodicPowerCalculator
                 //take care of the portion between the start and b
                 if(on_at_start)
                 {
-                    on_times.push_back( std::pair<double, double>(0.0, b*half_switching_period) );
+                    on_times.push_back( std::pair<double, double>(0.0, b*half_switching_period - buffer_start) );
                 }
                 else
                 {
-                    off_times.push_back( std::pair<double, double>(0.0, b*half_switching_period) );
+                    off_times.push_back( std::pair<double, double>(0.0, b*half_switching_period - buffer_start) );
                 }
 
                 //take care the multiple switching periods between b and c
@@ -201,22 +202,22 @@ class HPeriodicPowerCalculator
                 {
                     if(i % 2 == 0)
                     {
-                        on_times.push_back( std::pair<double, double>(i*half_switching_period, (i+1)*half_switching_period) );
+                        on_times.push_back( std::pair<double, double>(i*half_switching_period - buffer_start, (i+1)*half_switching_period - buffer_start) );
                     }
                     else
                     {
-                        off_times.push_back( std::pair<double, double>(i*half_switching_period, (i+1)*half_switching_period) );
+                        off_times.push_back( std::pair<double, double>(i*half_switching_period - buffer_start, (i+1)*half_switching_period - buffer_start) );
                     }
                 }
 
                 //take care of the portion between c and then end
                 if(c % 2 == 0)
                 {
-                    on_times.push_back( std::pair<double, double>(c*half_switching_period, buffer_length) );
+                    on_times.push_back( std::pair<double, double>(c*half_switching_period - buffer_start, buffer_length) );
                 }
                 else
                 {
-                    off_times.push_back( std::pair<double, double>(c*half_switching_period, buffer_length) );
+                    off_times.push_back( std::pair<double, double>(c*half_switching_period- buffer_start, buffer_length) );
                 }
 
             }
