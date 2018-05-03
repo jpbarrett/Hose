@@ -226,8 +226,8 @@ HPX14Digitizer::TransferImpl()
                 //wait for xfer to complete
                 int code = WaitForTransferCompletePX14(fBoard);
 
-                internal_buff->SetValidLength(samples_in_buffer);
-                internal_buff->SetLeadingSampleIndex(n_samples_collect-samples_to_collect);
+                internal_buff->GetMetaData()->SetValidLength(samples_in_buffer);
+                internal_buff->GetMetaData()->SetLeadingSampleIndex(n_samples_collect-samples_to_collect);
 
                 fInternalProducerBufferHandler.ReleaseBufferToConsumer(fInternalBufferPool, internal_buff);
                 internal_buff = nullptr;
