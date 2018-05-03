@@ -149,6 +149,8 @@ class HPeriodicPowerCalculator
             unsigned int c = std::floor((buffer_end)/half_switching_period);
             unsigned int d = std::ceil( (buffer_end+sampling_period)/half_switching_period);
 
+            std::cout<<"a,b,c,d = "<<a<<", "<<b<<", "<<c<<", "<<d<<std::endl;
+
             std::vector< std::pair<double, double> > on_times;
             std::vector< std::pair<double, double> > off_times;
 
