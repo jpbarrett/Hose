@@ -403,11 +403,11 @@ HPX14Digitizer::ExecuteThreadTask()
         HLinearBuffer< px14_sample_t >* internal_buff = nullptr;
         HConsumerBufferPolicyCode internal_code = fInternalConsumerBufferHandler.ReserveBuffer(fInternalBufferPool, internal_buff);
 
-        if(internal_code & HProducerBufferPolicyCode::success && internal_buff != nullptr)
+        if(internal_code & HConsumerBufferPolicyCode::success && internal_buff != nullptr)
         {
             //copy the internal buffer to the appropriate section of the external buffer
             void* src = internal_buff->GetData();
-            void* dest = &( (this->fBufferPool->GetData())[internal_buff->GetLeadingSampleIndex()] );
+            void* dest = &( (this->fBuffer->GetData())[internal_buff->GetMetaData()->GetLeadingSampleIndex()] );
             size_t sz = internal_buff->GetMetaData()->GetValidLength();
 
             if( dest != nullptr &&  src != nullptr && sz != 0)
