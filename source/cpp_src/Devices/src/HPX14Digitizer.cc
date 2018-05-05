@@ -215,6 +215,7 @@ HPX14Digitizer::TransferImpl()
 
         if(internal_code & HProducerBufferPolicyCode::success && internal_buff != nullptr)
         {
+            std::cout<<"getting data"<<std::endl;
             int code = GetPciAcquisitionDataFastPX14(fBoard, samples_in_buffer, internal_buff->GetData(), PX14_TRUE);
             if(code != SIG_SUCCESS)
             {
@@ -223,6 +224,7 @@ HPX14Digitizer::TransferImpl()
             }
             else
             {
+                std::cout<<"waiting for xfer"<<std::endl;
                 //wait for xfer to complete
                 int code = WaitForTransferCompletePX14(fBoard);
 
@@ -245,6 +247,8 @@ HPX14Digitizer::TransferImpl()
 HDigitizerErrorCode 
 HPX14Digitizer::FinalizeImpl()
 {
+
+    std::cout<<"finalizing"<<std::endl;
     //wait until all DMA xfer threads are idle
     bool threads_busy = true;
     while(fInternalBufferPool->GetConsumerPoolSize() != 0 || threads_busy )
@@ -380,6 +384,7 @@ HPX14Digitizer::ExecutePostWorkTasks()
         HDigitizerErrorCode finalize_code = this->Finalize(); 
         if(finalize_code == HDigitizerErrorCode::success)
         {
+            std::cout<<"finished buffer"<<std::endl;
             fBufferCode = this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, this->fBuffer);
         }
         else
@@ -413,6 +418,7 @@ HPX14Digitizer::ExecuteThreadTask()
             if( dest != nullptr &&  src != nullptr && sz != 0)
             {
                 //do the memcpy
+                std::cout<<"copying"<<std::endl;
                 memcpy(dest, src, sz);
             }
             fInternalConsumerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);
