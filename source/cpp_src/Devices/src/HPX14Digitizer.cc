@@ -229,6 +229,8 @@ HPX14Digitizer::TransferImpl()
                 //wait for xfer to complete
                 int code = WaitForTransferCompletePX14(fBoard);
 
+                std::cout<<"done xfer"<<std::endl;
+            
                 internal_buff->GetMetaData()->SetValidLength(samples_in_buffer);
                 internal_buff->GetMetaData()->SetLeadingSampleIndex(n_samples_collect-samples_to_collect);
 
@@ -257,6 +259,8 @@ HPX14Digitizer::FinalizeImpl()
         if( AllThreadsAreIdle() ){threads_busy = false;}
         else{ threads_busy = true; }
     }
+
+    std::cout<<"threads done work"<<std::endl;
 
     //increment the sample counter
     this->fBuffer->GetMetaData()->SetLeadingSampleIndex(fCounter);
@@ -380,6 +384,7 @@ HPX14Digitizer::DoWork()
 void 
 HPX14Digitizer::ExecutePostWorkTasks()
 {
+    std::cout<<"starting postwork"<<std::endl;
     if(fBufferCode & HProducerBufferPolicyCode::success)
     {   
         HDigitizerErrorCode finalize_code = this->Finalize(); 
@@ -403,14 +408,17 @@ void
 HPX14Digitizer::ExecuteThreadTask()
 {
     //grab a buffer from the internal buffer pool
+    std::cout<<"running thread task"<<std::endl;
     while( !fForceTerminate && (!fSignalTerminate || fInternalBufferPool->GetConsumerPoolSize() != 0 ) )
     {
         //grab a buffer from the internal pool
         HLinearBuffer< px14_sample_t >* internal_buff = nullptr;
         HConsumerBufferPolicyCode internal_code = fInternalConsumerBufferHandler.ReserveBuffer(fInternalBufferPool, internal_buff);
 
+
         if(internal_code & HConsumerBufferPolicyCode::success && internal_buff != nullptr)
         {
+            std::cout<<"got internal buffer"<<std::endl;
             //copy the internal buffer to the appropriate section of the external buffer
             void* src = internal_buff->GetData();
             void* dest = &( (this->fBuffer->GetData())[internal_buff->GetMetaData()->GetLeadingSampleIndex()] );
@@ -428,6 +436,7 @@ HPX14Digitizer::ExecuteThreadTask()
         if(internal_buff != nullptr){fInternalConsumerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);};
 
     }
+    std::cout<<"stopping thread"<<std::endl;
 }
 
 bool 
