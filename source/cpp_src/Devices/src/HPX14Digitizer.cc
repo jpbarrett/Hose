@@ -231,6 +231,7 @@ HPX14Digitizer::TransferImpl()
 
                 std::cout<<"done xfer"<<std::endl;
             
+                std::cout<<"setting valid len = "<<samples_in_buffer<<std::endl;
                 internal_buff->GetMetaData()->SetValidLength(samples_in_buffer);
                 internal_buff->GetMetaData()->SetLeadingSampleIndex(n_samples_collect-samples_to_collect);
 
@@ -408,22 +409,21 @@ void
 HPX14Digitizer::ExecuteThreadTask()
 {
     //grab a buffer from the internal buffer pool
-    std::cout<<"running thread task"<<std::endl;
+    //std::cout<<"running thread task"<<std::endl;
     if(fInternalBufferPool->GetConsumerPoolSize() != 0)
     {
         //grab a buffer from the internal pool
         HLinearBuffer< px14_sample_t >* internal_buff = nullptr;
         HConsumerBufferPolicyCode internal_code = fInternalConsumerBufferHandler.ReserveBuffer(fInternalBufferPool, internal_buff);
 
-
         if(internal_code & HConsumerBufferPolicyCode::success && internal_buff != nullptr)
         {
-            std::cout<<"got internal buffer"<<std::endl;
             //copy the internal buffer to the appropriate section of the external buffer
             void* src = internal_buff->GetData();
             void* dest = &( (this->fBuffer->GetData())[internal_buff->GetMetaData()->GetLeadingSampleIndex()] );
             size_t sz = internal_buff->GetMetaData()->GetValidLength();
 
+            std::cout<<"got internal buffer "<<src<<", "<<des<<", "<<sz<<std::endl;
             if( dest != nullptr &&  src != nullptr && sz != 0)
             {
                 //do the memcpy
