@@ -61,6 +61,8 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 spec_data.ExtendOnAccumulation( tail->GetMetaData()->GetOnAccumulations() );
                 spec_data.ExtendOffAccumulation( tail->GetMetaData()->GetOffAccumulations() );
                 
+                std::cout<<"writing to "<<ss.str()<<std::endl;
+
                 spec_data.WriteToFile(ss.str());
                 spec_data.ReleaseSpectrumData();
             }
