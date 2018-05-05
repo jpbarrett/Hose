@@ -33,7 +33,7 @@ namespace hose
 
 //template< typename XSourceBufferItemType, typename XSinkBufferItemType, typename XConsumerSourceBufferHandlerPolicyType, typename XProducerSinkBufferHandlerPolicyType > 
 
-class HSpectrometerCUDA: public HConsumerProducer< uint16_t, spectrometer_data, HConsumerBufferHandler_Immediate< uint16_t >, HProducerBufferHandler_Steal< spectrometer_data > >
+class HSpectrometerCUDA: public HConsumerProducer< uint16_t, spectrometer_data, HConsumerBufferHandler_WaitWithTimeout< uint16_t >, HProducerBufferHandler_Steal< spectrometer_data > >
 {
 
     public:

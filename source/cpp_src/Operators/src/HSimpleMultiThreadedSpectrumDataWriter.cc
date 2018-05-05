@@ -8,6 +8,8 @@ HSimpleMultiThreadedSpectrumDataWriter::HSimpleMultiThreadedSpectrumDataWriter()
 {
     //if unassigned use default data dir
     fOutputDirectory = std::string(DATA_INSTALL_DIR);
+    fBufferHandler.SetNAttempts(100);
+    fBufferHandler.SetSleepDurationNanoSeconds(0);
 };
 
 HSimpleMultiThreadedSpectrumDataWriter::~HSimpleMultiThreadedSpectrumDataWriter(){};

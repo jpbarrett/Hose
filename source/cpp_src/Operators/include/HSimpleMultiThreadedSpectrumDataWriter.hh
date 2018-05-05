@@ -27,7 +27,7 @@ namespace hose
 *Description:
 */
 
-class HSimpleMultiThreadedSpectrumDataWriter: public HConsumer< spectrometer_data, HConsumerBufferHandler_Wait< spectrometer_data > >
+class HSimpleMultiThreadedSpectrumDataWriter: public HConsumer< spectrometer_data, HConsumerBufferHandler_WaitWithTimeout< spectrometer_data > >
 {
     public:
 
