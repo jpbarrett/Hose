@@ -22,10 +22,10 @@ HPX14Digitizer::HPX14Digitizer():
     fErrorCode(0)
 {
     this->fAllocator = nullptr;
-    fInternalProducerBufferHandler.SetNAttempts(100);
-    fInternalProducerBufferHandler.SetSleepDurationNanoSeconds(0);
-    fInternalConsumerBufferHandler.SetNAttempts(100);
-    fInternalConsumerBufferHandler.SetSleepDurationNanoSeconds(0);
+    // fInternalProducerBufferHandler.SetNAttempts(100);
+    // fInternalProducerBufferHandler.SetSleepDurationNanoSeconds(0);
+    // fInternalConsumerBufferHandler.SetNAttempts(100);
+    // fInternalConsumerBufferHandler.SetSleepDurationNanoSeconds(0);
 }
 
 HPX14Digitizer::~HPX14Digitizer()

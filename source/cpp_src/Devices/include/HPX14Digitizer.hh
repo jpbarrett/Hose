@@ -95,8 +95,8 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
         unsigned int fNInternalBuffers;
         unsigned int fInternalBufferSize;
         HBufferPool< px14_sample_t >* fInternalBufferPool; //buffer pool of px14 allocated buffers (limited to 2MB max size)
-        HProducerBufferHandler_WaitWithTimeout< px14_sample_t > fInternalProducerBufferHandler;
-        HConsumerBufferHandler_WaitWithTimeout< px14_sample_t > fInternalConsumerBufferHandler;
+        HProducerBufferHandler_Immediate< px14_sample_t > fInternalProducerBufferHandler;
+        HConsumerBufferHandler_Immediate< px14_sample_t > fInternalConsumerBufferHandler;
 
 
 };
