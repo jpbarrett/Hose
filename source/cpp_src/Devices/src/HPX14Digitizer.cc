@@ -195,6 +195,7 @@ HPX14Digitizer::AcquireImpl()
 void 
 HPX14Digitizer::TransferImpl()
 {
+    std::cout<<"calling xfer"<<std::endl;
     //configure buffer information, cast time to uint64_t and set, then set the sample rate
     this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
     this->fBuffer->GetMetaData()->SetSampleRate(GetSamplingFrequency()); //check that double to uint64_t conversion is OK here
