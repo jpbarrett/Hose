@@ -75,7 +75,9 @@ HThreadPool::Join()
                 auto It = fThreadIdleMap.find( fThreads[i].get_id() );
                 if(It->second)
                 {
+                    std::cout<<"joining thread: "<<i<<": "<<fThreads[i].get_id()<<std::endl;
                     fThreads[i].join();
+                    std::cout<<"done joinging"<<std::endl;
                     n_stopped++;
                     stopped_ids.push_back(i);
                 }
