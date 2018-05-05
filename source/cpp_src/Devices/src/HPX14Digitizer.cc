@@ -233,14 +233,18 @@ HPX14Digitizer::TransferImpl()
                 std::cout<<"done xfer"<<std::endl;
             
                 std::cout<<"setting valid len = "<<samples_in_buffer<<std::endl;
+                std::cout<<"setting offset = "<<n_samples_collect-samples_to_collect<<std::endl;
                 internal_buff->GetMetaData()->SetValidLength(samples_in_buffer);
                 internal_buff->GetMetaData()->SetLeadingSampleIndex(n_samples_collect-samples_to_collect);
+
 
                 fInternalProducerBufferHandler.ReleaseBufferToConsumer(fInternalBufferPool, internal_buff);
                 internal_buff = nullptr;
 
                 //update samples to collect
                 samples_to_collect -= samples_in_buffer;
+
+                std::cout<<"new samples to collect = "<<samples_to_collect<<std::endl;
             }
             if(internal_buff != nullptr){fInternalProducerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);};
         }
