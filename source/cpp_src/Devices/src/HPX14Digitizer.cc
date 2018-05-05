@@ -208,6 +208,7 @@ HPX14Digitizer::TransferImpl()
 
     while(samples_to_collect > 0)
     {
+        std::cout<<"samples to collect, internal buff size = "<<samples_to_collect<<", "<<fInternalBufferSize<<std::endl;
         unsigned int samples_in_buffer = std::min( (unsigned int) samples_to_collect, fInternalBufferSize);
 
         //grab a buffer from the internal pool
@@ -423,7 +424,7 @@ HPX14Digitizer::ExecuteThreadTask()
             void* dest = &( (this->fBuffer->GetData())[internal_buff->GetMetaData()->GetLeadingSampleIndex()] );
             size_t sz = internal_buff->GetMetaData()->GetValidLength();
 
-            std::cout<<"got internal buffer "<<src<<", "<<dest<<", "<<sz<<std::endl;
+            //std::cout<<"got internal buffer "<<src<<", "<<dest<<", "<<sz<<std::endl;
             if( dest != nullptr &&  src != nullptr && sz != 0)
             {
                 //do the memcpy
