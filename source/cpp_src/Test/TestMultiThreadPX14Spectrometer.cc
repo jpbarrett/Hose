@@ -97,7 +97,7 @@ int main(int /*argc*/, char** /*argv*/)
 
     std::cout<<"stopping digitizer"<<std::endl;
 
-    dummy.StopProduction();
+    dummy.ForceStopProduction();
 
     sleep(1);
 
