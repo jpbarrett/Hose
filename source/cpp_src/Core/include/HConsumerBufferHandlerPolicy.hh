@@ -135,16 +135,16 @@ class HConsumerBufferHandler_WaitWithTimeout: public HConsumerBufferReleaser< XB
 
         HConsumerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>*& buffer)
         {
-            if(pool->GetProducerPoolSize() != 0)
+            if(pool->GetConsumerPoolSize() != 0)
             {
-                buffer = pool->PopProducerBuffer();
+                buffer = pool->PopConsumerBuffer();
                 return HConsumerBufferPolicyCode::success;
             }
             else
             {   
                 //wait for the consumer buffer pool to become empty
                 unsigned int count = 0;
-                while( pool->GetProducerPoolSize() != 0 && count < fNAttempts)
+                while( pool->GetConsumerPoolSize() != 0 && count < fNAttempts)
                 {
                     //sleep for the specified duration if it is non-zero
                     if(fSleepDurationNanoSeconds != 0)
@@ -152,19 +152,19 @@ class HConsumerBufferHandler_WaitWithTimeout: public HConsumerBufferReleaser< XB
                         std::this_thread::sleep_for(std::chrono::nanoseconds(fSleepDurationNanoSeconds));
                     }
 
-                    if(pool->GetProducerPoolSize() != 0)
+                    if(pool->GetConsumerPoolSize() != 0)
                     {
-                        buffer = pool->PopProducerBuffer();
+                        buffer = pool->PopConsumerBuffer();
                         return HConsumerBufferPolicyCode::success;
                     }
 
                     count++;
                 };
 
-                //producer pool should be full now, so grab buffer
-                if(pool->GetProducerPoolSize() != 0)
+                //Consumer pool should be full now, so grab buffer
+                if(pool->GetConsumerPoolSize() != 0)
                 {
-                    buffer = pool->PopProducerBuffer();
+                    buffer = pool->PopConsumerBuffer();
                     return HConsumerBufferPolicyCode::success;
                 }
                 else
