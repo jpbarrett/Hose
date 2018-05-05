@@ -74,7 +74,6 @@ class HConsumerProducer: public HThreadPool
         {
             //kill the thread pool
             ForceTermination();
-            usleep(10000);
 
             //signal and stop the management thread
             fStopConsumptionProduction = true;
