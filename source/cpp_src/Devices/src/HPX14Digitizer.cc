@@ -409,7 +409,7 @@ HPX14Digitizer::ExecuteThreadTask()
 {
     //grab a buffer from the internal buffer pool
     std::cout<<"running thread task"<<std::endl;
-    while( !fForceTerminate && (!fSignalTerminate || fInternalBufferPool->GetConsumerPoolSize() != 0 ) )
+    if(fInternalBufferPool->GetConsumerPoolSize() != 0)
     {
         //grab a buffer from the internal pool
         HLinearBuffer< px14_sample_t >* internal_buff = nullptr;
@@ -434,9 +434,7 @@ HPX14Digitizer::ExecuteThreadTask()
             internal_buff = nullptr;
         }
         if(internal_buff != nullptr){fInternalConsumerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);};
-
     }
-    std::cout<<"stopping thread"<<std::endl;
 }
 
 bool 
