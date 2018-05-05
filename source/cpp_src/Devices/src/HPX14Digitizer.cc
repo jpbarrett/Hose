@@ -416,7 +416,7 @@ void
 HPX14Digitizer::ExecuteThreadTask()
 {
     //grab a buffer from the internal buffer pool
-    //std::cout<<"running thread task"<<std::endl;
+    std::cout<<"running digi thread task"<<std::endl;
     if(fInternalBufferPool->GetConsumerPoolSize() != 0)
     {
         //grab a buffer from the internal pool
