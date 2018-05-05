@@ -76,6 +76,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 sdata->n_spectra = fNAverages;
 
                 //call Juha's process_vector routine
+                std::cout<<"CALLING FFT"<<std::endl;
                 process_vector_no_output(source->GetData(), sdata);
 
                 //release the buffers

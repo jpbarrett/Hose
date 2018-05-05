@@ -18,7 +18,8 @@ HPX14Digitizer::HPX14Digitizer():
     fBufferCode(HProducerBufferPolicyCode::unset),
     fInternalBufferPool(nullptr),
     fNInternalBuffers(PX14_N_INTERNAL_BUFF),
-    fInternalBufferSize(PX14_INTERNAL_BUFF_SIZE)
+    fInternalBufferSize(PX14_INTERNAL_BUFF_SIZE),
+    fErrorCode(0)
 {
     this->fAllocator = nullptr;
     fInternalProducerBufferHandler.SetNAttempts(100);
@@ -146,6 +147,7 @@ HPX14Digitizer::InitializeImpl()
             fInternalBufferPool = new HBufferPool< px14_sample_t >( this->GetAllocator() );
             fInternalBufferPool->Allocate(fNInternalBuffers, fInternalBufferSize); //size and number not currently configurable
 
+            fErrorCode = 0;
             fInitialized = true;
             fArmed = false;
             std::cout<<"init success"<<std::endl;
