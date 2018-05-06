@@ -164,6 +164,7 @@ HPX14Digitizer::InitializeImpl()
 void 
 HPX14Digitizer::AcquireImpl()
 {
+    fArmed = false;
     fCounter = 0;
     //time handling is quick and dirty, need to improve this (i.e if we are close to a second-roll over, etc)
     //Note: that the acquisition starts on the next second tick (with the trigger)
@@ -176,6 +177,8 @@ HPX14Digitizer::AcquireImpl()
         DumpLibErrorPX14(code, "Failed to arm recording: ", fBoard);
         fAcquisitionStartTime = 0;
     }
+    else
+    {
 
     #ifdef USE_SOFTWARE_TRIGGER
         if(!fArmed)
@@ -191,6 +194,7 @@ HPX14Digitizer::AcquireImpl()
     #else
         fArmed = true;
     #endif
+    }
 }
 
 void 
@@ -310,7 +314,7 @@ HPX14Digitizer::TearDownImpl()
         delete this->fAllocator;
         this->fAllocator = nullptr;
     }
-    if(fConnected){DisconnectFromDevicePX14(fBoard);};
+    //if(fConnected){DisconnectFromDevicePX14(fBoard);};
 
     fInitialized = false;
 }
