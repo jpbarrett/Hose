@@ -222,6 +222,7 @@ HPX14Digitizer::TransferImpl()
                 DumpLibErrorPX14 (code, "\nFailed to obtain PCI acquisition data: ", fBoard);
                 std::cout<<"board = "<<fBoard<<std::endl;
                 fErrorCode = 1;
+                samples_to_collect = 0;
             }
             else
             {
