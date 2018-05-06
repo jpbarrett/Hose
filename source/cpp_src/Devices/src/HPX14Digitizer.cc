@@ -288,6 +288,7 @@ void HPX14Digitizer::StopImpl()
     else
     {
         fArmed = false;
+        fInitialized = false;
     }
 
 }
