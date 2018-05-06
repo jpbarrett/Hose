@@ -70,7 +70,6 @@ class HBufferPool
             for(size_t i=0; i<fNChunks; i++ )
             {
                 auto chunk = fAllocator->allocate( fNItemsPerChunk ); //TODO, deal with exceptions
-                std::cout<<"chunk ptr = "<<chunk<<std::endl;
                 if(chunk != nullptr)
                 {
                     fChunks.push_back( new HLinearBuffer< XBufferItemType >( chunk, fNItemsPerChunk) );
