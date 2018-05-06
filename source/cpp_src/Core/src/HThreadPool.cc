@@ -77,7 +77,7 @@ HThreadPool::Join()
                 {
                     std::cout<<"joining thread: "<<i<<": "<<fThreads[i].get_id()<<std::endl;
                     fThreads[i].join();
-                    std::cout<<"done joinging"<<std::endl;
+                    std::cout<<"done joining"<<std::endl;
                     n_stopped++;
                     stopped_ids.push_back(i);
                 }
@@ -248,7 +248,6 @@ HThreadPool::ProcessLoop()
     {
         if( WorkPresent() )
         {
-            std::cout<<"got work to do"<<std::endl;
             SetIdleIndicatorFalse();
             ExecuteThreadTask(); //perform granular unit of work
             SetIdleIndicatorTrue();

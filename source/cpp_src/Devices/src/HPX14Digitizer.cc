@@ -443,6 +443,7 @@ HPX14Digitizer::ExecuteThreadTask()
         }
         if(internal_buff != nullptr){fInternalConsumerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);};
     }
+    std::cout<<"done digi thread task"<<std::endl;
 }
 
 bool 
