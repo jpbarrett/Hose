@@ -39,6 +39,7 @@ HPX14Digitizer::~HPX14Digitizer()
 bool 
 HPX14Digitizer::InitializeImpl()
 {
+    std::cout<<"in init"<<std::endl;
     if(!fInitialized)
     {
         int code = SIG_SUCCESS;
@@ -325,7 +326,7 @@ HPX14Digitizer::TearDownImpl()
 void 
 HPX14Digitizer::ExecutePreProductionTasks()
 {
-    //does nothting for now
+    Initialize();
 }
 
 void 
