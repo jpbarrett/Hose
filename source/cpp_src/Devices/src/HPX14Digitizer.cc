@@ -296,6 +296,7 @@ void HPX14Digitizer::StopImpl()
     {
         std::cout<<"not armed, not Initialized"<<std::endl;
         fArmed = false;
+        fInitialized = false;
     }
 
 }
