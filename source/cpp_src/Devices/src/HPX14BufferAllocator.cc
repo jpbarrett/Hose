@@ -11,7 +11,9 @@ HPX14BufferAllocator::~HPX14BufferAllocator()
     for(auto iter = fAllocatedMemoryBlocks.begin(); iter != fAllocatedMemoryBlocks.end(); iter++)
     {
         px14_sample_t* ptr = iter->first;
+        std::cout<<"trying to free: "<<ptr<<std::endl;
         int code = FreeDmaBufferPX14 (fBoard, ptr);
+        std::cout<<"freed "<<std::endl;
     }
     fAllocatedMemoryBlocks.clear();
 };
