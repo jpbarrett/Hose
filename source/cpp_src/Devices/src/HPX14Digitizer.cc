@@ -382,6 +382,7 @@ HPX14Digitizer::ExecutePreWorkTasks()
 void 
 HPX14Digitizer::DoWork()
 {
+    std::cout<<"calling do work!"<<std::endl;
     //we have an active buffer, transfer the data
     if(fBufferCode & HProducerBufferPolicyCode::success)
     {

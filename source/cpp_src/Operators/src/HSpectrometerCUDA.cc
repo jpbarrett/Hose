@@ -10,7 +10,9 @@ namespace hose
 HSpectrometerCUDA::HSpectrometerCUDA(size_t spectrum_length, size_t n_averages):
     fSpectrumLength(spectrum_length),
     fNAverages(n_averages)
-    {};
+    {
+
+    };
 
 
 HSpectrometerCUDA::~HSpectrometerCUDA(){};
@@ -76,7 +78,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 sdata->n_spectra = fNAverages;
 
                 //call Juha's process_vector routine
-                std::cout<<"CALLING FFT"<<std::endl;
+                //std::cout<<"CALLING FFT"<<std::endl;
                 process_vector_no_output(source->GetData(), sdata);
 
                 //release the buffers
