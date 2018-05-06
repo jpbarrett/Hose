@@ -220,6 +220,7 @@ HPX14Digitizer::TransferImpl()
             if(code != SIG_SUCCESS)
             {
                 DumpLibErrorPX14 (code, "\nFailed to obtain PCI acquisition data: ", fBoard);
+                std::cout<<"board = "<<fBoard<<std::endl;
                 fErrorCode = 1;
             }
             else
@@ -278,7 +279,7 @@ HPX14Digitizer::FinalizeImpl()
 
 void HPX14Digitizer::StopImpl()
 {
-    //std::cout<<"stopping"<<std::endl;
+    std::cout<<"stopping"<<std::endl;
     //stop aquisition, put board in standby mode
     int code = SetOperatingModePX14(fBoard, PX14MODE_STANDBY);
     if( code != SIG_SUCCESS)
@@ -287,8 +288,8 @@ void HPX14Digitizer::StopImpl()
     }
     else
     {
+        std::cout<<"not armed, not Initialized"<<std::endl;
         fArmed = false;
-        fInitialized = false;
     }
 
 }
@@ -391,6 +392,7 @@ HPX14Digitizer::ExecutePostWorkTasks()
         {
             //some error occurred, stop production so we can re-start
             fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
+            std::cout<<"calling stop!"<<std::endl;
             this->Stop();
             fAcquireActive = false;
         }
