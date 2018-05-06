@@ -88,17 +88,26 @@ class HProducer: public HThreadPool
             ConfigureBufferHandler(fBufferHandler);
             ExecutePreProductionTasks();
 
+            
             while(!fStopProduction) 
             {
+                std::cout<<"pre-work"<<std::endl;
                 //prepare things as needed (reserve buffer, etc)
                 ExecutePreWorkTasks();
 
+                std::cout<<"do-work"<<std::endl;
                 //spawn off work associated with this buffer
                 DoWork();
+                std::cout<<"done-work"<<std::endl;
 
+                std::cout<<"post-work"<<std::endl;
                 //do post-work tasks (release the buffer, etc)
                 ExecutePostWorkTasks();
+
+                std::cout<<"end-loop"<<std::endl;
             }
+
+            std::cout<<"out of while loop"<<std::endl;
 
             ExecutePostProductionTasks();
 
