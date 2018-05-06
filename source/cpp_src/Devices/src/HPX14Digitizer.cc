@@ -262,7 +262,7 @@ HPX14Digitizer::FinalizeImpl()
     std::cout<<"finalizing"<<std::endl;
     //wait until all DMA xfer threads are idle
     bool threads_busy = true;
-    while(fInternalBufferPool->GetConsumerPoolSize() != 0 || threads_busy )
+    while( (fInternalBufferPool->GetConsumerPoolSize() != 0 && !fForceTerminate && !fSignalTerminate) || threads_busy )
     {
         if( AllThreadsAreIdle() ){threads_busy = false;}
         else{ threads_busy = true; }
