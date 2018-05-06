@@ -290,6 +290,7 @@ void HPX14Digitizer::StopImpl()
     if( code != SIG_SUCCESS)
     {
         DumpLibErrorPX14(code, "Board failed to enter standby mode: ", fBoard);
+        std::exit(1);
     }
     else
     {
@@ -314,7 +315,7 @@ HPX14Digitizer::TearDownImpl()
         delete this->fAllocator;
         this->fAllocator = nullptr;
     }
-    //if(fConnected){DisconnectFromDevicePX14(fBoard);};
+    if(fConnected){DisconnectFromDevicePX14(fBoard);};
 
     fInitialized = false;
 }
