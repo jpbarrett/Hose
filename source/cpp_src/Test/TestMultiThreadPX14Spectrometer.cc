@@ -97,18 +97,24 @@ int main(int /*argc*/, char** /*argv*/)
 
     std::cout<<"stopping digitizer"<<std::endl;
 
-    dummy.ForceStopProduction();
+    dummy.StopProduction();
 
     sleep(1);
 
+    dummy.StartProduction();
+
+    sleep(1);
+
+    dummy.StopProduction();
+
     std::cout<<"stopping spec"<<std::endl;
 
-    m_spec.ForceStopConsumptionProduction();
+    m_spec.StopConsumptionProduction();
 
     sleep(1);
 
     std::cout<<"stopping writer"<<std::endl;
-    spec_writer.ForceStopConsumption();
+    spec_writer.StopConsumption();
 
     sleep(2);
 
