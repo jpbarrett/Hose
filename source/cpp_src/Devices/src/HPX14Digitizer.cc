@@ -150,7 +150,6 @@ HPX14Digitizer::InitializeImpl()
             fErrorCode = 0;
             fInitialized = true;
             fArmed = false;
-            std::cout<<"init success"<<std::endl;
             return true;
         }
         return false;
@@ -197,7 +196,6 @@ HPX14Digitizer::AcquireImpl()
 void 
 HPX14Digitizer::TransferImpl()
 {
-    std::cout<<"calling xfer"<<std::endl;
     //configure buffer information, cast time to uint64_t and set, then set the sample rate
     this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
     this->fBuffer->GetMetaData()->SetSampleRate(GetSamplingFrequency()); //check that double to uint64_t conversion is OK here
@@ -210,7 +208,6 @@ HPX14Digitizer::TransferImpl()
 
     while(samples_to_collect > 0)
     {
-        std::cout<<"samples to collect, internal buff size = "<<samples_to_collect<<", "<<fInternalBufferSize<<std::endl;
         unsigned int samples_in_buffer = std::min( (unsigned int) samples_to_collect, fInternalBufferSize);
 
         //grab a buffer from the internal pool
@@ -219,7 +216,6 @@ HPX14Digitizer::TransferImpl()
 
         if(internal_code & HProducerBufferPolicyCode::success && internal_buff != nullptr)
         {
-            std::cout<<"getting data"<<std::endl;
             int code = GetPciAcquisitionDataFastPX14(fBoard, samples_in_buffer, internal_buff->GetData(), PX14_TRUE);
             if(code != SIG_SUCCESS)
             {
@@ -228,25 +224,17 @@ HPX14Digitizer::TransferImpl()
             }
             else
             {
-                std::cout<<"waiting for xfer"<<std::endl;
                 //wait for xfer to complete
                 int code = WaitForTransferCompletePX14(fBoard);
 
-                std::cout<<"done xfer"<<std::endl;
-            
-                std::cout<<"setting valid len = "<<samples_in_buffer<<std::endl;
-                std::cout<<"setting offset = "<<n_samples_collect-samples_to_collect<<std::endl;
                 internal_buff->GetMetaData()->SetValidLength(samples_in_buffer);
                 internal_buff->GetMetaData()->SetLeadingSampleIndex(n_samples_collect-samples_to_collect);
-
 
                 fInternalProducerBufferHandler.ReleaseBufferToConsumer(fInternalBufferPool, internal_buff);
                 internal_buff = nullptr;
 
                 //update samples to collect
                 samples_to_collect -= samples_in_buffer;
-
-                std::cout<<"new samples to collect = "<<samples_to_collect<<std::endl;
             }
             if(internal_buff != nullptr){fInternalProducerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);};
         }
@@ -259,7 +247,6 @@ HDigitizerErrorCode
 HPX14Digitizer::FinalizeImpl()
 {
 
-    std::cout<<"finalizing"<<std::endl;
     //wait until all DMA xfer threads are idle
     bool threads_busy = true;
     while( (fInternalBufferPool->GetConsumerPoolSize() != 0 && !fForceTerminate && !fSignalTerminate) || threads_busy )
@@ -268,8 +255,6 @@ HPX14Digitizer::FinalizeImpl()
         else{ threads_busy = true; }
     }
 
-    std::cout<<"threads done work"<<std::endl;
-
     //increment the sample counter
     this->fBuffer->GetMetaData()->SetLeadingSampleIndex(fCounter);
     fCounter += this->fBuffer->GetArrayDimension(0);
@@ -277,7 +262,6 @@ HPX14Digitizer::FinalizeImpl()
     //check for FIFO overflow
     if( GetFifoFullFlagPX14(fBoard) )
     {
-        std::cout<<"board FIFO buffer full"<<std::endl;
         return HDigitizerErrorCode::card_buffer_overflow;
     }
 
@@ -311,7 +295,6 @@ void HPX14Digitizer::StopImpl()
 void
 HPX14Digitizer::TearDownImpl()
 {
-    std::cout<<"CALLING PX14 TEARDOWN"<<std::endl;
     if(fArmed)
     {
         EndBufferedPciAcquisitionPX14(fBoard);
@@ -321,7 +304,6 @@ HPX14Digitizer::TearDownImpl()
     //this may require clean up elsewhere, as buffer pointers may still be around
     if(this->fAllocator)
     {
-        std::cout<<"deleting allocator"<<std::endl;
         delete this->fAllocator;
         this->fAllocator = nullptr;
     }
@@ -387,7 +369,6 @@ HPX14Digitizer::ExecutePreWorkTasks()
 void 
 HPX14Digitizer::DoWork()
 {
-    std::cout<<"calling do work!"<<std::endl;
     //we have an active buffer, transfer the data
     if(fBufferCode & HProducerBufferPolicyCode::success)
     {
@@ -398,13 +379,11 @@ HPX14Digitizer::DoWork()
 void 
 HPX14Digitizer::ExecutePostWorkTasks()
 {
-    std::cout<<"starting postwork"<<std::endl;
     if(fBufferCode & HProducerBufferPolicyCode::success)
     {   
         HDigitizerErrorCode finalize_code = this->Finalize(); 
         if(finalize_code == HDigitizerErrorCode::success)
         {
-            std::cout<<"finished buffer"<<std::endl;
             fBufferCode = this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, this->fBuffer);
         }
         else
@@ -422,7 +401,6 @@ void
 HPX14Digitizer::ExecuteThreadTask()
 {
     //grab a buffer from the internal buffer pool
-    std::cout<<"running digi thread task"<<std::endl;
     if(fInternalBufferPool->GetConsumerPoolSize() != 0)
     {
         //grab a buffer from the internal pool
@@ -436,11 +414,9 @@ HPX14Digitizer::ExecuteThreadTask()
             void* dest = &( (this->fBuffer->GetData())[internal_buff->GetMetaData()->GetLeadingSampleIndex()] );
             size_t sz = internal_buff->GetMetaData()->GetValidLength();
 
-            std::cout<<"got internal buffer "<<src<<", "<<dest<<", "<<sz<<std::endl;
             if( dest != nullptr &&  src != nullptr && sz != 0)
             {
                 //do the memcpy
-                std::cout<<"copying"<<std::endl;
                 memcpy(dest, src, sz);
             }
             fInternalConsumerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);
@@ -448,7 +424,6 @@ HPX14Digitizer::ExecuteThreadTask()
         }
         if(internal_buff != nullptr){fInternalConsumerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);};
     }
-    std::cout<<"done digi thread task"<<std::endl;
 }
 
 bool 

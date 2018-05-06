@@ -55,12 +55,8 @@ class HProducer: public HThreadPool
             //signal termination to thread pool
             SignalTerminateOnComplete();
             //signal and stop the management thread
-            std::cout<<"joining manager"<<std::endl;
             fStopProduction = true;
             fProductionManagementThread.join();
-            std::cout<<"manager joined"<<std::endl;
-
-            std::cout<<"calling Join()"<<std::endl;
             //join the thread pool
             Join();
         }
@@ -71,12 +67,8 @@ class HProducer: public HThreadPool
             //kill the thread pool
             ForceTermination();
             //signal and stop the management thread
-            std::cout<<"joining manager"<<std::endl;
             fStopProduction = true;
             fProductionManagementThread.join();
-            std::cout<<"manager joined"<<std::endl;
-
-            std::cout<<"calling Join()"<<std::endl;
             //join the thread pool
             Join();
         }
@@ -91,23 +83,16 @@ class HProducer: public HThreadPool
             
             while(!fStopProduction) 
             {
-                std::cout<<"pre-work"<<std::endl;
                 //prepare things as needed (reserve buffer, etc)
                 ExecutePreWorkTasks();
 
-                std::cout<<"do-work"<<std::endl;
                 //spawn off work associated with this buffer
                 DoWork();
-                std::cout<<"done-work"<<std::endl;
 
-                std::cout<<"post-work"<<std::endl;
                 //do post-work tasks (release the buffer, etc)
                 ExecutePostWorkTasks();
 
-                std::cout<<"end-loop"<<std::endl;
             }
-
-            std::cout<<"out of while loop"<<std::endl;
 
             ExecutePostProductionTasks();
 
