@@ -318,7 +318,7 @@ HPX14Digitizer::TearDownImpl()
     int code = SetOperatingModePX14(fBoard, PX14MODE_STANDBY);
     //deleting the allocator also deletes all of the buffers it allocated
     //this may require clean up elsewhere, as buffer pointers may still be around
-    if(this->fAllocator){delete this->fAllocator;}
+    //if(this->fAllocator){delete this->fAllocator;}
     if(fConnected){DisconnectFromDevicePX14(fBoard);};
 
     fInitialized = false;
