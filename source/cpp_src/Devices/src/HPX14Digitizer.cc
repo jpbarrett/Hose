@@ -311,6 +311,7 @@ void HPX14Digitizer::StopImpl()
 void
 HPX14Digitizer::TearDownImpl()
 {
+    std::cout<<"CALLING PX14 TEARDOWN"<<std::endl;
     if(fArmed)
     {
         EndBufferedPciAcquisitionPX14(fBoard);
@@ -320,6 +321,7 @@ HPX14Digitizer::TearDownImpl()
     //this may require clean up elsewhere, as buffer pointers may still be around
     if(this->fAllocator)
     {
+        std::cout<<"deleting allocator"<<std::endl;
         delete this->fAllocator;
         this->fAllocator = nullptr;
     }
