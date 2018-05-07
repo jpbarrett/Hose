@@ -268,13 +268,6 @@ HPX14Digitizer::FinalizeImpl()
             else{ threads_busy = true; }
         }
 
-        //check there hasn't been a pre-mature stop call, if there has the counter will not longer be the same, so we should just dump 
-        if(this->fBuffer->GetMetaData()->GetLeadingSampleIndex() != fCounter )
-        {
-            std::cout<<"caught a premature stop"<<std::endl;
-            return HDigitizerErrorCode::premature_stop;
-        }
-
         //increment the sample counter
         fCounter += this->fBuffer->GetArrayDimension(0);
 
@@ -418,13 +411,6 @@ HPX14Digitizer::ExecutePostWorkTasks()
             fBufferCode = this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, this->fBuffer);
             this->fBuffer = nullptr;
         }
-        else if (finalize_code == HDigitizerErrorCode::premature_stop)
-        {
-            //early stop called, so put this buffer back on the producer stack and move on
-            std::cout<<"discarding buffer"<<std::endl;
-            fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
-            this->fBuffer = nullptr;
-        }
         else
         {
             //some error occurred, stop production so we can re-start
@@ -432,6 +418,14 @@ HPX14Digitizer::ExecutePostWorkTasks()
             this->fBuffer = nullptr;
             this->Stop();
         }
+        // else if (finalize_code == HDigitizerErrorCode::premature_stop)
+        // {
+        //     //early stop called, so put this buffer back on the producer stack and move on
+        //     std::cout<<"discarding buffer"<<std::endl;
+        //     fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
+        //     this->fBuffer = nullptr;
+        // }
+
     }
 }
 
