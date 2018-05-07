@@ -269,6 +269,7 @@ HPX14Digitizer::FinalizeImpl()
     //check for FIFO overflow
     if( GetFifoFullFlagPX14(fBoard) )
     {
+        std::cout<<"Card FIFO overflow"<<std::endl;
         return HDigitizerErrorCode::card_buffer_overflow;
     }
 
@@ -278,6 +279,7 @@ HPX14Digitizer::FinalizeImpl()
     }
     else
     {
+        std::cout<<"buffer overflow"<<std::endl;
         return HDigitizerErrorCode::card_buffer_overflow;
     }
 
@@ -354,34 +356,34 @@ HPX14Digitizer::ExecutePreWorkTasks()
 
 
     //set the digitizer buffer if succesful
-    if( buffer != nullptr )
+    if( buffer != nullptr && (fBufferCode & HProducerBufferPolicyCode::success))
     {
         //successfully got a buffer, assigned it
         this->SetBuffer(buffer);
 
-        //start aquire if we haven't already
-        if( !fAcquireActive )
-        {
-            this->Acquire();
-            if(fArmed)
-            {
-                fAcquireActive = true;
-            }
-        }
+        // //start aquire if we haven't already
+        // if( !fAcquireActive )
+        // {
+        //     this->Acquire();
+        //     if(fArmed)
+        //     {
+        //         fAcquireActive = true;
+        //     }
+        // }
 
         //configure the buffer meta data
         this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
         this->fBuffer->GetMetaData()->SetSampleRate(fAcquisitionRateMHz*1000000);
     }
-    else
-    {
-        //buffer acquisition error, stop if needed
-        if(fAcquireActive)
-        {
-            this->Stop();
-            fAcquireActive = false;
-        }
-    }
+    // else
+    // {
+    //     //buffer acquisition error, stop if needed
+    //     if(fAcquireActive)
+    //     {
+    //         this->Stop();
+    //         fAcquireActive = false;
+    //     }
+    // }
 
 }
 
@@ -392,6 +394,10 @@ HPX14Digitizer::DoWork()
     if( (fBufferCode & HProducerBufferPolicyCode::success) && fArmed)
     {
         this->Transfer();
+    }
+    else
+    {
+        Idle();
     }
 }
 
