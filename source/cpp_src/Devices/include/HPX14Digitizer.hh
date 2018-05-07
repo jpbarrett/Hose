@@ -79,10 +79,10 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
         virtual bool WorkPresent() override; //check if we have buffer filling work to do
 
         //global sample counter
-        uint64_t fCounter;
+        volatile uint64_t fCounter;
         bool fAcquireActive;
         HProducerBufferPolicyCode fBufferCode;
-        std::time_t fAcquisitionStartTime;
+        volatile std::time_t fAcquisitionStartTime;
 
         //thread pool stuff for read-out, 
 
