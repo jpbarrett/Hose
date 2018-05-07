@@ -346,7 +346,7 @@ HPX14Digitizer::ExecutePreWorkTasks()
 
     if(fBufferCode == HProducerBufferPolicyCode::stolen)
     {
-        std::cout<<"sink code = "<<(unsigned int)sink_code<<std::endl;
+        std::cout<<"sink code = "<<(unsigned int)fBufferCode<<std::endl;
         std::cout<<"digitizer stealing buffer"<<std::endl;
         std::cout<<"consumer (to spec) pool size = "<<fBufferPool->GetConsumerPoolSize()<<std::endl;
         std::cout<<"producer (for digi) pool size = "<<fBufferPool->GetProducerPoolSize()<<std::endl;
