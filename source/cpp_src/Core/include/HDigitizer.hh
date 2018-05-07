@@ -23,6 +23,7 @@ enum class HDigitizerErrorCode
     success,
     card_buffer_overflow,
     host_buffer_overflow,
+    premature_stop,
     unknown
 };
 

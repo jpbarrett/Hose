@@ -205,6 +205,11 @@ HPX14Digitizer::TransferImpl()
 {
     if(fArmed && this->fBuffer != nullptr )
     {
+        //configure buffer information, cast time to uint64_t and set, then set the sample rate
+        this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
+        this->fBuffer->GetMetaData()->SetSampleRate(GetSamplingFrequency()); //check that double to uint64_t conversion is OK here
+        this->fBuffer->GetMetaData()->SetLeadingSampleIndex(fCounter);
+
         unsigned int n_samples_collect  = this->fBuffer->GetArrayDimension(0);
         int64_t samples_to_collect = this->fBuffer->GetArrayDimension(0);
 
@@ -262,14 +267,13 @@ HPX14Digitizer::FinalizeImpl()
             else{ threads_busy = true; }
         }
 
+        //check there hasn't been a pre-mature stop call, if there has the counter will not longer be the same, so we should just dump 
+        if(this->fBuffer->GetMetaData()->GetLeadingSampleIndex() != fCounter )
+        {
+            return HDigitizerErrorCode::premature_stop;
+        }
 
-        //configure buffer information, cast time to uint64_t and set, then set the sample rate
-        this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
-        this->fBuffer->GetMetaData()->SetSampleRate(GetSamplingFrequency()); //check that double to uint64_t conversion is OK here
-        
         //increment the sample counter
-        uint64_t count = fCounter;
-        this->fBuffer->GetMetaData()->SetLeadingSampleIndex(count);
         fCounter += this->fBuffer->GetArrayDimension(0);
 
         //check for FIFO overflow
@@ -310,6 +314,7 @@ void HPX14Digitizer::StopImpl()
     {
         fArmed = false;
         fErrorCode = 0;
+        fCounter = 0;
 
         //make sure we release any stale buffer that could be hanging around
         if (this->fBuffer != nullptr)
@@ -411,22 +416,20 @@ HPX14Digitizer::ExecutePostWorkTasks()
             fBufferCode = this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, this->fBuffer);
             this->fBuffer = nullptr;
         }
+        else if (finalize_code == HDigitizerErrorCode::premature_stop)
+        {
+            //early stop called, so put this buffer back on the producer stack and move on
+            fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
+            this->fBuffer = nullptr;
+        }
         else
         {
             //some error occurred, stop production so we can re-start
             fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
             this->fBuffer = nullptr;
-            std::cout<<"calling stop!"<<std::endl;
             this->Stop();
         }
     }
-    
-    // if (this->fBuffer != nullptr)
-    // {
-    //     //release the old buffer,
-    //     fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
-    //     this->fBuffer = nullptr;
-    // }
 }
 
 //needed by the thread pool interface
