@@ -203,7 +203,7 @@ HPX14Digitizer::AcquireImpl()
 void 
 HPX14Digitizer::TransferImpl()
 {
-    if(fArmed)
+    if(fArmed && this->fBuffer != nullptr )
     {
         //configure buffer information, cast time to uint64_t and set, then set the sample rate
         this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
@@ -256,7 +256,7 @@ HPX14Digitizer::TransferImpl()
 HDigitizerErrorCode 
 HPX14Digitizer::FinalizeImpl()
 {
-    if(fArmed)
+    if(fArmed && this->fBuffer != nullptr)
     {
         //wait until all DMA xfer threads are idle
         bool threads_busy = true;
@@ -286,6 +286,10 @@ HPX14Digitizer::FinalizeImpl()
             std::cout<<"buffer overflow"<<std::endl;
             return HDigitizerErrorCode::card_buffer_overflow;
         }
+    }
+    else
+    {
+        return HDigitizerErrorCode::success;
     }
 
 }
@@ -360,36 +364,13 @@ HPX14Digitizer::ExecutePreWorkTasks()
         //     std::cout<<"producer (for digi) pool size = "<<fBufferPool->GetProducerPoolSize()<<std::endl;
         // }
 
-
         //set the digitizer buffer if succesful
         if( buffer != nullptr && (fBufferCode & HProducerBufferPolicyCode::success))
         {
             //successfully got a buffer, assigned it
             this->SetBuffer(buffer);
-
-            // //start aquire if we haven't already
-            // if( !fAcquireActive )
-            // {
-            //     this->Acquire();
-            //     if(fArmed)
-            //     {
-            //         fAcquireActive = true;
-            //     }
-            // }
-
-            // //configure the buffer meta data
-            // this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
-            // this->fBuffer->GetMetaData()->SetSampleRate(fAcquisitionRateMHz*1000000);
         }
-        // else
-        // {
-        //     //buffer acquisition error, stop if needed
-        //     if(fAcquireActive)
-        //     {
-        //         this->Stop();
-        //         fAcquireActive = false;
-        //     }
-        // }
+
     }
 
 }
@@ -417,16 +398,19 @@ HPX14Digitizer::ExecutePostWorkTasks()
         if(finalize_code == HDigitizerErrorCode::success)
         {
             fBufferCode = this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, this->fBuffer);
+            this->fBuffer = nullptr;
         }
         else
         {
             //some error occurred, stop production so we can re-start
             fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
+            this->fBuffer = nullptr;
             std::cout<<"calling stop!"<<std::endl;
             this->Stop();
         }
     }
-    else if (fBuffer != nullptr)
+    
+    if (this->fBuffer != nullptr)
     {
         //release the old buffer,
         fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
@@ -438,7 +422,7 @@ HPX14Digitizer::ExecutePostWorkTasks()
 void 
 HPX14Digitizer::ExecuteThreadTask()
 {
-    if(fArmed)
+    if(fArmed && fBuffer != nullptr)
     {
         //grab a buffer from the internal buffer pool
         if(fInternalBufferPool->GetConsumerPoolSize() != 0)
