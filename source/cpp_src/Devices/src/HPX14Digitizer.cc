@@ -197,16 +197,6 @@ HPX14Digitizer::AcquireImpl()
     #else
         fArmed = true;
     #endif
-
-    
-        //make sure we release any stale buffer that could be hanging around
-        if (this->fBuffer != nullptr)
-        {
-             //release the old buffer,
-             fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
-             this->fBuffer = nullptr;
-        }
-        fBufferCode = HProducerBufferPolicyCode::fail;
     }
 }
 
@@ -318,6 +308,15 @@ void HPX14Digitizer::StopImpl()
     {
         fArmed = false;
         fErrorCode = 0;
+
+        //make sure we release any stale buffer that could be hanging around
+        if (this->fBuffer != nullptr)
+        {
+             //release the old buffer for re-use without finalizing
+             fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
+             this->fBuffer = nullptr;
+        }
+        fBufferCode = HProducerBufferPolicyCode::fail;
     }
 
 }
