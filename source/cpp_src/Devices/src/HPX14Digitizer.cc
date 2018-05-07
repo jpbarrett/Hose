@@ -191,11 +191,9 @@ HPX14Digitizer::AcquireImpl()
                 fAcquisitionStartTime = 0;
             }
             fArmed = true;
-            fAcquireActive = true;
         }
     #else
         fArmed = true;
-        fAcquireActive = true;
     #endif
     }
 }
@@ -300,7 +298,6 @@ void HPX14Digitizer::StopImpl()
     else
     {
         fArmed = false;
-        fAcquireActive = false;
     }
 
 }
@@ -337,7 +334,6 @@ HPX14Digitizer::ExecutePostProductionTasks()
 {
     this->Stop();
     this->TearDown();
-    fAcquireActive = false;
 }
 
 void 
@@ -409,7 +405,7 @@ HPX14Digitizer::DoWork()
 void 
 HPX14Digitizer::ExecutePostWorkTasks()
 {
-    if(fBufferCode & HProducerBufferPolicyCode::success)
+    if( (fBufferCode & HProducerBufferPolicyCode::success) && fArmed)
     {   
         HDigitizerErrorCode finalize_code = this->Finalize(); 
         if(finalize_code == HDigitizerErrorCode::success)
@@ -422,7 +418,6 @@ HPX14Digitizer::ExecutePostWorkTasks()
             fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
             std::cout<<"calling stop!"<<std::endl;
             this->Stop();
-            fAcquireActive = false;
         }
     }
 }
