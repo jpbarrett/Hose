@@ -297,7 +297,6 @@ void HPX14Digitizer::StopImpl()
     {
         std::cout<<"not armed, not Initialized"<<std::endl;
         fArmed = false;
-        fInitialized = false;
     }
 
 }
@@ -380,7 +379,7 @@ void
 HPX14Digitizer::DoWork()
 {
     //we have an active buffer, transfer the data
-    if(fBufferCode & HProducerBufferPolicyCode::success)
+    if( (fBufferCode & HProducerBufferPolicyCode::success) && fArmed)
     {
         this->Transfer();
     }
