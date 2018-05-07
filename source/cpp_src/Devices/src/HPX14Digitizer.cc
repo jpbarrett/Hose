@@ -197,6 +197,16 @@ HPX14Digitizer::AcquireImpl()
     #else
         fArmed = true;
     #endif
+
+    
+        //make sure we release any stale buffer that could be hanging around
+        if (this->fBuffer != nullptr)
+        {
+             //release the old buffer,
+             fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
+             this->fBuffer = nullptr;
+        }
+        fBufferCode = HProducerBufferPolicyCode::fail;
     }
 }
 

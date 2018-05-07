@@ -56,7 +56,7 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
         double fAcquisitionRateMHz; //effective sampling frequency in MHz
         bool fConnected;
         bool fInitialized;
-        bool fArmed;
+        volatile bool fArmed;
         bool fBufferLocked;
 
         //required by digitizer interface
