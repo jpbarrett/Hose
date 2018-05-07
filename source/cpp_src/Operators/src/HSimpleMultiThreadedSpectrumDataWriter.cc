@@ -26,7 +26,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
 {
     //get a buffer from the buffer handler
     HLinearBuffer< spectrometer_data >* tail = nullptr;
-
+    
     if( this->fBufferPool->GetConsumerPoolSize() != 0 )
     {
         //grab a buffer to process
@@ -68,6 +68,11 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 // spec_data.WriteToFile(ss.str());
                 // spec_data.ReleaseSpectrumData();
             }
+            // this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
+        }
+        
+        if(tail != nullptr)
+        {
             this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
         }
     }
