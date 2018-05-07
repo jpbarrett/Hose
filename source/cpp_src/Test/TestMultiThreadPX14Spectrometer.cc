@@ -94,30 +94,23 @@ int main(int /*argc*/, char** /*argv*/)
     dummy.StartProduction();
     dummy.Acquire();
 
-    //wait 
-    //usleep(1000000);
-    sleep(3);
+    //repeatedly stop and start acquisition to mimic multiple recordings
+    for(unsigned int i=0; i<10; i++)
+    {
+        //wait 
+        sleep(3);
+        std::cout<<"stopping digitizer"<<std::endl;
+        dummy.Stop();
+        sleep(3);
+        std::cout<<"restarting acquire"<<std::endl;
+        dummy.Acquire();
+    }
 
+    sleep(3);
     std::cout<<"stopping digitizer"<<std::endl;
-
-    //dummy.StopProduction();
-
-    dummy.Stop();
-
-    sleep(3);
-
-    //dummy.StartProduction();
-    std::cout<<"restarting acquire"<<std::endl;
-    dummy.Acquire();
-
-    sleep(3);
-
-    std::cout<<"stopping digitizer"<<std::endl;
-
     dummy.StopProduction();
 
     std::cout<<"stopping spec"<<std::endl;
-
     m_spec.StopConsumptionProduction();
 
     sleep(1);
