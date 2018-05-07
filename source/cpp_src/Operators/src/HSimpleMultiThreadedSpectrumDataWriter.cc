@@ -52,21 +52,21 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 ss <<  sdata->leading_sample_index;
                 ss << ".bin";
 
-                HSpectrumObject< float > spec_data;
-                spec_data.SetStartTime( sdata->acquistion_start_second );
-                spec_data.SetSampleRate( sdata->sample_rate );
-                spec_data.SetLeadingSampleIndex(  sdata->leading_sample_index );
-                spec_data.SetSampleLength( (sdata->n_spectra)*(sdata->spectrum_length)  );
-                spec_data.SetNAverages( sdata->n_spectra );
-                spec_data.SetSpectrumLength((sdata->spectrum_length)/2+1); //Fix naming of this
-                spec_data.SetSpectrumData(sdata->spectrum);
-                spec_data.ExtendOnAccumulation( tail->GetMetaData()->GetOnAccumulations() );
-                spec_data.ExtendOffAccumulation( tail->GetMetaData()->GetOffAccumulations() );
-                
-                //std::cout<<"writing to "<<ss.str()<<std::endl;
-
-                spec_data.WriteToFile(ss.str());
-                spec_data.ReleaseSpectrumData();
+                // HSpectrumObject< float > spec_data;
+                // spec_data.SetStartTime( sdata->acquistion_start_second );
+                // spec_data.SetSampleRate( sdata->sample_rate );
+                // spec_data.SetLeadingSampleIndex(  sdata->leading_sample_index );
+                // spec_data.SetSampleLength( (sdata->n_spectra)*(sdata->spectrum_length)  );
+                // spec_data.SetNAverages( sdata->n_spectra );
+                // spec_data.SetSpectrumLength((sdata->spectrum_length)/2+1); //Fix naming of this
+                // spec_data.SetSpectrumData(sdata->spectrum);
+                // spec_data.ExtendOnAccumulation( tail->GetMetaData()->GetOnAccumulations() );
+                // spec_data.ExtendOffAccumulation( tail->GetMetaData()->GetOffAccumulations() );
+                // 
+                // //std::cout<<"writing to "<<ss.str()<<std::endl;
+                // 
+                // spec_data.WriteToFile(ss.str());
+                // spec_data.ReleaseSpectrumData();
             }
             this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
         }
