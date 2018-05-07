@@ -30,6 +30,7 @@ int main(int /*argc*/, char** /*argv*/)
 
     //digitizer
     HPX14Digitizer dummy;
+    dummy.SetNThreads(2);
     bool initval = dummy.Initialize();
 
     std::cout<<"initval = "<<initval<<std::endl;
@@ -60,7 +61,7 @@ int main(int /*argc*/, char** /*argv*/)
     std::cout<<"done"<<std::endl;
 
     HSpectrometerCUDA m_spec(FAKE_SPECTRUM_LENGTH, n_ave);
-    m_spec.SetNThreads(2);
+    m_spec.SetNThreads(4);
 
     m_spec.SetSourceBufferPool(source_pool);
     m_spec.SetSinkBufferPool(sink_pool);
@@ -85,15 +86,16 @@ int main(int /*argc*/, char** /*argv*/)
     };
 
     m_spec.StartConsumptionProduction();
-    for(unsigned int i=0; i<2; i++)
+    for(unsigned int i=0; i<4; i++)
     {
-        m_spec.AssociateThreadWithSingleProcessor(i, i+1);
+        m_spec.AssociateThreadWithSingleProcessor(i, i+2);
     };
 
     dummy.StartProduction();
 
     //wait 
-    usleep(1000000);
+    //usleep(1000000);
+    sleep(3);
 
     std::cout<<"stopping digitizer"<<std::endl;
 
@@ -101,13 +103,13 @@ int main(int /*argc*/, char** /*argv*/)
 
     dummy.Stop();
 
-    sleep(4);
+    sleep(3);
 
     //dummy.StartProduction();
     std::cout<<"restarting acquire"<<std::endl;
     dummy.Acquire();
 
-    sleep(5);
+    sleep(3);
 
     std::cout<<"stopping digitizer"<<std::endl;
 
