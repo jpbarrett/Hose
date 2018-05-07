@@ -92,6 +92,7 @@ int main(int /*argc*/, char** /*argv*/)
     };
 
     dummy.StartProduction();
+    dummy.Acquire();
 
     //wait 
     //usleep(1000000);

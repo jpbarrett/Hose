@@ -191,9 +191,11 @@ HPX14Digitizer::AcquireImpl()
                 fAcquisitionStartTime = 0;
             }
             fArmed = true;
+            fAcquireActive = true;
         }
     #else
         fArmed = true;
+        fAcquireActive = true;
     #endif
     }
 }
@@ -341,49 +343,52 @@ HPX14Digitizer::ExecutePostProductionTasks()
 void 
 HPX14Digitizer::ExecutePreWorkTasks()
 {
-    //get a buffer from the buffer handler
-    HLinearBuffer< px14_sample_t >* buffer = nullptr;
-    fBufferCode = this->fBufferHandler.ReserveBuffer(this->fBufferPool, buffer);
-
-    // 
-    // if(fBufferCode == HProducerBufferPolicyCode::stolen)
-    // {
-    //     std::cout<<"sink code = "<<(unsigned int)fBufferCode<<std::endl;
-    //     std::cout<<"digitizer stealing buffer"<<std::endl;
-    //     std::cout<<"consumer (to spec) pool size = "<<fBufferPool->GetConsumerPoolSize()<<std::endl;
-    //     std::cout<<"producer (for digi) pool size = "<<fBufferPool->GetProducerPoolSize()<<std::endl;
-    // }
-
-
-    //set the digitizer buffer if succesful
-    if( buffer != nullptr && (fBufferCode & HProducerBufferPolicyCode::success))
+    if(fArmed)
     {
-        //successfully got a buffer, assigned it
-        this->SetBuffer(buffer);
+        //get a buffer from the buffer handler
+        HLinearBuffer< px14_sample_t >* buffer = nullptr;
+        fBufferCode = this->fBufferHandler.ReserveBuffer(this->fBufferPool, buffer);
 
-        // //start aquire if we haven't already
-        // if( !fAcquireActive )
+        // 
+        // if(fBufferCode == HProducerBufferPolicyCode::stolen)
         // {
-        //     this->Acquire();
-        //     if(fArmed)
-        //     {
-        //         fAcquireActive = true;
-        //     }
+        //     std::cout<<"sink code = "<<(unsigned int)fBufferCode<<std::endl;
+        //     std::cout<<"digitizer stealing buffer"<<std::endl;
+        //     std::cout<<"consumer (to spec) pool size = "<<fBufferPool->GetConsumerPoolSize()<<std::endl;
+        //     std::cout<<"producer (for digi) pool size = "<<fBufferPool->GetProducerPoolSize()<<std::endl;
         // }
 
-        //configure the buffer meta data
-        this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
-        this->fBuffer->GetMetaData()->SetSampleRate(fAcquisitionRateMHz*1000000);
+
+        //set the digitizer buffer if succesful
+        if( buffer != nullptr && (fBufferCode & HProducerBufferPolicyCode::success))
+        {
+            //successfully got a buffer, assigned it
+            this->SetBuffer(buffer);
+
+            // //start aquire if we haven't already
+            // if( !fAcquireActive )
+            // {
+            //     this->Acquire();
+            //     if(fArmed)
+            //     {
+            //         fAcquireActive = true;
+            //     }
+            // }
+
+            //configure the buffer meta data
+            this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
+            this->fBuffer->GetMetaData()->SetSampleRate(fAcquisitionRateMHz*1000000);
+        }
+        // else
+        // {
+        //     //buffer acquisition error, stop if needed
+        //     if(fAcquireActive)
+        //     {
+        //         this->Stop();
+        //         fAcquireActive = false;
+        //     }
+        // }
     }
-    // else
-    // {
-    //     //buffer acquisition error, stop if needed
-    //     if(fAcquireActive)
-    //     {
-    //         this->Stop();
-    //         fAcquireActive = false;
-    //     }
-    // }
 
 }
 
