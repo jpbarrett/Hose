@@ -52,6 +52,12 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 ss <<  sdata->leading_sample_index;
                 ss << ".bin";
 
+                if(sdata->leading_sample_index == 0)
+                {
+                    std::cout<<"got a new acquisition at sec: "<<sdata->acquistion_start_second<<std::endl;
+                    std::cout<<"writing to "<<ss.str()<<std::endl;
+                }
+
                 HSpectrumObject< float > spec_data;
                 spec_data.SetStartTime( sdata->acquistion_start_second );
                 spec_data.SetSampleRate( sdata->sample_rate );
