@@ -8,6 +8,8 @@ HSimpleMultiThreadedSpectrumDataWriter::HSimpleMultiThreadedSpectrumDataWriter()
 {
     //if unassigned use default data dir
     fOutputDirectory = std::string(DATA_INSTALL_DIR);
+    // fBufferHandler.SetNAttempts(100);
+    // fBufferHandler.SetSleepDurationNanoSeconds(0);
 };
 
 HSimpleMultiThreadedSpectrumDataWriter::~HSimpleMultiThreadedSpectrumDataWriter(){};
@@ -24,7 +26,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
 {
     //get a buffer from the buffer handler
     HLinearBuffer< spectrometer_data >* tail = nullptr;
-
+    
     if( this->fBufferPool->GetConsumerPoolSize() != 0 )
     {
         //grab a buffer to process
@@ -50,6 +52,12 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 ss <<  sdata->leading_sample_index;
                 ss << ".bin";
 
+                if(sdata->leading_sample_index == 0)
+                {
+                    std::cout<<"got a new acquisition at sec: "<<sdata->acquistion_start_second<<std::endl;
+                    std::cout<<"writing to "<<ss.str()<<std::endl;
+                }
+
                 HSpectrumObject< float > spec_data;
                 spec_data.SetStartTime( sdata->acquistion_start_second );
                 spec_data.SetSampleRate( sdata->sample_rate );
@@ -61,9 +69,16 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 spec_data.ExtendOnAccumulation( tail->GetMetaData()->GetOnAccumulations() );
                 spec_data.ExtendOffAccumulation( tail->GetMetaData()->GetOffAccumulations() );
                 
+                //std::cout<<"writing to "<<ss.str()<<std::endl;
+                
                 spec_data.WriteToFile(ss.str());
                 spec_data.ReleaseSpectrumData();
             }
+            // this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
+        }
+        
+        if(tail != nullptr)
+        {
             this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
         }
     }

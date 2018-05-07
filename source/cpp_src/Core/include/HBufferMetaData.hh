@@ -23,7 +23,8 @@ class HBufferMetaData
         HBufferMetaData():
             fAcquisitionStartSecond(0),
             fSampleIndex(0),
-            fSampleRate(0)
+            fSampleRate(0),
+            fValidLength(0)
         {};
 
         virtual ~HBufferMetaData(){};
@@ -38,6 +39,12 @@ class HBufferMetaData
         uint64_t GetLeadingSampleIndex() const {return fSampleIndex;};
         void SetLeadingSampleIndex(const uint64_t& index){fSampleIndex = index;};
 
+        //TODO remove me! this is only useful for the px14 internal buffer
+        //we really need to implement some sort of extensible struct functionality
+        uint64_t GetValidLength() const {return fValidLength;};
+        void SetValidLength(const uint64_t& len){fValidLength = len;};
+
+        //sampling rate of the digitizer
         uint64_t GetSampleRate() const {return fSampleRate;};
         void SetSampleRate(const uint64_t& rate) {fSampleRate = rate;};
 
@@ -69,6 +76,7 @@ class HBufferMetaData
                 fAcquisitionStartSecond = rhs.fAcquisitionStartSecond;
                 fSampleIndex = rhs.fSampleIndex;
                 fSampleRate = rhs.fSampleRate;
+                fValidLength = rhs.fValidLength;
                 fOnAccumulations = rhs.fOnAccumulations;
                 fOffAccumulations = rhs.fOffAccumulations;
             }
@@ -86,6 +94,8 @@ class HBufferMetaData
 
         //sample rate in Hz (integer only, may need to relax this limitation)
         uint64_t fSampleRate;
+
+        uint64_t fValidLength;
 
         //data statistics (for noise diode)
         std::vector< HDataAccumulation > fOnAccumulations;

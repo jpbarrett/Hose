@@ -246,7 +246,6 @@ HThreadPool::ProcessLoop()
     {
         if( WorkPresent() )
         {
-            //std::cout<<"got work to do"<<std::endl;
             SetIdleIndicatorFalse();
             ExecuteThreadTask(); //perform granular unit of work
             SetIdleIndicatorTrue();

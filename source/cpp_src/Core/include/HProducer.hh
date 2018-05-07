@@ -57,7 +57,6 @@ class HProducer: public HThreadPool
             //signal and stop the management thread
             fStopProduction = true;
             fProductionManagementThread.join();
-
             //join the thread pool
             Join();
         }
@@ -70,7 +69,6 @@ class HProducer: public HThreadPool
             //signal and stop the management thread
             fStopProduction = true;
             fProductionManagementThread.join();
-
             //join the thread pool
             Join();
         }
@@ -82,6 +80,7 @@ class HProducer: public HThreadPool
             ConfigureBufferHandler(fBufferHandler);
             ExecutePreProductionTasks();
 
+            
             while(!fStopProduction) 
             {
                 //prepare things as needed (reserve buffer, etc)
@@ -92,6 +91,7 @@ class HProducer: public HThreadPool
 
                 //do post-work tasks (release the buffer, etc)
                 ExecutePostWorkTasks();
+
             }
 
             ExecutePostProductionTasks();

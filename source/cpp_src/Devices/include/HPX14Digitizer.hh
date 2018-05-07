@@ -13,6 +13,7 @@ extern "C"
 
 #include "HDigitizer.hh"
 #include "HProducer.hh"
+#include "HConsumerBufferHandlerPolicy.hh"
 #include "HPX14BufferAllocator.hh"
 
 namespace hose {
@@ -46,6 +47,8 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
         bool IsConnected() const {return fConnected;};
         bool IsArmed() const {return fArmed;};
 
+        void StopAfterNextBuffer(){fStopAfterNextBuffer = true;}
+
     protected:
 
         friend class HDigitizer<px14_sample_t, HPX14Digitizer >;
@@ -55,8 +58,9 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
         double fAcquisitionRateMHz; //effective sampling frequency in MHz
         bool fConnected;
         bool fInitialized;
-        bool fArmed;
+        volatile bool fArmed;
         bool fBufferLocked;
+        volatile bool fStopAfterNextBuffer;
 
         //required by digitizer interface
         bool InitializeImpl();
@@ -78,10 +82,24 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
         virtual bool WorkPresent() override; //check if we have buffer filling work to do
 
         //global sample counter
-        uint64_t fCounter;
+        volatile uint64_t fCounter;
         bool fAcquireActive;
         HProducerBufferPolicyCode fBufferCode;
-        std::time_t fAcquisitionStartTime;
+        volatile std::time_t fAcquisitionStartTime;
+
+        //thread pool stuff for read-out, 
+
+        mutable std::mutex fQueueMutex;
+        std::queue< std::tuple<void*, void*, size_t> > fMemcpyArgQueue;
+        //internal error code, cleared on stop/acquire, indicates board buffer overflow
+        int fErrorCode;
+
+        //internal DMA buffer pool handling
+        unsigned int fNInternalBuffers;
+        unsigned int fInternalBufferSize;
+        HBufferPool< px14_sample_t >* fInternalBufferPool; //buffer pool of px14 allocated buffers (limited to 2MB max size)
+        HProducerBufferHandler_Immediate< px14_sample_t > fInternalProducerBufferHandler;
+        HConsumerBufferHandler_Immediate< px14_sample_t > fInternalConsumerBufferHandler;
 
 
 };

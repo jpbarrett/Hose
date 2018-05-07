@@ -16,13 +16,13 @@
 
 using namespace hose;
 
-#define FAKE_SPECTRUM_LENGTH 32768
+#define FAKE_SPECTRUM_LENGTH 131072
 
 using PoolType = HBufferPool< uint16_t >;
 
 int main(int /*argc*/, char** /*argv*/)
 {
-    size_t n_ave = 32;
+    size_t n_ave = 256;
     size_t vector_length = FAKE_SPECTRUM_LENGTH*n_ave;
     // size_t vector_length = 1024*n_ave;
     size_t nAcq = 1;
@@ -30,6 +30,7 @@ int main(int /*argc*/, char** /*argv*/)
 
     //digitizer
     HPX14Digitizer dummy;
+    dummy.SetNThreads(2);
     bool initval = dummy.Initialize();
 
     std::cout<<"initval = "<<initval<<std::endl;
@@ -38,7 +39,7 @@ int main(int /*argc*/, char** /*argv*/)
     std::cout<<"allocating cuda host buffs"<<std::endl;
     //create source buffer pool
     HCudaHostBufferAllocator< uint16_t >* balloc = new HCudaHostBufferAllocator<  uint16_t >();
-    HBufferPool< uint16_t >* source_pool = new HBufferPool< uint16_t >( dummy.GetAllocator() );
+    HBufferPool< uint16_t >* source_pool = new HBufferPool< uint16_t >( balloc );
 
     const size_t source_n_chunks = 32;
     const size_t source_items_per_chunk = vector_length;
@@ -60,7 +61,7 @@ int main(int /*argc*/, char** /*argv*/)
     std::cout<<"done"<<std::endl;
 
     HSpectrometerCUDA m_spec(FAKE_SPECTRUM_LENGTH, n_ave);
-    m_spec.SetNThreads(6);
+    m_spec.SetNThreads(3);
 
     m_spec.SetSourceBufferPool(source_pool);
     m_spec.SetSinkBufferPool(sink_pool);
@@ -85,30 +86,40 @@ int main(int /*argc*/, char** /*argv*/)
     };
 
     m_spec.StartConsumptionProduction();
-    for(unsigned int i=0; i<6; i++)
+    for(unsigned int i=0; i<3; i++)
     {
-        m_spec.AssociateThreadWithSingleProcessor(i, i+1);
+        m_spec.AssociateThreadWithSingleProcessor(i, i+2);
     };
 
     dummy.StartProduction();
+    dummy.Acquire();
 
-    //wait 
-    usleep(10000000);
 
-    std::cout<<"stopping digitizer"<<std::endl;
 
-    dummy.StopProduction();
+
+    //repeatedly stop and start acquisition to mimic multiple recordings
+    for(unsigned int i=0; i<1000; i++)
+    {
+        //wait 
+        sleep(i%2 +1);
+        std::cout<<"stopping acquire"<<std::endl;
+        dummy.StopAfterNextBuffer();
+        sleep(1);
+        std::cout<<"restarting acquire"<<std::endl;
+        dummy.Acquire();
+    }
 
     sleep(1);
+    std::cout<<"stopping digitizer"<<std::endl;
+    dummy.StopProduction();
 
     std::cout<<"stopping spec"<<std::endl;
-
-    m_spec.ForceStopConsumptionProduction();
+    m_spec.StopConsumptionProduction();
 
     sleep(1);
 
     std::cout<<"stopping writer"<<std::endl;
-    spec_writer.ForceStopConsumption();
+    spec_writer.StopConsumption();
 
     sleep(2);
 

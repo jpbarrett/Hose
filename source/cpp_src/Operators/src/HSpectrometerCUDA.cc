@@ -10,7 +10,9 @@ namespace hose
 HSpectrometerCUDA::HSpectrometerCUDA(size_t spectrum_length, size_t n_averages):
     fSpectrumLength(spectrum_length),
     fNAverages(n_averages)
-    {};
+    {
+
+    };
 
 
 HSpectrometerCUDA::~HSpectrometerCUDA(){};
@@ -44,6 +46,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
     {
         //first get a sink buffer from the buffer handler
         HProducerBufferPolicyCode sink_code = this->fSinkBufferHandler.ReserveBuffer(this->fSinkBufferPool, sink);
+
         if( (sink_code & HProducerBufferPolicyCode::success) && sink != nullptr)
         {
             std::lock_guard<std::mutex> sink_lock(sink->fMutex);
@@ -54,7 +57,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
             {
 
                 std::lock_guard<std::mutex> source_lock(source->fMutex);
-
+                
                 //calculate the noise rms (may eventually need to move this calculation to the GPU)
                 HPeriodicPowerCalculator< uint16_t > powerCalc;
                 powerCalc.SetSamplingFrequency(fSamplingFrequency);
@@ -76,6 +79,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 sdata->n_spectra = fNAverages;
 
                 //call Juha's process_vector routine
+                //std::cout<<"CALLING FFT"<<std::endl;
                 process_vector_no_output(source->GetData(), sdata);
 
                 //release the buffers
