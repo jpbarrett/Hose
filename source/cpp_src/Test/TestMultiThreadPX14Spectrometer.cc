@@ -105,7 +105,7 @@ int main(int /*argc*/, char** /*argv*/)
 
     //dummy.StartProduction();
     std::cout<<"restarting acquire"<<std::endl;
-    dummyt.Acquire();
+    dummy.Acquire();
 
     sleep(1);
 
