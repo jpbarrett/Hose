@@ -47,6 +47,8 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
         bool IsConnected() const {return fConnected;};
         bool IsArmed() const {return fArmed;};
 
+        void StopAfterNextBuffer(){fStopAfterNextBuffer = true;}
+
     protected:
 
         friend class HDigitizer<px14_sample_t, HPX14Digitizer >;
@@ -58,6 +60,7 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
         bool fInitialized;
         volatile bool fArmed;
         bool fBufferLocked;
+        volatile bool fStopAfterNextBuffer;
 
         //required by digitizer interface
         bool InitializeImpl();

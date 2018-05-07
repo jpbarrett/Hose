@@ -100,7 +100,7 @@ int main(int /*argc*/, char** /*argv*/)
         //wait 
         sleep(3);
         std::cout<<"stopping digitizer"<<std::endl;
-        dummy.Stop();
+        dummy.StopAfterNextBuffer();
         sleep(3);
         std::cout<<"restarting acquire"<<std::endl;
         dummy.Acquire();

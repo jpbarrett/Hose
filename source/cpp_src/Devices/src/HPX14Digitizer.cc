@@ -14,6 +14,7 @@ HPX14Digitizer::HPX14Digitizer():
     fInitialized(false),
     fArmed(false),
     fCounter(0),
+    fStopAfterNextBuffer(false),
     fAcquireActive(false),
     fBufferCode(HProducerBufferPolicyCode::unset),
     fInternalBufferPool(nullptr),
@@ -166,6 +167,7 @@ void
 HPX14Digitizer::AcquireImpl()
 {
     fArmed = false;
+    fStopAfterNextBuffer = false;
     fCounter = 0;
     //time handling is quick and dirty, need to improve this (i.e if we are close to a second-roll over, etc)
     //Note: that the acquisition starts on the next second tick (with the trigger)
@@ -310,15 +312,6 @@ void HPX14Digitizer::StopImpl()
         fArmed = false;
         fErrorCode = 0;
         fCounter = 0;
-
-        //make sure we release any stale buffer that could be hanging around
-        if (this->fBuffer != nullptr)
-        {
-             //release the old buffer for re-use without finalizing
-             fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
-             this->fBuffer = nullptr;
-        }
-        fBufferCode = HProducerBufferPolicyCode::fail;
     }
 
 }
@@ -427,6 +420,13 @@ HPX14Digitizer::ExecutePostWorkTasks()
         // }
 
     }
+
+    if(fStopAfterNextBuffer)
+    {
+        this->Stop();
+        fStopAfterNextBuffer = false;
+    }
+
 }
 
 //needed by the thread pool interface
