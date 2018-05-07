@@ -410,12 +410,12 @@ HPX14Digitizer::ExecutePostWorkTasks()
         }
     }
     
-    if (this->fBuffer != nullptr)
-    {
-        //release the old buffer,
-        fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
-        this->fBuffer = nullptr;
-    }
+    // if (this->fBuffer != nullptr)
+    // {
+    //     //release the old buffer,
+    //     fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
+    //     this->fBuffer = nullptr;
+    // }
 }
 
 //needed by the thread pool interface
