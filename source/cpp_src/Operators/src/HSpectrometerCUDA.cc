@@ -46,13 +46,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
     {
         //first get a sink buffer from the buffer handler
         HProducerBufferPolicyCode sink_code = this->fSinkBufferHandler.ReserveBuffer(this->fSinkBufferPool, sink);
-        if(sink_code == HProducerBufferPolicyCode::stolen)
-        {
-            std::cout<<"sink code = "<<(unsigned int)sink_code<<std::endl;
-            std::cout<<"spec stealing buffer"<<std::endl;
-            std::cout<<"consumer (raw data) pool size = "<<fSourceBufferPool->GetConsumerPoolSize()<<std::endl;
-            std::cout<<"producer (spec data) pool size = "<<fSinkBufferPool->GetProducerPoolSize()<<std::endl;
-        }
+
         if( (sink_code & HProducerBufferPolicyCode::success) && sink != nullptr)
         {
             std::lock_guard<std::mutex> sink_lock(sink->fMutex);

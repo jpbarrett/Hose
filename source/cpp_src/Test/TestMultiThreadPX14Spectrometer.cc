@@ -61,7 +61,7 @@ int main(int /*argc*/, char** /*argv*/)
     std::cout<<"done"<<std::endl;
 
     HSpectrometerCUDA m_spec(FAKE_SPECTRUM_LENGTH, n_ave);
-    m_spec.SetNThreads(1);
+    m_spec.SetNThreads(3);
 
     m_spec.SetSourceBufferPool(source_pool);
     m_spec.SetSinkBufferPool(sink_pool);
@@ -86,7 +86,7 @@ int main(int /*argc*/, char** /*argv*/)
     };
 
     m_spec.StartConsumptionProduction();
-    for(unsigned int i=0; i<1; i++)
+    for(unsigned int i=0; i<3; i++)
     {
         m_spec.AssociateThreadWithSingleProcessor(i, i+2);
     };
