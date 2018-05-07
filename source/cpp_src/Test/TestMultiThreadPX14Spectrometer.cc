@@ -101,13 +101,13 @@ int main(int /*argc*/, char** /*argv*/)
 
     dummy.Stop();
 
-    sleep(1);
+    sleep(4);
 
     //dummy.StartProduction();
     std::cout<<"restarting acquire"<<std::endl;
     dummy.Acquire();
 
-    sleep(1);
+    sleep(5);
 
     std::cout<<"stopping digitizer"<<std::endl;
 
