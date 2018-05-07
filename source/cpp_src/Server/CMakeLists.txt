@@ -1,0 +1,32 @@
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+if(HOSE_USE_ZEROMQ)
+    find_package(ZeroMQ REQUIRED)
+    include_directories(${ZeroMQ_INCLUDE_DIRS})
+endif(HOSE_USE_ZEROMQ)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Array/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Core/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Devices/include)
+
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+set(HSERVER_LIBS HCore)
+
+list(APPEND HSERVER_HEADERFILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/
+)
+
+list(APPEND HSERVER_SOURCEFILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/
+)
+
+list(APPEND HSERVER_LIBS ${ZeroMQ_LIBRARIES})
+
+##################################################
+
+add_library (HServer SHARED ${HSERVER_SOURCEFILES})
+target_link_libraries (HServer ${HSERVER_LIBS})
+
+hose_install_headers (${HSERVER_HEADERFILES})
+hose_install_libraries (HServer)
