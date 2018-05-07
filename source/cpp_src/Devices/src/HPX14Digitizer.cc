@@ -172,6 +172,8 @@ HPX14Digitizer::AcquireImpl()
     //POSIX expectation is seconds since unix epoch (1970, but this is not guaranteed)
     fAcquisitionStartTime = std::time(nullptr);
 
+    std::cout<<"new acquire time = "<<fAcquisitionStartTime<<std::endl;
+
     int code = BeginBufferedPciAcquisitionPX14(fBoard);
     if(code != SIG_SUCCESS)
     {
