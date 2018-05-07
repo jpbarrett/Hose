@@ -268,7 +268,8 @@ HPX14Digitizer::FinalizeImpl()
         this->fBuffer->GetMetaData()->SetSampleRate(GetSamplingFrequency()); //check that double to uint64_t conversion is OK here
         
         //increment the sample counter
-        this->fBuffer->GetMetaData()->SetLeadingSampleIndex(fCounter);
+        uint64_t count = fCounter;
+        this->fBuffer->GetMetaData()->SetLeadingSampleIndex(count);
         fCounter += this->fBuffer->GetArrayDimension(0);
 
         //check for FIFO overflow
