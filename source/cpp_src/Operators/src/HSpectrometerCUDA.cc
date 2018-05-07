@@ -46,6 +46,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
     {
         //first get a sink buffer from the buffer handler
         HProducerBufferPolicyCode sink_code = this->fSinkBufferHandler.ReserveBuffer(this->fSinkBufferPool, sink);
+        if(sink_code & HProducerBufferPolicyCode::stolen){std::cout<<"spec stealing buffer"<<std::endl;}
         if( (sink_code & HProducerBufferPolicyCode::success) && sink != nullptr)
         {
             std::lock_guard<std::mutex> sink_lock(sink->fMutex);
@@ -56,14 +57,14 @@ HSpectrometerCUDA::ExecuteThreadTask()
             {
 
                 std::lock_guard<std::mutex> source_lock(source->fMutex);
-                // 
-                // //calculate the noise rms (may eventually need to move this calculation to the GPU)
-                // HPeriodicPowerCalculator< uint16_t > powerCalc;
-                // powerCalc.SetSamplingFrequency(fSamplingFrequency);
-                // powerCalc.SetSwitchingFrequency(fSwitchingFrequency);
-                // powerCalc.SetBlankingPeriod(fBlankingPeriod);
-                // powerCalc.SetBuffer(source);
-                // powerCalc.Calculate();
+                
+                //calculate the noise rms (may eventually need to move this calculation to the GPU)
+                HPeriodicPowerCalculator< uint16_t > powerCalc;
+                powerCalc.SetSamplingFrequency(fSamplingFrequency);
+                powerCalc.SetSwitchingFrequency(fSwitchingFrequency);
+                powerCalc.SetBlankingPeriod(fBlankingPeriod);
+                powerCalc.SetBuffer(source);
+                powerCalc.Calculate();
 
                 //point the sdata to the buffer object (this is a horrible hack)
                 sdata = &( (sink->GetData())[0] ); //should have buffer size of 1

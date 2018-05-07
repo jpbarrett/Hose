@@ -295,8 +295,8 @@ void HPX14Digitizer::StopImpl()
     }
     else
     {
-        std::cout<<"not armed, not Initialized"<<std::endl;
         fArmed = false;
+        fAcquireActive = false;
     }
 
 }
@@ -342,6 +342,8 @@ HPX14Digitizer::ExecutePreWorkTasks()
     //get a buffer from the buffer handler
     HLinearBuffer< px14_sample_t >* buffer = nullptr;
     fBufferCode = this->fBufferHandler.ReserveBuffer(this->fBufferPool, buffer);
+
+    if(fBufferCode & HProducerBufferPolicyCode::stolen){std::cout<<"spec stealing buffer"<<std::endl;}
     
     //set the digitizer buffer if succesful
     if( buffer != nullptr )
