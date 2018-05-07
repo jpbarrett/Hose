@@ -201,86 +201,89 @@ HPX14Digitizer::AcquireImpl()
 void 
 HPX14Digitizer::TransferImpl()
 {
-    //configure buffer information, cast time to uint64_t and set, then set the sample rate
-    this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
-    this->fBuffer->GetMetaData()->SetSampleRate(GetSamplingFrequency()); //check that double to uint64_t conversion is OK here
-
-    unsigned int n_samples_collect  = this->fBuffer->GetArrayDimension(0);
-    int64_t samples_to_collect = this->fBuffer->GetArrayDimension(0);
-
-    unsigned int buffers_filled = 0;
-    int collect_result = 0;
-
-    while(samples_to_collect > 0)
+    if(fArmed)
     {
-        unsigned int samples_in_buffer = std::min( (unsigned int) samples_to_collect, fInternalBufferSize);
+        //configure buffer information, cast time to uint64_t and set, then set the sample rate
+        this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
+        this->fBuffer->GetMetaData()->SetSampleRate(GetSamplingFrequency()); //check that double to uint64_t conversion is OK here
 
-        //grab a buffer from the internal pool
-        HLinearBuffer< px14_sample_t >* internal_buff = nullptr;
-        HProducerBufferPolicyCode internal_code = fInternalProducerBufferHandler.ReserveBuffer(fInternalBufferPool, internal_buff);
+        unsigned int n_samples_collect  = this->fBuffer->GetArrayDimension(0);
+        int64_t samples_to_collect = this->fBuffer->GetArrayDimension(0);
 
-        if(internal_code & HProducerBufferPolicyCode::success && internal_buff != nullptr)
+        unsigned int buffers_filled = 0;
+        int collect_result = 0;
+
+        while(samples_to_collect > 0)
         {
-            int code = GetPciAcquisitionDataFastPX14(fBoard, samples_in_buffer, internal_buff->GetData(), PX14_TRUE);
-            if(code != SIG_SUCCESS)
+            unsigned int samples_in_buffer = std::min( (unsigned int) samples_to_collect, fInternalBufferSize);
+
+            //grab a buffer from the internal pool
+            HLinearBuffer< px14_sample_t >* internal_buff = nullptr;
+            HProducerBufferPolicyCode internal_code = fInternalProducerBufferHandler.ReserveBuffer(fInternalBufferPool, internal_buff);
+
+            if(internal_code & HProducerBufferPolicyCode::success && internal_buff != nullptr)
             {
-                DumpLibErrorPX14 (code, "\nFailed to obtain PCI acquisition data: ", fBoard);
-                std::cout<<"board = "<<fBoard<<std::endl;
-                fErrorCode = 1;
-                samples_to_collect = 0;
+                int code = GetPciAcquisitionDataFastPX14(fBoard, samples_in_buffer, internal_buff->GetData(), PX14_TRUE);
+                if(code != SIG_SUCCESS)
+                {
+                    DumpLibErrorPX14 (code, "\nFailed to obtain PCI acquisition data: ", fBoard);
+                    std::cout<<"board = "<<fBoard<<std::endl;
+                    fErrorCode = 1;
+                    samples_to_collect = 0;
+                }
+                else
+                {
+                    //wait for xfer to complete
+                    int code = WaitForTransferCompletePX14(fBoard);
+
+                    internal_buff->GetMetaData()->SetValidLength(samples_in_buffer);
+                    internal_buff->GetMetaData()->SetLeadingSampleIndex(n_samples_collect-samples_to_collect);
+
+                    fInternalProducerBufferHandler.ReleaseBufferToConsumer(fInternalBufferPool, internal_buff);
+                    internal_buff = nullptr;
+
+                    //update samples to collect
+                    samples_to_collect -= samples_in_buffer;
+                }
+                if(internal_buff != nullptr){fInternalProducerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);};
             }
-            else
-            {
-                //wait for xfer to complete
-                int code = WaitForTransferCompletePX14(fBoard);
-
-                internal_buff->GetMetaData()->SetValidLength(samples_in_buffer);
-                internal_buff->GetMetaData()->SetLeadingSampleIndex(n_samples_collect-samples_to_collect);
-
-                fInternalProducerBufferHandler.ReleaseBufferToConsumer(fInternalBufferPool, internal_buff);
-                internal_buff = nullptr;
-
-                //update samples to collect
-                samples_to_collect -= samples_in_buffer;
-            }
-            if(internal_buff != nullptr){fInternalProducerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);};
         }
-
     }
-
 }
 
 HDigitizerErrorCode 
 HPX14Digitizer::FinalizeImpl()
 {
-
-    //wait until all DMA xfer threads are idle
-    bool threads_busy = true;
-    while( (fInternalBufferPool->GetConsumerPoolSize() != 0 && !fForceTerminate && !fSignalTerminate) || threads_busy )
+    if(fArmed)
     {
-        if( AllThreadsAreIdle() ){threads_busy = false;}
-        else{ threads_busy = true; }
-    }
+        //wait until all DMA xfer threads are idle
+        bool threads_busy = true;
+        while( (fInternalBufferPool->GetConsumerPoolSize() != 0 && !fForceTerminate && !fSignalTerminate) || threads_busy )
+        {
+            if( AllThreadsAreIdle() ){threads_busy = false;}
+            else{ threads_busy = true; }
+        }
 
-    //increment the sample counter
-    this->fBuffer->GetMetaData()->SetLeadingSampleIndex(fCounter);
-    fCounter += this->fBuffer->GetArrayDimension(0);
+        //increment the sample counter
+        this->fBuffer->GetMetaData()->SetLeadingSampleIndex(fCounter);
+        fCounter += this->fBuffer->GetArrayDimension(0);
 
-    //check for FIFO overflow
-    if( GetFifoFullFlagPX14(fBoard) )
-    {
-        std::cout<<"Card FIFO overflow"<<std::endl;
-        return HDigitizerErrorCode::card_buffer_overflow;
-    }
+        //check for FIFO overflow
+        if( GetFifoFullFlagPX14(fBoard) )
+        {
+            std::cout<<"Card FIFO overflow"<<std::endl;
+            return HDigitizerErrorCode::card_buffer_overflow;
+        }
 
-    if(!fErrorCode)
-    {
-        return HDigitizerErrorCode::success;
-    }
-    else
-    {
-        std::cout<<"buffer overflow"<<std::endl;
-        return HDigitizerErrorCode::card_buffer_overflow;
+        if(!fErrorCode)
+        {
+            return HDigitizerErrorCode::success;
+        }
+        else
+        {
+            std::cout<<"buffer overflow"<<std::endl;
+            return HDigitizerErrorCode::card_buffer_overflow;
+        }
     }
 
 }
@@ -298,6 +301,7 @@ void HPX14Digitizer::StopImpl()
     else
     {
         fArmed = false;
+        fErrorCode = 0;
     }
 
 }
@@ -426,29 +430,32 @@ HPX14Digitizer::ExecutePostWorkTasks()
 void 
 HPX14Digitizer::ExecuteThreadTask()
 {
-    //grab a buffer from the internal buffer pool
-    if(fInternalBufferPool->GetConsumerPoolSize() != 0)
+    if(fArmed)
     {
-        //grab a buffer from the internal pool
-        HLinearBuffer< px14_sample_t >* internal_buff = nullptr;
-        HConsumerBufferPolicyCode internal_code = fInternalConsumerBufferHandler.ReserveBuffer(fInternalBufferPool, internal_buff);
-
-        if(internal_code & HConsumerBufferPolicyCode::success && internal_buff != nullptr)
+        //grab a buffer from the internal buffer pool
+        if(fInternalBufferPool->GetConsumerPoolSize() != 0)
         {
-            //copy the internal buffer to the appropriate section of the external buffer
-            void* src = internal_buff->GetData();
-            void* dest = &( (this->fBuffer->GetData())[internal_buff->GetMetaData()->GetLeadingSampleIndex()] );
-            size_t sz = internal_buff->GetMetaData()->GetValidLength();
+            //grab a buffer from the internal pool
+            HLinearBuffer< px14_sample_t >* internal_buff = nullptr;
+            HConsumerBufferPolicyCode internal_code = fInternalConsumerBufferHandler.ReserveBuffer(fInternalBufferPool, internal_buff);
 
-            if( dest != nullptr &&  src != nullptr && sz != 0)
+            if(internal_code & HConsumerBufferPolicyCode::success && internal_buff != nullptr)
             {
-                //do the memcpy
-                memcpy(dest, src, sz);
+                //copy the internal buffer to the appropriate section of the external buffer
+                void* src = internal_buff->GetData();
+                void* dest = &( (this->fBuffer->GetData())[internal_buff->GetMetaData()->GetLeadingSampleIndex()] );
+                size_t sz = internal_buff->GetMetaData()->GetValidLength();
+
+                if( dest != nullptr &&  src != nullptr && sz != 0)
+                {
+                    //do the memcpy
+                    memcpy(dest, src, sz);
+                }
+                fInternalConsumerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);
+                internal_buff = nullptr;
             }
-            fInternalConsumerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);
-            internal_buff = nullptr;
+            if(internal_buff != nullptr){fInternalConsumerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);};
         }
-        if(internal_buff != nullptr){fInternalConsumerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);};
     }
 }
 
