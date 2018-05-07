@@ -377,9 +377,9 @@ HPX14Digitizer::ExecutePreWorkTasks()
             //     }
             // }
 
-            //configure the buffer meta data
-            this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
-            this->fBuffer->GetMetaData()->SetSampleRate(fAcquisitionRateMHz*1000000);
+            // //configure the buffer meta data
+            // this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
+            // this->fBuffer->GetMetaData()->SetSampleRate(fAcquisitionRateMHz*1000000);
         }
         // else
         // {
@@ -425,6 +425,12 @@ HPX14Digitizer::ExecutePostWorkTasks()
             std::cout<<"calling stop!"<<std::endl;
             this->Stop();
         }
+    }
+    else if (fBuffer != nullptr)
+    {
+        //release the old buffer,
+        fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
+        this->fBuffer = nullptr;
     }
 }
 
