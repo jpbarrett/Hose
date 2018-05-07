@@ -94,6 +94,9 @@ int main(int /*argc*/, char** /*argv*/)
     dummy.StartProduction();
     dummy.Acquire();
 
+
+
+
     //repeatedly stop and start acquisition to mimic multiple recordings
     for(unsigned int i=0; i<1000; i++)
     {
