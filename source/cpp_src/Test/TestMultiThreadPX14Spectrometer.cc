@@ -95,18 +95,18 @@ int main(int /*argc*/, char** /*argv*/)
     dummy.Acquire();
 
     //repeatedly stop and start acquisition to mimic multiple recordings
-    for(unsigned int i=0; i<10; i++)
+    for(unsigned int i=0; i<100; i++)
     {
         //wait 
-        sleep(3);
-        std::cout<<"stopping digitizer"<<std::endl;
+        sleep(1);
+        std::cout<<"stopping acquire"<<std::endl;
         dummy.StopAfterNextBuffer();
-        sleep(3);
+        sleep(1);
         std::cout<<"restarting acquire"<<std::endl;
         dummy.Acquire();
     }
 
-    sleep(3);
+    sleep(1);
     std::cout<<"stopping digitizer"<<std::endl;
     dummy.StopProduction();
 
