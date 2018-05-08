@@ -3,14 +3,18 @@
 namespace hose 
 {
 
-HServer::HServer()
-{
-    fConnection = "tcp://127.0.0.1:1234";
-}
+HServer::HServer():
+    fStop(false),
+    fSocket(nullptr),
+    fContext(nullptr)
+    {
+        fConnection = "tcp://127.0.0.1:12345";
+    }
 
 HServer::~HServer()
 {
-
+    if(fContext){delete fConnection;};
+    if(fSocket){delete fSocket}
 }
 
 void 
@@ -24,8 +28,9 @@ HServer::Initialize()
 
 void HServer::Run()
 {
-    
-    while (true)
+    fStop = true;
+
+    while(!fStop)
     {
         //  Wait for next request from client
         zmq::message_t request;
@@ -36,27 +41,42 @@ void HServer::Run()
         //check the requests validity
         if( CheckRequest(request_data) )
         {
-            //push it into the queue where it can be grabbed
+            //push it into the queue where it can be grabbed but the application
             fMessageQueue.push(request_data);
 
-            //fomulate the appropriate reply
+            //fomulate the appropriate reply, for now just acknowledge
+            //error, can't understand the message
+            //Send reply back to client
+            std::string reply_msg("Acknowledged");
+            zmq::message_t reply( reply_msg.size() );
+            memcpy( (void *) reply.data (), reply_msg.c_str(), reply_msg.size() );
+            socket.send (reply);
         }
         else
         {
             //error, can't understand the message
             //Send reply back to client
-            zmq::message_t reply (5);
-            memcpy ((void *) reply.data (), "Error", 5);
+            std::string error_msg("Error");
+            zmq::message_t reply( error_msg.size() );
+            memcpy( (void *) reply.data (), error_msg.c_str(), error_msg.size() );
             socket.send (reply);
         }
     }
+
+    //close the socket, context_t
+    fSocket->close();
+    usleep(1000);
+    fContext->close();
+
+    delete fSocket; fSocket = nullptr;
+    delete fContext; fContext = nullptr;
 }
 
 
 bool 
 HServer::CheckRequest(std::string message)
 {
-
+    return true;
 }
 
 void
@@ -69,14 +89,20 @@ HServer::Terminate()
 unsigned int 
 HServer::GetNMessages()
 {
-
+    return fMessageQueue.size();
 }
 
 std::string
 HServer::PopMessage()
 {
-
-
+    if(fMessageQueue.size())
+    {
+        return fMessageQueue.pop();
+    }
+    else
+    {
+        return std::string("");
+    }
 }
 
 

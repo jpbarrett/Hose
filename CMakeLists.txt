@@ -62,6 +62,7 @@ if(HOSE_USE_CUDA)
 endif(HOSE_USE_CUDA)
 add_subdirectory(${CPPSOURCE}/Operators)
 add_subdirectory(${CPPSOURCE}/Devices)
+add_subdirectory(${CPPSOURCE}/Server)
 add_subdirectory(${CPPSOURCE}/Test)
 
 #env script

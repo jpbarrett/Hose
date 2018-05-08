@@ -30,21 +30,20 @@ class HServer
 
         void Run();
 
-        void Terminate();
+        void Terminate(){fStop;}
 
         unsigned int GetNMessages();
         std::string PopMessage();
 
     private:
-        
+
         bool CheckRequest(std::string message);
 
+        bool fStop;
 
         std::string fConnection;
-
         zmq::context_t*  fContext;
         zmq::socket_t* fSocket;
-
 
         std::queue< std::string > fMessageQueue;
 };
