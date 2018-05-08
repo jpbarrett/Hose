@@ -1,6 +1,8 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+
 if(HOSE_USE_ZEROMQ)
+    include(FindZeroMQ)
     find_package(ZeroMQ REQUIRED)
     include_directories(${ZeroMQ_INCLUDE_DIRS})
 endif(HOSE_USE_ZEROMQ)

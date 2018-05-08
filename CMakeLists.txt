@@ -49,10 +49,12 @@ option( HOSE_USE_ADQ7 "Build ADQ7 device support" OFF )
 option( HOSE_USE_DIGITAL_RF "Build digital_rf I/O support" OFF )
 option( HOSE_USE_CUDA "Build CUDA support." OFF)
 option( HOSE_USE_ROOT "Build ROOT based utilities." OFF)
+option( HOSE_USE_ZEROMQ "Build client-server library" OFF )
 
 #convenience variables
 set(CPPSOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source/cpp_src)
 set(SHSOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source/bash_src)
+set(PYSOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source/python_src)
 
 #source sub directories (in order of dependence)
 add_subdirectory(${CPPSOURCE}/Array)
@@ -65,6 +67,23 @@ add_subdirectory(${CPPSOURCE}/Devices)
 add_subdirectory(${CPPSOURCE}/Server)
 add_subdirectory(${CPPSOURCE}/Test)
 
-#env script
+#python package setup
+find_package(PythonInterp REQUIRED)
+find_package(PythonLibs REQUIRED)
+
+if (PYTHON_EXECUTABLE)
+  #figure out the python install path
+  #so we can add it to PYTHONPATH
+  file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/pypath.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} 
+      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+      GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+  )
+  execute_process(COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_CURRENT_BINARY_DIR}/pypath.py"  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} OUTPUT_VARIABLE PYTHON_SITE_PREFIX)
+endif (PYTHON_EXECUTABLE)
+
+#now add the python source dir
+add_subdirectory(${PYSOURCE})
+
+#configure env script
 configure_file( ${SHSOURCE}/hoseenv.sh.cmake ${CMAKE_CURRENT_BINARY_DIR}/hoseenv.sh @ONLY)
 install( PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/hoseenv.sh DESTINATION ${BIN_INSTALL_DIR} )

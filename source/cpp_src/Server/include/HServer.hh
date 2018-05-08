@@ -30,7 +30,7 @@ class HServer
 
         void Run();
 
-        void Terminate(){fStop;}
+        void Terminate(){fStop = true;}
 
         unsigned int GetNMessages();
         std::string PopMessage();

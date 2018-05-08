@@ -5,24 +5,24 @@ namespace hose
 
 HServer::HServer():
     fStop(false),
-    fSocket(nullptr),
-    fContext(nullptr)
+    fContext(nullptr),
+    fSocket(nullptr)
     {
         fConnection = "tcp://127.0.0.1:12345";
     }
 
 HServer::~HServer()
 {
-    if(fContext){delete fConnection;};
-    if(fSocket){delete fSocket}
+    if(fContext){delete fContext;};
+    if(fSocket){delete fSocket;};
 }
 
 void 
 HServer::Initialize()
 {
     fContext = new zmq::context_t(1);
-    fSocket = new zmq::socket_t(fContext, ZMQ_REP);
-    fSocket.bind( fConnection.c_str() );
+    fSocket = new zmq::socket_t(*fContext, ZMQ_REP);
+    fSocket->bind( fConnection.c_str() );
 }
 
 
@@ -34,7 +34,7 @@ void HServer::Run()
     {
         //  Wait for next request from client
         zmq::message_t request;
-        socket.recv (&request);
+        fSocket->recv (&request);
         std::string request_data = std::string(static_cast<char*>( request.data() ), request.size() );
         std::cout<<"got: "<<request_data<<std::endl;
 
@@ -50,7 +50,7 @@ void HServer::Run()
             std::string reply_msg("Acknowledged");
             zmq::message_t reply( reply_msg.size() );
             memcpy( (void *) reply.data (), reply_msg.c_str(), reply_msg.size() );
-            socket.send (reply);
+            fSocket->send (reply);
         }
         else
         {
@@ -59,7 +59,7 @@ void HServer::Run()
             std::string error_msg("Error");
             zmq::message_t reply( error_msg.size() );
             memcpy( (void *) reply.data (), error_msg.c_str(), error_msg.size() );
-            socket.send (reply);
+            fSocket->send (reply);
         }
     }
 
@@ -79,12 +79,6 @@ HServer::CheckRequest(std::string message)
     return true;
 }
 
-void
-HServer::Terminate()
-{
-
-}
-
 
 unsigned int 
 HServer::GetNMessages()
@@ -95,14 +89,15 @@ HServer::GetNMessages()
 std::string
 HServer::PopMessage()
 {
-    if(fMessageQueue.size())
+    if(fMessageQueue.size() > 0)
     {
-        return fMessageQueue.pop();
+        std::string front = fMessageQueue.front();
+        fMessageQueue.pop();
+        return front;
     }
-    else
-    {
-        return std::string("");
-    }
+
+    return std::string("");
+
 }
 
 
