@@ -9,20 +9,28 @@ if (HOSE_ENABLE_TEST)
 
     set (HOSE_TEST_LIBS HCore HDevices)
 
-    if(HOSE_USE_CUDA)
-
-        include(FindCUDA)
-        find_package(CUDA REQUIRED)
-        include_directories(${CUDA_INCLUDE_DIRS})
-        list(APPEND HOSE_TEST_LIBS HCUDAOperators ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
-
-    endif(HOSE_USE_CUDA)
-
     set(SOURCE_BASENAMES
         TestBufferAllocator
         # TestDummyDigitizer
         TestMultiThreadDummy
     )
+
+    if(HOSE_USE_ZEROMQ)
+        include(FindZeroMQ)
+        find_package(ZeroMQ REQUIRED)
+        include_directories(${ZMQ_INCLUDE_DIRS})
+        include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Server/include)
+        list(APPEND HOSE_TEST_LIBS HServer ${ZMQ_LIBRARIES})
+        list(APPEND SOURCE_BASENAMES TestServer)
+    endif(HOSE_USE_ZEROMQ)
+
+
+    if(HOSE_USE_CUDA)
+        include(FindCUDA)
+        find_package(CUDA REQUIRED)
+        include_directories(${CUDA_INCLUDE_DIRS})
+        list(APPEND HOSE_TEST_LIBS HCUDAOperators ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
+    endif(HOSE_USE_CUDA)
 
     if(HOSE_USE_CUDA)
         include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../CUDASpectrometer/include)

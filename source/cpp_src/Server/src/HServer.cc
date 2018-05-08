@@ -28,7 +28,7 @@ HServer::Initialize()
 
 void HServer::Run()
 {
-    fStop = true;
+    fStop = false;
 
     while(!fStop)
     {

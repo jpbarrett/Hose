@@ -4,7 +4,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 if(HOSE_USE_ZEROMQ)
     include(FindZeroMQ)
     find_package(ZeroMQ REQUIRED)
-    include_directories(${ZeroMQ_INCLUDE_DIRS})
+    include_directories(${ZMQ_INCLUDE_DIRS})
 endif(HOSE_USE_ZEROMQ)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Array/include)
@@ -23,7 +23,7 @@ list(APPEND HSERVER_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HServer.cc
 )
 
-list(APPEND HSERVER_LIBS ${ZeroMQ_LIBRARIES})
+list(APPEND HSERVER_LIBS ${ZMQ_LIBRARIES})
 
 ##################################################
 

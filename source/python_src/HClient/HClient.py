@@ -1,14 +1,14 @@
 import sys
 import zmq
  
-class HClient(object):
+class hose_client(object):
 
     def __init__(self):
         self.context = zmq.Context()
-        self.socket = context.socket(zmq.REQ)
-        self.socket.connect("tcp://localhost:12345")
+        self.socket = self.context.socket(zmq.REQ)
+        self.socket.connect("tcp://127.0.0.1:12345")
     
-    def SendRecieveMessage( msg_string ):
+    def SendRecieveMessage(self, msg_string):
         self.socket.send( msg_string )
-        response = socket.recv()
+        response = self.socket.recv()
         print "Response from server: ", response
