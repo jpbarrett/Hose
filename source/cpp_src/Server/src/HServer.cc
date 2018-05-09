@@ -11,6 +11,15 @@ HServer::HServer():
         fConnection = "tcp://127.0.0.1:12345";
     }
 
+HServer::HServer(std::string ip, std::string port):
+    fStop(false),
+    fContext(nullptr),
+    fSocket(nullptr)
+    {
+        //note we do not check ip/port for validlity
+        fConnection = "tcp://" + ip +":" + port; 
+    }
+
 HServer::~HServer()
 {
     if(fContext){delete fContext;};

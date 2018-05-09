@@ -24,6 +24,7 @@ class HServer
 {
     public:
         HServer();
+        HServer(std::string ip, std::string port);
         virtual ~HServer();
 
         void Initialize();
