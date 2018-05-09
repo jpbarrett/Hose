@@ -7,7 +7,7 @@ namespace hose
 HSimpleMultiThreadedSpectrumDataWriter::HSimpleMultiThreadedSpectrumDataWriter()
 {
     //if unassigned use default data dir
-    fOutputDirectory = std::string(DATA_INSTALL_DIR);
+    fBaseOutputDirectory = std::string(DATA_INSTALL_DIR);
     // fBufferHandler.SetNAttempts(100);
     // fBufferHandler.SetSleepDurationNanoSeconds(0);
 };
@@ -15,9 +15,9 @@ HSimpleMultiThreadedSpectrumDataWriter::HSimpleMultiThreadedSpectrumDataWriter()
 HSimpleMultiThreadedSpectrumDataWriter::~HSimpleMultiThreadedSpectrumDataWriter(){};
 
 void 
-HSimpleMultiThreadedSpectrumDataWriter::SetOutputDirectory(std::string output_dir)
+HSimpleMultiThreadedSpectrumDataWriter::SetBaseOutputDirectory(std::string output_dir)
 {
-    fOutputDirectory = output_dir;
+    fBaseOutputDirectory = output_dir;
 }
 
 
@@ -45,7 +45,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
             {
                 //we rely on acquisitions start time and sample index to uniquely name/stamp a file
                 std::stringstream ss;
-                ss << fOutputDirectory;
+                ss << fBaseOutputDirectory;
                 ss << "/";
                 ss <<  sdata->acquistion_start_second;
                 ss << "_";
