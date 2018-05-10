@@ -35,6 +35,9 @@ class HSpectrumObject
             fLeadingSampleIndex(0),
             fSampleLength(0),
             fNAverages(0),
+            fExperimentName("unknown"),
+            fSourceName("unknown"),
+            fScanName("unknown"),
             fSpectrumLength(0),
             fDataOwned(true),
             fSpectrumData(nullptr)
@@ -47,6 +50,9 @@ class HSpectrumObject
             fLeadingSampleIndex(0),
             fSampleLength(0),
             fNAverages(0),
+            fExperimentName("unknown"),
+            fSourceName("unknown"),
+            fScanName("unknown"),
             fSpectrumLength(0),
             fDataOwned(true),
             fSpectrumData(nullptr)
@@ -57,6 +63,9 @@ class HSpectrumObject
             fSampleLength = copy.fSampleLength;
             fNAverages = copy.fNAverages;
             fSpectrumLength = copy.fSpectrumLength;
+            fExperimentName = copy.fExperimentName;
+            fSourceName = copy.fSourceName;
+            fScanName = copy.fScanName;
             if(copy.fDataOwned)
             {
                 AllocateSpectrum();
@@ -83,6 +92,11 @@ class HSpectrumObject
         size_t GetSampleLength() const {return fSampleLength;};
         size_t GetNAverages() const {return fNAverages;};
         size_t GetSpectrumLength() const {return fSpectrumLength;};
+
+        std::string GetExperimentName() const {return fExperimentName;};
+        std::string GetSourceName() const {return fSourceName;};
+        std::string GetScanName() const {return fScanName;};
+
         XSpectrumType* GetSpectrumData() {return fSpectrumData;};
         const XSpectrumType* GetSpectrumData() const {return fSpectrumData;};
 
@@ -128,10 +142,13 @@ class HSpectrumObject
         void SetNAverages(size_t n){fNAverages = n;};
         void SetSpectrumLength(size_t spec_length){fSpectrumLength = spec_length;};
 
+        void SetExperimentName(const std::string& expname) {fExperimentName = expname;};
+        void SetSourceName(const std::string& sourcename) {fSourceName = sourcename;};
+        void SetScanName(const std::string& scanname) {fScanName = scanname;};
+
         //only use for output, to point to externally allocated array
         void SetSpectrumData(XSpectrumType* array){fSpectrumData = array; fDataOwned = false;};
         void ReleaseSpectrumData(){fSpectrumData = nullptr; fDataOwned = true;};
-
 
         //for now we are going to stuff the noise statistics data in here for estimating tsys w/ the noise diode
         //doing otherwise will require some re-architecting of the whole consumer/producer/buffer pool system
@@ -162,9 +179,20 @@ class HSpectrumObject
             outfile.write( (const char*) &fLeadingSampleIndex, sizeof(uint64_t) );
             outfile.write( (const char*) &fSampleLength, sizeof(size_t) );
             outfile.write( (const char*) &fNAverages, sizeof(size_t) );
+
+            size_t length_value = fExperimentName.size();
+            outfile.write( (const char*) &length_value, sizeof(size_t) );
+            outfile.write( (const char*) &(fExperimentName.c_str()), length_value*sizeof(char) );
+            length_value = fSourceName.size();
+            outfile.write( (const char*) &length_value, sizeof(size_t) );
+            outfile.write( (const char*) &(fSourceName.c_str()), length_value*sizeof(char) );
+            length_value = fScanName.size();
+            outfile.write( (const char*) &length_value, sizeof(size_t) );
+            outfile.write( (const char*) &(fScanName.c_str()), length_value*sizeof(char) );
+
+            //write the spectrum
             outfile.write( (const char*) &fSpectrumLength, sizeof(size_t) );
             outfile.write( (const char*) fSpectrumData, sizeof(XSpectrumType)*fSpectrumLength );
-
             unsigned int on_accum_size = fOnAccumulations.size();
             outfile.write( (const char*) &on_accum_size, sizeof(unsigned int) );
             for(unsigned int i=0; i<on_accum_size; i++)
@@ -204,8 +232,36 @@ class HSpectrumObject
             infile.read( (char*) &fLeadingSampleIndex, sizeof(uint64_t) );
             infile.read( (char*) &fSampleLength, sizeof(size_t) );
             infile.read( (char*) &fNAverages, sizeof(size_t) );
-            infile.read( (char*) &fSpectrumLength, sizeof(size_t) );
 
+            size_t length_value;
+            fExperimentName.clear();
+            infile.read( (char*) &length_value, sizeof(size_t) );
+            char tmp;
+            for(size_t i=0; i<length_value; i++)
+            {
+                infile.read( (char*) &tmp, sizeof(char) );
+                fExperimentName.push_back(tmp);
+            }
+
+            fSourceName.clear();
+            infile.read( (char*) &length_value, sizeof(size_t) );
+            char tmp;
+            for(size_t i=0; i<length_value; i++)
+            {
+                infile.read( (char*) &tmp, sizeof(char) );
+                fSourceNameName.push_back(tmp);
+            }
+
+            fScanName.clear();
+            infile.read( (char*) &length_value, sizeof(size_t) );
+            char tmp;
+            for(size_t i=0; i<length_value; i++)
+            {
+                infile.read( (char*) &tmp, sizeof(char) );
+                fScanName.push_back(tmp);
+            }
+
+            infile.read( (char*) &fSpectrumLength, sizeof(size_t) );
             //allocate some spectrum space
             ReleaseSpectrumData();
             AllocateSpectrum();
@@ -250,11 +306,15 @@ class HSpectrumObject
         uint64_t fLeadingSampleIndex; //sample index since start of the acquisition
         size_t fSampleLength; //total number of samples used to compute the spectrum
         size_t fNAverages; //if spectral averaging was used, how many averaging periods were used
-        size_t fSpectrumLength; //number of spectral points
+
+        std::string fExperimentName;
+        std::string fSourceName;
+        std::string fScanName;
 
         //indicates if we need to delete spectrum data on destruction
         bool fDataOwned;
 
+        size_t fSpectrumLength; //number of spectral points
         //pointer to spectrum data array, not owned if passed through SetSpectrumData()
         XSpectrumType* fSpectrumData;
 

@@ -343,17 +343,17 @@ class HSpectrometerManager
         {
             if(fExperimentName.size() == 0)
             {
-                fExperimentName = "x";
+                fExperimentName = "ExpX";
             }
 
             if(fSourceName.size() == 0 )
             {
-                fSourceName = "x";
+                fSourceName = "SrcX";
             }
 
             if(fScanName.size() == 0)
             {
-                fScanName = "x";
+                fScanName = "ScnX";
             }
 
             fWriter->SetExperimentName(fExperimentName);
