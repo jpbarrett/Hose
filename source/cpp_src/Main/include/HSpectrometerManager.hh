@@ -58,6 +58,8 @@ class HSpectrometerManager
     public:
 
         HSpectrometerManager():
+            fInitialized(false),
+            fStop(false),
             fIP("127.0.0.1"),
             fPort("12345"),
             fNSpectrumAverages(256),
@@ -112,7 +114,7 @@ class HSpectrometerManager
                 //create digitizer
                 fDigitizer = new HPX14Digitizer();
                 fDigitizer->SetNThreads(fNDigitizerThreads;);
-                bool digitizer_init_success = fDigitizer.Initialize();
+                bool digitizer_init_success = fDigitizer->Initialize();
 
                 if(digitizer_init_success)
                 {
@@ -120,7 +122,7 @@ class HSpectrometerManager
                     fCUDABufferAllocator = new HCudaHostBufferAllocator<  HPX14Digitizer::sample_type >();
                     fDigitizerSourcePool = new HBufferPool< HPX14Digitizer::sample_type  >( fCUDABufferAllocator );
                     fDigitizerSourcePool->Allocate(fDigitizerPoolSize, fNSpectrumAverages*fFFTSize);
-                    fDigitizer.SetBufferPool(fDigitizerSourcePool);
+                    fDigitizer->SetBufferPool(fDigitizerSourcePool);
 
                     //create spectrometer data pool
                     fSpectrometerBufferAllocator = new HBufferAllocatorSpectrometerDataCUDA<spectrometer_data>();
@@ -189,7 +191,7 @@ class HSpectrometerManager
                             if( DetermineTimeStateWRTNow(fStartTime) == TIME_BEFORE ||  DetermineTimeStateWRTNow(fStartTime) == TIME_PENDING )
                             {
                                 fRecordingState = RECORDING_UNTIL_TIME;
-                                fDigitizer.Acquire();
+                                fDigitizer->Acquire();
                             }
                         }
                     }
@@ -253,7 +255,7 @@ class HSpectrometerManager
                             fScanName = tokens[4];
                             ConfigureWriter(fExperimentName, fSourceName, fScanName);
                             //start recording immediately
-                            fDigitizer.Acquire();
+                            fDigitizer->Acquire();
                             fRecordingState = RECORDING_UNTIL_OFF;
                         }
                     break;
@@ -263,7 +265,7 @@ class HSpectrometerManager
                             //stop recording immediately
                             if(fRecordingState == RECORDING_UNTIL_OFF || fRecordingState == RECORDING_UNTIL_TIME)
                             {
-                                fDigitizer.StopAfterNextBuffer();
+                                fDigitizer->StopAfterNextBuffer();
                             }
                             fRecordingState = IDLE;
                         }
@@ -287,7 +289,7 @@ class HSpectrometerManager
                                 if( DetermineTimeStateWRTNow(fStartTime) == TIME_BEFORE ||  DetermineTimeStateWRTNow(fStartTime) == TIME_PENDING )
                                 {
                                     fRecordingState = RECORDING_UNTIL_TIME;
-                                    fDigitizer.Acquire();
+                                    fDigitizer->Acquire();
                                 }
                                 else
                                 {
@@ -417,6 +419,7 @@ class HSpectrometerManager
 
 
         //config data data
+        bool fInitialized;
         volatile bool fStop;
         std::string fIP;
         std::string fPort;
