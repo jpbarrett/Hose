@@ -76,7 +76,7 @@ class HSpectrometerManager
             fSpectrometerSinkPool(nullptr)
         {
             fCannedStopCommand = "record=off";
-        };
+        }
 
         virtual ~HSpectrometerManager()
         {
