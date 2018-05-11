@@ -19,6 +19,6 @@ class hose_client(object):
             raise IOError("Timeout processing auth request")
         print "Response from server: ", response
 
-    def Shutdown(sef):
+    def Shutdown(self):
         self.socket.close()
         self.context.term()
