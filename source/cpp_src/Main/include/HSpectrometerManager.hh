@@ -105,6 +105,7 @@ class HSpectrometerManager
 
         void Initialize()
         {
+/*
             if(!fInitialized)
             {
                 //create command server
@@ -113,7 +114,7 @@ class HSpectrometerManager
 
                 //create digitizer
                 fDigitizer = new HPX14Digitizer();
-                fDigitizer->SetNThreads(fNDigitizerThreads;);
+                fDigitizer->SetNThreads(fNDigitizerThreads);
                 bool digitizer_init_success = fDigitizer->Initialize();
 
                 if(digitizer_init_success)
@@ -148,10 +149,12 @@ class HSpectrometerManager
                     fInitialized = true;
                 }
             }
+*/
         }
 
         void Run()
         {
+/*
             if(fInitialized)
             {
                 //start the command server thread
@@ -227,6 +230,7 @@ class HSpectrometerManager
                 //join the server thread
                 server_thread.join();
             }
+*/
         }
 
         void Shutdown()
@@ -239,6 +243,7 @@ class HSpectrometerManager
         //this is quite primitive, but we only have a handful of commands to support for now
         void ProcessCommand(std::string command)
         {
+/*
             std::vector< std::string > tokens = Tokenize(command);
             if(tokens.size() != 0)
             {
@@ -309,6 +314,8 @@ class HSpectrometerManager
                     break;
                 };
             }
+
+*/
         }
 
 
@@ -316,6 +323,7 @@ class HSpectrometerManager
         {
             std::vector< std::string > temp_tokens;
             std::vector< std::string > tokens;
+/*
 
             //first we split the string by the '=' delimiter
             fTokenizer.SetString(&command);
@@ -337,12 +345,13 @@ class HSpectrometerManager
 
             //insert the start token in the front
             tokens.insert(tokens.begin(), temp_tokens[0]);
-
+*/
             return tokens;
         }
 
         int LookUpCommand(const std::vector< std::string > command_tokens)
         {
+/*
             if(command_tokens.size() >= 2)
             {
                 if(command_tokens[0] == std::string("record")
@@ -361,13 +370,14 @@ class HSpectrometerManager
                     }
                 }
             }
-
+*/
             return UNKNOWN;
         }
 
 
         void ConfigureWriter()
         {
+/*
             if(fExperimentName.size() == 0)
             {
                 fExperimentName = "ExpX";
@@ -387,14 +397,16 @@ class HSpectrometerManager
             fWriter->SetSourceName(fSourceName);
             fWriter->SetScanName(fScanName);
             fWriter->CreateOutputDirectory();
+*/
         }
 
 
         int DetermineTimeStateWRTNow(uint64_t epoch_sec_then)
         {
+/*
             //if time < now - 1 second, return TIME_BEFORE
             //if (now-1) < time < now, return TIME_PENDING
-            //if time > now, return TIME_AFTER
+            //if time > //end of kemfield namespacenow, return TIME_AFTER
 
             std::time_t now = std::time(nullptr);
             uint64_t epoch_sec_now = (uint64_t) now;
@@ -413,8 +425,9 @@ class HSpectrometerManager
             {
                 return TIME_AFTER;
             }
-
+*/
             return TIME_ERROR;
+
         }
 
 
