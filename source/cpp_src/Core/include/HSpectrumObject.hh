@@ -333,12 +333,21 @@ XStreamType& operator>>(XStreamType& s, HSpectrumObject<XSpectrumType>& aData)
     size_t sample_length; 
     size_t n_averages; 
     size_t spectrum_length;
+    std::string expname;
+    std::string sourcename;
+    std::string scanname;
 
     s >> start_time;
     s >> sample_rate;
     s >> leading_sample_index;
     s >> sample_length;
     s >> n_averages;
+
+
+    s >> expname;
+    s >> sourcename;
+    s >> scanname;
+
     s >> spectrum_length;
 
     aData.SetStartTime(start_time);
@@ -346,6 +355,11 @@ XStreamType& operator>>(XStreamType& s, HSpectrumObject<XSpectrumType>& aData)
     aData.SetLeadingSampleIndex(leading_sample_index);
     aData.SetSampleLength(sample_length);
     aData.SetNAverages(n_averages);
+
+    aData.SetExperimentName(expname);
+    aData.SetSourceName(sourcename);
+    aData.SetScanName(scanname);
+
     aData.SetSpectrumLength(spectrum_length);
 
     aData.AllocateSpectrum();
@@ -367,6 +381,11 @@ XStreamType& operator<<(XStreamType& s, const HSpectrumObject<XSpectrumType>& aD
     s << aData.GetLeadingSampleIndex() << ' ';
     s << aData.GetSampleLength() << ' ';
     s << aData.GetNAverages() << ' ';
+
+    ss << aData.GetExperimentName() << ' ';
+    ss << aData.GetSourceName() << ' ';
+    ss << aData.GetScanName() << ' ';
+
     s << aData.GetSpectrumLength() << ' ';
 
     const XSpectrumType* spec = aData.GetSpectrumData();
