@@ -157,7 +157,7 @@ class HSpectrometerManager
             if(fInitialized)
             {
                 //start the command server thread
-                std::thread server_thread( &HServer::Run, fServer ) );
+                std::thread server_thread( &HServer::Run, fServer );
                 fWriter->StartConsumption();
 
                 fSpectrometer->StartConsumptionProduction();
@@ -256,7 +256,7 @@ class HSpectrometerManager
                             fExperimentName = tokens[2];
                             fSourceName = tokens[3];
                             fScanName = tokens[4];
-                            ConfigureWriter(fExperimentName, fSourceName, fScanName);
+                            ConfigureWriter();
                             //start recording immediately
                             fDigitizer->Acquire();
                             fRecordingState = RECORDING_UNTIL_OFF;
@@ -280,7 +280,7 @@ class HSpectrometerManager
                             fExperimentName = tokens[2];
                             fSourceName = tokens[3];
                             fScanName = tokens[4];
-                            ConfigureWriter(fExperimentName, fSourceName, fScanName);
+                            ConfigureWriter();
                             fStartTime = ConvertStringToTime(tokens[5]);
                             uint64_t duration = ConvertStringToDuration(tokens[6]);
                             fEndTime = fStartTime + duration;
@@ -423,6 +423,21 @@ class HSpectrometerManager
 
         }
 
+
+        uint64_t ConvertStringToTime( std::string YYYYDDDHHMMSS)
+        {
+            //FIXM!!!
+            return 0;
+        }
+
+        uint64_t ConvertStringToDuration( std::string duration )
+        {
+            std::stringstream ss;
+            ss << duration;
+            uint64_t sec;
+            ss >> sec;
+            return sec;
+        }
 
         //config data data
         bool fInitialized;
