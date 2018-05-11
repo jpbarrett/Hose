@@ -285,11 +285,11 @@ class HSpectrometerManager
                             fSourceName = tokens[3];
                             fScanName = tokens[4];
                             ConfigureWriter();
-                            fStartTime = ConvertStringToTime(tokens[5]);
+                            bool success = ConvertStringToTime(tokens[5], &fStartTime);
                             uint64_t duration = ConvertStringToDuration(tokens[6]);
                             fEndTime = fStartTime + duration;
 
-                            if( fStartTime < fEndTime)
+                            if( fStartTime < fEndTime && success)
                             {
                                 //check if the end time is after the current time
                                 if( DetermineTimeStateWRTNow(fEndTime) == TIME_AFTER )
