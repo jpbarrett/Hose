@@ -105,7 +105,7 @@ class HSpectrometerManager
 
         void Initialize()
         {
-/*
+
             if(!fInitialized)
             {
                 //create command server
@@ -149,7 +149,7 @@ class HSpectrometerManager
                     fInitialized = true;
                 }
             }
-*/
+
         }
 
         void Run()
@@ -323,7 +323,6 @@ class HSpectrometerManager
         {
             std::vector< std::string > temp_tokens;
             std::vector< std::string > tokens;
-/*
 
             //first we split the string by the '=' delimiter
             fTokenizer.SetString(&command);
@@ -345,7 +344,7 @@ class HSpectrometerManager
 
             //insert the start token in the front
             tokens.insert(tokens.begin(), temp_tokens[0]);
-*/
+
             return tokens;
         }
 
