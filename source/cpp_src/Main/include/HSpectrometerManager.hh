@@ -10,6 +10,10 @@
 #include <unistd.h>
 #include <ctime>
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+
 #include "HTokenizer.hh"
 #include "HPX14Digitizer.hh"
 #include "HBufferPool.hh"
@@ -285,26 +289,27 @@ class HSpectrometerManager
                             uint64_t duration = ConvertStringToDuration(tokens[6]);
                             fEndTime = fStartTime + duration;
 
-                            //check if the end time is after the current time
-                            if( DetermineTimeStateWRTNow(fEndTime) == TIME_AFTER )
+                            if( fStartTime < fEndTime)
                             {
-                                //check if the start time is before the current time
-                                if( DetermineTimeStateWRTNow(fStartTime) == TIME_BEFORE ||  DetermineTimeStateWRTNow(fStartTime) == TIME_PENDING )
+                                //check if the end time is after the current time
+                                if( DetermineTimeStateWRTNow(fEndTime) == TIME_AFTER )
                                 {
-                                    fRecordingState = RECORDING_UNTIL_TIME;
-                                    fDigitizer->Acquire();
-                                }
-                                else
-                                {
-                                    //start time has not passed, so we are pending until then
-                                    fRecordingState = PENDING;
+                                    //check if the start time is before the current time
+                                    if( DetermineTimeStateWRTNow(fStartTime) == TIME_BEFORE ||  DetermineTimeStateWRTNow(fStartTime) == TIME_PENDING )
+                                    {
+                                        fRecordingState = RECORDING_UNTIL_TIME;
+                                        fDigitizer->Acquire();
+                                    }
+                                    else
+                                    {
+                                        //start time has not passed, so we are pending until then
+                                        fRecordingState = PENDING;
+                                    }
                                 }
                             }
-                            else
-                            {
-                                //end time has already passed, ignore request
-                                fRecordingState = IDLE;
-                            }
+
+                            //somethign went wrong, ignore request
+                            fRecordingState = IDLE;
                         }
                     break;
                     default:
@@ -400,7 +405,7 @@ class HSpectrometerManager
 
             //if time < now - 1 second, return TIME_BEFORE
             //if (now-1) < time < now, return TIME_PENDING
-            //if time > //end of kemfield namespacenow, return TIME_AFTER
+            //if time > now, return TIME_AFTER
 
             std::time_t now = std::time(nullptr);
             uint64_t epoch_sec_now = (uint64_t) now;
@@ -424,19 +429,70 @@ class HSpectrometerManager
         }
 
 
-        uint64_t ConvertStringToTime( std::string YYYYDDDHHMMSS)
+        //date must be in YYYYDDDHHMMSS format
+        bool ConvertStringToTime(std::string date, uint64_t& epoch_sec)
         {
-            //FIXM!!!
-            return 0;
+            //first split up the chunks of the date string
+            if(date.size() == 13)
+            {
+                std::string syear = date.substr(0,4);
+                std::string sdoy = date.substr(4,3);
+                std::string shour = date.substr(7,2);
+                std::string smin = date.substr(9,2);
+                std::string ssec = date.substr(11,2);
+
+                int year = 0;
+                int doy = 0;
+                int hour = 0;
+                int min = 0;
+                int sec = 0;
+
+                //conver to ints w/ sanity checks
+                std::stringstream ss;
+                ss.str(std::string());
+                ss << syear;
+                ss >> year; if(year < 2000 || year > 2100 ){epoch_sec = 0; return false;}
+                ss.str(std::string());
+                ss << sdoy;
+                ss >> doy;  if(doy < 1 || year > 366 ){epoch_sec = 0; return false;}
+                ss.str(std::string());
+                ss << shour;
+                ss >> hour;  if(hour < 0 || hour > 23 ){epoch_sec = 0; return false;}
+                ss.str(std::string());
+                ss << smin;
+                ss >> min;  if(min < 0 || min > 59 ){epoch_sec = 0; return false;}
+                ss.str(std::string());
+                ss << ssec;
+                ss >> sec;  if( sec < 0 || sec > 59 ){epoch_sec = 0; return false;}
+
+                //now convert year, doy, hour, min, sec to epoch second
+                struct tm tmdate;
+                tmdate.tm_sec = sec;
+                tmdate.tm_min = min;
+                tmdate.tm_hour = hour;
+                tmdate.tm_year = year;
+                tmdate.tm_yday = doy - 1;
+                tmdate.tm_isdst	= 0;
+                std::time_t epsec = mktime(&tmdate);
+                epoch_sec = (uint64_t) epsec;
+                return true;
+            }
+
+            epoch_sec = 0;
+            return false;
         }
 
         uint64_t ConvertStringToDuration( std::string duration )
         {
             std::stringstream ss;
             ss << duration;
-            uint64_t sec;
+            int sec;
             ss >> sec;
-            return sec;
+            if(sec < 12*3600 && sec >= 0) //don't allow durations larger than 12 hours or less than 0
+            {
+                return (uint64_t) sec;
+            }
+            return 0;
         }
 
         //config data data
