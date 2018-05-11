@@ -351,10 +351,10 @@ class HSpectrometerManager
 
         int LookUpCommand(const std::vector< std::string > command_tokens)
         {
-/*
+
             if(command_tokens.size() >= 2)
             {
-                if(command_tokens[0] == std::string("record")
+                if(command_tokens[0] == std::string("record") )
                 {
                     if(command_tokens[1] == std::string("on") && command_tokens.size() == 5)
                     {
@@ -370,7 +370,6 @@ class HSpectrometerManager
                     }
                 }
             }
-*/
             return UNKNOWN;
         }
 
