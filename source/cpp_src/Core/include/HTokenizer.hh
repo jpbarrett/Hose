@@ -85,6 +85,6 @@ class HTokenizer
 
 };
 
-}//end of kemfield namespace
+}
 
 #endif /* __HTokenizer_H__ */
