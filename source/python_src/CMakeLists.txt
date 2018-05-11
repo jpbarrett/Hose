@@ -1,6 +1,6 @@
 set(abs_srcdir "${CMAKE_CURRENT_SOURCE_DIR}")
 
-if (PYTHON)
+if (PYTHON_EXECUTABLE)
     set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in")
     set(SETUP_PY    "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
     set(DEPS        "${CMAKE_CURRENT_SOURCE_DIR}/HClient/__init__.py")
@@ -16,4 +16,4 @@ if (PYTHON)
     add_custom_target(client_target ALL DEPENDS ${OUTPUT})
 
     install(CODE "execute_process(COMMAND ${PYTHON} ${SETUP_PY} install --prefix=${CMAKE_INSTALL_PREFIX} )")
-endif()
+endif (PYTHON_EXECUTABLE)

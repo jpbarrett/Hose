@@ -81,10 +81,12 @@ if (PYTHON_EXECUTABLE)
   )
   execute_process(COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_CURRENT_BINARY_DIR}/pypath.py"  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} OUTPUT_VARIABLE PYTHON_SITE_PREFIX)
   message(STATUS "Python path = ${PYTHON_SITE_PREFIX}")
+
+  #now add the python source dir
+  add_subdirectory(${PYSOURCE})
+
 endif (PYTHON_EXECUTABLE)
 
-#now add the python source dir
-add_subdirectory(${PYSOURCE})
 
 #configure env script
 configure_file( ${SHSOURCE}/hoseenv.sh.cmake ${CMAKE_CURRENT_BINARY_DIR}/hoseenv.sh @ONLY)
