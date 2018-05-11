@@ -154,7 +154,6 @@ class HSpectrometerManager
 
         void Run()
         {
-/*
             if(fInitialized)
             {
                 //start the command server thread
@@ -230,7 +229,7 @@ class HSpectrometerManager
                 //join the server thread
                 server_thread.join();
             }
-*/
+
         }
 
         void Shutdown()
@@ -243,7 +242,6 @@ class HSpectrometerManager
         //this is quite primitive, but we only have a handful of commands to support for now
         void ProcessCommand(std::string command)
         {
-/*
             std::vector< std::string > tokens = Tokenize(command);
             if(tokens.size() != 0)
             {
@@ -314,8 +312,6 @@ class HSpectrometerManager
                     break;
                 };
             }
-
-*/
         }
 
 
@@ -375,7 +371,7 @@ class HSpectrometerManager
 
         void ConfigureWriter()
         {
-/*
+
             if(fExperimentName.size() == 0)
             {
                 fExperimentName = "ExpX";
@@ -395,13 +391,13 @@ class HSpectrometerManager
             fWriter->SetSourceName(fSourceName);
             fWriter->SetScanName(fScanName);
             fWriter->CreateOutputDirectory();
-*/
+
         }
 
 
         int DetermineTimeStateWRTNow(uint64_t epoch_sec_then)
         {
-/*
+
             //if time < now - 1 second, return TIME_BEFORE
             //if (now-1) < time < now, return TIME_PENDING
             //if time > //end of kemfield namespacenow, return TIME_AFTER
@@ -423,7 +419,6 @@ class HSpectrometerManager
             {
                 return TIME_AFTER;
             }
-*/
             return TIME_ERROR;
 
         }
