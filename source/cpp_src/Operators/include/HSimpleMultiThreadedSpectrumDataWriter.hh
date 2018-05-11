@@ -36,7 +36,7 @@ class HSimpleMultiThreadedSpectrumDataWriter: public HConsumer< spectrometer_dat
 
         void SetExperimentName(std::string exp_name);
         void SetSourceName(std::string source_name);
-        void SetScanName(std::string scan_name)
+        void SetScanName(std::string scan_name);
 
         void InitializeOutputDirectory();
 

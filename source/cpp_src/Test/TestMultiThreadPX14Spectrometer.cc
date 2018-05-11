@@ -73,6 +73,10 @@ int main(int /*argc*/, char** /*argv*/)
 
     //file writing consumer to drain the spectrum data buffers
     HSimpleMultiThreadedSpectrumDataWriter spec_writer;
+    spec_writer.SetExperimentName("test");
+    spec_writer.SetSourceName("none");
+    spec_writer.SetScanName("test1");
+    spec_writer.InitializeOutputDirectory();
     spec_writer.SetBufferPool(sink_pool);
     spec_writer.SetNThreads(1);
 
@@ -93,8 +97,6 @@ int main(int /*argc*/, char** /*argv*/)
 
     dummy.StartProduction();
     dummy.Acquire();
-
-
 
 
     //repeatedly stop and start acquisition to mimic multiple recordings

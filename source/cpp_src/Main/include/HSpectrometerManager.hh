@@ -34,6 +34,12 @@
 #define IDLE 3
 #define PENDING 4
 
+//time states 
+#define TIME_ERROR -1
+#define TIME_BEFORE 0
+#define TIME_PENDING 1
+#define TIME_AFTER 2
+
 namespace hose
 {
 
@@ -68,7 +74,9 @@ class HSpectrometerManager
             fWriter(nullptr),
             fDigitizerSourcePool(nullptr),
             fSpectrometerSinkPool(nullptr)
-        {};
+        {
+            fCannedStopCommand = "record=off";
+        };
 
         virtual ~HSpectrometerManager()
         {
@@ -145,8 +153,7 @@ class HSpectrometerManager
             if(fInitialized)
             {
                 //start the command server thread
-                fThreads.push_back( std::thread( &HServer::Run, fServer ) );
-
+                std::thread server_thread( &HServer::Run, fServer ) );
                 fWriter->StartConsumption();
 
                 fSpectrometer->StartConsumptionProduction();
@@ -172,37 +179,57 @@ class HSpectrometerManager
                         ProcessCommand(command);
                     }
                     
-                    //if we are pending check if we are within 1 second of starting the recording
+                    //if we are pending, check if we are within 1 second of starting the recording
                     if(fRecordingState == PENDING)
                     {
-                        std::time_t now = std::time(nullptr);
-                        if( no)
+                        //check if the end time is after the current time
+                        if( DetermineTimeStateWRTNow(fEndTime) == TIME_AFTER )
+                        {
+                            //check if the start time is before the current time
+                            if( DetermineTimeStateWRTNow(fStartTime) == TIME_BEFORE ||  DetermineTimeStateWRTNow(fStartTime) == TIME_PENDING )
+                            {
+                                fRecordingState = RECORDING_UNTIL_TIME;
+                                fDigitizer.Acquire();
+                            }
+                        }
+                    }
+
+                    if(fRecordingState == RECORDING_UNTIL_TIME)
+                    {
+                        if( DetermineTimeStateWRTNow(fEndTime) == TIME_BEFORE || DetermineTimeStateWRTNow(fEndTime) == TIME_PENDING )
+                        {
+                            ProcessCommand(fCannedStopCommand);
+                        }
                     }
 
                     //sleep for 1 second
-                    
-
+                    sleep(1);
                 }
 
-                //make sure digitizer has stopped recording
-                if(fRecordingState == RECORDING_UNTIL_OFF || fRecordingState == RECORDING_UNTIL_TIME)
+                //kill the command server
+                fServer->Terminate();
+
+                //make sure the recording is stopped if we are terminating
+                if(fRecordingState != IDLE)
                 {
-                    fDigitizer.StopAfterNextBuffer();
+                    ProcessCommand(fCannedStopCommand);
                 }
 
-                fRecordingState = IDLE;
+                sleep(1);
+                fDigitizer->StopProduction();
+                sleep(1);
+                fSpectrometer->StopConsumptionProduction();
+                sleep(1);
+                fWriter->StopConsumption();
+
+                //join the server thread
+                server_thread.join();
             }
         }
 
         void Shutdown()
         {
-            fServer.Terminate();
             fStop = true;
-            //join the server thread
-            for(unsigned int i=0; i<fThreads.size(); i++) //size beeter be onew
-            {
-                fThreads[i].join();
-            }
         }
 
     private:
@@ -250,17 +277,15 @@ class HSpectrometerManager
                             fScanName = tokens[4];
                             ConfigureWriter(fExperimentName, fSourceName, fScanName);
                             fStartTime = ConvertStringToTime(tokens[5]);
-                            fDuration = ConvertStringToDuration(tokens[6]);
-                            fEndTime = fStartTime + fDuration;
+                            uint64_t duration = ConvertStringToDuration(tokens[6]);
+                            fEndTime = fStartTime + duration;
 
-                            
-                            //check if the end time has passed
-                            if( !<<end passed >> )
+                            //check if the end time is after the current time
+                            if( DetermineTimeStateWRTNow(fEndTime) == TIME_AFTER )
                             {
-
-                                if( <<start passed >>)
+                                //check if the start time is before the current time
+                                if( DetermineTimeStateWRTNow(fStartTime) == TIME_BEFORE ||  DetermineTimeStateWRTNow(fStartTime) == TIME_PENDING )
                                 {
-                                    //check if the start time has passed, but end hasn't, start recording immediately
                                     fRecordingState = RECORDING_UNTIL_TIME;
                                     fDigitizer.Acquire();
                                 }
@@ -362,8 +387,37 @@ class HSpectrometerManager
             fWriter->CreateOutputDirectory();
         }
 
+
+        int DetermineTimeStateWRTNow(uint64_t epoch_sec_then)
+        {
+            //if time < now - 1 second, return TIME_BEFORE
+            //if (now-1) < time < now, return TIME_PENDING
+            //if time > now, return TIME_AFTER
+
+            std::time_t now = std::time(nullptr);
+            uint64_t epoch_sec_now = (uint64_t) now;
+
+            if( epoch_sec_then < epoch_sec_now - 1 )
+            {
+                return TIME_BEFORE;
+            }
+
+            if( (epoch_sec_now - 1 <= epoch_sec_then) && (epoch_sec_then < epoch_sec_now) )
+            {
+                return TIME_PENDING;
+            }
+
+            if( epoch_sec_now <= epoch_sec_then )
+            {
+                return TIME_AFTER;
+            }
+
+            return TIME_ERROR;
+        }
+
+
         //config data data
-        bool fStop;
+        volatile bool fStop;
         std::string fIP;
         std::string fPort;
         size_t fNSpectrumAverages;
@@ -378,6 +432,8 @@ class HSpectrometerManager
         std::string fExperimentName;
         std::string fSourceName;
         std::string fScanName;
+        uint64_t fEndTime;
+        uint64_t fStartTime;
 
         //objects
         HTokenizer fTokenizer;
@@ -389,8 +445,7 @@ class HSpectrometerManager
         HSimpleMultiThreadedSpectrumDataWriter* fWriter;
         HBufferPool< HPX14Digitizer::sample_type >* fDigitizerSourcePool;
         HBufferPool< spectrometer_data >* fSpectrometerSinkPool;
-
-        std::vector< std::thread > fThreads;
+        std::string fCannedStopCommand;
 
 };
 

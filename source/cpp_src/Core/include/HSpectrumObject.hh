@@ -182,13 +182,13 @@ class HSpectrumObject
 
             size_t length_value = fExperimentName.size();
             outfile.write( (const char*) &length_value, sizeof(size_t) );
-            outfile.write( (const char*) &(fExperimentName.c_str()), length_value*sizeof(char) );
+            outfile.write( (const char*) &(fExperimentName[0]), length_value*sizeof(char) );
             length_value = fSourceName.size();
             outfile.write( (const char*) &length_value, sizeof(size_t) );
-            outfile.write( (const char*) &(fSourceName.c_str()), length_value*sizeof(char) );
+            outfile.write( (const char*) &(fSourceName[0]), length_value*sizeof(char) );
             length_value = fScanName.size();
             outfile.write( (const char*) &length_value, sizeof(size_t) );
-            outfile.write( (const char*) &(fScanName.c_str()), length_value*sizeof(char) );
+            outfile.write( (const char*) &(fScanName[0]), length_value*sizeof(char) );
 
             //write the spectrum
             outfile.write( (const char*) &fSpectrumLength, sizeof(size_t) );
@@ -233,10 +233,10 @@ class HSpectrumObject
             infile.read( (char*) &fSampleLength, sizeof(size_t) );
             infile.read( (char*) &fNAverages, sizeof(size_t) );
 
+            char tmp;
             size_t length_value;
             fExperimentName.clear();
             infile.read( (char*) &length_value, sizeof(size_t) );
-            char tmp;
             for(size_t i=0; i<length_value; i++)
             {
                 infile.read( (char*) &tmp, sizeof(char) );
@@ -245,16 +245,14 @@ class HSpectrumObject
 
             fSourceName.clear();
             infile.read( (char*) &length_value, sizeof(size_t) );
-            char tmp;
             for(size_t i=0; i<length_value; i++)
             {
                 infile.read( (char*) &tmp, sizeof(char) );
-                fSourceNameName.push_back(tmp);
+                fSourceName.push_back(tmp);
             }
 
             fScanName.clear();
             infile.read( (char*) &length_value, sizeof(size_t) );
-            char tmp;
             for(size_t i=0; i<length_value; i++)
             {
                 infile.read( (char*) &tmp, sizeof(char) );
@@ -382,9 +380,9 @@ XStreamType& operator<<(XStreamType& s, const HSpectrumObject<XSpectrumType>& aD
     s << aData.GetSampleLength() << ' ';
     s << aData.GetNAverages() << ' ';
 
-    ss << aData.GetExperimentName() << ' ';
-    ss << aData.GetSourceName() << ' ';
-    ss << aData.GetScanName() << ' ';
+    s << aData.GetExperimentName() << ' ';
+    s << aData.GetSourceName() << ' ';
+    s << aData.GetScanName() << ' ';
 
     s << aData.GetSpectrumLength() << ' ';
 

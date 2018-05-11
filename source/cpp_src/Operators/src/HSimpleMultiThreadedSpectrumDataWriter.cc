@@ -8,7 +8,10 @@ namespace hose
 {
 
 
-HSimpleMultiThreadedSpectrumDataWriter::HSimpleMultiThreadedSpectrumDataWriter()
+HSimpleMultiThreadedSpectrumDataWriter::HSimpleMultiThreadedSpectrumDataWriter():
+    fExperimentName("unknown"),
+    fSourceName("unknown"),
+    fScanName("unknown")
 {
     //if unassigned use default data dir
     fBaseOutputDirectory = std::string(DATA_INSTALL_DIR);

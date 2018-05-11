@@ -66,6 +66,7 @@ add_subdirectory(${CPPSOURCE}/Operators)
 add_subdirectory(${CPPSOURCE}/Devices)
 add_subdirectory(${CPPSOURCE}/Server)
 add_subdirectory(${CPPSOURCE}/Test)
+add_subdirectory(${CPPSOURCE}/Main)
 
 #python package setup
 find_package(PythonInterp REQUIRED)
