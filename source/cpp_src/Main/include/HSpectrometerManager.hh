@@ -390,7 +390,7 @@ class HSpectrometerManager
             fWriter->SetExperimentName(fExperimentName);
             fWriter->SetSourceName(fSourceName);
             fWriter->SetScanName(fScanName);
-            fWriter->CreateOutputDirectory();
+            fWriter->InitializeOutputDirectory();
 
         }
 
