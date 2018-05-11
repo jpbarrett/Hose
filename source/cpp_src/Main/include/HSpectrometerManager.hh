@@ -285,7 +285,7 @@ class HSpectrometerManager
                             fSourceName = tokens[3];
                             fScanName = tokens[4];
                             ConfigureWriter();
-                            bool success = ConvertStringToTime(tokens[5], &fStartTime);
+                            bool success = ConvertStringToTime(tokens[5], fStartTime);
                             uint64_t duration = ConvertStringToDuration(tokens[6]);
                             fEndTime = fStartTime + duration;
 
