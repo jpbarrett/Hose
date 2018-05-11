@@ -105,7 +105,7 @@ class HSpectrometerManager
 
         void Initialize()
         {
-/*
+
             if(!fInitialized)
             {
                 //create command server
@@ -149,7 +149,7 @@ class HSpectrometerManager
                     fInitialized = true;
                 }
             }
-*/
+
         }
 
         void Run()
