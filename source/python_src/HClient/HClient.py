@@ -108,4 +108,20 @@ class hprompt(Cmd):
 
     def check_time_range(self, year, day, hour, minute, second):
         print("checking time range", year, day, hour, minute, second)
-        return (year >= 2018 and day >=1 and day <= 366 and hour >= 0 and hour <= 23 and minute >= 0 and minute <= 59 and second >= 0 and second <= 59)
+        if year >= 2018:
+            if day >=1 and day <= 366:
+                if hour >= 0 and hour <= 23:
+                    if minute >= 0 and minute <= 59:
+                        if second >= 0 and second <= 59:
+                            return True
+                        else:
+                            print fail second
+                    else:
+                        print "fail minute"
+                else:
+                    print "fail hour"
+            else: 
+                print "fail day"
+        else:
+            print "fail year"
+        return False
