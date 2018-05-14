@@ -115,7 +115,7 @@ class hprompt(Cmd):
                         if second >= 0 and second <= 59:
                             return True
                         else:
-                            print fail second
+                            print "fail second"
                     else:
                         print "fail minute"
                 else:
