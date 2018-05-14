@@ -10,11 +10,10 @@ int main(int /*argc*/, char** /*argv*/)
 
     std::thread daemon( &HSpectrometerManager::Run, specManager);
 
-    sleep(120);
-
-    specManager->Shutdown();
-
-    daemon.join();
+    daemon.detach();
+    // 
+    // specManager->Shutdown();
+    // daemon.join();
 
     return 0;
 }
