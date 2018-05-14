@@ -16,4 +16,7 @@ if (PYTHON_EXECUTABLE)
     add_custom_target(client_target ALL DEPENDS ${OUTPUT})
 
     install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} install --prefix=${CMAKE_INSTALL_PREFIX} )")
+
+    add_subdirectory(Scripts)
+
 endif (PYTHON_EXECUTABLE)

@@ -1,0 +1,9 @@
+#!@PYTHON_EXECUTABLE@
+
+from HClient import *
+
+
+if __name__ == '__main__':
+    prompt = hprompt()
+    prompt.prompt = '> '
+    prompt.cmdloop('Starting client...')
