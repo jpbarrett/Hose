@@ -82,7 +82,8 @@ class hprompt(Cmd):
                     if( len(arg_list[3]) >= 1 ):
                         scan_name = arg_list[3]
                     cmd_string += ":" + exp_name + ":" + src_name + ":" + scan_name
-                    if( len(arg_list) == 6 and len(arg_list[4]) == 13 and arg_list[4].isdigit() and arg_list[5].isdigit() ):
+                    if( len(arg_list) == 6 and len(arg_list[4]) == 13 and arg_list[4].isdigit() and arg_list[5].isdigit() ):]
+                        print("in 5/6")
                         start_time = arg_list[4]
                         duration = arg_list[5]
                         st_year = start_time[0:4]
@@ -91,6 +92,7 @@ class hprompt(Cmd):
                         st_min = start_time[9:11]
                         st_sec = start_time[11:13]
                         if self.check_time_range(st_year, st_day, st_hour, st_min, st_sec ):
+                            print "good"
                             cmd_string += ":" + start_time + ":" + duration
                     self.interface.SendRecieveMessage(cmd_string)
                     return 0
@@ -105,4 +107,5 @@ class hprompt(Cmd):
 
 
     def check_time_range(self, year, day, hour, minute, second):
+        print("checking time range", year, day, hour, minute, second)
         return (year >=2018 and day >=1 and day <= 366 and hour >= 0 and hour <= 23 and minute >= 0 and minute <= 59 and second >= 0 and second <= 59)
