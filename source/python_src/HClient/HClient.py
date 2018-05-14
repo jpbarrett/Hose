@@ -86,11 +86,11 @@ class hprompt(Cmd):
                         print("in 5/6")
                         start_time = arg_list[4]
                         duration = arg_list[5]
-                        st_year = start_time[0:4]
-                        st_day = start_time[4:7]
-                        st_hour = start_time[7:9]
-                        st_min = start_time[9:11]
-                        st_sec = start_time[11:13]
+                        st_year = int(start_time[0:4])
+                        st_day = int(start_time[4:7])
+                        st_hour = int(start_time[7:9])
+                        st_min = int(start_time[9:11])
+                        st_sec = int(start_time[11:13])
                         if self.check_time_range(st_year, st_day, st_hour, st_min, st_sec ):
                             print "good"
                             cmd_string += ":" + start_time + ":" + duration
@@ -108,4 +108,4 @@ class hprompt(Cmd):
 
     def check_time_range(self, year, day, hour, minute, second):
         print("checking time range", year, day, hour, minute, second)
-        return (year >=2018 and day >=1 and day <= 366 and hour >= 0 and hour <= 23 and minute >= 0 and minute <= 59 and second >= 0 and second <= 59)
+        return (year >= 2018 and day >=1 and day <= 366 and hour >= 0 and hour <= 23 and minute >= 0 and minute <= 59 and second >= 0 and second <= 59)
