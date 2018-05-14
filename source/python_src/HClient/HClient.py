@@ -73,6 +73,7 @@ class hprompt(Cmd):
                 self.interface.SendRecieveMessage(cmd_string)
                 return 0
             else:
+                print("arglist = ", arg_list)
                 if( len(arg_list) >= 4 ):
                     if( len(arg_list[1]) >= 1 ):
                         exp_name = arg_list[1]
