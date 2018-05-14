@@ -212,6 +212,23 @@ class HSpectrometerManager
 
                     //sleep for 1 second
                     sleep(1);
+
+                    switch(fRecordingState)
+                    {
+                        case RECORDING_UNTIL_OFF:
+                            std::cout<<"recording"<<std::endl;
+                        break;
+                        case RECORDING_UNTIL_TIME:
+                            std::cout<<"recording"<<std::endl;
+                        break;
+                        case IDLE:
+                            std::cout<<"idle"<<std::endl;
+                        break;
+                        case PENDING:
+                            std::cout<<"pending"<<std::endl;
+                        break;
+                    }
+
                 }
 
                 //kill the command server
@@ -409,6 +426,8 @@ class HSpectrometerManager
 
             std::time_t now = std::time(nullptr);
             uint64_t epoch_sec_now = (uint64_t) now;
+
+            std::cout<<"now, then = "<<epoch_sec_now<<", "<<epoch_sec_then<<std::endl;
 
             if( epoch_sec_then < epoch_sec_now - 1 )
             {
