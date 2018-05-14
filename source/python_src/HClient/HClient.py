@@ -12,6 +12,7 @@ class hclient(object):
         self.socket.connect("tcp://127.0.0.1:12345")
     
     def SendRecieveMessage(self, msg_string):
+        print("Sending message: ", msg_string)
         self.socket.send( msg_string )
         poller = zmq.Poller()
         poller.register(self.socket, zmq.POLLIN)
