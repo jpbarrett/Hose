@@ -82,7 +82,7 @@ class hprompt(Cmd):
                     if( len(arg_list[3]) >= 1 ):
                         scan_name = arg_list[3]
                     cmd_string += ":" + exp_name + ":" + src_name + ":" + scan_name
-                    if( len(arg_list) == 6 and len(arg_list[4]) == 13 and arg_list[4].isdigit() and arg_list[5].isdigit() ):]
+                    if( len(arg_list) == 6): # and len(arg_list[4]) == 13 and arg_list[4].isdigit() and arg_list[5].isdigit() ):]
                         print("in 5/6")
                         start_time = arg_list[4]
                         duration = arg_list[5]
