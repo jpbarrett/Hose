@@ -450,7 +450,7 @@ class HSpectrometerManager
 
             if( epoch_sec_now <= epoch_sec_then )
             {
-                return TIME_AFTER;
+                return TIME_AFTER;record=on:exp:src:scan:2018136160055:45
             }
             return TIME_ERROR;
 
@@ -494,7 +494,7 @@ class HSpectrometerManager
                 ss << ssec;
                 ss >> sec;  if( sec < 0 || sec > 59 ){epoch_sec = 0; return false;}
 
-                std::cout<<"year, doy, hour, min, sec = "<<year<<", "<<doy<<", "<<hour<<", "<<minute<<", "<<sec<<std::endl;
+                std::cout<<"year, doy, hour, min, sec = "<<year<<", "<<doy<<", "<<hour<<", "<<min<<", "<<sec<<std::endl;
 
                 //now convert year, doy, hour, min, sec to epoch second
                 struct tm tmdate;
