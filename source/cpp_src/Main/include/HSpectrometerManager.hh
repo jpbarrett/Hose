@@ -480,29 +480,47 @@ class HSpectrometerManager
                 std::cout<<"year, doy, hour, min, sec = "<<syear<<", "<<sdoy<<", "<<shour<<", "<<smin<<", "<<ssec<<std::endl;
 
                 //conver to ints w/ sanity checks
-                std::stringstream ss;
-                ss.str(std::string());
-                ss << syear;
-                ss >> year; if(year < 2000 || year > 2100 ){epoch_sec = 0; return false;}
-                std::cout<<"year ok"<<std::endl;
-                ss.str(std::string());
-                ss << sdoy;
-                ss >> doy;  
-                std::cout<<"doy = "<<doy<<std::endl;
-                if(doy < 1 || year > 366 ){epoch_sec = 0; return false;}
-                std::cout<<"day ok"<<std::endl;
-                ss.str(std::string());
-                ss << shour;
-                ss >> hour;  if(hour < 0 || hour > 23 ){epoch_sec = 0; return false;}
-                std::cout<<"hour ok"<<std::endl;
-                ss.str(std::string());
-                ss << smin;
-                ss >> min;  if(min < 0 || min > 59 ){epoch_sec = 0; return false;}
-                std::cout<<"min ok"<<std::endl;
-                ss.str(std::string());
-                ss << ssec;
-                ss >> sec;  if( sec < 0 || sec > 59 ){epoch_sec = 0; return false;}
-                
+                {
+                    std::stringstream ss;
+                    ss.str(std::string());
+                    ss << syear;
+                    ss >> year; if(year < 2000 || year > 2100 ){epoch_sec = 0; return false;}
+                    std::cout<<"year ok"<<std::endl;
+                }
+
+                {
+                    std::stringstream ss;
+                    ss.str(std::string());
+                    ss << sdoy;
+                    ss >> doy;  
+                    std::cout<<"doy = "<<doy<<std::endl;
+                    if(doy < 1 || year > 366 ){epoch_sec = 0; return false;}
+                    std::cout<<"day ok"<<std::endl;
+                }
+
+                {
+                    std::stringstream ss;
+                    ss.str(std::string());
+                    ss << shour;
+                    ss >> hour;  if(hour < 0 || hour > 23 ){epoch_sec = 0; return false;}
+                    std::cout<<"hour ok"<<std::endl;
+                }
+
+                {
+                    std::stringstream ss;
+                    ss.str(std::string());
+                    ss << smin;
+                    ss >> min;  if(min < 0 || min > 59 ){epoch_sec = 0; return false;}
+                    std::cout<<"min ok"<<std::endl;
+                }
+
+                {
+                    std::stringstream ss;
+                    ss.str(std::string());
+                    ss << ssec;
+                    ss >> sec;  if( sec < 0 || sec > 59 ){epoch_sec = 0; return false;}
+                }
+
                 std::cout<<"year, doy, hour, min, sec = "<<year<<", "<<doy<<", "<<hour<<", "<<min<<", "<<sec<<std::endl;
 
 
