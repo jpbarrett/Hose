@@ -386,7 +386,7 @@ class HSpectrometerManager
                     {
                         return RECORD_OFF;
                     }
-                    else if(command_tokens[1] == "set" && command_tokens.size() == 7)
+                    else if(command_tokens[1] == "on" && command_tokens.size() == 7)
                     {
                         return CONFIGURE_NEXT_RECORDING;
                     }
