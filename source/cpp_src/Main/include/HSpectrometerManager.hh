@@ -305,6 +305,7 @@ class HSpectrometerManager
                             ConfigureWriter();
                             bool success = ConvertStringToTime(tokens[5], fStartTime);
                             uint64_t duration = ConvertStringToDuration(tokens[6]);
+                            std::cout<<"duration ="<<duration<<std::endl;
                             fEndTime = fStartTime + duration;
 
                             if( fStartTime < fEndTime && success)
@@ -500,9 +501,12 @@ class HSpectrometerManager
                 tmdate.tm_isdst	= 0;
                 std::time_t epsec = mktime(&tmdate);
                 epoch_sec = (uint64_t) epsec;
+
+                print "start time is epoch sec: "<<epoch_sec<<std::endl;
                 return true;
             }
 
+            std::cout<<"failure"<<std::endl;
             epoch_sec = 0;
             return false;
         }
