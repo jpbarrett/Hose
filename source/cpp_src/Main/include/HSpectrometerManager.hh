@@ -502,7 +502,7 @@ class HSpectrometerManager
                 std::time_t epsec = mktime(&tmdate);
                 epoch_sec = (uint64_t) epsec;
 
-                print "start time is epoch sec: "<<epoch_sec<<std::endl;
+                std::cout<<"start time is epoch sec: "<<epoch_sec<<std::endl;
                 return true;
             }
 
