@@ -304,11 +304,14 @@ class HSpectrometerManager
                             fScanName = tokens[4];
                             ConfigureWriter();
                             bool success = ConvertStringToTime(tokens[5], fStartTime);
+                            std::cout<<"success flag = "<<success<<std::endl;
                             uint64_t duration = ConvertStringToDuration(tokens[6]);
                             std::cout<<"duration ="<<duration<<std::endl;
+                            std::cout<<"start time ="<<fStartTime<<std::endl;
                             fEndTime = fStartTime + duration;
+                            std::cout<<"end time = "<<fEndTime<<std::endl;
 
-                            if( fStartTime < fEndTime && success)
+                            if( (fStartTime < fEndTime) && success)
                             {
                                 std::cout<<"end is after start, ok"<<std::endl;
                                 //check if the end time is after the current time
@@ -490,6 +493,8 @@ class HSpectrometerManager
                 ss.str(std::string());
                 ss << ssec;
                 ss >> sec;  if( sec < 0 || sec > 59 ){epoch_sec = 0; return false;}
+
+                std::cout<<"year, doy, hour, min, sec = "<<year<<", "<<doy<<", "<<hour<<", "<<minute<<", "<<sec<<std::endl;
 
                 //now convert year, doy, hour, min, sec to epoch second
                 struct tm tmdate;
