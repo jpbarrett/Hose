@@ -468,7 +468,7 @@ class HSpectrometerManager
                 std::string sdoy = date.substr(4,3);
                 std::string shour = date.substr(7,2);
                 std::string smin = date.substr(9,2);
-                std::string ssec = date.substr(11,13);
+                std::string ssec = date.substr(11,2);
 
                 int year = 0;
                 int doy = 0;
@@ -476,25 +476,33 @@ class HSpectrometerManager
                 int min = 0;
                 int sec = 0;
 
+                
+                std::cout<<"year, doy, hour, min, sec = "<<syear<<", "<<sdoy<<", "<<shour<<", "<<smin<<", "<<ssec<<std::endl;
+
                 //conver to ints w/ sanity checks
                 std::stringstream ss;
                 ss.str(std::string());
                 ss << syear;
                 ss >> year; if(year < 2000 || year > 2100 ){epoch_sec = 0; return false;}
+                std::cout<<"year ok"<<std::endl;
                 ss.str(std::string());
                 ss << sdoy;
                 ss >> doy;  if(doy < 1 || year > 366 ){epoch_sec = 0; return false;}
+                std::cout<<"day ok"<<std::endl;
                 ss.str(std::string());
                 ss << shour;
                 ss >> hour;  if(hour < 0 || hour > 23 ){epoch_sec = 0; return false;}
+                std::cout<<"hour ok"<<std::endl;
                 ss.str(std::string());
                 ss << smin;
                 ss >> min;  if(min < 0 || min > 59 ){epoch_sec = 0; return false;}
+                std::cout<<"min ok"<<std::endl;
                 ss.str(std::string());
                 ss << ssec;
                 ss >> sec;  if( sec < 0 || sec > 59 ){epoch_sec = 0; return false;}
-
+                
                 std::cout<<"year, doy, hour, min, sec = "<<year<<", "<<doy<<", "<<hour<<", "<<min<<", "<<sec<<std::endl;
+
 
                 //now convert year, doy, hour, min, sec to epoch second
                 struct tm tmdate;
