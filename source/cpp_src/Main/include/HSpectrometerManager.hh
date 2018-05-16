@@ -456,7 +456,7 @@ class HSpectrometerManager
         //date must be in YYYYDDDHHMMSS format
         bool ConvertStringToTime(std::string date, uint64_t& epoch_sec)
         {
-            std::cout<<"trying to parse date string: "<<data<<" with lenght: "<<data.size()<<std::endl;
+            std::cout<<"trying to parse date string: "<<date<<" with length: "<<date.size()<<std::endl;
             //first split up the chunks of the date string
             if(date.size() == 13)
             {
