@@ -450,7 +450,7 @@ class HSpectrometerManager
 
             if( epoch_sec_now <= epoch_sec_then )
             {
-                return TIME_AFTER;record=on:exp:src:scan:2018136160055:45
+                return TIME_AFTER;
             }
             return TIME_ERROR;
 
