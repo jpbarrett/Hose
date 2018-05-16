@@ -494,7 +494,7 @@ class HSpectrometerManager
                     ss << sdoy;
                     ss >> doy;  
                     std::cout<<"doy = "<<doy<<std::endl;
-                    if(doy < 1 || year > 366 ){epoch_sec = 0; return false;}
+                    if(doy < 1 || doy > 366 ){epoch_sec = 0; return false;}
                     std::cout<<"day ok"<<std::endl;
                 }
 
