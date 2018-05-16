@@ -297,6 +297,7 @@ class HSpectrometerManager
                     case CONFIGURE_NEXT_RECORDING:
                         if(fRecordingState == IDLE )
                         {
+                            std::cout<<"configuring for timed recording"<<std::endl;
                             //configure writer
                             fExperimentName = tokens[2];
                             fSourceName = tokens[3];
@@ -308,17 +309,21 @@ class HSpectrometerManager
 
                             if( fStartTime < fEndTime && success)
                             {
+                                std::cout<<"end is after start, ok"<<std::endl;
                                 //check if the end time is after the current time
                                 if( DetermineTimeStateWRTNow(fEndTime) == TIME_AFTER )
                                 {
+                                    std::cout<<"end time is after now, ok"<<std::endl;
                                     //check if the start time is before the current time
                                     if( DetermineTimeStateWRTNow(fStartTime) == TIME_BEFORE ||  DetermineTimeStateWRTNow(fStartTime) == TIME_PENDING )
                                     {
+                                        std::cout<<"start time has passed, starting recording"<<std::endl;
                                         fRecordingState = RECORDING_UNTIL_TIME;
                                         fDigitizer->Acquire();
                                     }
                                     else
                                     {
+                                        std::cout<<'waiting for start time'<<std::endl;
                                         //start time has not passed, so we are pending until then
                                         fRecordingState = PENDING;
                                     }
@@ -451,6 +456,7 @@ class HSpectrometerManager
         //date must be in YYYYDDDHHMMSS format
         bool ConvertStringToTime(std::string date, uint64_t& epoch_sec)
         {
+            std::cout<<"trying to parse date string: "<<data<<" with lenght: "<<data.size()<<std::endl;
             //first split up the chunks of the date string
             if(date.size() == 13)
             {
@@ -458,7 +464,7 @@ class HSpectrometerManager
                 std::string sdoy = date.substr(4,3);
                 std::string shour = date.substr(7,2);
                 std::string smin = date.substr(9,2);
-                std::string ssec = date.substr(11,2);
+                std::string ssec = date.substr(11,13);
 
                 int year = 0;
                 int doy = 0;
