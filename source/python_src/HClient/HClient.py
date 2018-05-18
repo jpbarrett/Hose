@@ -58,10 +58,10 @@ class hprompt(Cmd):
             #are not given any, we use the default experiment/source names, and construct
             #a default scan name based on the start time (now)
             tnow = datetime.utcnow()
-            day_of_year = str(tnow.timetuple().tm_yday)
-            hour = str(tnow.hour)
-            minute = str(tnow.minute)
-            sec = str(tnow.second)
+            day_of_year = str(tnow.timetuple().tm_yday).zfill(3)
+            hour = str(tnow.hour).zfill(2)
+            minute = str(tnow.minute).zfill(2)
+            sec = str(tnow.second).zfill(2)
             print "day_of_year = ", day_of_year, "hour = ", hour, " minute = ", minute, "sec = ", sec
             scan_name = day_of_year + "-" + hour + minute + sec
             exp_name = self.default_experiment_name
