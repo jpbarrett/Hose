@@ -62,6 +62,7 @@ class hprompt(Cmd):
             hour = str(tnow.hour)
             minute = str(tnow.minute)
             sec = str(tnow.second)
+            print "day_of_year = ", day_of_year, "hour = ", hour, " minute = ", minute, "sec = ", sec
             scan_name = day_of_year + "-" + hour + minute + sec
             exp_name = self.default_experiment_name
             src_name = self.default_source_name
