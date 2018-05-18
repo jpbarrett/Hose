@@ -457,7 +457,7 @@ class HSpectrometerManager
         }
 
 
-        //date must be in YYYYDDDHHMMSS format
+        //date must be in YYYYDDDHHMMSS format, UTC
         bool ConvertStringToTime(std::string date, uint64_t& epoch_sec)
         {
             std::cout<<"trying to parse date string: "<<date<<" with length: "<<date.size()<<std::endl;
@@ -532,7 +532,10 @@ class HSpectrometerManager
                 tmdate.tm_year = year;
                 tmdate.tm_yday = doy - 1;
                 tmdate.tm_isdst	= 0;
-                std::time_t epsec = mktime(&tmdate);
+                std::time_t epsec = mkgmtime(&tmdate);//timegm(&tmdate);
+
+                std::cout<<"epsec = "<<epsec<<std::endl;
+
                 epoch_sec = (uint64_t) epsec;
 
                 std::cout<<"start time is epoch sec: "<<epoch_sec<<std::endl;
