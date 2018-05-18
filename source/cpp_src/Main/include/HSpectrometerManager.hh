@@ -330,6 +330,7 @@ class HSpectrometerManager
                                         std::cout<<"waiting for start time"<<std::endl;
                                         //start time has not passed, so we are pending until then
                                         fRecordingState = PENDING;
+                                        return;
                                     }
                                 }
                             }
