@@ -532,7 +532,7 @@ class HSpectrometerManager
                 tmdate.tm_year = year;
                 tmdate.tm_yday = doy - 1;
                 tmdate.tm_isdst	= 0;
-                std::time_t epsec = mkgmtime(&tmdate);//timegm(&tmdate);
+                std::time_t epsec = mktime(&tmdate);//timegm(&tmdate);
 
                 std::cout<<"epsec = "<<epsec<<std::endl;
 
