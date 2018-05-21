@@ -238,29 +238,29 @@ def main(input_fn, hose_host, hose_port):
             else:
                 logger.debug("%s - Not Sleeping during scan", st)
 
-            # # --- query state of record, it should be off
-            # where = hose_send(hose_s, st, "record?;\n", "record? at end")
-            # if where != '':
-            #     break
-            # where, ret = hose_recv(hose_s, st, "?", "record? query at end")
-            # if where != '':
-            #     break
+            # --- query state of record, it should be off
+            where = hose_send(hose_s, st, "record?;\n", "record? at end")
+            if where != '':
+                break
+            where, ret = hose_recv(hose_s, st, "?", "record? query at end")
+            if where != '':
+                break
             # --- verify it is not recording
-            # pos = ret.find("?")
-            # info = ret[(pos+1):].split(':')
-            # state = info[2]
+            pos = ret.find("?")
+            info = ret[(pos+1):].split(':')
+            state = info[2]
 
             # --- if recording, issue off command
-            # if state != 'off':
-            #     logger.info( "%s - hose issue record off required.", st )
-            # 
-            #     hosecmd = "record=off;\n"
-            #     where = hose_send(hose_s, st, "record=off;\n", "record=off")
-            #     if where != '':
-            #         break
-                # where, ret = hose_recv(hose_s, st, "=", "record=off")
-                # if where != '':
-                #     break
+            if state != 'off':
+                logger.info( "%s - hose issue record off required.", st )
+            
+                hosecmd = "record=off;\n"
+                where = hose_send(hose_s, st, "record=off;\n", "record=off")
+                if where != '':
+                    break
+                where, ret = hose_recv(hose_s, st, "=", "record=off")
+                if where != '':
+                    break
 
             # --- make some allowance for recorder data to drain
             logger.debug ("%s - sleeping for %d secs", st, 2)
@@ -269,6 +269,7 @@ def main(input_fn, hose_host, hose_port):
             # --- nothing more to do for this scan
             logger.debug ("%s - sleeping for %d secs", st, 2)
             time.sleep(2)
+
             where = 'done'
 
 	# --- it was too late for that scan...
