@@ -97,13 +97,10 @@ def hose_send(hose_s, st, hosecmd, where):
     global logger
     logger.info("%s - sent: %s", st, hosecmd.strip())
     try:
-    rv = hose_s.SendRecieveMessage(hosecmd)
+        hose_s.SendRecieveMessage(hosecmd)
     except Exception, e:
         logger.error("%s - send exception %s", st, str(e))
         return where + ', ' + str(e)
-    if rv < 0:
-        logger.error("%s - send failed (%d)", st, rv)
-        return where + ', error'
     logger.info("%s - send success (%s)", st, where)
     return ''
 
