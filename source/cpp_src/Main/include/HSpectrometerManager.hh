@@ -21,7 +21,9 @@
 #include "HCudaHostBufferAllocator.hh"
 #include "HBufferAllocatorSpectrometerDataCUDA.hh"
 #include "HSimpleMultiThreadedSpectrumDataWriter.hh"
+#include "HApplicationBackend.hh"
 #include "HServer.hh"
+
 
 //TODO FIXME: replace these with real enums
 
@@ -57,7 +59,7 @@ namespace hose
 */
 
 
-class HSpectrometerManager
+class HSpectrometerManager: public HApplicationBackend
 {
     public:
 
@@ -210,24 +212,24 @@ class HSpectrometerManager
                         }
                     }
 
-                    //sleep for 1 second
-                    sleep(1);
-
-                    switch(fRecordingState)
-                    {
-                        case RECORDING_UNTIL_OFF:
-                            std::cout<<"recording"<<std::endl;
-                        break;
-                        case RECORDING_UNTIL_TIME:
-                            std::cout<<"recording"<<std::endl;
-                        break;
-                        case IDLE:
-                            std::cout<<"idle"<<std::endl;
-                        break;
-                        case PENDING:
-                            std::cout<<"pending"<<std::endl;
-                        break;
-                    }
+                    // //sleep for 1 second
+                    // sleep(1);
+                    // 
+                    // switch(fRecordingState)
+                    // {
+                    //     case RECORDING_UNTIL_OFF:
+                    //         std::cout<<"recording"<<std::endl;
+                    //     break;
+                    //     case RECORDING_UNTIL_TIME:
+                    //         std::cout<<"recording"<<std::endl;
+                    //     break;
+                    //     case IDLE:
+                    //         std::cout<<"idle"<<std::endl;
+                    //     break;
+                    //     case PENDING:
+                    //         std::cout<<"pending"<<std::endl;
+                    //     break;
+                    // }
 
                 }
 
@@ -561,6 +563,20 @@ class HSpectrometerManager
                 return (uint64_t) sec;
             }
             return 0;
+        }
+
+        
+        virtual bool CheckRequest(const std::string& request_string) override
+        {
+            return true;
+        };
+
+
+        virtual HStateStruct GetCurrentState() override
+        {
+            HStateStruct st;
+            st.status_code = HStateCode::unknown;
+            st.status_message = "default";
         }
 
         //config data data

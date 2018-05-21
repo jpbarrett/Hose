@@ -61,9 +61,13 @@ void HServer::Run()
         {
             //push it into the queue where it can be grabbed by the application
             fMessageQueue.push(request_data);
+
+            //short sleep so the application has time to process the message
+            usleep(10);
+
             HStateStruct st = fAppBackend->GetCurrentState();
             //fomulate the appropriate reply, send back to client
-            std::string reply_msg =  st.status_message;
+            std::string reply_msg = st.status_message;
             zmq::message_t reply( reply_msg.size() );
             memcpy( (void *) reply.data (), reply_msg.c_str(), reply_msg.size() );
             fSocket->send(reply);
@@ -72,7 +76,7 @@ void HServer::Run()
         {
             //error, can't understand the message
             //Send reply back to client
-            std::string error_msg("Error");
+            std::string error_msg("Error: invalid request.");
             zmq::message_t reply( error_msg.size() );
             memcpy( (void *) reply.data (), error_msg.c_str(), error_msg.size() );
             fSocket->send (reply);
