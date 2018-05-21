@@ -45,7 +45,7 @@ void HSimpleMultiThreadedSpectrumDataWriter::InitializeOutputDirectory()
     std::stringstream ss;
     ss << fBaseOutputDirectory;
     ss << "/";
-    ss << fScanName;
+    ss << fExperimentName;
 
     //now check if the directory we want to make already exists, if not, create it
     struct stat sb2;
@@ -56,6 +56,26 @@ void HSimpleMultiThreadedSpectrumDataWriter::InitializeOutputDirectory()
         if(dirstatus)
         {
             std::cout<<"Problem when attempting to create directory: "<< ss.str() << std::endl;
+        }
+    }
+
+
+    std::stringstream ss2;
+    ss2 << fBaseOutputDirectory;
+    ss2 << "/";
+    ss2 << fExperimentName;
+    ss2 << "/";
+    ss2 << fScanName;
+
+    //now check if the directory we want to make already exists, if not, create it
+    struct stat sb3;
+    if(!( stat(ss2.str().c_str(), &sb2) == 0 && S_ISDIR(sb2.st_mode) ))
+    {
+        int dirstatus = mkdir(ss2.str().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+        if(dirstatus)
+        {
+            std::cout<<"Problem when attempting to create directory: "<< ss2.str() << std::endl;
         }
     }
 
@@ -88,6 +108,8 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 //we rely on acquisitions start time and sample index to uniquely name/stamp a file
                 std::stringstream ss;
                 ss << fBaseOutputDirectory;
+                ss << "/";
+                ss << fExperimentName;
                 ss << "/";
                 ss << fScanName;
                 ss << "/";
