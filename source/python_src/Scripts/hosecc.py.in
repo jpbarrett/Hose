@@ -250,19 +250,19 @@ def main(input_fn, hose_host, hose_port):
             # info = ret[(pos+1):].split(':')
             # state = info[2]
 
-            # # --- if recording, issue off command
-            # if state != 'off':
-            #     logger.info( "%s - hose issue record off required.", st )
-            # 
-            #     hosecmd = "record=off;\n"
-            #     where = hose_send(hose_s, st, "record=off;\n", "record=off")
-            #     if where != '':
-            #         break
-            #     where, ret = hose_recv(hose_s, st, "=", "record=off")
-            #     if where != '':
-            #         break
+            # --- if recording, issue off command
+            #if state != 'off':
+            #    logger.info( "%s - hose issue record off required.", st )
+            
+            hosecmd = "record=off;\n"
+            where = hose_send(hose_s, st, "record=off;\n", "record=off")
+            if where != '':
+                break
+                # where, ret = hose_recv(hose_s, st, "=", "record=off")
+                # if where != '':
+                #     break
 
-            where = ''
+            # where = ''
 
             # --- make some allowance for recorder data to drain
             logger.debug ("%s - sleeping for %d secs", st, 2)
