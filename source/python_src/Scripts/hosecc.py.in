@@ -181,7 +181,7 @@ def main(input_fn, hose_host, hose_port):
     # --- connect to mk6
     hose_s = hclient()
 
-    logger.info("%s - Exp %s, station %s, rate %d", st, exp, st, rate_mbps)
+    logger.info("%s - Exp %s, station %s", st, exp, st)
     logger.info("%s - starting %s, ending %s", st, exp_start, exp_end)
 
     scan_no = 0
@@ -208,10 +208,6 @@ def main(input_fn, hose_host, hose_port):
         if diff > -int(delta):
             # --- there is some time left in the scan
             logger.info("%s - hose record on (%d sec to go)", st, diff)
-            dsize = ("%.0f" % (float(delta) * float(rate_mbps) / 8000.0))
-            # hosecmd = "record=" + vextime(start_time) + ":" + delta
-            # hosecmd = hosecmd + ":" + dsize + ":" + sn
-            # hosecmd = hosecmd + ":" + exp + ":" + st + ";\n"
             hosecmd = "record=on:" + exp + ":" + sc + ":" + sn + ":" + start_time + ":" + delta
             where = hose_send(hose_s, st, hosecmd, "record=on send")
             if where != '':
