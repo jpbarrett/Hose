@@ -1,32 +1,25 @@
 #include "HServer.hh"
 
-//TODO FIXME WITH REAL ENUM
-#define STATE_OFF 0 
-#define STATE_RECORDING 1
-#define STATE_PENDING 2
-
-
-
 namespace hose 
 {
 
 HServer::HServer():
     fStop(false),
     fContext(nullptr),
-    fSocket(nullptr)
+    fSocket(nullptr),
+    fAppBackend(nullptr)
     {
         fConnection = "tcp://127.0.0.1:12345";
-        fState = STATE_OFF;
     }
 
 HServer::HServer(std::string ip, std::string port):
     fStop(false),
     fContext(nullptr),
-    fSocket(nullptr)
+    fSocket(nullptr),
+    fAppBackend(nullptr)
     {
         //note we do not check ip/port for validlity
         fConnection = "tcp://" + ip +":" + port; 
-        fState = STATE_OFF;
     }
 
 HServer::~HServer()
@@ -41,6 +34,13 @@ HServer::Initialize()
     fContext = new zmq::context_t(1);
     fSocket = new zmq::socket_t(*fContext, ZMQ_REP);
     fSocket->bind( fConnection.c_str() );
+
+    if(fAppBackend == nullptr)
+    {
+        std::cout<<"HServer::Initialize(): Error, application backend unset."<<std::endl;
+        std::exit(1);
+    }
+
 }
 
 
@@ -57,15 +57,13 @@ void HServer::Run()
         std::cout<<"got: "<<request_data<<std::endl;
 
         //check the requests validity
-        if( CheckRequest(request_data) )
+        if( fAppBackend->CheckRequest(request_data) )
         {
-            //push it into the queue where it can be grabbed but the application
+            //push it into the queue where it can be grabbed by the application
             fMessageQueue.push(request_data);
-
-            //fomulate the appropriate reply, for now just acknowledge
-            //error, can't understand the message
-            //Send reply back to client
-            std::string reply_msg("Acknowledged");
+            HStateStruct st = fAppBackend->GetCurrentState();
+            //fomulate the appropriate reply, send back to client
+            std::string reply_msg =  st.status_message;
             zmq::message_t reply( reply_msg.size() );
             memcpy( (void *) reply.data (), reply_msg.c_str(), reply_msg.size() );
             fSocket->send(reply);
@@ -88,13 +86,6 @@ void HServer::Run()
 
     delete fSocket; fSocket = nullptr;
     delete fContext; fContext = nullptr;
-}
-
-
-bool 
-HServer::CheckRequest(std::string message)
-{
-    return true;
 }
 
 

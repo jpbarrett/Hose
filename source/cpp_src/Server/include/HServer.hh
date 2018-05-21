@@ -8,6 +8,11 @@
 
 #include <queue>
 
+
+#include "HStateStruct.hh"
+#include "HApplicationBackend.hh"
+
+
 /*
 *File: HServer.hh
 *Class: HServer
@@ -27,12 +32,11 @@ class HServer
         HServer(std::string ip, std::string port);
         virtual ~HServer();
 
+        void SetApplicationBackend(HApplicationBackend* backend){fAppBackend = backend;}
+
         void Initialize();
 
         void Run();
-
-        void SetState(int state_code){fState = state_code;};
-
 
         void Terminate(){fStop = true;}
 
@@ -41,15 +45,13 @@ class HServer
 
     private:
 
-        bool CheckRequest(std::string message);
-
         bool fStop;
-
-        int fState;
 
         std::string fConnection;
         zmq::context_t*  fContext;
         zmq::socket_t* fSocket;
+
+        HApplicationBackend* fAppBackend;
 
         std::queue< std::string > fMessageQueue;
 };
