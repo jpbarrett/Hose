@@ -138,7 +138,7 @@ def vextime(jt):
         jt[11:13] + 's'
     return vx
 
-def main(input_fn, hose_host, hose_port, rate_mbps):
+def main(input_fn, hose_host, hose_port):
     '''
     Run the XML schedule from the input file at the specified host.
     '''
@@ -295,8 +295,8 @@ def main(input_fn, hose_host, hose_port, rate_mbps):
     hose_s.close()
 
 if __name__ == '__main__':
-    fn, host, port, rate = args()
-    main(fn, host, port, rate)
+    fn, host, port = args()
+    main(fn, host, port)
     sys.exit(0)
 
 
