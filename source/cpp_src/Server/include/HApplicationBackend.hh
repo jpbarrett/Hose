@@ -18,8 +18,8 @@ namespace hose
 class HApplicationBackend
 {
     public:
-        HApplicationBackend();
-        virtual ~HApplicationBackend();
+        HApplicationBackend(){};
+        virtual ~HApplicationBackend(){};
 
         //check a request string for validity
         virtual bool CheckRequest(const std::string& /* request_string */){return true;};
