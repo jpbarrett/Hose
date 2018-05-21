@@ -212,9 +212,9 @@ def main(input_fn, hose_host, hose_port):
             where = hose_send(hose_s, st, hosecmd, "record=on send")
             if where != '':
                 break
-            where, ret = hose_recv(hose_s, st, "=", "record=on resp")
-            if where != '':
-                break
+            # where, ret = hose_recv(hose_s, st, "=", "record=on resp")
+            # if where != '':
+            #     break
 
             # --- sleep until after scan starts
             diff = seconds_until(start_time) + 2
@@ -226,9 +226,9 @@ def main(input_fn, hose_host, hose_port):
             where = hose_send(hose_s, st, "record?;\n", "record? at start")
             if where != '':
                 break
-            where, ret = hose_recv(hose_s, st, "?", "record? query at start")
-            if where != '':
-                break
+            # where, ret = hose_recv(hose_s, st, "?", "record? query at start")
+            # if where != '':
+            #     break
 
             # --- sleep until after done
             diff = seconds_until(start_time) + int(delta) + 1
@@ -242,9 +242,9 @@ def main(input_fn, hose_host, hose_port):
             where = hose_send(hose_s, st, "record?;\n", "record? at end")
             if where != '':
                 break
-            where, ret = hose_recv(hose_s, st, "?", "record? query at end")
-            if where != '':
-                break
+            # where, ret = hose_recv(hose_s, st, "?", "record? query at end")
+            # if where != '':
+            #     break
             # --- verify it is not recording
             pos = ret.find("?")
             info = ret[(pos+1):].split(':')
@@ -258,17 +258,17 @@ def main(input_fn, hose_host, hose_port):
                 where = hose_send(hose_s, st, "record=off;\n", "record=off")
                 if where != '':
                     break
-                where, ret = hose_recv(hose_s, st, "=", "record=off")
-                if where != '':
-                    break
+                # where, ret = hose_recv(hose_s, st, "=", "record=off")
+                # if where != '':
+                #     break
 
             # --- make some allowance for recorder data to drain
-            logger.debug ("%s - sleeping for %d secs", st, 4)
-            time.sleep(4)
+            logger.debug ("%s - sleeping for %d secs", st, 1)
+            time.sleep(1)
 
             # --- nothing more to do for this scan
-            logger.debug ("%s - sleeping for %d secs", st, 21)
-            time.sleep(21)
+            logger.debug ("%s - sleeping for %d secs", st, 1)
+            time.sleep(1)
             where = 'done'
 
 	# --- it was too late for that scan...
@@ -288,7 +288,7 @@ def main(input_fn, hose_host, hose_port):
     # --- parting words
     logger.info("%s - reached this place via '%s'", st, where)
     logger.info("%s - %s file processing complete ", st, input_fn)
-    hose_s.close()
+    hose_s.Shutdown()
 
 if __name__ == '__main__':
     fn, host, port = args()
