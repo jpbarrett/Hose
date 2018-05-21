@@ -31,6 +31,9 @@ class HServer
 
         void Run();
 
+        void SetState(int state_code){fState = state_code;};
+
+
         void Terminate(){fStop = true;}
 
         unsigned int GetNMessages();
@@ -41,6 +44,8 @@ class HServer
         bool CheckRequest(std::string message);
 
         bool fStop;
+
+        int fState;
 
         std::string fConnection;
         zmq::context_t*  fContext;

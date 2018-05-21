@@ -1,5 +1,12 @@
 #include "HServer.hh"
 
+//TODO FIXME WITH REAL ENUM
+#define STATE_OFF 0 
+#define STATE_RECORDING 1
+#define STATE_PENDING 2
+
+
+
 namespace hose 
 {
 
@@ -9,6 +16,7 @@ HServer::HServer():
     fSocket(nullptr)
     {
         fConnection = "tcp://127.0.0.1:12345";
+        fState = STATE_OFF;
     }
 
 HServer::HServer(std::string ip, std::string port):
@@ -18,6 +26,7 @@ HServer::HServer(std::string ip, std::string port):
     {
         //note we do not check ip/port for validlity
         fConnection = "tcp://" + ip +":" + port; 
+        fState = STATE_OFF;
     }
 
 HServer::~HServer()
@@ -59,7 +68,7 @@ void HServer::Run()
             std::string reply_msg("Acknowledged");
             zmq::message_t reply( reply_msg.size() );
             memcpy( (void *) reply.data (), reply_msg.c_str(), reply_msg.size() );
-            fSocket->send (reply);
+            fSocket->send(reply);
         }
         else
         {
