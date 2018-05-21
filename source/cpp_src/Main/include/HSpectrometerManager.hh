@@ -575,7 +575,7 @@ class HSpectrometerManager: public HApplicationBackend
         virtual HStateStruct GetCurrentState() override
         {
             HStateStruct st;
-            st.status_code = HStateCode::unknown;
+            st.status_code = HStatusCode::unknown;
             st.status_message = "default";
         }
 
