@@ -577,6 +577,7 @@ class HSpectrometerManager: public HApplicationBackend
             HStateStruct st;
             st.status_code = HStatusCode::unknown;
             st.status_message = "default";
+            return st;
         }
 
         //config data data
