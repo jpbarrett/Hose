@@ -22,6 +22,21 @@ class hclient(object):
             raise IOError("Timeout processing auth request")
         print "Response from server: ", response
 
+    def SendMessage(self, msg_string):
+        print("Sending message: ", msg_string)
+        self.socket.send( msg_string )
+        return 0
+
+    def RecieveMessage(self):
+        poller = zmq.Poller()
+        poller.register(self.socket, zmq.POLLIN)
+        if(poller.poll(5000)): #5 second timeout
+            response = self.socket.recv()
+        else:
+            raise IOError("Timeout processing auth request")
+        print "Response from server: ", response
+        return '\0'
+
     def Shutdown(self):
         self.socket.close()
         self.context.term()

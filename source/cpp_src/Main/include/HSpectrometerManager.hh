@@ -526,7 +526,7 @@ class HSpectrometerManager
 
 
                 //now convert year, doy, hour, min, sec to epoch second
-                struct tm tmdate = {0};
+                struct tm tmdate;
                 tmdate.tm_sec = sec;
                 tmdate.tm_min = min;
                 tmdate.tm_hour = hour;
