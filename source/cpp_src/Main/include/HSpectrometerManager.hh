@@ -213,6 +213,9 @@ class HSpectrometerManager: public HApplicationBackend
                         }
                     }
 
+                    //sleep for 5 microsecond
+                    usleep(5);
+
                     // //sleep for 1 second
                     // sleep(1);
                     // 
@@ -440,7 +443,7 @@ class HSpectrometerManager: public HApplicationBackend
             std::time_t now = std::time(nullptr);
             uint64_t epoch_sec_now = (uint64_t) now;
 
-            std::cout<<"now, then = "<<epoch_sec_now<<", "<<epoch_sec_then<<std::endl;
+            //std::cout<<"now, then = "<<epoch_sec_now<<", "<<epoch_sec_then<<std::endl;
 
             if( epoch_sec_then < epoch_sec_now - 1 )
             {
