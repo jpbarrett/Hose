@@ -76,7 +76,7 @@ void HServer::Run()
         {
             //error, can't understand the message
             //Send reply back to client
-            std::string error_msg("Error: invalid request.");
+            std::string error_msg("error: invalid request.");
             zmq::message_t reply( error_msg.size() );
             memcpy( (void *) reply.data (), error_msg.c_str(), error_msg.size() );
             fSocket->send (reply);

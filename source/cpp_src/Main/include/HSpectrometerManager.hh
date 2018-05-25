@@ -116,6 +116,7 @@ class HSpectrometerManager: public HApplicationBackend
             {
                 //create command server
                 fServer = new HServer(fIP, fPort);
+                fServer->SetApplicationBackend(this);
                 fServer->Initialize();
 
                 //create digitizer
@@ -568,7 +569,27 @@ class HSpectrometerManager: public HApplicationBackend
         
         virtual bool CheckRequest(const std::string& request_string) override
         {
-            return true;
+            std::vector< std::string > tokens = Tokenize(command);
+            if(tokens.size() != 0)
+            {
+                int command_type = LookUpCommand(tokens);
+                switch(command_type)
+                {
+                    case RECORD_ON:
+                        return true;
+                    break;
+                    case RECORD_OFF:
+                        return true;
+                    break;
+                    case CONFIGURE_NEXT_RECORDING:
+                        return true;
+                    break;
+                    default:
+                        return false;
+                    break;
+                };
+            }
+            return false;
         };
 
 
@@ -576,7 +597,32 @@ class HSpectrometerManager: public HApplicationBackend
         {
             HStateStruct st;
             st.status_code = HStatusCode::unknown;
-            st.status_message = "default";
+            st.status_message = "unknown";
+
+            switch (fRecordingState)
+            {
+                case RECORDING_UNTIL_OFF:
+                    st.status_code = HStatusCode::recording;
+                    st.status_message = "recording";
+                break;
+                case RECORDING_UNTIL_TIME:
+                    st.status_code = HStatusCode::recording;
+                    st.status_message = "recording";
+                break;
+                case IDLE:
+                    st.status_code = HStatusCode::idle;
+                    st.status_message = "idle";
+                break;
+                case PENDING:
+                    st.status_code = HStatusCode::pending;
+                    st.status_message = "pending";
+                break;
+                default:
+                st.status_code = HStatusCode::unknown;
+                st.status_message = "unknown";
+                break;
+            }
+
             return st;
         }
 
