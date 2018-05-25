@@ -569,7 +569,7 @@ class HSpectrometerManager: public HApplicationBackend
         
         virtual bool CheckRequest(const std::string& request_string) override
         {
-            std::vector< std::string > tokens = Tokenize(command);
+            std::vector< std::string > tokens = Tokenize(request_string);
             if(tokens.size() != 0)
             {
                 int command_type = LookUpCommand(tokens);
