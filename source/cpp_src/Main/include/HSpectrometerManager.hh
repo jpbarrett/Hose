@@ -367,7 +367,7 @@ class HSpectrometerManager: public HApplicationBackend
             if(command == std::string("record?"))
             {
                 tokens.push_back( std::string("record?") );
-                return;
+                return tokens;
             }
 
             //first we split the string by the '=' delimiter
