@@ -32,6 +32,7 @@
 #define RECORD_ON 1
 #define RECORD_OFF 2
 #define CONFIGURE_NEXT_RECORDING 3
+#define QUERY
 
 
 //recording states
@@ -276,6 +277,9 @@ class HSpectrometerManager: public HApplicationBackend
 
                 switch(command_type)
                 {
+                    case QUERY:
+                            //do nothing
+                            break;
                     case RECORD_ON:
                         if(fRecordingState == IDLE)
                         {
@@ -358,6 +362,13 @@ class HSpectrometerManager: public HApplicationBackend
             std::vector< std::string > temp_tokens;
             std::vector< std::string > tokens;
 
+            //state query
+            if(command == std::string("record?"))
+            {
+                tokens.push_back( std::string("record?") )
+                return;
+            }
+
             //first we split the string by the '=' delimiter
             fTokenizer.SetString(&command);
             fTokenizer.SetIncludeEmptyTokensFalse();
@@ -384,6 +395,13 @@ class HSpectrometerManager: public HApplicationBackend
 
         int LookUpCommand(const std::vector< std::string > command_tokens)
         {
+            if(command_tokens.size() == 1)
+            {
+                if( command_tokens[0] == std::string("record?"))
+                {
+                    return QUERY;
+                }
+            }
 
             if(command_tokens.size() >= 2)
             {
@@ -578,6 +596,9 @@ class HSpectrometerManager: public HApplicationBackend
                 int command_type = LookUpCommand(tokens);
                 switch(command_type)
                 {
+                    case QUERY:
+                        return true;
+                    break;
                     case RECORD_ON:
                         return true;
                     break;

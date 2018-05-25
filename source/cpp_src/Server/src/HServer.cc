@@ -63,7 +63,7 @@ void HServer::Run()
             fMessageQueue.push(request_data);
 
             //short sleep so the application has time to process the message
-            usleep(10);
+            usleep(50);
 
             HStateStruct st = fAppBackend->GetCurrentState();
             //fomulate the appropriate reply, send back to client

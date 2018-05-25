@@ -65,8 +65,9 @@ class hprompt(Cmd):
         raise SystemExit
 
     def parse_record_command(self, args):
-        if( len(args) == 1 and args[0] == '?' ):
-            print "record? not yet implemented"
+        if( len(args) == 1 and args[0] == 'record?' ):
+            cmd_string = "record?" 
+            self.interface.SendRecieveMessage(cmd_string)
             return 0
         elif( len(args) >=3 and "=on" in args ):
             #this is a record=on command, determien the remaining arguments, if we
