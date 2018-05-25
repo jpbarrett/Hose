@@ -32,7 +32,7 @@
 #define RECORD_ON 1
 #define RECORD_OFF 2
 #define CONFIGURE_NEXT_RECORDING 3
-#define QUERY
+#define QUERY 4
 
 
 //recording states
@@ -279,6 +279,7 @@ class HSpectrometerManager: public HApplicationBackend
                 {
                     case QUERY:
                             //do nothing
+                            return;
                             break;
                     case RECORD_ON:
                         if(fRecordingState == IDLE)
@@ -365,7 +366,7 @@ class HSpectrometerManager: public HApplicationBackend
             //state query
             if(command == std::string("record?"))
             {
-                tokens.push_back( std::string("record?") )
+                tokens.push_back( std::string("record?") );
                 return;
             }
 
@@ -397,7 +398,7 @@ class HSpectrometerManager: public HApplicationBackend
         {
             if(command_tokens.size() == 1)
             {
-                if( command_tokens[0] == std::string("record?"))
+                if( command_tokens[0] == std::string("record?") )
                 {
                     return QUERY;
                 }
