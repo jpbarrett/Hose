@@ -125,6 +125,8 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 }
 
                 HSpectrumObject< float > spec_data;
+                spec_data.SetSidebandFlag(tail->GetMetaData()->GetSidebandFlag() );
+                spec_data.SetPolarizationFlag(tail->GetMetaData()->GetPolarizationFlag() );
                 spec_data.SetStartTime( sdata->acquistion_start_second );
                 spec_data.SetSampleRate( sdata->sample_rate );
                 spec_data.SetLeadingSampleIndex(  sdata->leading_sample_index );

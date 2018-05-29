@@ -40,6 +40,9 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
         void SetBoardNumber(unsigned int n){fBoardNumber = n;};
         unsigned int GetBoardNumber() const {return fBoardNumber;};
 
+        void SetSidebandFlag(const char& sflag){fSidebandFlag = sflag;};
+        void SetPolarizationFlag(const char& pflag){fPolarizationFlag = pflag;};
+
         double GetSamplingFrequency() const {return fAcquisitionRateMHz*1e6;};
 
         HPX14 GetBoard() {return fBoard;};
@@ -52,6 +55,9 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
     protected:
 
         friend class HDigitizer<px14_sample_t, HPX14Digitizer >;
+
+        char fSidebandFlag;
+        char fPolarizationFlag;
 
         HPX14 fBoard;
         unsigned int fBoardNumber; //board id

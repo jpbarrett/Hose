@@ -162,6 +162,8 @@ int main(int argc, char** argv)
 
             std::cout<<"i = "<<i<<std::endl;
             std::cout<<"spec file leading index "<<spectrum_vec[i].GetLeadingSampleIndex()<<std::endl;
+            std::cout<<"spec sideband: "<<spectrum_vec[i].GetSidebandFlag()<<std::endl;
+            std::cout<<"spec pol: "<<spectrum_vec[i].GetPolarizationFlag()<<std::endl;
 
             for(unsigned int j=0; j<vec->size(); j++)
             {

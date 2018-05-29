@@ -21,6 +21,8 @@ class HBufferMetaData
     public:
 
         HBufferMetaData():
+            fSidebandFlag('?'),
+            fPolarizationFlag('?'),
             fAcquisitionStartSecond(0),
             fSampleIndex(0),
             fSampleRate(0),
@@ -30,6 +32,12 @@ class HBufferMetaData
         virtual ~HBufferMetaData(){};
 
         virtual std::string GetName() const {return std::string("BasicMetaData");}
+
+        char GetSidebandFlag() const {return fSidebandFlag;};
+        void SetSidebandFlag(const char& s) {fSidebandFlag = s;};
+
+        char GetPolarizationFlag() const {return fPolarizationFlag;};
+        void SetPolarizationFlag(const char& p) {fPolarizationFlag = p;};
 
         //the integer second (since the epoch) at which the aqcuisition was started
         uint64_t GetAcquisitionStartSecond() const {return fAcquisitionStartSecond;};
@@ -85,6 +93,9 @@ class HBufferMetaData
 
 
     private:
+
+        char fSidebandFlag; //U, L, D
+        char fPolarizationFlag; //L, R, X, Y
 
         //seconds since epoch, of the start of the aquisition
         uint64_t fAcquisitionStartSecond;

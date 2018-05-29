@@ -30,6 +30,8 @@ class HSpectrumObject
     public:
 
         HSpectrumObject():
+            fSidebandFlag('?'),
+            fPolarizationFlag('?'),
             fStartTime(0),
             fSampleRate(0),
             fLeadingSampleIndex(0),
@@ -45,6 +47,8 @@ class HSpectrumObject
 
         //copy constuctor
         HSpectrumObject( const HSpectrumObject& copy):
+            fSidebandFlag('?'),
+            fPolarizationFlag('?'),
             fStartTime(0),
             fSampleRate(0),
             fLeadingSampleIndex(0),
@@ -57,6 +61,8 @@ class HSpectrumObject
             fDataOwned(true),
             fSpectrumData(nullptr)
         {
+            fSidebandFlag = copy.fSidebandFlag;
+            fPolarizationFlag = copy.fPolarizationFlag;
             fStartTime = copy.fStartTime;
             fSampleRate = copy.fSampleRate;
             fLeadingSampleIndex = copy.fLeadingSampleIndex;
@@ -86,6 +92,8 @@ class HSpectrumObject
             if(fDataOwned){delete[] fSpectrumData; fSpectrumData = nullptr;};
         }
 
+        char GetSidebandFlag() const {return fSidebandFlag;};
+        char GetPolarizationFlag() const {return fPolarizationFlag;};
         uint64_t GetStartTime() const {return fStartTime;};
         uint64_t GetSampleRate() const {return fSampleRate;};
         uint64_t GetLeadingSampleIndex() const {return fLeadingSampleIndex;};
@@ -135,6 +143,8 @@ class HSpectrumObject
             }
         }
 
+        void SetSidebandFlag(const char& s) {fSidebandFlag = s;};
+        void SetPolarizationFlag(const char& p) {fPolarizationFlag = p;};
         void SetStartTime(uint64_t st){fStartTime = st; };
         void SetSampleRate(uint64_t rate){fSampleRate = rate;};
         void SetLeadingSampleIndex(uint64_t n){fLeadingSampleIndex = n;};
@@ -174,6 +184,10 @@ class HSpectrumObject
             std::ofstream outfile;
             outfile.open(filename.c_str(), std::ios::out | std::ios::binary);
 //            outfile << *this;
+
+            outfile.write( (const char*) &fSidebandFlag, sizeof(char) );
+            outfile.write( (const char*) &fPolarizationFlag, sizeof(char) );
+
             outfile.write( (const char*) &fStartTime, sizeof(uint64_t) );
             outfile.write( (const char*) &fSampleRate, sizeof(uint64_t) );
             outfile.write( (const char*) &fLeadingSampleIndex, sizeof(uint64_t) );
@@ -226,6 +240,9 @@ class HSpectrumObject
             infile.open(filename.c_str(), std::ifstream::binary);
 
             //infile >> *this;
+
+            infile.read( (char*) &fSidebandFlag, sizeof(char) );
+            infile.read( (char*) &fPolarizationFlag, sizeof(char) );
 
             infile.read( (char*) &fStartTime, sizeof(uint64_t) );
             infile.read( (char*) &fSampleRate, sizeof(uint64_t) );
@@ -299,6 +316,8 @@ class HSpectrumObject
     protected:
 
         //data
+        char fSidebandFlag;
+        char fPolarizationFlag;
         uint64_t fStartTime; //acquisition start time in seconds since epoch
         uint64_t fSampleRate; //may need to accomodate doubles?
         uint64_t fLeadingSampleIndex; //sample index since start of the acquisition

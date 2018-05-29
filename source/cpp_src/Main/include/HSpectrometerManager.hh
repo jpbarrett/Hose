@@ -133,6 +133,10 @@ class HSpectrometerManager: public HApplicationBackend
                     fDigitizerSourcePool->Allocate(fDigitizerPoolSize, fNSpectrumAverages*fFFTSize);
                     fDigitizer->SetBufferPool(fDigitizerSourcePool);
 
+                    //TODO fill these in with real values!
+                    fDigitizer->SetSidebandFlag('U');
+                    fDigitizer->SetPolarizationFlag('X');
+
                     //create spectrometer data pool
                     fSpectrometerBufferAllocator = new HBufferAllocatorSpectrometerDataCUDA<spectrometer_data>();
                     fSpectrometerBufferAllocator->SetSampleArrayLength(fNSpectrumAverages*fFFTSize);

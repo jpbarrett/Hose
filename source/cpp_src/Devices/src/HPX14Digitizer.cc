@@ -8,6 +8,8 @@ namespace hose
 {
 
 HPX14Digitizer::HPX14Digitizer():
+    fSidebandFlag('?'),
+    fPolarizationFlag('?'),
     fBoardNumber(1),
     fAcquisitionRateMHz(0),
     fConnected(false),
@@ -207,7 +209,11 @@ HPX14Digitizer::TransferImpl()
 {
     if(fArmed && this->fBuffer != nullptr )
     {
+
         //configure buffer information, cast time to uint64_t and set, then set the sample rate
+
+        this->fBuffer->GetMetaData()->SetSidebandFlag(fSidebandFlag);
+        this->fBuffer->GetMetaData()->SetPolarizationFlag(fPolarizationFlag);
         this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
         this->fBuffer->GetMetaData()->SetSampleRate(GetSamplingFrequency()); //check that double to uint64_t conversion is OK here
         uint64_t count = fCounter;
