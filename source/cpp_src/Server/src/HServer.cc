@@ -62,12 +62,25 @@ void HServer::Run()
             //push it into the queue where it can be grabbed by the application
             fMessageQueue.push(request_data);
 
-            //short sleep so the application has time to process the message
-            usleep(50);
+            //idle until the application has processed the message
+            unsigned int count = 0;
+            while(fMessageQueue.size() != 0 && count < 100)
+            {
+                usleep(50);
+                count++;
+            }
 
             HStateStruct st = fAppBackend->GetCurrentState();
             //fomulate the appropriate reply, send back to client
-            std::string reply_msg = st.status_message;
+            std::string reply_msg; 
+            if(count < 100 )
+            {
+                reply_msg = st.status_message;
+            }
+            else
+            {
+                reply_msg = std::string("timeout:") + st.status_message;
+            }
             zmq::message_t reply( reply_msg.size() );
             memcpy( (void *) reply.data (), reply_msg.c_str(), reply_msg.size() );
             fSocket->send(reply);
