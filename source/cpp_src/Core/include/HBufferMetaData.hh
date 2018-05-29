@@ -81,6 +81,8 @@ class HBufferMetaData
         {
             if( this != &rhs)
             {
+                fSidebandFlag = rhs.fSidebandFlag;
+                fPolarizationFlag = rhs.fPolarizationFlag;
                 fAcquisitionStartSecond = rhs.fAcquisitionStartSecond;
                 fSampleIndex = rhs.fSampleIndex;
                 fSampleRate = rhs.fSampleRate;
