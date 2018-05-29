@@ -65,6 +65,7 @@ class hprompt(Cmd):
         raise SystemExit
 
     def parse_record_command(self, args):
+        print "trying to parse: ", str(args)
         if( len(args) == 1 and 'record?' in args[0] ):
             cmd_string = "record?" 
             self.interface.SendRecieveMessage(cmd_string)
