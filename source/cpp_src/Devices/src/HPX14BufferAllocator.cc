@@ -26,7 +26,7 @@ HPX14BufferAllocator::AllocateImpl(size_t size)
     int code = AllocateDmaBufferPX14(fBoard, size, &ptr);
     if( code != SIG_SUCCESS)
     {
-        std:stringstream ss;
+        std::stringstream ss;
         ss << "Failed to allocate DMA buffer of size: ";
         ss << mem_mb;
         ss <<" MB.";
