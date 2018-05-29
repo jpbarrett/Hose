@@ -54,7 +54,7 @@ class hprompt(Cmd):
         """Set up recording state of the spectrometer."""
         print "length of args = ", len(args)
         if len(args) != 0:
-            ret_code = self.parse_record_command(args) #args strips off the 'record' prefix
+            ret_code = self.parse_record_command(args) 
             if(ret_code):
                 print( "Error: command could not be parsed." )
 
@@ -65,7 +65,7 @@ class hprompt(Cmd):
         raise SystemExit
 
     def parse_record_command(self, args):
-        if( len(args) == 1 and args[0] == 'record?' ):
+        if( len(args) == 1 and 'record?' in args[0] ):
             cmd_string = "record?" 
             self.interface.SendRecieveMessage(cmd_string)
             return 0
