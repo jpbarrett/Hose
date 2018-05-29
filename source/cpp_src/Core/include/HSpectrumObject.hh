@@ -40,8 +40,8 @@ class HSpectrumObject
             fExperimentName("unknown"),
             fSourceName("unknown"),
             fScanName("unknown"),
-            fSpectrumLength(0),
             fDataOwned(true),
+            fSpectrumLength(0),
             fSpectrumData(nullptr)
             {};
 
@@ -57,8 +57,8 @@ class HSpectrumObject
             fExperimentName("unknown"),
             fSourceName("unknown"),
             fScanName("unknown"),
-            fSpectrumLength(0),
             fDataOwned(true),
+            fSpectrumLength(0),
             fSpectrumData(nullptr)
         {
             fSidebandFlag = copy.fSidebandFlag;
@@ -330,7 +330,6 @@ class HSpectrumObject
 
         //indicates if we need to delete spectrum data on destruction
         bool fDataOwned;
-
         size_t fSpectrumLength; //number of spectral points
         //pointer to spectrum data array, not owned if passed through SetSpectrumData()
         XSpectrumType* fSpectrumData;

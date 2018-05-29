@@ -1,6 +1,7 @@
 #include "HPX14BufferAllocator.hh"
 
 #include <iostream>
+#include <sstream>
 
 namespace hose
 {
@@ -12,6 +13,7 @@ HPX14BufferAllocator::~HPX14BufferAllocator()
     {
         px14_sample_t* ptr = iter->first;
         int code = FreeDmaBufferPX14 (fBoard, ptr);
+        (void) code; //shut up compiler
     }
     fAllocatedMemoryBlocks.clear();
 };
@@ -24,7 +26,11 @@ HPX14BufferAllocator::AllocateImpl(size_t size)
     int code = AllocateDmaBufferPX14(fBoard, size, &ptr);
     if( code != SIG_SUCCESS)
     {
-        DumpLibErrorPX14(code, "Failed to allocate DMA buffer: ");
+        std:stringstream ss;
+        ss << "Failed to allocate DMA buffer of size: ";
+        ss << mem_mb;
+        ss <<" MB.";
+        DumpLibErrorPX14(code, ss.str().c_str() );
         return nullptr;
     }
     else
@@ -40,6 +46,7 @@ HPX14BufferAllocator::DeallocateImpl(px14_sample_t* ptr, size_t size)
 {
     //free
     int code = FreeDmaBufferPX14 (fBoard, ptr);
+    (void) code; //shut up compiler
     //remove this entry from the list of allocated buffers
     for(auto iter = fAllocatedMemoryBlocks.begin(); iter != fAllocatedMemoryBlocks.end(); iter++)
     {

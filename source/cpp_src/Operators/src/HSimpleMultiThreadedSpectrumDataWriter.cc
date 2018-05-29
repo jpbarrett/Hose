@@ -69,7 +69,7 @@ void HSimpleMultiThreadedSpectrumDataWriter::InitializeOutputDirectory()
 
     //now check if the directory we want to make already exists, if not, create it
     struct stat sb3;
-    if(!( stat(ss2.str().c_str(), &sb2) == 0 && S_ISDIR(sb2.st_mode) ))
+    if(!( stat(ss2.str().c_str(), &sb3) == 0 && S_ISDIR(sb3.st_mode) ))
     {
         int dirstatus = mkdir(ss2.str().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 

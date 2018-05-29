@@ -15,14 +15,14 @@ HPX14Digitizer::HPX14Digitizer():
     fConnected(false),
     fInitialized(false),
     fArmed(false),
-    fCounter(0),
     fStopAfterNextBuffer(false),
+    fCounter(0),
     fAcquireActive(false),
     fBufferCode(HProducerBufferPolicyCode::unset),
-    fInternalBufferPool(nullptr),
+    fErrorCode(0),
     fNInternalBuffers(PX14_N_INTERNAL_BUFF),
     fInternalBufferSize(PX14_INTERNAL_BUFF_SIZE),
-    fErrorCode(0)
+    fInternalBufferPool(nullptr)
 {
     this->fAllocator = nullptr;
     // fInternalProducerBufferHandler.SetNAttempts(100);
@@ -222,9 +222,6 @@ HPX14Digitizer::TransferImpl()
         unsigned int n_samples_collect  = this->fBuffer->GetArrayDimension(0);
         int64_t samples_to_collect = this->fBuffer->GetArrayDimension(0);
 
-        unsigned int buffers_filled = 0;
-        int collect_result = 0;
-
         while(samples_to_collect > 0)
         {
             unsigned int samples_in_buffer = std::min( (unsigned int) samples_to_collect, fInternalBufferSize);
@@ -242,11 +239,21 @@ HPX14Digitizer::TransferImpl()
                     std::cout<<"board = "<<fBoard<<std::endl;
                     fErrorCode = 1;
                     samples_to_collect = 0;
+                    break;
                 }
                 else
                 {
                     //wait for xfer to complete
                     int code = WaitForTransferCompletePX14(fBoard);
+
+                    if(code != SIG_SUCCESS)
+                    {
+                        DumpLibErrorPX14 (code, "\nWait for PCI acquisition data failed: ", fBoard);
+                        std::cout<<"board = "<<fBoard<<std::endl;
+                        fErrorCode = 1;
+                        samples_to_collect = 0;
+                        break;
+                    }
 
                     internal_buff->GetMetaData()->SetValidLength(samples_in_buffer);
                     internal_buff->GetMetaData()->SetLeadingSampleIndex(n_samples_collect-samples_to_collect);
@@ -330,6 +337,7 @@ HPX14Digitizer::TearDownImpl()
         EndBufferedPciAcquisitionPX14(fBoard);
     }
     int code = SetOperatingModePX14(fBoard, PX14MODE_STANDBY);
+    (void) code; //TODO check if this value is useful
     //deleting the allocator also deletes all of the buffers it allocated
     //this may require clean up elsewhere, as buffer pointers may still be around
     if(this->fAllocator)

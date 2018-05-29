@@ -56,18 +56,6 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
 
         friend class HDigitizer<px14_sample_t, HPX14Digitizer >;
 
-        char fSidebandFlag;
-        char fPolarizationFlag;
-
-        HPX14 fBoard;
-        unsigned int fBoardNumber; //board id
-        double fAcquisitionRateMHz; //effective sampling frequency in MHz
-        bool fConnected;
-        bool fInitialized;
-        volatile bool fArmed;
-        bool fBufferLocked;
-        volatile bool fStopAfterNextBuffer;
-
         //required by digitizer interface
         bool InitializeImpl();
         void AcquireImpl();
@@ -86,6 +74,18 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
         //needed by the thread pool interface
         virtual void ExecuteThreadTask() override; //do thread work assoicated with fill the buffer
         virtual bool WorkPresent() override; //check if we have buffer filling work to do
+
+        char fSidebandFlag;
+        char fPolarizationFlag;
+
+        HPX14 fBoard;
+        unsigned int fBoardNumber; //board id
+        double fAcquisitionRateMHz; //effective sampling frequency in MHz
+        bool fConnected;
+        bool fInitialized;
+        volatile bool fArmed;
+        bool fBufferLocked;
+        volatile bool fStopAfterNextBuffer;
 
         //global sample counter
         volatile uint64_t fCounter;
