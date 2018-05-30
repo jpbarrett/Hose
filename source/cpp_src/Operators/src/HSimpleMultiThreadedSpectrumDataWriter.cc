@@ -116,6 +116,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 ss <<  sdata->acquistion_start_second;
                 ss << "_";
                 ss <<  sdata->leading_sample_index;
+                ss << "_";
                 ss <<  tail->GetMetaData()->GetSidebandFlag();
                 ss <<  tail->GetMetaData()->GetPolarizationFlag();
                 ss << ".bin";
