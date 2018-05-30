@@ -1,0 +1,2 @@
+gcc -c hserv.c
+gcc -o hserv hserv.o networkinglib.o safecalls.o -lm
