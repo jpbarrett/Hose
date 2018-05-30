@@ -45,7 +45,7 @@ HPX14Digitizer::InitializeImpl()
     if(!fInitialized)
     {
         int code = SIG_SUCCESS;
-        std::cout<<"connecting"<<std::endl;
+        // std::cout<<"connecting"<<std::endl;
 
         code = ConnectToDevicePX14(&fBoard, fBoardNumber);
         if(code != SIG_SUCCESS)

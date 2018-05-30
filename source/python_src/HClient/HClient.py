@@ -125,9 +125,4 @@ class hprompt(Cmd):
                     if minute >= 0 and minute <= 59:
                         if second >= 0 and second <= 59:
                             return True
-                        else:
-                    else:
-                else:
-            else: 
-        else:
         return False
