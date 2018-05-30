@@ -112,9 +112,9 @@ class HSpectrometerManager: public HApplicationBackend
 
         void Initialize()
         {
-
             if(!fInitialized)
             {
+                std::cout<<"Initializing..."<<std::endl;
                 //create command server
                 fServer = new HServer(fIP, fPort);
                 fServer->SetApplicationBackend(this);
@@ -185,6 +185,8 @@ class HSpectrometerManager: public HApplicationBackend
                 };
 
                 fRecordingState = IDLE;
+
+                std::cout<<"Ready."<<std::endl;
 
                 while(!fStop)
                 {

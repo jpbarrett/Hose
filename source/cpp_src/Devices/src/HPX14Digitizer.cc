@@ -42,7 +42,6 @@ HPX14Digitizer::~HPX14Digitizer()
 bool 
 HPX14Digitizer::InitializeImpl()
 {
-    std::cout<<"in init"<<std::endl;
     if(!fInitialized)
     {
         int code = SIG_SUCCESS;
@@ -59,7 +58,7 @@ HPX14Digitizer::InitializeImpl()
             fConnected = true;
         }
 
-        std::cout<<"setting power up defaults"<<std::endl;
+        // std::cout<<"setting power up defaults"<<std::endl;
         code = SetPowerupDefaultsPX14(fBoard);
         if(code != SIG_SUCCESS)
         {
@@ -67,7 +66,7 @@ HPX14Digitizer::InitializeImpl()
             //TODO BREAK
         }
 
-        std::cout<<"set active channels to one"<<std::endl;
+        // std::cout<<"set active channels to one"<<std::endl;
         //currently we only do single channel, dual channel requires de-interleaving
         code = SetActiveChannelsPX14(fBoard, PX14CHANNEL_ONE);
         if(code != SIG_SUCCESS)
@@ -76,13 +75,13 @@ HPX14Digitizer::InitializeImpl()
             //TODO BREAK
         }
 
-        std::cout<<"setting clock to external ref"<<std::endl;
+        // std::cout<<"setting clock to external ref"<<std::endl;
         code = SetInternalAdcClockReferencePX14(fBoard, PX14CLKREF_EXT);
         if(code != SIG_SUCCESS)
         {
             DumpLibErrorPX14(code, "Failed to set external 10 MHz reference: ", fBoard);
 
-            std::cout<<"external clock use failed, setting clock to internal ref"<<std::endl;
+            // std::cout<<"external clock use failed, setting clock to internal ref"<<std::endl;
             code = SetInternalAdcClockReferencePX14(fBoard, PX14CLKREF_INT_10MHZ );
             if(code != SIG_SUCCESS)
             {
@@ -100,7 +99,7 @@ HPX14Digitizer::InitializeImpl()
         // }
 
         #ifdef USE_SOFTWARE_TRIGGER
-            std::cout<<"setting trigger source to internal"<<std::endl;
+            // std::cout<<"setting trigger source to internal"<<std::endl;
             code = SetTriggerSourcePX14(fBoard, PX14TRIGSRC_INT_CH1);
             if(code != SIG_SUCCESS)
             {
@@ -108,7 +107,7 @@ HPX14Digitizer::InitializeImpl()
                 //TODO BREAK
             }
         #else
-            std::cout<<"setting trigger source to external"<<std::endl;
+            // std::cout<<"setting trigger source to external"<<std::endl;
             code = SetTriggerSourcePX14(fBoard, PX14TRIGSRC_EXT);
             if(code != SIG_SUCCESS)
             {
@@ -117,7 +116,7 @@ HPX14Digitizer::InitializeImpl()
             }
         #endif
 
-        std::cout<<"setting time stamp mode"<<std::endl;
+        // std::cout<<"setting time stamp mode"<<std::endl;
         //set up time stamp mode  (get a timestamp for every event on external trigger)
         code = SetTimestampModePX14(fBoard, PX14TSMODE_TS_ON_EXT_TRIGGER);
         if(code != SIG_SUCCESS)
@@ -143,7 +142,7 @@ HPX14Digitizer::InitializeImpl()
             }
             else
             {
-                std::cout<<"effective ADC sampling rate (MHz) = "<<fAcquisitionRateMHz<<std::endl;
+                std::cout<<"Effective ADC sampling rate (MHz) = "<<fAcquisitionRateMHz<<std::endl;
             }
  
             // //now we allocate the internal buffer pool (we use 32 X 2 MB buffers)
@@ -176,7 +175,7 @@ HPX14Digitizer::AcquireImpl()
     //POSIX expectation is seconds since unix epoch (1970, but this is not guaranteed)
     fAcquisitionStartTime = std::time(nullptr);
 
-    std::cout<<"new acquire time = "<<fAcquisitionStartTime<<std::endl;
+    // std::cout<<"new acquire time = "<<fAcquisitionStartTime<<std::endl;
 
     int code = BeginBufferedPciAcquisitionPX14(fBoard);
     if(code != SIG_SUCCESS)
@@ -236,7 +235,6 @@ HPX14Digitizer::TransferImpl()
                 if(code != SIG_SUCCESS)
                 {
                     DumpLibErrorPX14 (code, "\nFailed to obtain PCI acquisition data: ", fBoard);
-                    std::cout<<"board = "<<fBoard<<std::endl;
                     fErrorCode = 1;
                     samples_to_collect = 0;
                     break;
@@ -249,7 +247,6 @@ HPX14Digitizer::TransferImpl()
                     if(code != SIG_SUCCESS)
                     {
                         DumpLibErrorPX14 (code, "\nWait for PCI acquisition data failed: ", fBoard);
-                        std::cout<<"board = "<<fBoard<<std::endl;
                         fErrorCode = 1;
                         samples_to_collect = 0;
                         break;
@@ -289,7 +286,7 @@ HPX14Digitizer::FinalizeImpl()
         //check for FIFO overflow
         if( GetFifoFullFlagPX14(fBoard) )
         {
-            std::cout<<"Card FIFO overflow"<<std::endl;
+            std::cout<<"Card FIFO overflow."<<std::endl;
             return HDigitizerErrorCode::card_buffer_overflow;
         }
 
@@ -299,7 +296,7 @@ HPX14Digitizer::FinalizeImpl()
         }
         else
         {
-            std::cout<<"buffer overflow"<<std::endl;
+            std::cout<<"Buffer overflow."<<std::endl;
             return HDigitizerErrorCode::card_buffer_overflow;
         }
     }
@@ -312,7 +309,6 @@ HPX14Digitizer::FinalizeImpl()
 
 void HPX14Digitizer::StopImpl()
 {
-    std::cout<<"stopping"<<std::endl;
     //stop aquisition, put board in standby mode
     int code = SetOperatingModePX14(fBoard, PX14MODE_STANDBY);
     if( code != SIG_SUCCESS)

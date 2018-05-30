@@ -52,7 +52,6 @@ class hprompt(Cmd):
 
     def do_record(self, args):
         """Set up recording state of the spectrometer."""
-        print "length of args = ", len(args)
         if len(args) != 0:
             ret_code = self.parse_record_command(args) #by default this strips the string 'record'
             if(ret_code):
@@ -65,7 +64,6 @@ class hprompt(Cmd):
         raise SystemExit
 
     def parse_record_command(self, args):
-        print "trying to parse: ", str(args)
         if( len(args) == 1 and args[0] == "?" ):
             cmd_string = "record?" 
             self.interface.SendRecieveMessage(cmd_string)
@@ -79,7 +77,6 @@ class hprompt(Cmd):
             hour = str(tnow.hour).zfill(2)
             minute = str(tnow.minute).zfill(2)
             sec = str(tnow.second).zfill(2)
-            print "day_of_year = ", day_of_year, "hour = ", hour, " minute = ", minute, "sec = ", sec
             scan_name = day_of_year + "-" + hour + minute + sec
             exp_name = self.default_experiment_name
             src_name = self.default_source_name
@@ -91,7 +88,6 @@ class hprompt(Cmd):
                 self.interface.SendRecieveMessage(cmd_string)
                 return 0
             else:
-                print("arglist = ", arg_list)
                 if( len(arg_list) >= 4 ):
                     if( len(arg_list[1]) >= 1 ):
                         exp_name = arg_list[1]
@@ -101,7 +97,6 @@ class hprompt(Cmd):
                         scan_name = arg_list[3]
                     cmd_string += ":" + exp_name + ":" + src_name + ":" + scan_name
                     if( len(arg_list) == 6): # and len(arg_list[4]) == 13 and arg_list[4].isdigit() and arg_list[5].isdigit() ):]
-                        print("in 5/6")
                         start_time = arg_list[4]
                         duration = arg_list[5]
                         st_year = int(start_time[0:4])
@@ -110,7 +105,6 @@ class hprompt(Cmd):
                         st_min = int(start_time[9:11])
                         st_sec = int(start_time[11:13])
                         if self.check_time_range(st_year, st_day, st_hour, st_min, st_sec ):
-                            print "good"
                             cmd_string += ":" + start_time + ":" + duration
                     self.interface.SendRecieveMessage(cmd_string)
                     return 0
@@ -125,27 +119,15 @@ class hprompt(Cmd):
 
 
     def check_time_range(self, year, day, hour, minute, second):
-        print("checking time range", year, day, hour, minute, second)
         if year >= 2018:
-            print "year ok"
             if day >=1 and day <= 366:
-                print "day ok"
                 if hour >= 0 and hour <= 23:
-                    print "hour ok"
                     if minute >= 0 and minute <= 59:
-                        print "minute ok"
                         if second >= 0 and second <= 59:
-                            print "all ok"
                             return True
                         else:
-                            print "fail second"
                     else:
-                        print "fail minute"
                 else:
-                    print "fail hour"
             else: 
-                print "fail day"
         else:
-            print "fail year"
-        print "failed all"
         return False
