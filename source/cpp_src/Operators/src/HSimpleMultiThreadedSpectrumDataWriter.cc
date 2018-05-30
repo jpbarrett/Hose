@@ -105,7 +105,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
 
             if(sdata != nullptr)
             {
-                //we rely on acquisitions start time and sample index to uniquely name/stamp a file
+                //we rely on acquisitions start time, sample index, and sideband/pol flags to uniquely name/stamp a file
                 std::stringstream ss;
                 ss << fBaseOutputDirectory;
                 ss << "/";
@@ -116,6 +116,8 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 ss <<  sdata->acquistion_start_second;
                 ss << "_";
                 ss <<  sdata->leading_sample_index;
+                ss <<  tail->GetMetaData()->GetSidebandFlag();
+                ss <<  tail->GetMetaData()->GetPolarizationFlag();
                 ss << ".bin";
 
                 if(sdata->leading_sample_index == 0)
