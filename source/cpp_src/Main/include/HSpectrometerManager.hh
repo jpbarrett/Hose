@@ -341,6 +341,7 @@ class HSpectrometerManager: public HApplicationBackend
                                         std::cout<<"start time has passed, starting recording"<<std::endl;
                                         fRecordingState = RECORDING_UNTIL_TIME;
                                         fDigitizer->Acquire();
+                                        return;
                                     }
                                     else
                                     {
@@ -351,9 +352,6 @@ class HSpectrometerManager: public HApplicationBackend
                                     }
                                 }
                             }
-
-                            //somethign went wrong, ignore request
-                            fRecordingState = IDLE;
                         }
                     break;
                     default:
@@ -492,7 +490,7 @@ class HSpectrometerManager: public HApplicationBackend
         //date must be in YYYYDDDHHMMSS format, UTC
         bool ConvertStringToTime(std::string date, uint64_t& epoch_sec)
         {
-            std::cout<<"trying to parse date string: "<<date<<" with length: "<<date.size()<<std::endl;
+            // std::cout<<"trying to parse date string: "<<date<<" with length: "<<date.size()<<std::endl;
             //first split up the chunks of the date string
             if(date.size() == 13)
             {
@@ -509,7 +507,7 @@ class HSpectrometerManager: public HApplicationBackend
                 int sec = 0;
 
                 
-                std::cout<<"year, doy, hour, min, sec = "<<syear<<", "<<sdoy<<", "<<shour<<", "<<smin<<", "<<ssec<<std::endl;
+                // std::cout<<"year, doy, hour, min, sec = "<<syear<<", "<<sdoy<<", "<<shour<<", "<<smin<<", "<<ssec<<std::endl;
 
                 //conver to ints w/ sanity checks
                 {
@@ -517,7 +515,7 @@ class HSpectrometerManager: public HApplicationBackend
                     ss.str(std::string());
                     ss << syear;
                     ss >> year; if(year < 2000 || year > 2100 ){epoch_sec = 0; return false;}
-                    std::cout<<"year ok"<<std::endl;
+                    // std::cout<<"year ok"<<std::endl;
                 }
 
                 {
@@ -525,9 +523,9 @@ class HSpectrometerManager: public HApplicationBackend
                     ss.str(std::string());
                     ss << sdoy;
                     ss >> doy;  
-                    std::cout<<"doy = "<<doy<<std::endl;
+                    // std::cout<<"doy = "<<doy<<std::endl;
                     if(doy < 1 || doy > 366 ){epoch_sec = 0; return false;}
-                    std::cout<<"day ok"<<std::endl;
+                    // std::cout<<"day ok"<<std::endl;
                 }
 
                 {
@@ -535,7 +533,7 @@ class HSpectrometerManager: public HApplicationBackend
                     ss.str(std::string());
                     ss << shour;
                     ss >> hour;  if(hour < 0 || hour > 23 ){epoch_sec = 0; return false;}
-                    std::cout<<"hour ok"<<std::endl;
+                    // std::cout<<"hour ok"<<std::endl;
                 }
 
                 {
@@ -543,7 +541,7 @@ class HSpectrometerManager: public HApplicationBackend
                     ss.str(std::string());
                     ss << smin;
                     ss >> min;  if(min < 0 || min > 59 ){epoch_sec = 0; return false;}
-                    std::cout<<"min ok"<<std::endl;
+                    // std::cout<<"min ok"<<std::endl;
                 }
 
                 {
@@ -553,8 +551,8 @@ class HSpectrometerManager: public HApplicationBackend
                     ss >> sec;  if( sec < 0 || sec > 59 ){epoch_sec = 0; return false;}
                 }
 
-                std::cout<<"year, doy, hour, min, sec = "<<year<<", "<<doy<<", "<<hour<<", "<<min<<", "<<sec<<std::endl;
-
+                // std::cout<<"year, doy, hour, min, sec = "<<year<<", "<<doy<<", "<<hour<<", "<<min<<", "<<sec<<std::endl;
+                // 
 
                 //now convert year, doy, hour, min, sec to epoch second
                 struct tm tmdate;
@@ -568,15 +566,15 @@ class HSpectrometerManager: public HApplicationBackend
                 tmdate.tm_isdst	= 0;
                 std::time_t epsec = timegm(&tmdate);
 
-                std::cout<<"epsec = "<<epsec<<std::endl;
+                // std::cout<<"epsec = "<<epsec<<std::endl;
 
                 epoch_sec = (uint64_t) epsec;
-
-                std::cout<<"start time is epoch sec: "<<epoch_sec<<std::endl;
+                // 
+                // std::cout<<"start time is epoch sec: "<<epoch_sec<<std::endl;
                 return true;
             }
-
-            std::cout<<"failure"<<std::endl;
+            // 
+            // std::cout<<"failure"<<std::endl;
             epoch_sec = 0;
             return false;
         }
