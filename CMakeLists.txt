@@ -52,11 +52,13 @@ option( HOSE_USE_ROOT "Build ROOT based utilities." OFF)
 option( HOSE_USE_ZEROMQ "Build client-server library" OFF )
 
 #convenience variables
+set(CSOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source/c_src)
 set(CPPSOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source/cpp_src)
 set(SHSOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source/bash_src)
 set(PYSOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source/python_src)
 
 #source sub directories (in order of dependence)
+add_subdirectory(${CSOURCE}/Interface)
 add_subdirectory(${CPPSOURCE}/Array)
 add_subdirectory(${CPPSOURCE}/Core)
 if(HOSE_USE_CUDA)
