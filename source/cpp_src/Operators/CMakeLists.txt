@@ -7,6 +7,7 @@ set (HOPERATORS_HEADERFILES
 )
 
 #declare header paths ##########################################################
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../c_src/Interface/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Array/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 #install the header only library ###############################################
@@ -38,7 +39,7 @@ if(HOSE_USE_CUDA)
     )
 
     add_library (HCUDAOperators SHARED ${CUDAOPERATOR_SOURCEFILES})
-    target_link_libraries ( HCUDAOperators HCore HCUDASpectrometer )
+    target_link_libraries ( HCUDAOperators HInterface HCore HCUDASpectrometer )
 
     hose_install_headers( ${CUDAOPERATOR_HEADERFILES} )
     hose_install_libraries( HCUDAOperators )

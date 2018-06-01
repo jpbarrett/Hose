@@ -1,12 +1,12 @@
 #include "HSpectrumFile.h"
 
-void InitializeSpectrumObject(struct HSpectrumFileStruct* spectrum)
+void InitializeSpectrumFileStruct(struct HSpectrumFileStruct* spectrum)
 {
     unsigned int i;
     spectrum->fHeader.fHeaderSize = sizeof(struct HSpectrumHeaderStruct);
     for(i=0; i<HFLAG_WIDTH; i++)
     {
-        spectrum->fHeader.fVersion[i] = '\0';
+        spectrum->fHeader.fVersionFlag[i] = '\0';
         spectrum->fHeader.fSidebandFlag[i] = '\0';
         spectrum->fHeader.fPolarizationFlag[i] = '\0';
     }

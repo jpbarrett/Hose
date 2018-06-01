@@ -15,6 +15,11 @@
 
 #include "spectrometer.h"
 
+extern "C" 
+{
+    #include "HSpectrumFile.h"
+}
+
 namespace hose
 {
 
@@ -34,9 +39,24 @@ class HSimpleMultiThreadedSpectrumDataWriter: public HConsumer< spectrometer_dat
         HSimpleMultiThreadedSpectrumDataWriter();
         virtual ~HSimpleMultiThreadedSpectrumDataWriter();
 
-        void SetExperimentName(std::string exp_name){fExperimentName = exp_name;};
-        void SetSourceName(std::string source_name){fSourceName = source_name;};
-        void SetScanName(std::string scan_name){fScanName = scan_name;};
+        void SetExperimentName(std::string exp_name)
+        {
+            //truncate experiment name if needed
+            if(exp_name.size() < HNAME_WIDTH){fExperimentName = exp_name;}
+            else{fExperimentName = exp_name.substr(0,HNAME_WIDTH-1);}
+        };
+        
+        void SetSourceName(std::string source_name)
+        {
+            if(source_name.size() < HNAME_WIDTH){fSourceName = source_name;}
+            else{fSourceName = source_name.substr(0,HNAME_WIDTH-1);}
+        };
+        
+        void SetScanName(std::string scan_name)
+        {
+            if(scan_name.size() < HNAME_WIDTH){fScanName = scan_name;}
+            else{fScanName = scan_name.substr(0,HNAME_WIDTH-1);}
+        };
 
         void InitializeOutputDirectory();
 

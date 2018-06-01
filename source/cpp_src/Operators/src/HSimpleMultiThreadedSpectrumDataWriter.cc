@@ -1,5 +1,7 @@
 #include "HSimpleMultiThreadedSpectrumDataWriter.hh"
 
+#include <cstring>
+
 //needed for mkdir on *NIX
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -127,24 +129,56 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                     std::cout<<"writing to "<<ss.str()<<std::endl;
                 }
 
-                HSpectrumObject< float > spec_data;
-                spec_data.SetSidebandFlag(tail->GetMetaData()->GetSidebandFlag() );
-                spec_data.SetPolarizationFlag(tail->GetMetaData()->GetPolarizationFlag() );
-                spec_data.SetStartTime( sdata->acquistion_start_second );
-                spec_data.SetSampleRate( sdata->sample_rate );
-                spec_data.SetLeadingSampleIndex(  sdata->leading_sample_index );
-                spec_data.SetExperimentName(fExperimentName);
-                spec_data.SetSourceName(fSourceName);
-                spec_data.SetScanName(fScanName);
-                spec_data.SetSampleLength( (sdata->n_spectra)*(sdata->spectrum_length)  );
-                spec_data.SetNAverages( sdata->n_spectra );
-                spec_data.SetSpectrumLength((sdata->spectrum_length)/2+1); //Fix naming of this
-                spec_data.SetSpectrumData(sdata->spectrum);
-                spec_data.ExtendOnAccumulation( tail->GetMetaData()->GetOnAccumulations() );
-                spec_data.ExtendOffAccumulation( tail->GetMetaData()->GetOffAccumulations() );
+                // HSpectrumObject< float > spec_data;
+                // spec_data.SetSidebandFlag(tail->GetMetaData()->GetSidebandFlag() );
+                // spec_data.SetPolarizationFlag(tail->GetMetaData()->GetPolarizationFlag() );
+                // spec_data.SetStartTime( sdata->acquistion_start_second );
+                // spec_data.SetSampleRate( sdata->sample_rate );
+                // spec_data.SetLeadingSampleIndex(  sdata->leading_sample_index );
+                // spec_data.SetExperimentName(fExperimentName);
+                // spec_data.SetSourceName(fSourceName);
+                // spec_data.SetScanName(fScanName);
+                // spec_data.SetSampleLength( (sdata->n_spectra)*(sdata->spectrum_length)  );
+                // spec_data.SetNAverages( sdata->n_spectra );
+                // spec_data.SetSpectrumLength((sdata->spectrum_length)/2+1); //Fix naming of this
+                // spec_data.SetSpectrumData(sdata->spectrum);
+                // spec_data.ExtendOnAccumulation( tail->GetMetaData()->GetOnAccumulations() );
+                // spec_data.ExtendOffAccumulation( tail->GetMetaData()->GetOffAccumulations() );
+                // 
+                // spec_data.WriteToFile(ss.str());
+                // spec_data.ReleaseSpectrumData();
 
-                spec_data.WriteToFile(ss.str());
-                spec_data.ReleaseSpectrumData();
+
+
+                struct HSpectrumFileStruct* spec_data = CreateSpectrumFileStruct();
+                if(spec_data != NULL)
+                {
+                    spec_data->fHeader.fSidebandFlag[0] = tail->GetMetaData()->GetSidebandFlag() ;
+                    spec_data->fHeader.fPolarizationFlag[0] = tail->GetMetaData()->GetPolarizationFlag();
+                    spec_data->fHeader.fStartTime = sdata->acquistion_start_second;
+                    spec_data->fHeader.fSampleRate = sdata->sample_rate;
+                    spec_data->fHeader.fLeadingSampleIndex = sdata->leading_sample_index;
+                    
+                    strcpy(spec_data->fHeader.fExperimentName, fExperimentName.c_str() );
+                    strcpy(spec_data->fHeader.fSourceName, fSourceName.c_str() );
+                    strcpy(spec_data->fHeader.fScanName, fScanName.c_str() );
+
+                    spec_data->fHeader.fSampleLength = (sdata->n_spectra)*(sdata->spectrum_length);
+                    spec_data->fHeader.fNAverages = sdata->n_spectra;
+                    spec_data->fHeader.fSpectrumLength = ((sdata->spectrum_length)/2+1); //Fix naming of this
+                    spec_data->fHeader.fSpectrumDataTypeSize = sizeof(float);
+
+                    //directly set the pointer to the raw data
+                    spec_data->fRawSpectrumData = (char*) (sdata->spectrum);
+
+                    int ret_val = WriteSpectrumFile(ss.str().c_str(), spec_data);
+
+                    if(ret_val != HSUCCESS){std::cout<<"file error!"<<std::endl;}
+
+                    //wipe the struct
+                    InitializeSpectrumFileStruct(spec_data);
+                    DestroySpectrumFileStruct(spec_data);
+                }
             }
         }
         

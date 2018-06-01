@@ -4,7 +4,6 @@
 
 int ReadSpectrumFile(const char* filename, struct HSpectrumFileStruct* spectrum)
 {
-    unsigned int i;
     FILE* infile = NULL;
     infile = fopen(filename,"rb");
 
@@ -15,13 +14,13 @@ int ReadSpectrumFile(const char* filename, struct HSpectrumFileStruct* spectrum)
         fread( &(spectrum->fHeader.fHeaderSize), sizeof(size_t), 1, infile);
 
         //TODO fix this to deal with possible multiple versions
-        if( spectrum->fHeader.fHeaderSize != sizeof(HSpectrumHeaderStruct) )
+        if( spectrum->fHeader.fHeaderSize != sizeof(struct HSpectrumHeaderStruct) )
         {
             fclose(infile);
             return HFILE_VERSION_ERROR;
         }
 
-        fread( &(spectrum->fHeader.fVersion), sizeof(char), HFLAG_WIDTH, infile);
+        fread( &(spectrum->fHeader.fVersionFlag), sizeof(char), HFLAG_WIDTH, infile);
         fread( &(spectrum->fHeader.fSidebandFlag), sizeof(char), HFLAG_WIDTH, infile);
         fread( &(spectrum->fHeader.fPolarizationFlag), sizeof(char), HFLAG_WIDTH, infile);
 
@@ -51,7 +50,7 @@ int ReadSpectrumFile(const char* filename, struct HSpectrumFileStruct* spectrum)
 
         fclose(infile);
 
-        return 0;
+        return HSUCCESS;
     }
 
         //error, couldn't open file

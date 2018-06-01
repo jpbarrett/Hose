@@ -1,13 +1,14 @@
 option (HOSE_ENABLE_TEST "Build developer tests." OFF)
 if (HOSE_ENABLE_TEST)
 
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../c_src/Interface/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Array/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Core/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Devices/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Operators/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-    set (HOSE_TEST_LIBS HCore HDevices)
+    set (HOSE_TEST_LIBS HCore HInterface HDevices)
 
     set(SOURCE_BASENAMES
         TestBufferAllocator

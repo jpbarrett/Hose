@@ -4,14 +4,13 @@
 
 int WriteSpectrumFile(const char* filename, struct HSpectrumFileStruct* spectrum)
 {
-    unsigned int i;
     FILE* outfile = NULL;
     outfile = fopen(filename,"wb");
 
     if(outfile)
     {
         fwrite( &(spectrum->fHeader.fHeaderSize), sizeof(size_t), 1, outfile);
-        fwrite( &(spectrum->fHeader.fVersion), sizeof(char), HFLAG_WIDTH, outfile);
+        fwrite( &(spectrum->fHeader.fVersionFlag), sizeof(char), HFLAG_WIDTH, outfile);
         fwrite( &(spectrum->fHeader.fSidebandFlag), sizeof(char), HFLAG_WIDTH, outfile);
         fwrite( &(spectrum->fHeader.fPolarizationFlag), sizeof(char), HFLAG_WIDTH, outfile);
 
@@ -32,9 +31,9 @@ int WriteSpectrumFile(const char* filename, struct HSpectrumFileStruct* spectrum
 
         fclose(outfile);
 
-        return SUCCESS;
+        return HSUCCESS;
     }
 
     //error, couldn't open file
-    return 1;
+    return HFILE_OPEN_ERROR;
 }

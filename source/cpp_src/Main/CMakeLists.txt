@@ -1,5 +1,6 @@
 if(HOSE_USE_CUDA AND HOSE_USE_ZEROMQ AND HOSE_USE_PX14)
 
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../c_src/Interface/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Array/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Core/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Devices/include)
@@ -7,7 +8,7 @@ if(HOSE_USE_CUDA AND HOSE_USE_ZEROMQ AND HOSE_USE_PX14)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../CUDASpectrometer/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-    set(HOSE_MAIN_LIBS HCore HDevices)
+    set(HOSE_MAIN_LIBS HCore HInterface HDevices)
 
     include(FindZeroMQ)
     find_package(ZeroMQ REQUIRED)
