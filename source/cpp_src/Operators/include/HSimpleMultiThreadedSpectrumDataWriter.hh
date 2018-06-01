@@ -18,6 +18,7 @@
 extern "C" 
 {
     #include "HSpectrumFile.h"
+    #include "HNoisePowerFile.h"
 }
 
 namespace hose

@@ -5,7 +5,10 @@
 #include <vector>
 #include <stdint.h>
 
-#include "HDataAccumulation.hh"
+extern "C"
+{
+    #include "HDataAccumulationStruct.h"
+}
 
 /*
 *File: HBufferMetaData.hh
@@ -58,23 +61,14 @@ class HBufferMetaData
 
         //for now we are going to stuff the noise statistics data in here for estimating tsys w/ the noise diode
         //doing otherwise will require some re-architecting of the whole consumer/producer/buffer pool system
-        void ClearOnAccumulation(){fOnAccumulations.clear();};
-        void AppendOnAccumulation( HDataAccumulation accum){ fOnAccumulations.push_back(accum); };
-        void ExtendOnAccumulation( const std::vector< HDataAccumulation >* accum_vec)
+        void ClearAccumulation(){fAccumulations.clear();};
+        void AppendAccumulation( struct HDataAccumulationStruct accum){ fAccumulations.push_back(accum); };
+        void ExtendAccumulation( const std::vector< struct HDataAccumulationStruct >* accum_vec)
         {
-            fOnAccumulations.reserve( fOnAccumulations.size() + accum_vec->size() );
-            fOnAccumulations.insert( fOnAccumulations.end(), accum_vec->begin(), accum_vec->end() );
+            fAccumulations.reserve( fAccumulations.size() + accum_vec->size() );
+            fAccumulations.insert( fAccumulations.end(), accum_vec->begin(), accum_vec->end() );
         };
-        std::vector< HDataAccumulation >* GetOnAccumulations() {return &fOnAccumulations;};
-
-        void ClearOffAccumulation(){fOffAccumulations.clear();};
-        void AppendOffAccumulation( HDataAccumulation accum){ fOffAccumulations.push_back(accum); };
-        void ExtendOffAccumulation( const std::vector< HDataAccumulation >* accum_vec)
-        {
-            fOffAccumulations.reserve( fOffAccumulations.size() + accum_vec->size() );
-            fOffAccumulations.insert( fOffAccumulations.end(), accum_vec->begin(), accum_vec->end() );
-        };
-        std::vector< HDataAccumulation >* GetOffAccumulations() {return &fOffAccumulations;};
+        std::vector< struct HDataAccumulationStruct >* GetAccumulations() {return &fAccumulations;};
 
 
         HBufferMetaData& operator= (const HBufferMetaData& rhs)
@@ -87,8 +81,7 @@ class HBufferMetaData
                 fSampleIndex = rhs.fSampleIndex;
                 fSampleRate = rhs.fSampleRate;
                 fValidLength = rhs.fValidLength;
-                fOnAccumulations = rhs.fOnAccumulations;
-                fOffAccumulations = rhs.fOffAccumulations;
+                fAccumulations = rhs.fAccumulations;
             }
             return *this;
         }
@@ -111,8 +104,7 @@ class HBufferMetaData
         uint64_t fValidLength;
 
         //data statistics (for noise diode)
-        std::vector< HDataAccumulation > fOnAccumulations;
-        std::vector< HDataAccumulation > fOffAccumulations;
+        std::vector< struct HDataAccumulationStruct > fAccumulations;
 };
 
 #endif /* end of include guard: HBufferMetaData */

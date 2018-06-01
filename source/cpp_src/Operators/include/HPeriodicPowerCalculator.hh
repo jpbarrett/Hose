@@ -13,7 +13,11 @@
 #include <cmath>
 
 #include "HLinearBuffer.hh"
-#include "HDataAccumulation.hh"
+
+extern "C"
+{
+    #include "HDataAccumulationStruct.h"
+}
 
 namespace hose
 {
@@ -68,8 +72,7 @@ class HPeriodicPowerCalculator
 
                 //std::cout<<"leading index: "<<leading_sample_index<<" n on = "<<on_intervals.size()<<" n off = "<<off_intervals.size()<<std::endl;
 
-                fBuffer->GetMetaData()->ClearOnAccumulation();
-                fBuffer->GetMetaData()->ClearOffAccumulation();
+                fBuffer->GetMetaData()->ClearAccumulation();
 
                 //loop over the on-intervals accumulating statistics
                 for(unsigned int i=0; i<on_intervals.size(); i++)
@@ -77,12 +80,13 @@ class HPeriodicPowerCalculator
                     uint64_t begin = on_intervals[i].first;
                     uint64_t end = on_intervals[i].second;
 
-                    HDataAccumulation stat;
+                    struct HDataAccumulationStruct stat;
                     stat.start_index = leading_sample_index + begin;
                     stat.stop_index = leading_sample_index + end;
                     stat.sum_x = 0;
                     stat.sum_x2 = 0;
                     stat.count = 0;
+                    stat.state_flag = H_NOISE_DIODE_ON;
                     for(uint64_t sample_index = begin; sample_index < end; sample_index++)
                     {
                         double val = raw_data[sample_index];
@@ -90,7 +94,7 @@ class HPeriodicPowerCalculator
                         stat.sum_x2 += val*val;
                         stat.count += 1.0;
                     }
-                    fBuffer->GetMetaData()->AppendOnAccumulation(stat);
+                    fBuffer->GetMetaData()->AppendAccumulation(stat);
                 }
 
                 //loop over the off-intervals accumulating statistics
@@ -99,12 +103,13 @@ class HPeriodicPowerCalculator
                     uint64_t begin = off_intervals[i].first;
                     uint64_t end = off_intervals[i].second;
 
-                    HDataAccumulation stat;
+                    struct HDataAccumulationStruct stat;
                     stat.start_index = leading_sample_index + begin;
                     stat.stop_index = leading_sample_index + end;
                     stat.sum_x = 0;
                     stat.sum_x2 = 0;
                     stat.count = 0;
+                    stat.state_flag = H_NOISE_DIODE_OFF;
                     for(uint64_t sample_index = begin; sample_index < end; sample_index++)
                     {
                         double val = raw_data[sample_index];
@@ -112,7 +117,7 @@ class HPeriodicPowerCalculator
                         stat.sum_x2 += val*val;
                         stat.count += 1.0;
                     }
-                    fBuffer->GetMetaData()->AppendOffAccumulation(stat);
+                    fBuffer->GetMetaData()->AppendAccumulation(stat);
                 }
             }
         }   

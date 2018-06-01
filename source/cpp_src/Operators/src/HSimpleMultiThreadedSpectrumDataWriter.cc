@@ -121,7 +121,9 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 ss << "_";
                 ss <<  tail->GetMetaData()->GetSidebandFlag();
                 ss <<  tail->GetMetaData()->GetPolarizationFlag();
-                ss << ".bin";
+
+                std::string spec_filename = ss.str() + ".spec";
+                std::string noise_power_filename = ss.str() + "npow";
 
                 if(sdata->leading_sample_index == 0)
                 {
@@ -153,31 +155,60 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 struct HSpectrumFileStruct* spec_data = CreateSpectrumFileStruct();
                 if(spec_data != NULL)
                 {
+                    spec_data->fHeader.fVersionFlag[0] = SPECTRUM_HEADER_VERSION;
+                    spec_data->fHeader.fVersionFlag[1] = 'F'; //F indicates the spectrum data type is a float
                     spec_data->fHeader.fSidebandFlag[0] = tail->GetMetaData()->GetSidebandFlag() ;
                     spec_data->fHeader.fPolarizationFlag[0] = tail->GetMetaData()->GetPolarizationFlag();
                     spec_data->fHeader.fStartTime = sdata->acquistion_start_second;
                     spec_data->fHeader.fSampleRate = sdata->sample_rate;
                     spec_data->fHeader.fLeadingSampleIndex = sdata->leading_sample_index;
-                    
-                    strcpy(spec_data->fHeader.fExperimentName, fExperimentName.c_str() );
-                    strcpy(spec_data->fHeader.fSourceName, fSourceName.c_str() );
-                    strcpy(spec_data->fHeader.fScanName, fScanName.c_str() );
 
                     spec_data->fHeader.fSampleLength = (sdata->n_spectra)*(sdata->spectrum_length);
                     spec_data->fHeader.fNAverages = sdata->n_spectra;
                     spec_data->fHeader.fSpectrumLength = ((sdata->spectrum_length)/2+1); //Fix naming of this
                     spec_data->fHeader.fSpectrumDataTypeSize = sizeof(float);
 
+                    strcpy(spec_data->fHeader.fExperimentName, fExperimentName.c_str() );
+                    strcpy(spec_data->fHeader.fSourceName, fSourceName.c_str() );
+                    strcpy(spec_data->fHeader.fScanName, fScanName.c_str() );
+
                     //directly set the pointer to the raw data
-                    spec_data->fRawSpectrumData = (char*) (sdata->spectrum);
+                    spec_data->fRawSpectrumData = reinterpret_cast< char* >(sdata->spectrum);
 
-                    int ret_val = WriteSpectrumFile(ss.str().c_str(), spec_data);
-
+                    int ret_val = WriteSpectrumFile(spec_filename.c_str(), spec_data);
                     if(ret_val != HSUCCESS){std::cout<<"file error!"<<std::endl;}
 
                     //wipe the struct
                     InitializeSpectrumFileStruct(spec_data);
                     DestroySpectrumFileStruct(spec_data);
+                }
+
+                //write out the noise diode data
+                struct HNoisePowerFileStruct* power_data = CreateNoisePowerFileStruct();
+                if(power_data != NULL)
+                {
+                    power_data->fHeader.fVersionFlag[0] = NOISE_POWER_HEADER_VERSION;
+                    power_data->fHeader.fSidebandFlag[0] = tail->GetMetaData()->GetSidebandFlag() ;
+                    power_data->fHeader.fPolarizationFlag[0] = tail->GetMetaData()->GetPolarizationFlag();
+                    power_data->fHeader.fStartTime = sdata->acquistion_start_second;
+                    power_data->fHeader.fSampleRate = sdata->sample_rate;
+                    power_data->fHeader.fLeadingSampleIndex = sdata->leading_sample_index;
+                    power_data->fHeader.fSampleLength = (sdata->n_spectra)*(sdata->spectrum_length);
+                    power_data->fHeader.fAccumulationLength = tail->GetMetaData()->GetAccumulations()->size();
+                    power_data->fHeader.fSwitchingFrequency = 0.0;
+                    power_data->fHeader.fBlankingPeriod = 0.0;
+                    strcpy(power_data->fHeader.fExperimentName, fExperimentName.c_str() );
+                    strcpy(power_data->fHeader.fSourceName, fSourceName.c_str() );
+                    strcpy(power_data->fHeader.fScanName, fScanName.c_str() );
+        
+                    //now point the accumulation data to the right memory block
+                    power_data->fAccumulations = static_cast< struct HDataAccumulationStruct* >( &((*(tail->GetMetaData()->GetAccumulations()))[0] ) );
+
+                    int ret_val = WriteNoisePowerFile(noise_power_filename.c_str(), power_data);
+                    if(ret_val != HSUCCESS){std::cout<<"file error!"<<std::endl;}
+
+                    InitializeNoisePowerFileStruct(power_data);
+                    DestroyNoisePowerFileStruct(power_data);
                 }
             }
         }
