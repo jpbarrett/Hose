@@ -205,7 +205,7 @@ def main(input_fn, hose_host, hose_port):
         if diff > -int(delta):
             # --- there is some time left in the scan
             logger.info("%s - hose record on (%d sec to go)", st, diff)
-            hosecmd = "record=on:" + exp + ":" + sc + ":" + sn + ":" + start_time + ":" + delta
+            hosecmd = "record=on:" + exp + ":" + src + ":" + sn + ":" + start_time + ":" + delta
             where = hose_send(hose_s, st, hosecmd, "record=on send")
             if where != '':
                 break
