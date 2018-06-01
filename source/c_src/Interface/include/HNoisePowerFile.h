@@ -2,11 +2,15 @@
 #define HNoisePowerFile_H__
 
 #include "HDataAccumulationStruct.h"
+#include "HNoisePowerHeaderStruct.h"
 #include "HNoisePowerFileStruct.h"
 
-extern void InitializeNoisePowerObject(struct HNoisePowerFileStruct* power);
-extern void ClearNoisePowerObject(struct HNoisePowerFileStruct* power);
-extern int ReadNoisePowerObject(const char* filename, struct HNoisePowerFileStruct* power);
-extern int WriteNoisePowerObject(const char* filename, struct HNoisePowerFileStruct* power);
+extern struct HNoisePowerFileStruct* CreateNoisePowerFileStruct();
+extern void InitializeNoisePowerFileStruct(struct HNoisePowerFileStruct* spectrum);
+extern void ClearNoisePowerFileStruct(struct HNoisePowerFileStruct* spectrum);
+extern void DestroyNoisePowerFileStruct(struct HNoisePowerFileStruct* spectrum);
+extern int ReadNoisePowerFile(const char* filename, struct HNoisePowerFileStruct* spectrum);
+extern int WriteNoisePowerFile(const char* filename, struct HNoisePowerFileStruct* spectrum);
+
 
 #endif /* end of include guard: HNoisePowerFile_H__ */

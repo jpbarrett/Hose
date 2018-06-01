@@ -5,10 +5,10 @@ set(HInterface_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumHeaderStruct.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumFileStruct.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumFile.h
-    # ${CMAKE_CURRENT_SOURCE_DIR}/include/HDataAccumulationStruct.h
-    # ${CMAKE_CURRENT_SOURCE_DIR}/include/HNoisePowerHeaderStruct.h
-    # ${CMAKE_CURRENT_SOURCE_DIR}/include/HNoisePowerFileStruct.h
-    # ${CMAKE_CURRENT_SOURCE_DIR}/include/HNoisePowerFile.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HDataAccumulationStruct.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HNoisePowerHeaderStruct.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HNoisePowerFileStruct.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HNoisePowerFile.h
 )
 
 set(HInterface_SOURCEFILES
@@ -18,6 +18,12 @@ set(HInterface_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/DestroySpectrumFileStruct.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/WriteSpectrumFile.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ReadSpectrumFile.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CreateNoisePowerFileStruct.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/InitializeNoisePowerFileStruct.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ClearNoisePowerFileStruct.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/DestroyNoisePowerFileStruct.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/WriteNoisePowerFile.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ReadNoisePowerFile.c
 )
 
 #this is a c library

@@ -6,23 +6,19 @@
 
 /*
 *File: HNoisePowerFileStruct.h
-
 *Author: J. Barrett
 *Email: barrettj@mit.edu
 *Date:
 *Description:
 */
 
-struct HSpectrumFileStruct
+struct HNoisePowerFileStruct
 {
     //header data
     struct HNoisePowerHeaderStruct fHeader;
     //on/off statistics data
-    struct HDataAccumulationStruct* OnAccumulations;
-    struct HDataAccumulationStruct* OffAccumulations;
+    struct HDataAccumulationStruct* fAccumulations;
 };
-
-
 
 
 #endif /* end of include guard: HNoisePowerFileStruct */

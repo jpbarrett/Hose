@@ -26,8 +26,7 @@ struct HNoisePowerHeaderStruct
     uint64_t fSampleRate; //may need to accomodate doubles?
     uint64_t fLeadingSampleIndex; //sample index since start of the acquisition
     size_t fSampleLength; //total number of samples used during the noise power accumulation
-    size_t fOnAccumulationLength; //number of periods stored in this file with noise diode 'on'
-    size_t fOffAccumulationLength; //number of periods stored in this file with noise diode 'off'
+    size_t fAccumulationLength; //number of accumulation periods stored in this file
     double fSwitchingFrequency; //frequency at which the noise diode is switched on/off
     double fBlankingPeriod; //period of time about the switching transition which is 'masked' (discarded from the calculation)
     char fExperimentName[HNAME_WIDTH]; //experiment name
