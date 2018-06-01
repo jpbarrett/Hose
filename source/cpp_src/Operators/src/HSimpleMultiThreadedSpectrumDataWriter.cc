@@ -123,7 +123,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 ss <<  tail->GetMetaData()->GetPolarizationFlag();
 
                 std::string spec_filename = ss.str() + ".spec";
-                std::string noise_power_filename = ss.str() + "npow";
+                std::string noise_power_filename = ss.str() + ".npow";
 
                 if(sdata->leading_sample_index == 0)
                 {
