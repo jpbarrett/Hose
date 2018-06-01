@@ -4,7 +4,7 @@ void InitializeSpectrumObject(struct HSpectrumFileStruct* spectrum)
 {
     unsigned int i;
     spectrum->fHeader.fHeaderSize = sizeof(struct HSpectrumHeaderStruct);
-    for(i=0; i<FLAG_WIDTH; i++)
+    for(i=0; i<HFLAG_WIDTH; i++)
     {
         spectrum->fHeader.fVersion[i] = '\0';
         spectrum->fHeader.fSidebandFlag[i] = '\0';
@@ -16,8 +16,9 @@ void InitializeSpectrumObject(struct HSpectrumFileStruct* spectrum)
     spectrum->fHeader.fSampleLength = 0; //total number of samples used to compute the spectrum
     spectrum->fHeader.fNAverages = 0; //if spectral averaging was used, how many averaging periods were used
     spectrum->fHeader.fSpectrumLength = 0; //number of spectral points
+    spectrum->fHeader.fSpectrumDataTypeSize = 0; 
 
-    for(i=0; i<NAME_WIDTH; i++)
+    for(i=0; i<HNAME_WIDTH; i++)
     {
         spectrum->fHeader.fExperimentName[i] = '\0';
         spectrum->fHeader.fSourceName[i] = '\0';
