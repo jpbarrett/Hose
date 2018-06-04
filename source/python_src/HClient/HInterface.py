@@ -84,27 +84,25 @@ class spectrum_file_data(HoseStructureBase):
         hinter = hinterface_load()
         hinter.DestroySpectrumFileStruct(ctypes.byref(self))
 
-    # #access to the spectrum data should be done through this function
-    # #not from the raw_spectrum_data with is a raw char array
-    # def get_spectrum_data(self):
-    #     #have to convert the raw char array to float
-    #     fmt = '@'
-    #     if self.header.spectrum_data_type_size == 2:
-    #         fmt = '@e'
-    #     if self.header.spectrum_data_type_size == 4:
-    #         fmt = '@f'
-    #     if self.header.spectrum_data_type_size == 8:
-    #         fmt = '@d'
-    # 
-    #     spec_data = []
-    #     for i in range(0, self.header.spectrum_length):
-    #         offset = i*self.header.spectrum_data_type_size
-    #         spec_data.append( struct.unpack(fmt, self.raw_spectrum_data, offset)[0] )
-    #     return spec_data
-
-
-
-
+    #access to the spectrum data should be done through this function
+    #not from the raw_spectrum_data with is a raw char array
+    def get_spectrum_data(self):
+        #have to convert the raw char array to float
+        fmt = '@'
+        data_size = self.header.spectrum_data_type_size
+        if data_size == 2:
+            fmt = '@e'
+        if data_size == 4:
+            fmt = '@f'
+        if data_size == 8:
+            fmt = '@d'
+        spec_data = []
+        for i in range(0, self.header.spectrum_length):
+            offset = i*self.header.spectrum_data_type_size
+            start = i*data_size
+            end = (i+1)*data_size
+            spec_data.append( struct.unpack(fmt, self.raw_spectrum_data[start:end])[0] )
+        return spec_data
 
 def hinterface_load():
     #first try to find the library using LD_LIBRARY_PATH
