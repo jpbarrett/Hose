@@ -82,6 +82,10 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 //std::cout<<"CALLING FFT"<<std::endl;
                 process_vector_no_output(source->GetData(), sdata);
 
+                //debug print out the value of the first few samples:
+                std::cout<<"spectrum data A = "<<sdata->spectrum[0]<<", "<<sdata->spectrum[1]<<", "<<sdata->spectrum[2]<<std::endl;
+
+
                 //release the buffers
                 this->fSourceBufferHandler.ReleaseBufferToProducer(this->fSourceBufferPool, source);
                 this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
