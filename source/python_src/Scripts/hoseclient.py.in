@@ -1,6 +1,6 @@
 #!@PYTHON_EXECUTABLE@
 
-from hosepy import *
+from hose import *
 
 
 if __name__ == '__main__':

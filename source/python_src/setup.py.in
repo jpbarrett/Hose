@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 #TODO fix verions number to be generated from cmake/autoconf
-setup(name='hosepy',
+setup(name='hose',
       version='0.1',
       package_dir={ '': '@abs_srcdir@' },
-      packages=['hosepy'])
+      packages=['hose'])

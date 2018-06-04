@@ -36,12 +36,12 @@ HSpectrometerCUDASigned::LaunchThreads()
             cpu_set_t cpuset;
             CPU_ZERO(&cpuset);
             CPU_SET((i+8)%num_cpus, &cpuset);
-            std::cout<<"setting spec thread #"<<i<<" to cpu #"<<(i+8)%num_cpus<<std::endl;
+            // std::cout<<"setting spec thread #"<<i<<" to cpu #"<<(i+8)%num_cpus<<std::endl;
             fThreads.push_back( std::thread( &HSpectrometerCUDASigned::ProcessLoop, this ) );
             int rc = pthread_setaffinity_np(fThreads.back().native_handle(), sizeof(cpu_set_t), &cpuset);
             if(rc != 0)
             {
-                std::cout<<"Error, couldnt set thread affinity"<<std::endl;
+                std::cout<<"Error, could not set thread affinity"<<std::endl;
             }
         }
     }

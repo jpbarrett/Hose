@@ -204,10 +204,6 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                     //now point the accumulation data to the right memory block
                     power_data->fAccumulations = static_cast< struct HDataAccumulationStruct* >( &((*(tail->GetMetaData()->GetAccumulations()))[0] ) );
 
-
-                    
-                    std::cout<<"Accum: s,c,sq = "<<power_data->fAccumulations[0].sum_x<<", "<<power_data->fAccumulations[0].count<<", "<<power_data->fAccumulations[0].sum_x2<<std::endl;
-
                     int ret_val = WriteNoisePowerFile(noise_power_filename.c_str(), power_data);
                     if(ret_val != HSUCCESS){std::cout<<"file error!"<<std::endl;}
 

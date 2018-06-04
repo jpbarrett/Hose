@@ -5,16 +5,8 @@ from ctypes.util import find_library
 import os
 from os import getenv
 
-
-def redefine_array_length(array, new_size):
-    return (array._type_*new_size).from_address(ctypes.addressof(array))
-    
-def redefine_char_array_length(array, new_size):
-    return (ctypes.c_char*new_size).from_address(ctypes.addressof(array))
-
-
 # base class which implements comparison operations eq and ne and summary
-class HoseStructureBase(ctypes.Structure):
+class hose_structure_base(ctypes.Structure):
 
     def __eq__(self, other):
         for field in self._fields_:
@@ -45,11 +37,11 @@ class HoseStructureBase(ctypes.Structure):
             if isinstance(a, ctypes.Array):
                 print field[0], ":", "array of length: ", len(a), ":"
                 for x in a:
-                    if isinstance(x, HoseStructureBase):
+                    if isinstance(x, hose_structure_base):
                         x.printsummary()
                     else:
                         print x
-            elif isinstance(a, HoseStructureBase):
+            elif isinstance(a, hose_structure_base):
                 print field[0], ":"
                 a.printsummary()
             else:
@@ -57,7 +49,7 @@ class HoseStructureBase(ctypes.Structure):
 
 
 
-class spectrum_file_header(HoseStructureBase):
+class spectrum_file_header(hose_structure_base):
     _fields_ = [
     ('header_size', ctypes.c_size_t),
     ('version_flag', ctypes.c_char * 8),
@@ -75,7 +67,7 @@ class spectrum_file_header(HoseStructureBase):
     ('scan_name', ctypes.c_char * 256)
 ]
 
-class spectrum_file_data(HoseStructureBase):
+class spectrum_file_data(hose_structure_base):
     _fields_ = [
     ('header', spectrum_file_header),
     ('raw_spectrum_data', ctypes.POINTER( ctypes.c_char) )
@@ -106,7 +98,7 @@ class spectrum_file_data(HoseStructureBase):
         return spec_data
 
 
-class noise_power_file_header(HoseStructureBase):
+class noise_power_file_header(hose_structure_base):
     _fields_ = [
     ('header_size', ctypes.c_size_t),
     ('version_flag', ctypes.c_char * 8),
@@ -124,7 +116,7 @@ class noise_power_file_header(HoseStructureBase):
     ('scan_name', ctypes.c_char * 256)
 ]
 
-class accumulation_struct(HoseStructureBase):
+class accumulation_struct(hose_structure_base):
     _fields_ = [
     ('sum', ctypes.c_double),
     ('sum_squared', ctypes.c_double),
@@ -161,7 +153,7 @@ class accumulation_struct(HoseStructureBase):
 
 
 
-class noise_power_file_data(HoseStructureBase):
+class noise_power_file_data(hose_structure_base):
     _fields_ = [
     ('header', noise_power_file_header),
     ('accumulations', ctypes.POINTER( accumulation_struct ) )
@@ -211,13 +203,17 @@ def hinterface_load():
 def open_spectrum_file(filename):
     spec_file = spectrum_file_data()
     hinter = hinterface_load()
-    hinter.ReadSpectrumFile(ctypes.c_char_p(filename), ctypes.byref(spec_file))
-    return spec_file
-    
+    ret_val = hinter.ReadSpectrumFile(ctypes.c_char_p(filename), ctypes.byref(spec_file))
+    if ret_val == 0:
+        return spec_file
+    else:
+        None
 
 def open_noise_power_file(filename):
     np_file = noise_power_file_data()
     hinter = hinterface_load()
-    hinter.ReadNoisePowerFile(ctypes.c_char_p(filename), ctypes.byref(np_file))
-    return np_file
-    
+    ret_val = hinter.ReadNoisePowerFile(ctypes.c_char_p(filename), ctypes.byref(np_file))
+    if ret_val == 0:
+        return np_file
+    else:
+        return None
