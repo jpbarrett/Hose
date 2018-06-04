@@ -64,11 +64,16 @@ add_subdirectory(${CPPSOURCE}/Core)
 if(HOSE_USE_CUDA)
     add_subdirectory( ${CPPSOURCE}/CUDASpectrometer)
 endif(HOSE_USE_CUDA)
+
+if( HOSE_USE_PX14 OR HOSE_USE_ADQ7)
 add_subdirectory(${CPPSOURCE}/Operators)
 add_subdirectory(${CPPSOURCE}/Devices)
 add_subdirectory(${CPPSOURCE}/Server)
 add_subdirectory(${CPPSOURCE}/Test)
 add_subdirectory(${CPPSOURCE}/Main)
+else()
+message(STATUS "No devices (PX14400 or ADQ7) were selected, only some libraries will be built.")
+endif()
 
 #python package setup
 find_package(PythonInterp REQUIRED)
