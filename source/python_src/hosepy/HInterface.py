@@ -157,7 +157,7 @@ class accumulation_struct(HoseStructureBase):
 
     #proportional to AC power
     def get_variance(self):
-        return self.get_rms_squared - self.get_mean()*self.get_mean()
+        return self.get_rms_squared() - self.get_mean()*self.get_mean()
 
 
 
