@@ -87,13 +87,10 @@ class HPeriodicPowerCalculator
                     for(uint64_t sample_index = begin; sample_index < end; sample_index++)
                     {
                         double val = raw_data[sample_index];
-                        std::cout<<"val = "<<val<<std::endl;
                         stat.sum_x += val;
                         stat.sum_x2 += val*val;
                         stat.count += 1.0;
                     }
-                    std::cout<<"sample:"<<raw_data[begin]<<","<<raw_data[end-1]<<std::endl;;
-                    std::cout<<"mean = "<<stat.sum_x/stat.count<<std::endl;
                     fBuffer->GetMetaData()->AppendAccumulation(stat);
                 }
 
