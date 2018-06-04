@@ -3,7 +3,7 @@ set(abs_srcdir "${CMAKE_CURRENT_SOURCE_DIR}")
 if (PYTHON_EXECUTABLE)
     set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in")
     set(SETUP_PY    "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
-    set(DEPS        "${CMAKE_CURRENT_SOURCE_DIR}/HClient/__init__.py")
+    set(DEPS        "${CMAKE_CURRENT_SOURCE_DIR}/hosepy/__init__.py")
     set(OUTPUT      "${CMAKE_CURRENT_BINARY_DIR}/build/client_timestamp")
 
     configure_file(${SETUP_PY_IN} ${SETUP_PY})

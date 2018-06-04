@@ -1,6 +1,6 @@
 #!@PYTHON_EXECUTABLE@
 
-from HClient import *
+from hosepy import *
 
 
 if __name__ == '__main__':

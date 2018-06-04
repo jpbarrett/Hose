@@ -35,7 +35,7 @@ import time
 import calendar
 import logging
 import xml.etree.ElementTree as ET
-from HClient import *
+from hosepy import *
 
 logger = logging.getLogger("Hose_CC")
 

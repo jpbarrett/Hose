@@ -91,11 +91,11 @@ class spectrum_file_data(HoseStructureBase):
         fmt = '@'
         data_size = self.header.spectrum_data_type_size
         if data_size == 2:
-            fmt = '@e'
+            fmt = '@e'  #2 byte float
         if data_size == 4:
-            fmt = '@f'
+            fmt = '@f'  #4 byte float
         if data_size == 8:
-            fmt = '@d'
+            fmt = '@d'  #8 byte float
         spec_data = []
         for i in range(0, self.header.spectrum_length):
             offset = i*self.header.spectrum_data_type_size
