@@ -31,6 +31,7 @@ int WriteNoisePowerFile(const char* filename, struct HNoisePowerFileStruct* powe
         for(i = 0; i < power->fHeader.fAccumulationLength; i++)
         {
             struct HDataAccumulationStruct stat = power->fAccumulations[i];
+            printf("accum: %d, %f, %f, %f", i, stat.sum_x, stat.sum_x2, stat.count )
             fwrite( &(stat.sum_x), sizeof(double), 1, outfile);
             fwrite( &(stat.sum_x2), sizeof(double), 1, outfile);
             fwrite( &(stat.count), sizeof(double), 1, outfile);
