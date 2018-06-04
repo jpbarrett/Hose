@@ -82,7 +82,7 @@ class spectrum_file_data(HoseStructureBase):
 
     def __del__(self):
         hinter = hinterface_load()
-        hinter.DestroySpectrumFileStruct(ctypes.byref(self))
+        hinter.ClearSpectrumFileStruct(ctypes.byref(self))
 
     #access to the spectrum data should be done through this function
     #not from the raw_spectrum_data with is a raw char array
