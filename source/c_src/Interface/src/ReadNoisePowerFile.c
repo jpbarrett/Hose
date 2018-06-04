@@ -46,7 +46,7 @@ int ReadNoisePowerFile(const char* filename, struct HNoisePowerFileStruct* power
             fread( &(stat.state_flag), sizeof(uint64_t), 1, infile);
             fread( &(stat.start_index), sizeof(uint64_t), 1, infile);
             fread( &(stat.stop_index), sizeof(uint64_t), 1, infile);
-            printf("accum: %d, %f, %f, %f", i, stat.sum_x, stat.sum_x2, stat.count )
+            printf("accum: %d, %f, %f, %f", i, stat.sum_x, stat.sum_x2, stat.count );
         }
 
         fclose(infile);
