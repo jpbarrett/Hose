@@ -319,7 +319,7 @@ __global__ void square_and_accumulate_sum(const cufftComplex* d_in,
 }
 
 /*
-  convert int16_t data vector into single precision floating point
+  convert int16_t data vector into single precision floating point (original range is -32768 to 32767)
   also apply window function *w
  */
 __global__ void short_to_float_s(int16_t *ds, float *df, float *w, int n_spectra, int spectrum_length)
@@ -328,14 +328,15 @@ __global__ void short_to_float_s(int16_t *ds, float *df, float *w, int n_spectra
   {
     for(int freq_idx=threadIdx.x; freq_idx < spectrum_length ; freq_idx+=N_THREADS_S)
     {
+      //map signed shorts into range [-0.5,0.5)
       int idx=spec_idx*spectrum_length + freq_idx;
-      df[idx] = w[freq_idx]*((float)ds[idx])/65532.0;
+      df[idx] = w[freq_idx]*( (float)ds[idx] ) / 65535.0;
     }
   }
 }
 
 /*
-  convert uint16_t data vector into single precision floating point
+  convert uint16_t data vector into single precision floating point (original range is 0 to 65535)
   also apply window function *w
  */
 __global__ void short_to_float(uint16_t *ds, float *df, float *w, int n_spectra, int spectrum_length)
@@ -345,7 +346,8 @@ __global__ void short_to_float(uint16_t *ds, float *df, float *w, int n_spectra,
     for(int freq_idx=threadIdx.x; freq_idx < spectrum_length ; freq_idx+=N_THREADS)
     {
       int idx=spec_idx*spectrum_length + freq_idx;
-      df[idx] = w[freq_idx]*((float)ds[idx]-32768.0)/65532.0;
+      //map unsigned shorts in to range [-0.5,0.5)
+      df[idx] = w[freq_idx]*( (float)ds[idx] - 32768.0) / 65535.0;
     }
   }
 }
