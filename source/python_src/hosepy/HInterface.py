@@ -1,5 +1,6 @@
 import ctypes
 import struct
+import math
 from ctypes.util import find_library
 import os
 from os import getenv
@@ -104,6 +105,86 @@ class spectrum_file_data(HoseStructureBase):
             spec_data.append( struct.unpack(fmt, self.raw_spectrum_data[start:end])[0] )
         return spec_data
 
+
+class noise_power_file_header(HoseStructureBase):
+    _fields_ = [
+    ('header_size', ctypes.c_size_t),
+    ('version_flag', ctypes.c_char * 8),
+    ('sideband_flag', ctypes.c_char * 8),
+    ('polarization_flag', ctypes.c_char * 8),
+    ('start_time', ctypes.c_ulonglong),
+    ('sample_rate', ctypes.c_ulonglong),
+    ('leading_sample_index', ctypes.c_ulonglong),
+    ('sample_length', ctypes.c_size_t),
+    ('accumulation_length', ctypes.c_size_t),
+    ('switching_frequency', ctypes.c_double),
+    ('blanking_period', ctypes.c_double),
+    ('experiment_name', ctypes.c_char * 256),
+    ('source_name', ctypes.c_char * 256),
+    ('scan_name', ctypes.c_char * 256)
+]
+
+class accumulation_struct(HoseStructureBase):
+    _fields_ = [
+    ('sum', ctypes.c_double),
+    ('sum_squared', ctypes.c_double),
+    ('count', ctypes.c_double),
+    ('state_flag', ctypes.c_ulonglong),
+    ('start_index', ctypes.c_ulonglong),
+    ('stop_index', ctypes.c_ulonglong)
+    ]
+
+    def is_noise_diode_on():
+        #define H_NOISE_DIODE_OFF 0
+        #define H_NOISE_DIODE_ON 1
+        if self.state_flag == 1:
+            return True
+        else: 
+            return False
+
+    #the 'DC' component
+    def get_mean(self):
+        return self.sum/self.count
+    
+    def get_rms(self):
+        return math.sqrt( self.sum_squared/self.count )
+
+    def get_rms_squared(self):
+        return self.sum_squared/self.count
+        
+    def get_stddev(self):
+        return math.sqrt( self.get_variance() )
+
+    #proportional to AC power
+    def get_variance(self):
+        return self.get_rms_squared - self.get_mean()*self.get_mean()
+
+
+
+class noise_power_file_data(HoseStructureBase):
+    _fields_ = [
+    ('header', noise_power_file_header),
+    ('accumulations', ctypes.POINTER( accumulation_struct ) )
+    ]
+
+    def __del__(self):
+        hinter = hinterface_load()
+        hinter.ClearNoisePowerFileStruct(ctypes.byref(self))
+
+    #access to the spectrum data should be done through this function
+    #not from the raw_spectrum_data with is a raw char array
+    def get_accumulation(self, index):
+        val = accumulation_struct()
+        val.sum = 0
+        val.sum_squared = 0
+        val.count = 0
+        val.state_flag = -1
+        val.start_index = 0
+        val.stop_index = 0
+        if index < self.header.accumulation_length :
+            val = self.accumulations[index]
+        return val
+
 def hinterface_load():
     #first try to find the library using LD_LIBRARY_PATH
     ld_lib_path = getenv('LD_LIBRARY_PATH')
@@ -132,4 +213,11 @@ def open_spectrum_file(filename):
     hinter = hinterface_load()
     hinter.ReadSpectrumFile(ctypes.c_char_p(filename), ctypes.byref(spec_file))
     return spec_file
+    
+
+def open_noise_power_file(filename):
+    np_file = noise_power_file_data()
+    hinter = hinterface_load()
+    hinter.ReadNoisePowerFile(ctypes.c_char_p(filename), ctypes.byref(np_file))
+    return np_file
     
