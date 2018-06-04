@@ -72,6 +72,9 @@ class HPeriodicPowerCalculator
 
                 //std::cout<<"leading index: "<<leading_sample_index<<" n on = "<<on_intervals.size()<<" n off = "<<off_intervals.size()<<std::endl;
 
+                //debug print out the value of the first few samples:
+                std::cout<<"raw_data = "<<raw_data[0]<<', '<<raw_data[1]<<", "<<raw_data[2]<<std::endl;
+
                 fBuffer->GetMetaData()->ClearAccumulation();
 
                 //loop over the on-intervals accumulating statistics
