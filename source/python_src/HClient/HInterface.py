@@ -78,6 +78,11 @@ class spectrum_file_data(HoseStructureBase):
     _fields_ = [
     ('header', spectrum_file_header),
     ('raw_spectrum_data', ctypes.POINTER( ctypes.c_char) )
+    ]
+
+    def __del__(self):
+        hinter = hinterface_load()
+        hinter.DestroySpectrumFileStruct(ctypes.byref(self))
 
     # #access to the spectrum data should be done through this function
     # #not from the raw_spectrum_data with is a raw char array
@@ -97,11 +102,7 @@ class spectrum_file_data(HoseStructureBase):
     #         spec_data.append( struct.unpack(fmt, self.raw_spectrum_data, offset)[0] )
     #     return spec_data
 
-    #make sure we clean up the memory allocated by the c library
-    #or we will have a memory leak
-    def __del__(self):
-        hinter = hinterface_load()
-        hinter.DestroySpectrumFileStruct(ctypes.byref(self))
+
 
 
 
