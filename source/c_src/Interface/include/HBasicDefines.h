@@ -1,6 +1,9 @@
 #ifndef HBasicDefines_H__
 #define HBasicDefines_H__
 
+#define STR1(x) #x
+#define STR2(x) STR1(x)
+
 #define HFLAG_WIDTH 8
 #define HNAME_WIDTH 256
 

@@ -155,7 +155,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 struct HSpectrumFileStruct* spec_data = CreateSpectrumFileStruct();
                 if(spec_data != NULL)
                 {
-                    spec_data->fHeader.fVersionFlag[0] = SPECTRUM_HEADER_VERSION;
+                    spec_data->fHeader.fVersionFlag[0] = SPECTRUM_HEADER_VERSION[0];
                     spec_data->fHeader.fVersionFlag[1] = 'F'; //F indicates the spectrum data type is a float
                     spec_data->fHeader.fSidebandFlag[0] = tail->GetMetaData()->GetSidebandFlag() ;
                     spec_data->fHeader.fPolarizationFlag[0] = tail->GetMetaData()->GetPolarizationFlag();
@@ -187,7 +187,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 struct HNoisePowerFileStruct* power_data = CreateNoisePowerFileStruct();
                 if(power_data != NULL)
                 {
-                    power_data->fHeader.fVersionFlag[0] = NOISE_POWER_HEADER_VERSION;
+                    power_data->fHeader.fVersionFlag[0] = NOISE_POWER_HEADER_VERSION[0];
                     power_data->fHeader.fSidebandFlag[0] = tail->GetMetaData()->GetSidebandFlag() ;
                     power_data->fHeader.fPolarizationFlag[0] = tail->GetMetaData()->GetPolarizationFlag();
                     power_data->fHeader.fStartTime = sdata->acquistion_start_second;
