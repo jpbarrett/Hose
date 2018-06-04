@@ -39,14 +39,14 @@ int ReadNoisePowerFile(const char* filename, struct HNoisePowerFileStruct* power
         //write accumulation data
         for(i = 0; i < power->fHeader.fAccumulationLength; i++)
         {
-            struct HDataAccumulationStruct stat = power->fAccumulations[i];
-            fread( &(stat.sum_x), sizeof(double), 1, infile);
-            fread( &(stat.sum_x2), sizeof(double), 1, infile);
-            fread( &(stat.count), sizeof(double), 1, infile);
-            fread( &(stat.state_flag), sizeof(uint64_t), 1, infile);
-            fread( &(stat.start_index), sizeof(uint64_t), 1, infile);
-            fread( &(stat.stop_index), sizeof(uint64_t), 1, infile);
-            printf("accum: %d, %f, %f, %f", i, stat.sum_x, stat.sum_x2, stat.count );
+            struct HDataAccumulationStruct* stat = &(power->fAccumulations[i]);
+            fread( &(stat->sum_x), sizeof(double), 1, infile);
+            fread( &(stat->sum_x2), sizeof(double), 1, infile);
+            fread( &(stat->count), sizeof(double), 1, infile);
+            fread( &(stat->state_flag), sizeof(uint64_t), 1, infile);
+            fread( &(stat->start_index), sizeof(uint64_t), 1, infile);
+            fread( &(stat->stop_index), sizeof(uint64_t), 1, infile);
+            printf("accum: %d, %f, %f, %f \n", i, stat.sum_x, stat.sum_x2, stat.count );
         }
 
         fclose(infile);
