@@ -180,7 +180,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
 
     
                     //FOR DEBUGGING!!
-                    memset(spec_data->fRawSpectrumData, 0, (spec_data->fHeader.fSpectrumLength)*(spec_data->fHeader.fSpectrumDataTypeSize) );
+                //    memset(spec_data->fRawSpectrumData, 0, (spec_data->fHeader.fSpectrumLength)*(spec_data->fHeader.fSpectrumDataTypeSize) );
 
 
                     int ret_val = WriteSpectrumFile(spec_filename.c_str(), spec_data);
