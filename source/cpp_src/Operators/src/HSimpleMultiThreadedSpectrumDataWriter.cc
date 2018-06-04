@@ -175,14 +175,6 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                     //directly set the pointer to the raw data
                     spec_data->fRawSpectrumData = reinterpret_cast< char* >(sdata->spectrum);
 
-                    //debug print out the value of the first few samples:
-                    std::cout<<"spectrum data B = "<<sdata->spectrum[0]<<", "<<sdata->spectrum[1]<<", "<<sdata->spectrum[2]<<std::endl;
-
-    
-                    //FOR DEBUGGING!!
-                //    memset(spec_data->fRawSpectrumData, 0, (spec_data->fHeader.fSpectrumLength)*(spec_data->fHeader.fSpectrumDataTypeSize) );
-
-
                     int ret_val = WriteSpectrumFile(spec_filename.c_str(), spec_data);
                     if(ret_val != HSUCCESS){std::cout<<"file error!"<<std::endl;}
 

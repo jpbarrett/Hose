@@ -78,17 +78,8 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 sdata->spectrum_length = fSpectrumLength;
                 sdata->n_spectra = fNAverages;
 
-                std::cout<<"data length = "<<sdata->data_length<<std::endl;
-                std::cout<<"spectrum length = "<<sdata->spectrum_length<<std::endl;
-                std::cout<<"n_spectra = "<<sdata->n_spectra<<std::endl;
-
                 //call Juha's process_vector routine
-                //std::cout<<"CALLING FFT"<<std::endl;
                 process_vector_no_output(source->GetData(), sdata);
-
-                //debug print out the value of the first few samples:
-                std::cout<<"spectrum data A = "<<sdata->spectrum[0]<<", "<<sdata->spectrum[1]<<", "<<sdata->spectrum[2]<<std::endl;
-
 
                 //release the buffers
                 this->fSourceBufferHandler.ReleaseBufferToProducer(this->fSourceBufferPool, source);
