@@ -62,6 +62,9 @@ class HPeriodicPowerCalculator
                 uint64_t buffer_size = fBuffer->GetArrayDimension(0);
                 XBufferItemType* raw_data = fBuffer->GetData();
 
+                fBuffer->GetMetaData()->SetNoiseDiodeSwitchingFrequency(fSwitchingFrequency);
+                fBuffer->GetMetaData()->SetNoiseDiodeBlankingPeriod(fBlankingPeriod);
+
                 //determine which buffer samples are in the on/of periods
                 //(this assumes the noise diode switching and acquisition triggering was synced with the 1pps signal)
                 std::vector< std::pair<uint64_t, uint64_t> > on_intervals;

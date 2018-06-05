@@ -29,7 +29,9 @@ class HBufferMetaData
             fAcquisitionStartSecond(0),
             fSampleIndex(0),
             fSampleRate(0),
-            fValidLength(0)
+            fValidLength(0),
+            fNoiseDiodeSwitchingFrequency(0.0),
+            fNoiseDiodeBlankingPeriod(0.0)
         {};
 
         virtual ~HBufferMetaData(){};
@@ -55,12 +57,20 @@ class HBufferMetaData
         uint64_t GetValidLength() const {return fValidLength;};
         void SetValidLength(const uint64_t& len){fValidLength = len;};
 
+
         //sampling rate of the digitizer
         uint64_t GetSampleRate() const {return fSampleRate;};
         void SetSampleRate(const uint64_t& rate) {fSampleRate = rate;};
 
         //for now we are going to stuff the noise statistics data in here for estimating tsys w/ the noise diode
         //doing otherwise will require some re-architecting of the whole consumer/producer/buffer pool system
+
+        double GetNoiseDiodeSwitchingFrequency() const {return fNoiseDiodeSwitchingFrequency;};
+        void SetNoiseDiodeSwitchingFrequency(const double& freq){fNoiseDiodeSwitchingFrequency = freq;};
+
+        double GetNoiseDiodeBlankingPeriod() const {return fNoiseDiodeBlankingPeriod;};
+        void SetNoiseDiodeBlankingPeriod(const double& blank){fNoiseDiodeBlankingPeriod = blank;};
+
         void ClearAccumulation(){fAccumulations.clear();};
         void AppendAccumulation( struct HDataAccumulationStruct accum){ fAccumulations.push_back(accum); };
         void ExtendAccumulation( const std::vector< struct HDataAccumulationStruct >* accum_vec)
@@ -102,6 +112,9 @@ class HBufferMetaData
         uint64_t fSampleRate;
 
         uint64_t fValidLength;
+
+        double fNoiseDiodeSwitchingFrequency;
+        double fNoiseDiodeBlankingPeriod;
 
         //data statistics (for noise diode)
         std::vector< struct HDataAccumulationStruct > fAccumulations;

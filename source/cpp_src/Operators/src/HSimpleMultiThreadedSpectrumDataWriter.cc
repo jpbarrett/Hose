@@ -196,8 +196,8 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                     power_data->fHeader.fLeadingSampleIndex = sdata->leading_sample_index;
                     power_data->fHeader.fSampleLength = (sdata->n_spectra)*(sdata->spectrum_length);
                     power_data->fHeader.fAccumulationLength = tail->GetMetaData()->GetAccumulations()->size();
-                    power_data->fHeader.fSwitchingFrequency = 0.0;
-                    power_data->fHeader.fBlankingPeriod = 0.0;
+                    power_data->fHeader.fSwitchingFrequency =  tail->GetMetaData()->GetNoiseDiodeSwitchingFrequency();
+                    power_data->fHeader.fBlankingPeriod = tail->GetMetaData()->GetNoiseDiodeBlankingPeriod();
                     strcpy(power_data->fHeader.fExperimentName, fExperimentName.c_str() );
                     strcpy(power_data->fHeader.fSourceName, fSourceName.c_str() );
                     strcpy(power_data->fHeader.fScanName, fScanName.c_str() );
