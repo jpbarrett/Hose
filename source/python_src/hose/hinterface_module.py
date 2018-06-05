@@ -51,17 +51,17 @@ class hose_structure_base(ctypes.Structure):
 
 class spectrum_file_header(hose_structure_base):
     _fields_ = [
-    ('header_size', ctypes.c_size_t),
+    ('header_size', ctypes.c_uint64),
     ('version_flag', ctypes.c_char * 8),
     ('sideband_flag', ctypes.c_char * 8),
     ('polarization_flag', ctypes.c_char * 8),
-    ('start_time', ctypes.c_ulonglong),
-    ('sample_rate', ctypes.c_ulonglong),
-    ('leading_sample_index', ctypes.c_ulonglong),
-    ('sample_length', ctypes.c_size_t),
-    ('n_averages', ctypes.c_size_t),
-    ('spectrum_length', ctypes.c_size_t),
-    ('spectrum_data_type_size', ctypes.c_size_t),
+    ('start_time', ctypes.c_uint64),
+    ('sample_rate', ctypes.c_uint64),
+    ('leading_sample_index', ctypes.c_uint64),
+    ('sample_length', ctypes.c_uint64),
+    ('n_averages', ctypes.c_uint64),
+    ('spectrum_length', ctypes.c_uint64),
+    ('spectrum_data_type_size', ctypes.c_uint64),
     ('experiment_name', ctypes.c_char * 256),
     ('source_name', ctypes.c_char * 256),
     ('scan_name', ctypes.c_char * 256)
@@ -100,15 +100,15 @@ class spectrum_file_data(hose_structure_base):
 
 class noise_power_file_header(hose_structure_base):
     _fields_ = [
-    ('header_size', ctypes.c_size_t),
+    ('header_size', ctypes.c_uint64),
     ('version_flag', ctypes.c_char * 8),
     ('sideband_flag', ctypes.c_char * 8),
     ('polarization_flag', ctypes.c_char * 8),
-    ('start_time', ctypes.c_ulonglong),
-    ('sample_rate', ctypes.c_ulonglong),
-    ('leading_sample_index', ctypes.c_ulonglong),
-    ('sample_length', ctypes.c_size_t),
-    ('accumulation_length', ctypes.c_size_t),
+    ('start_time', ctypes.c_uint64),
+    ('sample_rate', ctypes.c_uint64),
+    ('leading_sample_index', ctypes.c_uint64),
+    ('sample_length', ctypes.c_uint64),
+    ('accumulation_length', ctypes.c_uint64),
     ('switching_frequency', ctypes.c_double),
     ('blanking_period', ctypes.c_double),
     ('experiment_name', ctypes.c_char * 256),
@@ -121,9 +121,9 @@ class accumulation_struct(hose_structure_base):
     ('sum', ctypes.c_double),
     ('sum_squared', ctypes.c_double),
     ('count', ctypes.c_double),
-    ('state_flag', ctypes.c_ulonglong),
-    ('start_index', ctypes.c_ulonglong),
-    ('stop_index', ctypes.c_ulonglong)
+    ('state_flag', ctypes.c_uint64),
+    ('start_index', ctypes.c_uint64),
+    ('stop_index', ctypes.c_uint64)
     ]
 
     def is_noise_diode_on():
