@@ -79,6 +79,7 @@ class spectrum_file_data(hose_structure_base):
 
     #access to the spectrum data should be done through this function
     #not from the raw_spectrum_data with is a raw char array
+    #TODO, make this more robust in the presence of other formats (check the version_flag!)
     def get_spectrum_data(self):
         #have to convert the raw char array to float
         fmt = '@'
