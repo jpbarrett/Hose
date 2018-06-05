@@ -91,6 +91,8 @@ class HBufferMetaData
                 fSampleIndex = rhs.fSampleIndex;
                 fSampleRate = rhs.fSampleRate;
                 fValidLength = rhs.fValidLength;
+                fNoiseDiodeSwitchingFrequency = rhs.fNoiseDiodeSwitchingFrequency;
+                fNoiseDiodeBlankingPeriod = rhs.fNoiseDiodeBlankingPeriod;
                 fAccumulations = rhs.fAccumulations;
             }
             return *this;
