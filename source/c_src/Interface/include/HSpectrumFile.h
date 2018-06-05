@@ -5,6 +5,8 @@
 #include "HSpectrumHeaderStruct.h"
 #include "HSpectrumFileStruct.h"
 
+static char const * const SPECTRUM_HEADER_VERSION = "001";
+
 extern struct HSpectrumFileStruct* CreateSpectrumFileStruct();
 extern void InitializeSpectrumFileStruct(struct HSpectrumFileStruct* spectrum);
 extern void ClearSpectrumFileStruct(struct HSpectrumFileStruct* spectrum);

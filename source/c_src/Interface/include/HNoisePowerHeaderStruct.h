@@ -14,14 +14,10 @@
 *Description:
 */
 
-#define NOISE_POWER_HEADER_VERSION_NUMBER 1
-#define NOISE_POWER_HEADER_VERSION STR2(NOISE_POWER_HEADER_VERSION_NUMBER)
-
-
 struct HNoisePowerHeaderStruct
 {
     size_t fHeaderSize; //size of the header struct in bytes
-    char fVersionFlag[HFLAG_WIDTH]; //version code
+    char fVersionFlag[HFLAG_WIDTH]; //version code (first three bytes for version, next two bytes assigned for data type format, remaining three bytes unassigned)
     char fSidebandFlag[HFLAG_WIDTH]; //flag indicating the sideband
     char fPolarizationFlag[HFLAG_WIDTH]; //flag indicating the polarization recorded
     uint64_t fStartTime; //acquisition start time in seconds since epoch

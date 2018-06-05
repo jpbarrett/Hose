@@ -5,6 +5,8 @@
 #include "HNoisePowerHeaderStruct.h"
 #include "HNoisePowerFileStruct.h"
 
+static char const * const NOISE_POWER_HEADER_VERSION = "001";
+
 extern struct HNoisePowerFileStruct* CreateNoisePowerFileStruct();
 extern void InitializeNoisePowerFileStruct(struct HNoisePowerFileStruct* spectrum);
 extern void ClearNoisePowerFileStruct(struct HNoisePowerFileStruct* spectrum);

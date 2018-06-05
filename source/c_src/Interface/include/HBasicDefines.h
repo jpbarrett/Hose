@@ -6,6 +6,7 @@
 
 #define HFLAG_WIDTH 8
 #define HNAME_WIDTH 256
+#define HVERSION_WIDTH 3
 
 #define HSUCCESS 0
 #define HMALLOC_ERROR 1
