@@ -17,6 +17,6 @@ if (PYTHON_EXECUTABLE)
 
     install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} install --prefix=${CMAKE_INSTALL_PREFIX} )")
 
-    add_subdirectory(Scripts)
+    add_subdirectory(scripts)
 
 endif (PYTHON_EXECUTABLE)
