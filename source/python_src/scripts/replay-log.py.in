@@ -1,0 +1,36 @@
+#!@PYTHON_EXECUTABLE@
+
+import datetime
+import optparse
+import time
+import string
+import sys
+import os
+
+################################################################################
+
+def main():
+    usage_text = '\n replay-log <delay (s)> <source-log-file> <destination-log-file>' \
+    parser = optparse.OptionParser(usage=usage_text)
+
+    (opts, args) = parser.parse_args()
+
+    delay, source, destination = args
+
+    if opts.verbosity > 0 :
+        print 'opts: ', opts
+        print 'args: ', args
+
+    #read the original log file line-by-line, wait the line delay time, then dump to the destination 
+    with open(source) as slog:  
+        line = slog.readline()
+        while line:
+            print line
+            time.sleep(delay)
+            line = fp.readline()
+
+################################################################################
+
+if __name__ == '__main__':          # official entry point
+    main()
+    sys.exit(0)
