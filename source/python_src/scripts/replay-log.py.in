@@ -10,24 +10,28 @@ import os
 ################################################################################
 
 def main():
-    usage_text = '\n replay-log <delay (s)> <source-log-file> <destination-log-file>' \
+    usage_text = '\n replay-log <delay (s)> <source-log-file> <destination-log-file>'
     parser = optparse.OptionParser(usage=usage_text)
 
     (opts, args) = parser.parse_args()
 
     delay, source, destination = args
+    fdelay = float(delay)
 
-    if opts.verbosity > 0 :
-        print 'opts: ', opts
-        print 'args: ', args
+    print 'opts: ', opts
+    print 'args: ', args
 
     #read the original log file line-by-line, wait the line delay time, then dump to the destination 
-    with open(source) as slog:  
+    with open(source) as slog, open(destination, "w") as olog :  
         line = slog.readline()
         while line:
-            print line
-            time.sleep(delay)
-            line = fp.readline()
+            olog.write(line)
+            olog.flush()
+            time.sleep(fdelay)
+            line = slog.readline()
+        slog.close()
+        olog.close()
+
 
 ################################################################################
 
