@@ -50,6 +50,7 @@ option( HOSE_USE_DIGITAL_RF "Build digital_rf I/O support" OFF )
 option( HOSE_USE_CUDA "Build CUDA support." OFF)
 option( HOSE_USE_ROOT "Build ROOT based utilities." OFF)
 option( HOSE_USE_ZEROMQ "Build client-server library" OFF )
+option( HOSE_USE_SPDLOG "Build logging support using spdlog library" ON)
 
 #convenience variables
 set(CSOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source/c_src)
