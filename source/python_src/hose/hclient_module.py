@@ -69,7 +69,7 @@ class hprompt(Cmd):
             self.interface.SendRecieveMessage(cmd_string)
             return 0
         elif( len(args) >=3 and "=on" in args ):
-            #this is a record=on command, determien the remaining arguments, if we
+            #this is a record=on command, determine the remaining arguments, if we
             #are not given any, we use the default experiment/source names, and construct
             #a default scan name based on the start time (now)
             tnow = datetime.utcnow()

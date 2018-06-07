@@ -5,6 +5,7 @@ macro( hose_module_paths PATH )
     set( ${PROJECT_NAME}_BIN_INSTALL_DIR ${BIN_INSTALL_DIR} )
     set( ${PROJECT_NAME}_CONFIG_INSTALL_DIR ${CONFIG_INSTALL_DIR}/${PATH} )
     set( ${PROJECT_NAME}_DATA_INSTALL_DIR ${DATA_INSTALL_DIR}/${PATH} )
+    set( ${PROJECT_NAME}_LOG_INSTALL_DIR ${DATA_INSTALL_DIR}/${PATH} )
     # set( ${PROJECT_NAME}_SHARE_INSTALL_DIR ${SHARE_INSTALL_DIR}/${PATH} )
 
     #don't need these defines at the moment
@@ -19,6 +20,8 @@ macro( hose_module_paths PATH )
     install(CODE "file(MAKE_DIRECTORY \"${${PROJECT_NAME}_CONFIG_INSTALL_DIR}\")" )
     add_definitions( -DDATA_INSTALL_DIR="${DATA_INSTALL_DIR}" )
     install(CODE "file(MAKE_DIRECTORY \"${DATA_INSTALL_DIR}\")" )
+    add_definitions( -DLOG_INSTALL_DIR="${LOG_INSTALL_DIR}" )
+    install(CODE "file(MAKE_DIRECTORY \"${LOG_INSTALL_DIR}\")" )
     #add_definitions( -D${PROJECT_NAME}_SHARE_INSTALL_DIR=${${PROJECT_NAME}_DATA_INSTALL_DIR} )
     # install(CODE "file(MAKE_DIRECTORY \"${${PROJECT_NAME}_SHARE_INSTALL_DIR}\")" )
 
