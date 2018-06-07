@@ -110,7 +110,7 @@ public:
     void set_level(level::level_enum log_level);
     level::level_enum level() const;
     const std::string &name() const;
-    void set_pattern(const std::string &pattern, pattern_time_type pattern_time = pattern_time_type::local);
+    void set_pattern(const std::string &pattern, pattern_time_type pattern_time = pattern_time_type::utc);
     void set_formatter(formatter_ptr msg_formatter);
 
     // automatically call flush() if message level >= log_level

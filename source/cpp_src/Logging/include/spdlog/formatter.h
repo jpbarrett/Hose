@@ -26,7 +26,7 @@ public:
 class pattern_formatter SPDLOG_FINAL : public formatter
 {
 public:
-    explicit pattern_formatter(const std::string &pattern, pattern_time_type pattern_time = pattern_time_type::local,
+    explicit pattern_formatter(const std::string &pattern, pattern_time_type pattern_time = pattern_time_type::utc,
         std::string eol = spdlog::details::os::default_eol);
     pattern_formatter(const pattern_formatter &) = delete;
     pattern_formatter &operator=(const pattern_formatter &) = delete;
