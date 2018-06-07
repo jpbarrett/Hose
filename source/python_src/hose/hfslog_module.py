@@ -29,11 +29,11 @@ class udc_status(object):
     def as_dict(self):
         point_value = {
                 "time": self.log_time.get_formatted_utc(),
-                "measurement": "udc_lo_frequency",
+                "measurement": "udc_status",
                 "fields": {
                     "frequency_MHz": self.frequency_MHz,
-                    "atten_h": self.atten_h,
-                    "atten_v": self.atten_v
+                    "attenuation_h": self.atten_h,
+                    "attenuation_v": self.atten_v
                 },
                 "tags": {
                     "udc": self.name
@@ -51,7 +51,7 @@ class data_status(object):
     def as_dict(self):
         point_value = {
                 "time": self.log_time.get_formatted_utc(),
-                "measurement": "data_valid",
+                "measurement": "data_validity",
                 "fields": {
                     "status": self.status_code
                 },

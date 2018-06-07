@@ -20,19 +20,15 @@ def main():
 
     (opts, args) = parser.parse_args()
 
-    host, logfilename = args
+    fshostname, logfilename = args
 
-    #database setup
-    dbhostname = "wfmark5-19"
-    dbport = 8086
-    dbuser = "GPUSpecOper"
-    dbpwd = "kLx14f2p"
-    dbname = "gpu-spec"
-    client = InfluxDBClient(dbhostname, dbport, dbuser, dbpwd, dbname)
+    #create interface and connect to (Westford) data base
+    dbinterface = wf_influxdb()
 
+    #set up ssh-tail command to grab field system log file lines
     #to change port edit ~/.ssh/config
     command = "tail -f " + logfilename
-    sshtail = subprocess.Popen(["ssh", "%s" % host, command], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    sshtail = subprocess.Popen(["ssh", "%s" % fshostname, command], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     stripper = hfslog_stripper()
 
@@ -42,9 +38,9 @@ def main():
         if line:
             result_valid = stripper.process_line(line)
             if result_valid is True:
-                json_body =  stripper.get_data_points()[0]
+                json_body = stripper.get_data_points()[0]
                 print("Write points: {0}".format(json_body))
-                client.write_points([json_body], protocol='json')
+                dbinterface.client.write_points([json_body], protocol='json')
         if sshtail.poll() is not None:
             run_loop = False
 
