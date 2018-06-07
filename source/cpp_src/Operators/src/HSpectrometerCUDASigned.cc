@@ -110,7 +110,7 @@ HSpectrometerCUDASigned::ProcessLoop()
                 //std::thread::id this_id = std::this_thread::get_id();
                 std::stringstream ss;
                 //ss << fOutputDirectory;
-                ss << DATA_INSTALL_DIR;
+                ss << STR2(DATA_INSTALL_DIR);
                 ss << "/";
                 ss << tail->GetMetaData()->GetAcquisitionStartSecond();
                 ss << "/";
