@@ -112,13 +112,13 @@ class hfslog_stripper(object):
             line_code = self.quick_cull(line)
             if line_code == 1:
                 #process UDC-C line
-                self.process_udc_status( self.extract_udcc_line(line) )
+                self.process_udc_status( self.extract_udcc_line( line.strip() ) )
                 return True
             elif line_code == 2:
-                self.process_data_status( self.extract_data_valid_line(line) )
+                self.process_data_status( self.extract_data_valid_line( line.strip() ) )
                 return True
             elif line_code == 3:
-                self.process_source_status( self.extract_source_line(line) )
+                self.process_source_status( self.extract_source_line( line.strip() ) )
                 return True
             else:
                 return False
