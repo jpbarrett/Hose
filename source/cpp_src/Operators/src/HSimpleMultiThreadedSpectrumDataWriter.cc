@@ -16,7 +16,7 @@ HSimpleMultiThreadedSpectrumDataWriter::HSimpleMultiThreadedSpectrumDataWriter()
     fScanName("unknown")
 {
     //if unassigned use default data dir
-    fBaseOutputDirectory = std::string(DATA_INSTALL_DIR);
+    fBaseOutputDirectory = std::string(STR2(DATA_INSTALL_DIR));
     // fBufferHandler.SetNAttempts(100);
     // fBufferHandler.SetSleepDurationNanoSeconds(0);
 };
@@ -37,9 +37,9 @@ void HSimpleMultiThreadedSpectrumDataWriter::InitializeOutputDirectory()
     struct stat sb;
     if( !(stat(fBaseOutputDirectory.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) ) )
     {
-        std::cout<<"Error base output directory: "<<fBaseOutputDirectory<<" does not exist! Using: "<< DATA_INSTALL_DIR <<std::endl;
+        std::cout<<"Error base output directory: "<<fBaseOutputDirectory<<" does not exist! Using: "<< STR2(DATA_INSTALL_DIR) <<std::endl;
         std::stringstream dss;
-        dss << DATA_INSTALL_DIR;
+        dss << STR2(DATA_INSTALL_DIR);
         fBaseOutputDirectory = dss.str();
     }
 

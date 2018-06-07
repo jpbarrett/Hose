@@ -16,6 +16,11 @@
 
 #include "spectrometer.h"
 
+extern "C" 
+{
+    #include "HBasicDefines.h"
+}
+
 
 namespace hose
 {

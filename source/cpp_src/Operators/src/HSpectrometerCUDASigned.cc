@@ -14,7 +14,7 @@ HSpectrometerCUDASigned::HSpectrometerCUDASigned():
     fForceTerminate(false),
     fSleepTime(1),
     fBufferPool(nullptr),
-    fOutputDirectory( DATA_INSTALL_DIR )
+    fOutputDirectory( STR2(DATA_INSTALL_DIR) )
 {
 
 }
