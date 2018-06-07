@@ -52,6 +52,10 @@ option( HOSE_USE_ROOT "Build ROOT based utilities." OFF)
 option( HOSE_USE_ZEROMQ "Build client-server library" OFF )
 option( HOSE_USE_SPDLOG "Build logging support using spdlog library" ON)
 
+if(HOSE_USE_SPDLOG)
+    hose_add_cxxflag(HOSE_USE_SPDLOG)
+endif(HOSE_USE_SPDLOG)
+
 #convenience variables
 set(CSOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source/c_src)
 set(CPPSOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source/cpp_src)

@@ -8,6 +8,10 @@ if(HOSE_USE_CUDA AND HOSE_USE_ZEROMQ AND HOSE_USE_PX14)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../CUDASpectrometer/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+    if(HOSE_USE_SPDLOG)
+        include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Logging/include)
+    endif(HOSE_USE_SPDLOG)
+
     set(HOSE_MAIN_LIBS HCore HInterface HDevices)
 
     include(FindZeroMQ)
