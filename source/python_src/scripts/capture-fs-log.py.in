@@ -8,6 +8,8 @@ import sys
 import os
 import subprocess
 
+from influxdb import InfluxDBClient
+
 from hose import *
 
 ################################################################################
@@ -19,6 +21,14 @@ def main():
     (opts, args) = parser.parse_args()
 
     host, logfilename = args
+
+    #database setup
+    dbhostname = "wfmark5-19"
+    dbport = 8086
+    dbuser = "GPUSpecOper"
+    dbpwd = "kLx14f2p"
+    dbname = "gpu-spec"
+    client = InfluxDBClient(dbhostname, dbport, dbuser, dbpwd, dbname)
 
     #to change port edit ~/.ssh/config
     command = "tail -f " + logfilename
@@ -32,7 +42,9 @@ def main():
         if line:
             result_valid = stripper.process_line(line)
             if result_valid is True:
-                print("data point: ", stripper.get_data_points()[0] )
+                json_body =  stripper.get_data_points()[0]
+                print("Write points: {0}".format(json_body))
+                #client.write_points(json_body)
         if sshtail.poll() is not None:
             run_loop = False
 
