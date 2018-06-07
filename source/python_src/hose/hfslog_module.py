@@ -201,23 +201,23 @@ class hfslog_stripper(object):
     def process_udc_status(self, udc):
         if udc.parse_valid is True:
             self.data_points = [ udc.as_dict() ]
-            #print( udc.as_dict() )
+            print("process:", udc.as_dict() )
         else:
-            #print("UDC parse error")
+            print("UDC parse error")
             self.data_points = []
 
     def process_data_status(self, data):
         if data.parse_valid is True:
             self.data_points = [ data.as_dict() ]
-            #print( data.as_dict() )
+            print("process:", data.as_dict() )
         else:
-            #print("Data validity parse error")
+            print("Data validity parse error")
             self.data_points = []
 
     def process_source_status(self, source):
         if source.parse_valid is True:
             self.data_points = [ source.as_dict() ]
-            #print( source.as_dict() )
+            print("process:", source.as_dict() )
         else:
-            #print("Source parse error")
+            print("Source parse error")
             self.data_points = []
