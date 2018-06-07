@@ -44,7 +44,7 @@ def main():
             if result_valid is True:
                 json_body =  stripper.get_data_points()[0]
                 print("Write points: {0}".format(json_body))
-                client.write_points([json_body])
+                client.write_points([json_body], protocol='json')
         if sshtail.poll() is not None:
             run_loop = False
 
