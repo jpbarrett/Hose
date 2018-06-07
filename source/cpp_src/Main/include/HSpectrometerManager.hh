@@ -130,7 +130,7 @@ class HSpectrometerManager: public HApplicationBackend
                     std::stringstream lfss;
                     lfss << STR2(LOG_INSTALL_DIR);
                     lfss << "/spec.log";
-                    spd::set_pattern("[%^+++%$] [%Y-%m-%dT%H:%M:%S.%fZ] [thread %t] %v", pattern_time_type::utc);
+                    spdlog::set_pattern("[%^+++%$] [%Y-%m-%dT%H:%M:%S.%fZ] [thread %t] %v", pattern_time_type::utc);
                     auto daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>(lfss.str().c_str(), 23, 59);
                     spdlog::async_logger logger("mylogger",  daily_sink, 8192); 
                     logger.info("hi");
