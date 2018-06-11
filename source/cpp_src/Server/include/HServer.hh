@@ -5,8 +5,14 @@
 #include <string>
 #include <iostream>
 #include <unistd.h>
+#include <sstream>
 
 #include <queue>
+
+extern "C" 
+{
+    #include "HBasicDefines.h"
+}
 
 
 #include "HStateStruct.hh"
