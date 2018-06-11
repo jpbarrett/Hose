@@ -141,7 +141,7 @@ class HSpectrometerManager: public HApplicationBackend
                     //globally register the loggers so they can be accessed using spdlog::get(logger_name)
                     //spdlog::register_logger(rotating_logger);
 
-                    // logger.info("hi");
+                    fLogger->info("Logger initialized");
                     // spdlog::drop_all(); 
                     // auto daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("logfile", 23, 59);
                     // // create synchronous  loggers
