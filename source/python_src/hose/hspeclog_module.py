@@ -51,7 +51,7 @@ class spectrometer_log_line(object):
         self.parse_valid = True
         if( self.line_key in line):
             args = line.split(";")
-            if len(args) == len(data_fields) + 1:
+            if len(args) == len(self.data_fields) + 1:
                 self.log_time.initialize_from_line(args[0])
                 for i in range(1, len(args)):
                     sub_args = args[i].split("=")
