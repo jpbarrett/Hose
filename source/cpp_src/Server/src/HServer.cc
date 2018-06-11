@@ -90,11 +90,12 @@ void HServer::Run()
 
             //idle until the application has processed the message
             unsigned int count = 0;
-            while(fMessageQueue.size() != 0 && count < 100)
+            do
             {
                 usleep(50);
                 count++;
             }
+            while(fMessageQueue.size() != 0 && count < 100);
 
             HStateStruct st = fAppBackend->GetCurrentState();
             //fomulate the appropriate reply, send back to client
