@@ -257,7 +257,7 @@ class HSpectrometerManager: public HApplicationBackend
                     nwtss << "n_writer_threads=";
                     nwtss << 1;
 
-                    std::string spectrometer_config = navess.str() + ", " + fftss.str() + ", " + nstss.str() + ", " + nwtss.str()
+                    std::string spectrometer_config = navess.str() + ", " + fftss.str() + ", " + nstss.str() + ", " + nwtss.str();
                     fConfigLogger->info( spectrometer_config.c_str() );
 
                     //noise diode configuration
@@ -269,8 +269,8 @@ class HSpectrometerManager: public HApplicationBackend
                     ndbpss << "noise_blanking_period=";
                     ndbpss << noise_diode_blanking_period;
 
-                    std::string noise_diode_config = ndsff.str() + ", " + ndbpss.str();
-                    fConfigLogger.info( noise_diode_config.c_str() );
+                    std::string noise_diode_config = ndsfss.str() + ", " + ndbpss.str();
+                    fConfigLogger->info( noise_diode_config.c_str() );
 
 
                     #endif
