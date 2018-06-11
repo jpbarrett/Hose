@@ -41,6 +41,23 @@ HServer::Initialize()
         std::exit(1);
     }
 
+    //create the logger
+    try
+    {
+        std::stringstream lfss;
+        lfss << STR2(LOG_INSTALL_DIR);
+        lfss << "/spectrometer_server.log";
+        std::string command_logger_name("server");
+        auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>( lfss.str().c_str(), 10*1024*1024, 100);
+        fLogger = std::make_shared<spdlog::logger>(command_logger_name.c_str(), rotating_sink);
+        fLogger->flush_on(spdlog::level::info); //make logger flush on every message
+        fLogger->info("Server logger initialized.");
+    }
+    catch (const spdlog::spdlog_ex& ex)
+    {
+        std::cout << "Server log initialization failed: " << ex.what() << std::endl;
+    }
+
 }
 
 
@@ -54,13 +71,22 @@ void HServer::Run()
         zmq::message_t request;
         fSocket->recv (&request);
         std::string request_data = std::string(static_cast<char*>( request.data() ), request.size() );
-        std::cout<<"got: "<<request_data<<std::endl;
+
+        std::stringstream log_msg;
+        log_msg <<"recieved: message="
+        log_msg << request_data;
+        fLogger->info( log_msg.str().c_str() );
 
         //check the requests validity
         if( fAppBackend->CheckRequest(request_data) )
         {
             //push it into the queue where it can be grabbed by the application
             fMessageQueue.push(request_data);
+
+            std::stringstream log_msg;
+            log_msg <<"client_request=valid, queue_size="
+            log_msg << fMessageQueue.size();
+            fLogger->info( log_msg.str().c_str() );
 
             //idle until the application has processed the message
             unsigned int count = 0;
@@ -76,10 +102,18 @@ void HServer::Run()
             if(count < 100 )
             {
                 reply_msg = st.status_message;
+                std::stringstream status_msg;
+                status_msg <<"server_reply=";
+                status_msg << reply_msg;
+                fLogger->info( status_msg.str().c_str() );
             }
             else
             {
                 reply_msg = std::string("timeout:") + st.status_message;
+                std::stringstream err_msg;
+                err_msg <<"client_error=";
+                err_msg << reply_msg;
+                fLogger->warn( err_msg.str().c_str() );
             }
             zmq::message_t reply( reply_msg.size() );
             memcpy( (void *) reply.data (), reply_msg.c_str(), reply_msg.size() );
@@ -87,6 +121,10 @@ void HServer::Run()
         }
         else
         {
+            std::stringstream log_msg;
+            log_msg <<"client_request=invalid"
+            fLogger->warn( log_msg.str().c_str() );
+
             //error, can't understand the message
             //Send reply back to client
             std::string error_msg("error: invalid request.");

@@ -13,6 +13,11 @@
 #include "HApplicationBackend.hh"
 
 
+#ifdef HOSE_USE_SPDLOG
+#include "spdlog/spdlog.h"
+#endif
+
+
 /*
 *File: HServer.hh
 *Class: HServer
@@ -54,6 +59,10 @@ class HServer
         HApplicationBackend* fAppBackend;
 
         std::queue< std::string > fMessageQueue;
+
+        //logger
+        std::shared_ptr<spdlog::logger> fStatusLogger;
+
 };
 
 }

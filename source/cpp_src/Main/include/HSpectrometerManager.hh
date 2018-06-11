@@ -128,14 +128,14 @@ class HSpectrometerManager: public HApplicationBackend
                 {
                     std::stringstream lfss;
                     lfss << STR2(LOG_INSTALL_DIR);
-                    lfss << "/spectrometer.log";
+                    lfss << "/spectrometer_status.log";
 
-                    std::string logger_name("spectrometer_logger");
+                    std::string status_logger_name("status");
     
                     std::cout<<"creating a log file: "<<lfss.str()<<std::endl;
-                    auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_st>( lfss.str().c_str(), 10*1024*1024, 5);
-                    fLogger = std::make_shared<spdlog::logger>(logger_name.c_str(), rotating_sink);
-                    fLogger->flush_on(spdlog::level::info); //make logger flush on every message
+                    auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>( lfss.str().c_str(), 10*1024*1024, 100);
+                    fStatusLogger = std::make_shared<spdlog::logger>(status_logger_name.c_str(), rotating_sink);
+                    fStatusLogger->flush_on(spdlog::level::info); //make logger flush on every message
 
                     //spdlog::set_formatter(std::make_shared<spdlog::pattern_formatter>("[%^+++%$] [%Y-%m-%dT%H:%M:%S.%fZ] [thread %t] %v", spdlog::pattern_time_type::utc)  );
                     //auto rotating_logger = spdlog::rotating_logger_mt("spectrometer_logger", lfss.str().c_str(), 10*1024*1024, 5);
@@ -143,7 +143,7 @@ class HSpectrometerManager: public HApplicationBackend
                     //globally register the loggers so they can be accessed using spdlog::get(logger_name)
                     //spdlog::register_logger(rotating_logger);
 
-                    fLogger->info("Logger initialized");
+                    fStatusLogger->info("Manager log initialized");
                     // spdlog::drop_all(); 
                     // auto daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("logfile", 23, 59);
                     // // create synchronous  loggers
@@ -158,7 +158,7 @@ class HSpectrometerManager: public HApplicationBackend
                 }
                 catch (const spdlog::spdlog_ex& ex)
                 {
-                    std::cout << "Log initialization failed: " << ex.what() << std::endl;
+                    std::cout << "Manager log initialization failed: " << ex.what() << std::endl;
                 }
 
 
@@ -260,8 +260,8 @@ class HSpectrometerManager: public HApplicationBackend
                                 ss << "recording=on, ";
                                 ss << "experiment_name=" << fExperimentName << ", ";
                                 ss << "source_name=" << fSourceName << ", ";
-                                ss << "scan_name=" << fScanName << ", ";
-                                fLogger->info( ss.str().c_str() );
+                                ss << "scan_name=" << fScanName;
+                                fStatusLogger->info( ss.str().c_str() );
                             }
                         }
                     }
@@ -357,7 +357,7 @@ class HSpectrometerManager: public HApplicationBackend
                             ss << "experiment_name=" << fExperimentName << ", ";
                             ss << "source_name=" << fSourceName << ", ";
                             ss << "scan_name=" << fScanName;
-                            fLogger->info( ss.str().c_str() );
+                            fStatusLogger->info( ss.str().c_str() );
                         }
                     break;
                     case RECORD_OFF:
@@ -371,7 +371,7 @@ class HSpectrometerManager: public HApplicationBackend
                             fRecordingState = IDLE;
                             std::stringstream ss;
                             ss << "recording=off";
-                            fLogger->info( ss.str().c_str() );
+                            fStatusLogger->info( ss.str().c_str() );
                         }
                     break;
                     case CONFIGURE_NEXT_RECORDING:
@@ -409,7 +409,7 @@ class HSpectrometerManager: public HApplicationBackend
                                         ss << "experiment_name=" << fExperimentName << ", ";
                                         ss << "source_name=" << fSourceName << ", ";
                                         ss << "scan_name=" << fScanName;
-                                        fLogger->info( ss.str().c_str() );
+                                        fStatusLogger->info( ss.str().c_str() );
                                         return;
                                     }
                                     else
@@ -757,7 +757,7 @@ class HSpectrometerManager: public HApplicationBackend
         std::string fCannedStopCommand;
 
         //logger
-        std::shared_ptr<spdlog::logger> fLogger;
+        std::shared_ptr<spdlog::logger> fStatusLogger;
 
 };
 
