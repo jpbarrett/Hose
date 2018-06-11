@@ -135,6 +135,7 @@ class HSpectrometerManager: public HApplicationBackend
                     std::cout<<"creating a log file: "<<lfss.str()<<std::endl;
                     auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_st>( lfss.str().c_str(), 10*1024*1024, 5);
                     fLogger = std::make_shared<spdlog::logger>(logger_name.c_str(), rotating_sink);
+                    fLogger->flush_on(spdlog::level::info); //make logger flush on every message
 
                     //spdlog::set_formatter(std::make_shared<spdlog::pattern_formatter>("[%^+++%$] [%Y-%m-%dT%H:%M:%S.%fZ] [thread %t] %v", spdlog::pattern_time_type::utc)  );
                     //auto rotating_logger = spdlog::rotating_logger_mt("spectrometer_logger", lfss.str().c_str(), 10*1024*1024, 5);
