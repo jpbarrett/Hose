@@ -20,7 +20,7 @@ class hclient(object):
             response = self.socket.recv()
         else:
             raise IOError("Timeout processing auth request")
-        print "Response from server: ", response
+        print "Server status: ", response
 
     def SendMessage(self, msg_string):
         print("Sending message: ", msg_string)
@@ -34,7 +34,7 @@ class hclient(object):
             response = self.socket.recv()
         else:
             raise IOError("Timeout processing auth request")
-        print "Response from server: ", response
+        print "Server status: ", response
         return '\0'
 
     def Shutdown(self):

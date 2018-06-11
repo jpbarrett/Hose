@@ -275,7 +275,7 @@ class HSpectrometerManager: public HApplicationBackend
                     }
 
                     //sleep for 5 microsecond
-                    usleep(5);
+                    //usleep(5);
 
                     // //sleep for 1 second
                     // sleep(1);
