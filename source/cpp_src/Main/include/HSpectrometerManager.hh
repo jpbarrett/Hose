@@ -126,15 +126,17 @@ class HSpectrometerManager: public HApplicationBackend
                 //create the loggers
                 try
                 {
-
                     std::stringstream lfss;
                     lfss << STR2(LOG_INSTALL_DIR);
-                    lfss << "/spec.log";
+                    lfss << "/spectrometer.log";
                     //spdlog::set_formatter(std::make_shared<spdlog::pattern_formatter>("[%^+++%$] [%Y-%m-%dT%H:%M:%S.%fZ] [thread %t] %v", spdlog::pattern_time_type::utc)  );
-                    auto daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>(lfss.str().c_str(), 23, 59);
-                    spdlog::async_logger logger("mylogger",  daily_sink, 8192); 
-                    logger.info("hi");
-                    spdlog::drop_all(); 
+                    auto rotating_logger = spd::rotating_logger_mt("status_logger", lfss.str().c_str(), 10*1024*1024, 5);
+                    spdlog::async_logger logger("status_logger", rotating_logger, 8192); 
+                    //globally register the loggers so they can be accessed using spdlog::get(logger_name)
+                    spdlog::register_logger(rotating_logger);
+
+                    // logger.info("hi");
+                    // spdlog::drop_all(); 
                     // auto daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("logfile", 23, 59);
                     // // create synchronous  loggers
                     // auto net_logger = std::make_shared<spdlog::logger>("net", daily_sink);
@@ -144,14 +146,12 @@ class HSpectrometerManager: public HApplicationBackend
                     // net_logger->set_level(spdlog::level::critical); // independent levels
                     // hw_logger->set_level(spdlog::level::debug);
                     //  
-                    // // globally register the loggers so so the can be accessed using spdlog::get(logger_name)
-                    // spdlog::register_logger(net_logger);
+
                 }
                 catch (const spdlog::spdlog_ex& ex)
                 {
                     std::cout << "Log initialization failed: " << ex.what() << std::endl;
                 }
-
 
 
                 std::cout<<"Initializing..."<<std::endl;
@@ -226,7 +226,7 @@ class HSpectrometerManager: public HApplicationBackend
 
                 fRecordingState = IDLE;
 
-                std::cout<<"Ready."<<std::endl;
+                spdlog::get("status_logger")->info("status=ready");
 
                 while(!fStop)
                 {
@@ -248,6 +248,12 @@ class HSpectrometerManager: public HApplicationBackend
                             {
                                 fRecordingState = RECORDING_UNTIL_TIME;
                                 fDigitizer->Acquire();
+                                std::stringstream ss;
+                                ss << "recording=on, ";
+                                ss << "experiment_name=" << fExperimentName << ", ";
+                                ss << "source_name=" << fSourceName << ", ";
+                                ss << "scan_name=" << fScanName << ", ";
+                                spdlog::get("status_logger")->info( ss.str().c_str() );
                             }
                         }
                     }
@@ -338,6 +344,12 @@ class HSpectrometerManager: public HApplicationBackend
                             //start recording immediately
                             fDigitizer->Acquire();
                             fRecordingState = RECORDING_UNTIL_OFF;
+                            std::stringstream ss;
+                            ss << "recording=on, ";
+                            ss << "experiment_name=" << fExperimentName << ", ";
+                            ss << "source_name=" << fSourceName << ", ";
+                            ss << "scan_name=" << fScanName <<;
+                            spdlog::get("status_logger")->info( ss.str().c_str() );
                         }
                     break;
                     case RECORD_OFF:
@@ -349,43 +361,52 @@ class HSpectrometerManager: public HApplicationBackend
                                 fDigitizer->StopAfterNextBuffer();
                             }
                             fRecordingState = IDLE;
+                            std::stringstream ss;
+                            ss << "recording=off";
+                            spdlog::get("status_logger")->info( ss.str().c_str() );
                         }
                     break;
                     case CONFIGURE_NEXT_RECORDING:
                         if(fRecordingState == IDLE )
                         {
-                            std::cout<<"configuring for timed recording"<<std::endl;
+                            // std::cout<<"configuring for timed recording"<<std::endl;
                             //configure writer
                             fExperimentName = tokens[2];
                             fSourceName = tokens[3];
                             fScanName = tokens[4];
                             ConfigureWriter();
                             bool success = ConvertStringToTime(tokens[5], fStartTime);
-                            std::cout<<"success flag = "<<success<<std::endl;
+                            // std::cout<<"success flag = "<<success<<std::endl;
                             uint64_t duration = ConvertStringToDuration(tokens[6]);
-                            std::cout<<"duration ="<<duration<<std::endl;
-                            std::cout<<"start time ="<<fStartTime<<std::endl;
+                            // std::cout<<"duration ="<<duration<<std::endl;
+                            // std::cout<<"start time ="<<fStartTime<<std::endl;
                             fEndTime = fStartTime + duration;
-                            std::cout<<"end time = "<<fEndTime<<std::endl;
+                            // std::cout<<"end time = "<<fEndTime<<std::endl;
 
                             if( (fStartTime < fEndTime) && success)
                             {
-                                std::cout<<"end is after start, ok"<<std::endl;
+                                // std::cout<<"end is after start, ok"<<std::endl;
                                 //check if the end time is after the current time
                                 if( DetermineTimeStateWRTNow(fEndTime) == TIME_AFTER )
                                 {
-                                    std::cout<<"end time is after now, ok"<<std::endl;
+                                    // std::cout<<"end time is after now, ok"<<std::endl;
                                     //check if the start time is before the current time
                                     if( DetermineTimeStateWRTNow(fStartTime) == TIME_BEFORE ||  DetermineTimeStateWRTNow(fStartTime) == TIME_PENDING )
                                     {
                                         std::cout<<"start time has passed, starting recording"<<std::endl;
                                         fRecordingState = RECORDING_UNTIL_TIME;
                                         fDigitizer->Acquire();
+                                        std::stringstream ss;
+                                        ss << "recording=on, ";
+                                        ss << "experiment_name=" << fExperimentName << ", ";
+                                        ss << "source_name=" << fSourceName << ", ";
+                                        ss << "scan_name=" << fScanName << ", ";
+                                        spdlog::get("status_logger")->info( ss.str().c_str() );
                                         return;
                                     }
                                     else
                                     {
-                                        std::cout<<"waiting for start time"<<std::endl;
+                                        //std::cout<<"waiting for start time"<<std::endl;
                                         //start time has not passed, so we are pending until then
                                         fRecordingState = PENDING;
                                         return;
