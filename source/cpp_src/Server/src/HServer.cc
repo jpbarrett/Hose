@@ -73,7 +73,7 @@ void HServer::Run()
         std::string request_data = std::string(static_cast<char*>( request.data() ), request.size() );
 
         std::stringstream log_msg;
-        log_msg <<"recieved: message="
+        log_msg <<"recieved: message=";
         log_msg << request_data;
         fLogger->info( log_msg.str().c_str() );
 
@@ -84,7 +84,7 @@ void HServer::Run()
             fMessageQueue.push(request_data);
 
             std::stringstream log_msg;
-            log_msg <<"client_request=valid, queue_size="
+            log_msg <<"client_request=valid, queue_size=";
             log_msg << fMessageQueue.size();
             fLogger->info( log_msg.str().c_str() );
 
@@ -122,7 +122,7 @@ void HServer::Run()
         else
         {
             std::stringstream log_msg;
-            log_msg <<"client_request=invalid"
+            log_msg <<"client_request=invalid";
             fLogger->warn( log_msg.str().c_str() );
 
             //error, can't understand the message

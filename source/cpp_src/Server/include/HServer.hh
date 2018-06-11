@@ -67,7 +67,7 @@ class HServer
         std::queue< std::string > fMessageQueue;
 
         //logger
-        std::shared_ptr<spdlog::logger> fStatusLogger;
+        std::shared_ptr<spdlog::logger> fLogger;
 
 };
 
