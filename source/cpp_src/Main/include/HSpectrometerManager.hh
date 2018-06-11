@@ -131,11 +131,14 @@ class HSpectrometerManager: public HApplicationBackend
                     lfss << "/spectrometer_status.log";
 
                     std::string status_logger_name("status");
-    
+                    std::string config_logger_name("config");    
+
                     std::cout<<"creating a log file: "<<lfss.str()<<std::endl;
                     auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>( lfss.str().c_str(), 10*1024*1024, 100);
                     fStatusLogger = std::make_shared<spdlog::logger>(status_logger_name.c_str(), rotating_sink);
+                    fConfigLogger = std::make_shared<spdlog::logger>(config_logger_name.c_str(), rotating_sink);
                     fStatusLogger->flush_on(spdlog::level::info); //make logger flush on every message
+                    fConfigLogger->flush_on(spdlog::level::info); //make logger flush on every message
 
                     //spdlog::set_formatter(std::make_shared<spdlog::pattern_formatter>("[%^+++%$] [%Y-%m-%dT%H:%M:%S.%fZ] [thread %t] %v", spdlog::pattern_time_type::utc)  );
                     //auto rotating_logger = spdlog::rotating_logger_mt("spectrometer_logger", lfss.str().c_str(), 10*1024*1024, 5);
@@ -163,6 +166,8 @@ class HSpectrometerManager: public HApplicationBackend
 
 
                 std::cout<<"Initializing..."<<std::endl;
+                fStatusLogger->info("Initializing.");
+
                 //create command server
                 fServer = new HServer(fIP, fPort);
                 fServer->SetApplicationBackend(this);
@@ -172,6 +177,11 @@ class HSpectrometerManager: public HApplicationBackend
                 fDigitizer = new HPX14Digitizer();
                 fDigitizer->SetNThreads(fNDigitizerThreads);
                 bool digitizer_init_success = fDigitizer->Initialize();
+
+                std::stringstream ndtss;
+                ndtss << "n_digitizer_threads=";
+                ndtss << fNDigitizerThreads;
+                fConfigLogger->info( ndtss.str().c_str() );
 
                 if(digitizer_init_success)
                 {
@@ -184,6 +194,7 @@ class HSpectrometerManager: public HApplicationBackend
                     //TODO fill these in with real values!
                     fDigitizer->SetSidebandFlag('U');
                     fDigitizer->SetPolarizationFlag('X');
+
 
                     //create spectrometer data pool
                     fSpectrometerBufferAllocator = new HBufferAllocatorSpectrometerDataCUDA<spectrometer_data>();
@@ -198,13 +209,63 @@ class HSpectrometerManager: public HApplicationBackend
                     fSpectrometer->SetSourceBufferPool(fDigitizerSourcePool);
                     fSpectrometer->SetSinkBufferPool(fSpectrometerSinkPool);
                     fSpectrometer->SetSamplingFrequency( fDigitizer->GetSamplingFrequency() );
-                    fSpectrometer->SetSwitchingFrequency( 80.0 );
-                    fSpectrometer->SetBlankingPeriod( 20.0*(1.0/fDigitizer->GetSamplingFrequency()) );
+
+                    double noise_diode_switching_freq = 80.0;
+                    double noise_diode_blanking_period = 20.0*(1.0/fDigitizer->GetSamplingFrequency());
+
+                    fSpectrometer->SetSwitchingFrequency( noise_diode_switching_freq );
+                    fSpectrometer->SetBlankingPeriod( noise_diode_blanking_period );
 
                     //file writing consumer to drain the spectrum data buffers
                     fWriter = new HSimpleMultiThreadedSpectrumDataWriter();
                     fWriter->SetBufferPool(fSpectrometerSinkPool);
                     fWriter->SetNThreads(1);
+
+
+                    std::stringstream sbfss;
+                    sbfss << "sideband=";
+                    sbfss << fDigitizer->GetSidebandFlag();
+                    fConfigLogger->info( sbfss.str().c_str() );
+
+                    std::stringstream pfss;
+                    pfss << "polarization=";
+                    pfss << fDigitizer->GetPolarizationFlag();
+                    fConfigLogger->info( pfss.str().c_str() );
+
+                    std::stringstream navess;
+                    navess << "n_averages=";
+                    navess << fNSpectrumAverages;
+                    fConfigLogger->info( navess.str().c_str() );
+
+                    std::stringstream fftss;
+                    fftss << "fft_size=";
+                    fftss << fFFTSize;
+                    fConfigLogger->info( fftss.str().c_str() );
+
+                    std::stringstream nstss;
+                    nstss << "n_spectrometer_threads=";
+                    nstss << fNSpectrometerThreads;
+                    fConfigLogger->info( nstss.str().c_str() );
+
+                    std::stringstream sfss;
+                    sfss << "sampling_frequency_Hz=";
+                    sfss << fDigitizer->GetSamplingFrequency();
+                    fConfigLogger->info( sfss.str().c_str() );
+
+                    std::stringstream ndsfss;
+                    ndsfss << "noise_diode_switching_frequency_Hz=";
+                    ndsfss << noise_diode_switching_freq
+                    fConfigLogger->info( ndsfss.str().c_str() );
+
+                    std::stringstream ndbpss;
+                    ndbpss << "noise_blanking_period=";
+                    ndbpss << noise_diode_blanking_period
+                    fConfigLogger->info( ndbpss.str().c_str() );
+
+                    std::stringstream nwtss;
+                    nwtss << "n_writer_threads=";
+                    nwtss << 1;
+                    fConfigLogger->info( nwtss.str().c_str() );
 
                     fInitialized = true;
                 }
@@ -235,6 +296,7 @@ class HSpectrometerManager: public HApplicationBackend
                 fRecordingState = IDLE;
     
                 std::cout<<"Ready."<<std::endl;
+                fStatusLogger->info("Ready.");
 
                 while(!fStop)
                 {
@@ -758,6 +820,7 @@ class HSpectrometerManager: public HApplicationBackend
 
         //logger
         std::shared_ptr<spdlog::logger> fStatusLogger;
+        std::shared_ptr<spdlog::logger> fConfigLogger;
 
 };
 
