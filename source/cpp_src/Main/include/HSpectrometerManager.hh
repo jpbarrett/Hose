@@ -124,11 +124,12 @@ class HSpectrometerManager: public HApplicationBackend
             if(!fInitialized)
             {
                 //create the loggers
+                #ifdef HOSE_USE_SPDLOG
                 try
                 {
                     std::stringstream lfss;
                     lfss << STR2(LOG_INSTALL_DIR);
-                    lfss << "/spectrometer_status.log";
+                    lfss << "/status.log";
 
                     std::string status_logger_name("status");
                     std::string config_logger_name("config");    
@@ -164,9 +165,11 @@ class HSpectrometerManager: public HApplicationBackend
                     std::cout << "Manager log initialization failed: " << ex.what() << std::endl;
                 }
 
+                fStatusLogger->info("Initializing.");
+                #endif
 
                 std::cout<<"Initializing..."<<std::endl;
-                fStatusLogger->info("Initializing.");
+
 
                 //create command server
                 fServer = new HServer(fIP, fPort);
@@ -177,11 +180,6 @@ class HSpectrometerManager: public HApplicationBackend
                 fDigitizer = new HPX14Digitizer();
                 fDigitizer->SetNThreads(fNDigitizerThreads);
                 bool digitizer_init_success = fDigitizer->Initialize();
-
-                std::stringstream ndtss;
-                ndtss << "n_digitizer_threads=";
-                ndtss << fNDigitizerThreads;
-                fConfigLogger->info( ndtss.str().c_str() );
 
                 if(digitizer_init_success)
                 {
@@ -220,6 +218,12 @@ class HSpectrometerManager: public HApplicationBackend
                     fWriter->SetBufferPool(fSpectrometerSinkPool);
                     fWriter->SetNThreads(1);
 
+                    #ifdef HOSE_USE_SPDLOG
+
+                    std::stringstream ndtss;
+                    ndtss << "n_digitizer_threads=";
+                    ndtss << fNDigitizerThreads;
+                    fConfigLogger->info( ndtss.str().c_str() );
 
                     std::stringstream sbfss;
                     sbfss << "sideband=";
@@ -266,6 +270,8 @@ class HSpectrometerManager: public HApplicationBackend
                     nwtss << 1;
                     fConfigLogger->info( nwtss.str().c_str() );
 
+                    #endif
+
                     fInitialized = true;
                 }
             }
@@ -295,7 +301,10 @@ class HSpectrometerManager: public HApplicationBackend
                 fRecordingState = IDLE;
     
                 std::cout<<"Ready."<<std::endl;
+
+                #ifdef HOSE_USE_SPDLOG
                 fStatusLogger->info("Ready.");
+                #endif
 
                 while(!fStop)
                 {
@@ -317,12 +326,14 @@ class HSpectrometerManager: public HApplicationBackend
                             {
                                 fRecordingState = RECORDING_UNTIL_TIME;
                                 fDigitizer->Acquire();
+                                #ifdef HOSE_USE_SPDLOG
                                 std::stringstream ss;
                                 ss << "recording=on, ";
                                 ss << "experiment_name=" << fExperimentName << ", ";
                                 ss << "source_name=" << fSourceName << ", ";
                                 ss << "scan_name=" << fScanName;
                                 fStatusLogger->info( ss.str().c_str() );
+                                #endif
                             }
                         }
                     }
@@ -413,12 +424,14 @@ class HSpectrometerManager: public HApplicationBackend
                             //start recording immediately
                             fDigitizer->Acquire();
                             fRecordingState = RECORDING_UNTIL_OFF;
+                            #ifdef HOSE_USE_SPDLOG
                             std::stringstream ss;
                             ss << "recording=on, ";
                             ss << "experiment_name=" << fExperimentName << ", ";
                             ss << "source_name=" << fSourceName << ", ";
                             ss << "scan_name=" << fScanName;
                             fStatusLogger->info( ss.str().c_str() );
+                            #endif
                         }
                     break;
                     case RECORD_OFF:
@@ -430,9 +443,11 @@ class HSpectrometerManager: public HApplicationBackend
                                 fDigitizer->StopAfterNextBuffer();
                             }
                             fRecordingState = IDLE;
+                            #ifdef HOSE_USE_SPDLOG
                             std::stringstream ss;
                             ss << "recording=off";
                             fStatusLogger->info( ss.str().c_str() );
+                            #endif
                         }
                     break;
                     case CONFIGURE_NEXT_RECORDING:
@@ -465,12 +480,14 @@ class HSpectrometerManager: public HApplicationBackend
                                         std::cout<<"start time has passed, starting recording"<<std::endl;
                                         fRecordingState = RECORDING_UNTIL_TIME;
                                         fDigitizer->Acquire();
+                                        #ifdef HOSE_USE_SPDLOG
                                         std::stringstream ss;
                                         ss << "recording=on, ";
                                         ss << "experiment_name=" << fExperimentName << ", ";
                                         ss << "source_name=" << fSourceName << ", ";
                                         ss << "scan_name=" << fScanName;
                                         fStatusLogger->info( ss.str().c_str() );
+                                        #endif
                                         return;
                                     }
                                     else
@@ -818,9 +835,10 @@ class HSpectrometerManager: public HApplicationBackend
         std::string fCannedStopCommand;
 
         //logger
+        #ifdef HOSE_USE_SPDLOG
         std::shared_ptr<spdlog::logger> fStatusLogger;
         std::shared_ptr<spdlog::logger> fConfigLogger;
-
+        #endif
 };
 
 }

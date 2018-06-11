@@ -67,8 +67,9 @@ class HServer
         std::queue< std::string > fMessageQueue;
 
         //logger
+        #ifdef HOSE_USE_SPDLOG
         std::shared_ptr<spdlog::logger> fLogger;
-
+        #endif
 };
 
 }
