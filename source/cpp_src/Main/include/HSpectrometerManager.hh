@@ -331,6 +331,7 @@ class HSpectrometerManager: public HApplicationBackend
                                 fDigitizer->Acquire();
                                 #ifdef HOSE_USE_SPDLOG
                                 std::stringstream ss;
+                                ss << "recording_status; ";
                                 ss << "recording=on; ";
                                 ss << "experiment_name=" << fExperimentName << "; ";
                                 ss << "source_name=" << fSourceName << "; ";
@@ -429,6 +430,7 @@ class HSpectrometerManager: public HApplicationBackend
                             fRecordingState = RECORDING_UNTIL_OFF;
                             #ifdef HOSE_USE_SPDLOG
                             std::stringstream ss;
+                            ss << "recording_status; ";
                             ss << "recording=on; ";
                             ss << "experiment_name=" << fExperimentName << "; ";
                             ss << "source_name=" << fSourceName << "; ";
@@ -448,7 +450,11 @@ class HSpectrometerManager: public HApplicationBackend
                             fRecordingState = IDLE;
                             #ifdef HOSE_USE_SPDLOG
                             std::stringstream ss;
-                            ss << "recording=off";
+                            ss << "recording_status; ";
+                            ss << "recording=off; ";
+                            ss << "experiment_name=" << fExperimentName << "; ";
+                            ss << "source_name=" << fSourceName << "; ";
+                            ss << "scan_name=" << fScanName;
                             fStatusLogger->info( ss.str().c_str() );
                             #endif
                         }
@@ -485,6 +491,7 @@ class HSpectrometerManager: public HApplicationBackend
                                         fDigitizer->Acquire();
                                         #ifdef HOSE_USE_SPDLOG
                                         std::stringstream ss;
+                                        ss << "recording_status; ";
                                         ss << "recording=on; ";
                                         ss << "experiment_name=" << fExperimentName << "; ";
                                         ss << "source_name=" << fSourceName << "; ";
