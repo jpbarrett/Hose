@@ -753,7 +753,7 @@ class HSpectrometerManager: public HApplicationBackend
         std::string fCannedStopCommand;
 
         //logger
-        spdlog::logger* fLogger;
+        std::shared_ptr<spdlog::logger> fLogger;
 
 };
 
