@@ -237,7 +237,7 @@ class HSpectrometerManager: public HApplicationBackend
                     sfss << "sampling_frequency_Hz=";
                     sfss << fDigitizer->GetSamplingFrequency();
 
-                    std::string digitizer_config = ndtss.str() + ", " + sbfss.str() + ", " + pfss.str() + ", " + sfss.str();
+                    std::string digitizer_config = "digitizer_config; " + ndtss.str() + "; " + sbfss.str() + "; " + pfss.str() + "; " + sfss.str();
                     fConfigLogger->info( digitizer_config.c_str() );
 
                     //spectrometer configuration line
@@ -257,7 +257,7 @@ class HSpectrometerManager: public HApplicationBackend
                     nwtss << "n_writer_threads=";
                     nwtss << 1;
 
-                    std::string spectrometer_config = navess.str() + ", " + fftss.str() + ", " + nstss.str() + ", " + nwtss.str();
+                    std::string spectrometer_config = "spectrometer_config; " navess.str() + "; " + fftss.str() + "; " + nstss.str() + "; " + nwtss.str();
                     fConfigLogger->info( spectrometer_config.c_str() );
 
                     //noise diode configuration
@@ -269,7 +269,7 @@ class HSpectrometerManager: public HApplicationBackend
                     ndbpss << "noise_blanking_period=";
                     ndbpss << noise_diode_blanking_period;
 
-                    std::string noise_diode_config = ndsfss.str() + ", " + ndbpss.str();
+                    std::string noise_diode_config = "noise_diode_config; " + ndsfss.str() + "; " + ndbpss.str();
                     fConfigLogger->info( noise_diode_config.c_str() );
 
 
@@ -331,9 +331,9 @@ class HSpectrometerManager: public HApplicationBackend
                                 fDigitizer->Acquire();
                                 #ifdef HOSE_USE_SPDLOG
                                 std::stringstream ss;
-                                ss << "recording=on, ";
-                                ss << "experiment_name=" << fExperimentName << ", ";
-                                ss << "source_name=" << fSourceName << ", ";
+                                ss << "recording=on; ";
+                                ss << "experiment_name=" << fExperimentName << "; ";
+                                ss << "source_name=" << fSourceName << "; ";
                                 ss << "scan_name=" << fScanName;
                                 fStatusLogger->info( ss.str().c_str() );
                                 #endif
@@ -429,9 +429,9 @@ class HSpectrometerManager: public HApplicationBackend
                             fRecordingState = RECORDING_UNTIL_OFF;
                             #ifdef HOSE_USE_SPDLOG
                             std::stringstream ss;
-                            ss << "recording=on, ";
-                            ss << "experiment_name=" << fExperimentName << ", ";
-                            ss << "source_name=" << fSourceName << ", ";
+                            ss << "recording=on; ";
+                            ss << "experiment_name=" << fExperimentName << "; ";
+                            ss << "source_name=" << fSourceName << "; ";
                             ss << "scan_name=" << fScanName;
                             fStatusLogger->info( ss.str().c_str() );
                             #endif
@@ -485,9 +485,9 @@ class HSpectrometerManager: public HApplicationBackend
                                         fDigitizer->Acquire();
                                         #ifdef HOSE_USE_SPDLOG
                                         std::stringstream ss;
-                                        ss << "recording=on, ";
-                                        ss << "experiment_name=" << fExperimentName << ", ";
-                                        ss << "source_name=" << fSourceName << ", ";
+                                        ss << "recording=on; ";
+                                        ss << "experiment_name=" << fExperimentName << "; ";
+                                        ss << "source_name=" << fSourceName << "; ";
                                         ss << "scan_name=" << fScanName;
                                         fStatusLogger->info( ss.str().c_str() );
                                         #endif
