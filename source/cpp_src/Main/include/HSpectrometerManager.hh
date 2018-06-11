@@ -129,11 +129,15 @@ class HSpectrometerManager: public HApplicationBackend
                     std::stringstream lfss;
                     lfss << STR2(LOG_INSTALL_DIR);
                     lfss << "/spectrometer.log";
+
+                    auto rotating_sink = make_shared<spdlog::sinks::rotating_file_sink_mt> (lfss.str().c_str(), "spectrometer_log", 10*1024*1024, 5);
+                    fLogger = make_shared<spdlog::logger>(name, rotating_sink);
+
                     //spdlog::set_formatter(std::make_shared<spdlog::pattern_formatter>("[%^+++%$] [%Y-%m-%dT%H:%M:%S.%fZ] [thread %t] %v", spdlog::pattern_time_type::utc)  );
-                    auto rotating_logger = spdlog::rotating_logger_mt("spectrometer_logger", lfss.str().c_str(), 10*1024*1024, 5);
+                    //auto rotating_logger = spdlog::rotating_logger_mt("spectrometer_logger", lfss.str().c_str(), 10*1024*1024, 5);
                     //spdlog::async_logger logger("spectrometer_logger", rotating_logger, 8192); 
                     //globally register the loggers so they can be accessed using spdlog::get(logger_name)
-                    spdlog::register_logger(rotating_logger);
+                    //spdlog::register_logger(rotating_logger);
 
                     // logger.info("hi");
                     // spdlog::drop_all(); 
@@ -253,7 +257,7 @@ class HSpectrometerManager: public HApplicationBackend
                                 ss << "experiment_name=" << fExperimentName << ", ";
                                 ss << "source_name=" << fSourceName << ", ";
                                 ss << "scan_name=" << fScanName << ", ";
-                                spdlog::get("spectrometer_logger")->info( ss.str().c_str() );
+                                fLogger->info( ss.str().c_str() );
                             }
                         }
                     }
@@ -349,7 +353,7 @@ class HSpectrometerManager: public HApplicationBackend
                             ss << "experiment_name=" << fExperimentName << ", ";
                             ss << "source_name=" << fSourceName << ", ";
                             ss << "scan_name=" << fScanName;
-                            spdlog::get("spectrometer_logger")->info( ss.str().c_str() );
+                            fLogger->info( ss.str().c_str() );
                         }
                     break;
                     case RECORD_OFF:
@@ -363,7 +367,7 @@ class HSpectrometerManager: public HApplicationBackend
                             fRecordingState = IDLE;
                             std::stringstream ss;
                             ss << "recording=off";
-                            spdlog::get("spectrometer_logger")->info( ss.str().c_str() );
+                            fLogger->info( ss.str().c_str() );
                         }
                     break;
                     case CONFIGURE_NEXT_RECORDING:
@@ -401,7 +405,7 @@ class HSpectrometerManager: public HApplicationBackend
                                         ss << "experiment_name=" << fExperimentName << ", ";
                                         ss << "source_name=" << fSourceName << ", ";
                                         ss << "scan_name=" << fScanName;
-                                        spdlog::get("spectrometer_logger")->info( ss.str().c_str() );
+                                        fLogger->info( ss.str().c_str() );
                                         return;
                                     }
                                     else
@@ -747,6 +751,9 @@ class HSpectrometerManager: public HApplicationBackend
         HBufferPool< HPX14Digitizer::sample_type >* fDigitizerSourcePool;
         HBufferPool< spectrometer_data >* fSpectrometerSinkPool;
         std::string fCannedStopCommand;
+
+        //logger
+        spdlog::logger* fLogger;
 
 };
 
