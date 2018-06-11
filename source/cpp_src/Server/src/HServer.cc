@@ -51,7 +51,7 @@ HServer::Initialize()
         auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>( lfss.str().c_str(), 10*1024*1024, 100);
         fLogger = std::make_shared<spdlog::logger>(command_logger_name.c_str(), rotating_sink);
         fLogger->flush_on(spdlog::level::info); //make logger flush on every message
-        fLogger->info("Server log initialized.");
+        fLogger->info("$$$ New session, server log initialized. $$$");
     }
     catch (const spdlog::spdlog_ex& ex)
     {

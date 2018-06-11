@@ -96,17 +96,18 @@ class hprompt(Cmd):
                     if( len(arg_list[3]) >= 1 ):
                         scan_name = arg_list[3]
                     cmd_string += ":" + exp_name + ":" + src_name + ":" + scan_name
-                    if( len(arg_list) == 6): # and len(arg_list[4]) == 13 and arg_list[4].isdigit() and arg_list[5].isdigit() ):]
+                    if( len(arg_list) == 6): 
                         start_time = arg_list[4]
                         duration = arg_list[5]
-                        st_year = int(start_time[0:4])
-                        st_day = int(start_time[4:7])
-                        st_hour = int(start_time[7:9])
-                        st_min = int(start_time[9:11])
-                        st_sec = int(start_time[11:13])
-                        if self.check_time_range(st_year, st_day, st_hour, st_min, st_sec ):
-                            cmd_string += ":" + start_time + ":" + duration
-                    self.interface.SendRecieveMessage(cmd_string)
+                        if len(arg_list[4]) == 13 and arg_list[4].isdigit() and arg_list[5].isdigit():
+                            st_year = int(start_time[0:4])
+                            st_day = int(start_time[4:7])
+                            st_hour = int(start_time[7:9])
+                            st_min = int(start_time[9:11])
+                            st_sec = int(start_time[11:13])
+                            if self.check_time_range(st_year, st_day, st_hour, st_min, st_sec ):
+                                cmd_string += ":" + start_time + ":" + duration
+                                self.interface.SendRecieveMessage(cmd_string)
                     return 0
                 else:
                     return 1 #error parsing record command
