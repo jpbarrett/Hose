@@ -253,12 +253,12 @@ class HSpectrometerManager: public HApplicationBackend
 
                     std::stringstream ndsfss;
                     ndsfss << "noise_diode_switching_frequency_Hz=";
-                    ndsfss << noise_diode_switching_freq
+                    ndsfss << noise_diode_switching_freq;
                     fConfigLogger->info( ndsfss.str().c_str() );
 
                     std::stringstream ndbpss;
                     ndbpss << "noise_blanking_period=";
-                    ndbpss << noise_diode_blanking_period
+                    ndbpss << noise_diode_blanking_period;
                     fConfigLogger->info( ndbpss.str().c_str() );
 
                     std::stringstream nwtss;
