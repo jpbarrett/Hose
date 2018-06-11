@@ -348,7 +348,7 @@ class HSpectrometerManager: public HApplicationBackend
                             ss << "recording=on, ";
                             ss << "experiment_name=" << fExperimentName << ", ";
                             ss << "source_name=" << fSourceName << ", ";
-                            ss << "scan_name=" << fScanName <<;
+                            ss << "scan_name=" << fScanName;
                             spdlog::get("status_logger")->info( ss.str().c_str() );
                         }
                     break;
@@ -400,7 +400,7 @@ class HSpectrometerManager: public HApplicationBackend
                                         ss << "recording=on, ";
                                         ss << "experiment_name=" << fExperimentName << ", ";
                                         ss << "source_name=" << fSourceName << ", ";
-                                        ss << "scan_name=" << fScanName << ", ";
+                                        ss << "scan_name=" << fScanName;
                                         spdlog::get("status_logger")->info( ss.str().c_str() );
                                         return;
                                     }
