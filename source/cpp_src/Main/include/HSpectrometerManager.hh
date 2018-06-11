@@ -220,55 +220,58 @@ class HSpectrometerManager: public HApplicationBackend
 
                     #ifdef HOSE_USE_SPDLOG
 
+                    //digitizer configuration info
                     std::stringstream ndtss;
                     ndtss << "n_digitizer_threads=";
                     ndtss << fNDigitizerThreads;
-                    fConfigLogger->info( ndtss.str().c_str() );
 
                     std::stringstream sbfss;
                     sbfss << "sideband=";
                     sbfss << 'U';
-                    fConfigLogger->info( sbfss.str().c_str() );
 
                     std::stringstream pfss;
                     pfss << "polarization=";
                     pfss << 'X';
-                    fConfigLogger->info( pfss.str().c_str() );
-
-                    std::stringstream navess;
-                    navess << "n_averages=";
-                    navess << fNSpectrumAverages;
-                    fConfigLogger->info( navess.str().c_str() );
-
-                    std::stringstream fftss;
-                    fftss << "fft_size=";
-                    fftss << fFFTSize;
-                    fConfigLogger->info( fftss.str().c_str() );
-
-                    std::stringstream nstss;
-                    nstss << "n_spectrometer_threads=";
-                    nstss << fNSpectrometerThreads;
-                    fConfigLogger->info( nstss.str().c_str() );
 
                     std::stringstream sfss;
                     sfss << "sampling_frequency_Hz=";
                     sfss << fDigitizer->GetSamplingFrequency();
-                    fConfigLogger->info( sfss.str().c_str() );
 
-                    std::stringstream ndsfss;
-                    ndsfss << "noise_diode_switching_frequency_Hz=";
-                    ndsfss << noise_diode_switching_freq;
-                    fConfigLogger->info( ndsfss.str().c_str() );
+                    std::string digitizer_config = ndtss.str() + ", " + sbfss.str() + ", " + pfss.str() + ", " + sfss.str();
+                    fConfigLogger->info( digitizer_config.c_str() );
 
-                    std::stringstream ndbpss;
-                    ndbpss << "noise_blanking_period=";
-                    ndbpss << noise_diode_blanking_period;
-                    fConfigLogger->info( ndbpss.str().c_str() );
+                    //spectrometer configuration line
+                    std::stringstream navess;
+                    navess << "n_averages=";
+                    navess << fNSpectrumAverages;
+
+                    std::stringstream fftss;
+                    fftss << "fft_size=";
+                    fftss << fFFTSize;
+
+                    std::stringstream nstss;
+                    nstss << "n_spectrometer_threads=";
+                    nstss << fNSpectrometerThreads;
 
                     std::stringstream nwtss;
                     nwtss << "n_writer_threads=";
                     nwtss << 1;
-                    fConfigLogger->info( nwtss.str().c_str() );
+
+                    std::string spectrometer_config = navess.str() + ", " + fftss.str() + ", " + nstss.str() + ", " + nwtss.str()
+                    fConfigLogger->info( spectrometer_config.c_str() );
+
+                    //noise diode configuration
+                    std::stringstream ndsfss;
+                    ndsfss << "noise_diode_switching_frequency_Hz=";
+                    ndsfss << noise_diode_switching_freq;
+
+                    std::stringstream ndbpss;
+                    ndbpss << "noise_blanking_period=";
+                    ndbpss << noise_diode_blanking_period;
+
+                    std::string noise_diode_config = ndsff.str() + ", " + ndbpss.str();
+                    fConfigLogger.info( noise_diode_config.c_str() );
+
 
                     #endif
 
