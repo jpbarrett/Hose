@@ -131,7 +131,8 @@ class HSpectrometerManager: public HApplicationBackend
                     lfss << "/spectrometer.log";
 
                     std::string logger_name("spectrometer_logger");
-
+    
+                    std::cout<<"creating a log file: "<<lfss.str()<<std::endl;
                     auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_st>( lfss.str().c_str(), 10*1024*1024, 5);
                     fLogger = std::make_shared<spdlog::logger>(logger_name.c_str(), rotating_sink);
 
