@@ -11,6 +11,10 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Array/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Core/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Devices/include)
 
+if(HOSE_USE_SPDLOG)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Logging/include)
+endif(HOSE_USE_SPDLOG)
+
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(HSERVER_LIBS HCore)
