@@ -34,7 +34,7 @@ class spec_log_time_stamp(object):
             self.microseconds = int(sthousandths)*1000
 
     def get_formatted_utc(self):
-        abstime = datetime(year=self.year, month=self.month, day=self.day hour=self.hour, minute=self.minute, second=self.seconds, microsecond = self.microseconds)
+        abstime = datetime(year=self.year, month=self.month, day=self.day, hour=self.hour, minute=self.minute, second=self.seconds, microsecond = self.microseconds)
         return abstime.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
 
