@@ -195,7 +195,6 @@ class HSpectrometerManager: public HApplicationBackend
                     fDigitizer->SetSidebandFlag('U');
                     fDigitizer->SetPolarizationFlag('X');
 
-
                     //create spectrometer data pool
                     fSpectrometerBufferAllocator = new HBufferAllocatorSpectrometerDataCUDA<spectrometer_data>();
                     fSpectrometerBufferAllocator->SetSampleArrayLength(fNSpectrumAverages*fFFTSize);
@@ -224,12 +223,12 @@ class HSpectrometerManager: public HApplicationBackend
 
                     std::stringstream sbfss;
                     sbfss << "sideband=";
-                    sbfss << fDigitizer->GetSidebandFlag();
+                    sbfss << 'U';
                     fConfigLogger->info( sbfss.str().c_str() );
 
                     std::stringstream pfss;
                     pfss << "polarization=";
-                    pfss << fDigitizer->GetPolarizationFlag();
+                    pfss << 'X';
                     fConfigLogger->info( pfss.str().c_str() );
 
                     std::stringstream navess;
