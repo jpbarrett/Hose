@@ -51,7 +51,7 @@ HServer::Initialize()
         auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>( lfss.str().c_str(), 10*1024*1024, 100);
         fLogger = std::make_shared<spdlog::logger>(command_logger_name.c_str(), rotating_sink);
         fLogger->flush_on(spdlog::level::info); //make logger flush on every message
-        fLogger->info("Server logger initialized.");
+        fLogger->info("Server log initialized.");
     }
     catch (const spdlog::spdlog_ex& ex)
     {
@@ -73,7 +73,7 @@ void HServer::Run()
         std::string request_data = std::string(static_cast<char*>( request.data() ), request.size() );
 
         std::stringstream log_msg;
-        log_msg <<"recieved: message=";
+        log_msg <<"client_message % ";
         log_msg << request_data;
         fLogger->info( log_msg.str().c_str() );
 
@@ -84,7 +84,7 @@ void HServer::Run()
             fMessageQueue.push(request_data);
 
             std::stringstream log_msg;
-            log_msg <<"client_request=valid, queue_size=";
+            log_msg <<"client_request % valid, queue_size %";
             log_msg << fMessageQueue.size();
             fLogger->info( log_msg.str().c_str() );
 
@@ -103,7 +103,7 @@ void HServer::Run()
             {
                 reply_msg = st.status_message;
                 std::stringstream status_msg;
-                status_msg <<"server_reply=";
+                status_msg <<"server_reply % ";
                 status_msg << reply_msg;
                 fLogger->info( status_msg.str().c_str() );
             }
@@ -111,7 +111,7 @@ void HServer::Run()
             {
                 reply_msg = std::string("timeout:") + st.status_message;
                 std::stringstream err_msg;
-                err_msg <<"client_error=";
+                err_msg <<"client_error % ";
                 err_msg << reply_msg;
                 fLogger->warn( err_msg.str().c_str() );
             }
@@ -122,7 +122,7 @@ void HServer::Run()
         else
         {
             std::stringstream log_msg;
-            log_msg <<"client_request=invalid";
+            log_msg <<"client_request % invalid";
             fLogger->warn( log_msg.str().c_str() );
 
             //error, can't understand the message
