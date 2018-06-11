@@ -130,7 +130,7 @@ class HSpectrometerManager: public HApplicationBackend
                     lfss << STR2(LOG_INSTALL_DIR);
                     lfss << "/spectrometer.log";
                     //spdlog::set_formatter(std::make_shared<spdlog::pattern_formatter>("[%^+++%$] [%Y-%m-%dT%H:%M:%S.%fZ] [thread %t] %v", spdlog::pattern_time_type::utc)  );
-                    auto rotating_logger = spd::rotating_logger_mt("status_logger", lfss.str().c_str(), 10*1024*1024, 5);
+                    auto rotating_logger = spdlog::rotating_logger_mt("status_logger", lfss.str().c_str(), 10*1024*1024, 5);
                     spdlog::async_logger logger("status_logger", rotating_logger, 8192); 
                     //globally register the loggers so they can be accessed using spdlog::get(logger_name)
                     spdlog::register_logger(rotating_logger);
