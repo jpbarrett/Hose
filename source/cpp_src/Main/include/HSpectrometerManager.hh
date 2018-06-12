@@ -380,7 +380,7 @@ class HSpectrometerManager: public HApplicationBackend
                 fWriter->StopConsumption();
 
                 //remove the lock file
-                int remove_ret_val = remove( fLockFileName.c_str() );
+                remove( fLockFileName.c_str() );
 
                 //join the server thread
                 server_thread.join();
@@ -860,7 +860,7 @@ class HSpectrometerManager: public HApplicationBackend
         
                         std::stringstream ss;
                         int pid = -1;
-                        unsigned int pos = lock_file_name.find('.');
+                        size_t pos = lock_file_name.find('.');
                         if(pos != std::string::npos) 
                         {
                             ss << lock_file_name.substr(0, pos);
