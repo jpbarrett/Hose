@@ -756,6 +756,7 @@ class HSpectrometerManager: public HApplicationBackend
         
         virtual bool CheckRequest(const std::string& request_string) override
         {
+            std::cout<<"got: "<<request_string<<std::endl;
             std::vector< std::string > tokens = Tokenize(request_string);
             if(tokens.size() != 0)
             {
