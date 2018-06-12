@@ -33,11 +33,9 @@ class udc_status(object):
                 "fields": {
                     "frequency_MHz": self.frequency_MHz,
                     "attenuation_h": self.atten_h,
-                    "attenuation_v": self.atten_v
-                },
-                "tags": {
+                    "attenuation_v": self.atten_v,
                     "udc": self.name
-                },
+                }
             }
         return point_value
 
@@ -54,7 +52,7 @@ class data_status(object):
                 "measurement": "data_validity",
                 "fields": {
                     "status": self.status_code
-                },
+                }
             }
         return point_value
 
@@ -77,11 +75,9 @@ class source_status(object):
                     "ra": self.ra,
                     "dec": self.dec,
                     "epoch": self.epoch,
-                    "cable_wrap": self.cable_wrap
-                },
-                "tags": {
+                    "cable_wrap": self.cable_wrap,
                     "source_name": self.source_name
-                },
+                }
             }
         return point_value
 
