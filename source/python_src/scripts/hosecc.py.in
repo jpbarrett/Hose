@@ -248,19 +248,14 @@ def main(input_fn, hose_host, hose_port):
             digi_config = dbclient.get_most_recent_measurement("digitizer_config", end_time_stamp)
             spec_config = dbclient.get_most_recent_measurement("spectrometer_config", end_time_stamp)
             noise_config = dbclient.get_most_recent_measurement("noise_diode_config", end_time_stamp)
+            udc_info = dbclient.get_most_recent_measurement("udc_status", end_time_stamp)
+            source_info = dbclient.get_most_recent_measurement("source", end_time_stamp)
 
-            print json.dumps(digi_config[0])
-            print json.dumps(spec_config[0])
-            print json.dumps(noise_config[0])
-
-            # +/- 3 second buffer to make sure we got all interesting records related to this scan
-            source_info = dbclient.get_measurement_from_time_range("source", start_time_stamp, end_time_stamp, 3)
-            for x in source_info:
-                print json.dumps(x)
-
-            udc_info = dbclient.get_measurement_from_time_range("udc_status", start_time_stamp, end_time_stamp, 3)
-            for x in udc_info:
-                print json.dumps(x)
+            print(digi_config[0]) # json.dumps(digi_config[0])
+            print(spec_config[0]) # json.dumps(spec_config[0])
+            print(noise_config[0]) # json.dumps(noise_config[0])
+            print(udc_info[0])
+            print(source_info[0])
 
             recording_info = dbclient.get_measurement_from_time_range("recording_status", start_time_stamp, end_time_stamp, 3)
             for x in recording_info:
