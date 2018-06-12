@@ -8,7 +8,10 @@
 #include <sstream>
 #include <thread>
 #include <unistd.h>
+#include <dirent.h>
+#include <signal.h>
 #include <ctime>
+#include <cstdio>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -121,164 +124,170 @@ class HSpectrometerManager: public HApplicationBackend
 
         void Initialize()
         {
+            //get our pid
+            fPID = getpid();
+
             if(!fInitialized)
             {
-                //create the loggers
-                #ifdef HOSE_USE_SPDLOG
-                try
+
+                bool lock_success = GetLockByPID();
+                if(lock_success)
                 {
-                    std::stringstream lfss;
-                    lfss << STR2(LOG_INSTALL_DIR);
-                    lfss << "/status.log";
 
-                    std::string status_logger_name("status");
-                    std::string config_logger_name("config");    
-
-                    std::cout<<"creating a log file: "<<lfss.str()<<std::endl;
-                    auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>( lfss.str().c_str(), 10*1024*1024, 100);
-                    fStatusLogger = std::make_shared<spdlog::logger>(status_logger_name.c_str(), rotating_sink);
-                    fConfigLogger = std::make_shared<spdlog::logger>(config_logger_name.c_str(), rotating_sink);
-                    fStatusLogger->flush_on(spdlog::level::info); //make logger flush on every message
-                    fConfigLogger->flush_on(spdlog::level::info); //make logger flush on every message
-
-                    //spdlog::set_formatter(std::make_shared<spdlog::pattern_formatter>("[%^+++%$] [%Y-%m-%dT%H:%M:%S.%fZ] [thread %t] %v", spdlog::pattern_time_type::utc)  );
-                    //auto rotating_logger = spdlog::rotating_logger_mt("spectrometer_logger", lfss.str().c_str(), 10*1024*1024, 5);
-                    //spdlog::async_logger logger("spectrometer_logger", rotating_logger, 8192); 
-                    //globally register the loggers so they can be accessed using spdlog::get(logger_name)
-                    //spdlog::register_logger(rotating_logger);
-
-                    fStatusLogger->info("$$$ New session, manager log initialized. $$$");
-                    // spdlog::drop_all(); 
-                    // auto daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("logfile", 23, 59);
-                    // // create synchronous  loggers
-                    // auto net_logger = std::make_shared<spdlog::logger>("net", daily_sink);
-                    // auto hw_logger  = std::make_shared<spdlog::logger>("hw",  daily_sink);
-                    // auto db_logger  = std::make_shared<spdlog::logger>("db",  daily_sink);      
-                    // 
-                    // net_logger->set_level(spdlog::level::critical); // independent levels
-                    // hw_logger->set_level(spdlog::level::debug);
-                    //  
-
-                }
-                catch (const spdlog::spdlog_ex& ex)
-                {
-                    std::cout << "Manager log initialization failed: " << ex.what() << std::endl;
-                }
-
-                fStatusLogger->info("Initializing.");
-                #endif
-
-                std::cout<<"Initializing..."<<std::endl;
-
-
-                //create command server
-                fServer = new HServer(fIP, fPort);
-                fServer->SetApplicationBackend(this);
-                fServer->Initialize();
-
-                //create digitizer
-                fDigitizer = new HPX14Digitizer();
-                fDigitizer->SetNThreads(fNDigitizerThreads);
-                bool digitizer_init_success = fDigitizer->Initialize();
-
-                if(digitizer_init_success)
-                {
-                    //create source buffer pool
-                    fCUDABufferAllocator = new HCudaHostBufferAllocator<  HPX14Digitizer::sample_type >();
-                    fDigitizerSourcePool = new HBufferPool< HPX14Digitizer::sample_type  >( fCUDABufferAllocator );
-                    fDigitizerSourcePool->Allocate(fDigitizerPoolSize, fNSpectrumAverages*fFFTSize);
-                    fDigitizer->SetBufferPool(fDigitizerSourcePool);
-
-                    //TODO fill these in with real values!
-                    fDigitizer->SetSidebandFlag('U');
-                    fDigitizer->SetPolarizationFlag('X');
-
-                    //create spectrometer data pool
-                    fSpectrometerBufferAllocator = new HBufferAllocatorSpectrometerDataCUDA<spectrometer_data>();
-                    fSpectrometerBufferAllocator->SetSampleArrayLength(fNSpectrumAverages*fFFTSize);
-                    fSpectrometerBufferAllocator->SetSpectrumLength(fFFTSize);
-                    fSpectrometerSinkPool = new HBufferPool< spectrometer_data >( fSpectrometerBufferAllocator );
-                    fSpectrometerSinkPool->Allocate(fSpectrometerPoolSize, 1);
-
-                    //create spectrometer
-                    fSpectrometer = new HSpectrometerCUDA(fFFTSize, fNSpectrumAverages);
-                    fSpectrometer->SetNThreads(fNSpectrometerThreads);
-                    fSpectrometer->SetSourceBufferPool(fDigitizerSourcePool);
-                    fSpectrometer->SetSinkBufferPool(fSpectrometerSinkPool);
-                    fSpectrometer->SetSamplingFrequency( fDigitizer->GetSamplingFrequency() );
-
-                    double noise_diode_switching_freq = 80.0;
-                    double noise_diode_blanking_period = 20.0*(1.0/fDigitizer->GetSamplingFrequency());
-
-                    fSpectrometer->SetSwitchingFrequency( noise_diode_switching_freq );
-                    fSpectrometer->SetBlankingPeriod( noise_diode_blanking_period );
-
-                    //file writing consumer to drain the spectrum data buffers
-                    fWriter = new HSimpleMultiThreadedSpectrumDataWriter();
-                    fWriter->SetBufferPool(fSpectrometerSinkPool);
-                    fWriter->SetNThreads(1);
-
+                    //create the loggers
                     #ifdef HOSE_USE_SPDLOG
+                    try
+                    {
+                        std::stringstream lfss;
+                        lfss << STR2(LOG_INSTALL_DIR);
+                        lfss << "/status.log";
 
-                    //digitizer configuration info
-                    std::stringstream ndtss;
-                    ndtss << "n_digitizer_threads=";
-                    ndtss << fNDigitizerThreads;
+                        std::string status_logger_name("status");
+                        std::string config_logger_name("config");    
 
-                    std::stringstream sbfss;
-                    sbfss << "sideband=";
-                    sbfss << 'U';
+                        std::cout<<"creating a log file: "<<lfss.str()<<std::endl;
+                        auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>( lfss.str().c_str(), 10*1024*1024, 100);
+                        fStatusLogger = std::make_shared<spdlog::logger>(status_logger_name.c_str(), rotating_sink);
+                        fConfigLogger = std::make_shared<spdlog::logger>(config_logger_name.c_str(), rotating_sink);
+                        fStatusLogger->flush_on(spdlog::level::info); //make logger flush on every message
+                        fConfigLogger->flush_on(spdlog::level::info); //make logger flush on every message
 
-                    std::stringstream pfss;
-                    pfss << "polarization=";
-                    pfss << 'X';
+                        //spdlog::set_formatter(std::make_shared<spdlog::pattern_formatter>("[%^+++%$] [%Y-%m-%dT%H:%M:%S.%fZ] [thread %t] %v", spdlog::pattern_time_type::utc)  );
+                        //auto rotating_logger = spdlog::rotating_logger_mt("spectrometer_logger", lfss.str().c_str(), 10*1024*1024, 5);
+                        //spdlog::async_logger logger("spectrometer_logger", rotating_logger, 8192); 
+                        //globally register the loggers so they can be accessed using spdlog::get(logger_name)
+                        //spdlog::register_logger(rotating_logger);
 
-                    std::stringstream sfss;
-                    sfss << "sampling_frequency_Hz=";
-                    sfss << fDigitizer->GetSamplingFrequency();
+                        fStatusLogger->info("$$$ New session, manager log initialized. $$$");
+                        // spdlog::drop_all(); 
+                        // auto daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("logfile", 23, 59);
+                        // // create synchronous  loggers
+                        // auto net_logger = std::make_shared<spdlog::logger>("net", daily_sink);
+                        // auto hw_logger  = std::make_shared<spdlog::logger>("hw",  daily_sink);
+                        // auto db_logger  = std::make_shared<spdlog::logger>("db",  daily_sink);      
+                        // 
+                        // net_logger->set_level(spdlog::level::critical); // independent levels
+                        // hw_logger->set_level(spdlog::level::debug);
+                        //  
 
-                    std::string digitizer_config = "digitizer_config; " + ndtss.str() + "; " + sbfss.str() + "; " + pfss.str() + "; " + sfss.str();
-                    fConfigLogger->info( digitizer_config.c_str() );
+                    }
+                    catch (const spdlog::spdlog_ex& ex)
+                    {
+                        std::cout << "Manager log initialization failed: " << ex.what() << std::endl;
+                    }
 
-                    //spectrometer configuration line
-                    std::stringstream navess;
-                    navess << "n_averages=";
-                    navess << fNSpectrumAverages;
-
-                    std::stringstream fftss;
-                    fftss << "fft_size=";
-                    fftss << fFFTSize;
-
-                    std::stringstream nstss;
-                    nstss << "n_spectrometer_threads=";
-                    nstss << fNSpectrometerThreads;
-
-                    std::stringstream nwtss;
-                    nwtss << "n_writer_threads=";
-                    nwtss << 1;
-
-                    std::string spectrometer_config = "spectrometer_config; " + navess.str() + "; " + fftss.str() + "; " + nstss.str() + "; " + nwtss.str();
-                    fConfigLogger->info( spectrometer_config.c_str() );
-
-                    //noise diode configuration
-                    std::stringstream ndsfss;
-                    ndsfss << "noise_diode_switching_frequency_Hz=";
-                    ndsfss << noise_diode_switching_freq;
-
-                    std::stringstream ndbpss;
-                    ndbpss << "noise_blanking_period=";
-                    ndbpss << noise_diode_blanking_period;
-
-                    std::string noise_diode_config = "noise_diode_config; " + ndsfss.str() + "; " + ndbpss.str();
-                    fConfigLogger->info( noise_diode_config.c_str() );
-
-
+                    fStatusLogger->info("Initializing.");
                     #endif
 
-                    fInitialized = true;
+                    std::cout<<"Initializing..."<<std::endl;
+
+
+                    //create command server
+                    fServer = new HServer(fIP, fPort);
+                    fServer->SetApplicationBackend(this);
+                    fServer->Initialize();
+
+                    //create digitizer
+                    fDigitizer = new HPX14Digitizer();
+                    fDigitizer->SetNThreads(fNDigitizerThreads);
+                    bool digitizer_init_success = fDigitizer->Initialize();
+
+                    if(digitizer_init_success)
+                    {
+                        //create source buffer pool
+                        fCUDABufferAllocator = new HCudaHostBufferAllocator<  HPX14Digitizer::sample_type >();
+                        fDigitizerSourcePool = new HBufferPool< HPX14Digitizer::sample_type  >( fCUDABufferAllocator );
+                        fDigitizerSourcePool->Allocate(fDigitizerPoolSize, fNSpectrumAverages*fFFTSize);
+                        fDigitizer->SetBufferPool(fDigitizerSourcePool);
+
+                        //TODO fill these in with real values!
+                        fDigitizer->SetSidebandFlag('U');
+                        fDigitizer->SetPolarizationFlag('X');
+
+                        //create spectrometer data pool
+                        fSpectrometerBufferAllocator = new HBufferAllocatorSpectrometerDataCUDA<spectrometer_data>();
+                        fSpectrometerBufferAllocator->SetSampleArrayLength(fNSpectrumAverages*fFFTSize);
+                        fSpectrometerBufferAllocator->SetSpectrumLength(fFFTSize);
+                        fSpectrometerSinkPool = new HBufferPool< spectrometer_data >( fSpectrometerBufferAllocator );
+                        fSpectrometerSinkPool->Allocate(fSpectrometerPoolSize, 1);
+
+                        //create spectrometer
+                        fSpectrometer = new HSpectrometerCUDA(fFFTSize, fNSpectrumAverages);
+                        fSpectrometer->SetNThreads(fNSpectrometerThreads);
+                        fSpectrometer->SetSourceBufferPool(fDigitizerSourcePool);
+                        fSpectrometer->SetSinkBufferPool(fSpectrometerSinkPool);
+                        fSpectrometer->SetSamplingFrequency( fDigitizer->GetSamplingFrequency() );
+
+                        double noise_diode_switching_freq = 80.0;
+                        double noise_diode_blanking_period = 20.0*(1.0/fDigitizer->GetSamplingFrequency());
+
+                        fSpectrometer->SetSwitchingFrequency( noise_diode_switching_freq );
+                        fSpectrometer->SetBlankingPeriod( noise_diode_blanking_period );
+
+                        //file writing consumer to drain the spectrum data buffers
+                        fWriter = new HSimpleMultiThreadedSpectrumDataWriter();
+                        fWriter->SetBufferPool(fSpectrometerSinkPool);
+                        fWriter->SetNThreads(1);
+
+                        #ifdef HOSE_USE_SPDLOG
+
+                        //digitizer configuration info
+                        std::stringstream ndtss;
+                        ndtss << "n_digitizer_threads=";
+                        ndtss << fNDigitizerThreads;
+
+                        std::stringstream sbfss;
+                        sbfss << "sideband=";
+                        sbfss << 'U';
+
+                        std::stringstream pfss;
+                        pfss << "polarization=";
+                        pfss << 'X';
+
+                        std::stringstream sfss;
+                        sfss << "sampling_frequency_Hz=";
+                        sfss << fDigitizer->GetSamplingFrequency();
+
+                        std::string digitizer_config = "digitizer_config; " + ndtss.str() + "; " + sbfss.str() + "; " + pfss.str() + "; " + sfss.str();
+                        fConfigLogger->info( digitizer_config.c_str() );
+
+                        //spectrometer configuration line
+                        std::stringstream navess;
+                        navess << "n_averages=";
+                        navess << fNSpectrumAverages;
+
+                        std::stringstream fftss;
+                        fftss << "fft_size=";
+                        fftss << fFFTSize;
+
+                        std::stringstream nstss;
+                        nstss << "n_spectrometer_threads=";
+                        nstss << fNSpectrometerThreads;
+
+                        std::stringstream nwtss;
+                        nwtss << "n_writer_threads=";
+                        nwtss << 1;
+
+                        std::string spectrometer_config = "spectrometer_config; " + navess.str() + "; " + fftss.str() + "; " + nstss.str() + "; " + nwtss.str();
+                        fConfigLogger->info( spectrometer_config.c_str() );
+
+                        //noise diode configuration
+                        std::stringstream ndsfss;
+                        ndsfss << "noise_diode_switching_frequency_Hz=";
+                        ndsfss << noise_diode_switching_freq;
+
+                        std::stringstream ndbpss;
+                        ndbpss << "noise_blanking_period=";
+                        ndbpss << noise_diode_blanking_period;
+
+                        std::string noise_diode_config = "noise_diode_config; " + ndsfss.str() + "; " + ndbpss.str();
+                        fConfigLogger->info( noise_diode_config.c_str() );
+
+                        #endif
+                        fInitialized = true;
+                    }
                 }
             }
-
         }
 
         void Run()
@@ -369,6 +378,9 @@ class HSpectrometerManager: public HApplicationBackend
                 fSpectrometer->StopConsumptionProduction();
                 sleep(1);
                 fWriter->StopConsumption();
+
+                //remove the lock file
+                int remove_ret_val = remove( fLockFileName.c_str() );
 
                 //join the server thread
                 server_thread.join();
@@ -828,6 +840,62 @@ class HSpectrometerManager: public HApplicationBackend
             return st;
         }
 
+        bool GetLockByPID()
+        {
+            bool other_daemon_running = false;
+            std::string lock_dir( STR2(LOG_INSTALL_DIR) );
+            //scan the list of all files in the directory 
+            //for ones with the ".lock" extension
+            DIR* d;
+            struct dirent* dir;
+            d = opendir(lock_dir.c_str());
+            if(d)
+            {
+                while( (dir = readdir(d)) != NULL)
+                {
+                    if(strstr(dir->d_name, ".lock") != NULL)
+                    {
+                        std::string lock_file_name(dir->d_name);
+                        //split off the PID from the lock file name
+        
+                        std::stringstream ss;
+                        int pid = -1;
+                        unsigned int pos = lock_file_name.find('.');
+                        if(pos != std::string::npos) 
+                        {
+                            ss << lock_file_name.substr(0, pos);
+                            ss >> pid;
+                        }
+
+                        //check if that process is running, and it is not us
+                        if( kill(pid, 0) = 0 && pid != fPID)
+                        {
+                            other_daemon_running = true;
+                        }
+                    }
+                }
+            }
+
+            if(!other_daemon_running)
+            {
+                //go ahead and create a lock file
+                std::stringstream ss;
+                ss << STR2(LOG_INSTALL_DIR);
+                ss << "/";
+                ss << fPID;
+                ss << ".lock";
+
+                fLockFileName = ss.str();
+
+                std::fstream fs;
+                fs.open( fLockFileName.c_str(), ios::out);
+                fs.close();
+                return true; //success
+            }
+
+            return false; //failure
+        }
+
         //config data data
         bool fInitialized;
         volatile bool fStop;
@@ -865,6 +933,10 @@ class HSpectrometerManager: public HApplicationBackend
         std::shared_ptr<spdlog::logger> fStatusLogger;
         std::shared_ptr<spdlog::logger> fConfigLogger;
         #endif
+
+        //PID management
+        pid_t fPID;
+        std::string fLockFileName;
 };
 
 }
