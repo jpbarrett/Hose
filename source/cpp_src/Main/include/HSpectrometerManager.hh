@@ -531,6 +531,13 @@ class HSpectrometerManager: public HApplicationBackend
                 return tokens;
             }
 
+            //shutdown command
+            if(command == std::string("shutdown"))
+            {
+                tokens.push_back( std::string("shutdown") );
+                return tokens;
+            }
+
             //first we split the string by the '=' delimiter
             fTokenizer.SetString(&command);
             fTokenizer.SetIncludeEmptyTokensFalse();
