@@ -2,6 +2,7 @@ import sys
 import zmq
 from cmd import Cmd
 from datetime import datetime
+import time
  
 class hclient(object):
 
@@ -68,7 +69,7 @@ class hprompt(Cmd):
         print "Shutting down."
         cmd_string = "shutdown" 
         self.interface.SendRecieveMessage(cmd_string)
-        sleep(1)
+        time.sleep(1)
         self.interface.Shutdown()
         raise SystemExit
 
