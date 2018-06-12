@@ -7,6 +7,8 @@
 
 #include "HSpectrometerManager.hh"
 
+using namespace hose;
+
 static void daemonize(void)
 {
     pid_t pid, sid;
