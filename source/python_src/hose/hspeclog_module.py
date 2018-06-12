@@ -32,6 +32,7 @@ class spec_log_time_stamp(object):
             self.minute = int(sminute)
             self.seconds = int(ssec)
             self.microseconds = int(sthousandths)*1000
+            print "initializing date from ", date_string
 
     def get_formatted_utc(self):
         abstime = datetime(year=self.year, month=self.month, day=self.day, hour=self.hour, minute=self.minute, second=self.seconds, microsecond = self.microseconds)
@@ -51,21 +52,27 @@ class spectrometer_log_line(object):
         self.parse_valid = True
         if( self.line_key in line):
             args = line.split(";")
+            print "args = ", str(args)
             if len(args) == len(self.data_fields) + 1:
                 self.log_time.initialize_from_line(args[0])
                 for i in range(1, len(args)):
                     sub_args = args[i].split("=")
+                    print "sub args = ", str(sub_args)
                     if len(sub_args) == 2:
                         if sub_args[0] in self.data_fields:
                             self.data_fields[ sub_args[0] ] = sub_args[1]
                         else:
+                            print "sub args 0 :", sub_args[0], "not in data fields"
                             self.parse_valid = False
                             break
                     else:
+                        print "bad num sub args: ", str(len(sub_args))
                         self.parse_valid = False
             else:
+                print "wrong number of args"
                 self.parse_valid = False
         else:
+            print "line key missing"
             self.parse_valid = False
         return self.parse_valid
 
