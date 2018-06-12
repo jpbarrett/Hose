@@ -25,7 +25,7 @@ class wf_influxdb(object):
         # SELECT * FROM data_validity WHERE time < '2018-03-01 18:26:08.400' AND time > '2018-03-01 18:16:00.500' 
         start_time_string = ( start_time - datetime.timedelta(seconds=time_buffer_sec) ).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
         end_time_string = ( end_time + datetime.timedelta(seconds=time_buffer_sec) ).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-        query = "SELECT * FROM " + measurement_name + " WHERE time < '" + end_time_string + "' AND time > '" + start_time_string "' "
+        query = "SELECT * FROM " + measurement_name + " WHERE time < '" + end_time_string + "' AND time > '" + start_time_string + "' "
         result = self.client.query(query)
         print(measurement_name, " result: {0}".format(result))
         return result
