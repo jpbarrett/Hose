@@ -37,6 +37,7 @@ def main():
         line = sshtail.stdout.readline()
         if line:
             result_valid = stripper.process_line(line)
+            print "line = ", line
             if result_valid is True:
                 json_body = stripper.get_data_points()[0]
                 print("Write points: {0}".format(json_body))
