@@ -35,7 +35,7 @@ class spec_log_time_stamp(object):
             print "initializing date from ", date_string
 
     def get_formatted_utc(self):
-        abstime = datetime(year=self.year, month=self.month, day=self.day, hour=self.hour, minute=self.minute, second=self.seconds, microsecond = self.microseconds)
+        abstime = datetime(year=self.year, month=self.month, day=self.mday, hour=self.hour, minute=self.minute, second=self.seconds, microsecond = self.microseconds)
         return abstime.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
 
