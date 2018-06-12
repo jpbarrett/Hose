@@ -33,7 +33,7 @@ import getopt
 import string
 import time
 import json
-import datetime
+from datetime import datetime, timedelta
 import calendar
 import logging
 import xml.etree.ElementTree as ET
