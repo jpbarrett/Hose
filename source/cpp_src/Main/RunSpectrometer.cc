@@ -8,13 +8,9 @@ int main(int /*argc*/, char** /*argv*/)
     
     specManager->Initialize();
 
-    std::thread daemon( &HSpectrometerManager::Run, specManager);
+    std::thread spectrometer_thread( &HSpectrometerManager::Run, specManager);
 
-    daemon.detach();
-
-    usleep(50);
-    // specManager->Shutdown();
-    //daemon.join();
+    spectrometer_thread.join();
 
     return 0;
 }
