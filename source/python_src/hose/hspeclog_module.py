@@ -101,7 +101,7 @@ class config_noise_diode(spectrometer_log_line):
         super(config_noise_diode, self).__init__()
         self.line_key = "noise_diode_config"
         self.name = "noise_diode_config"
-        self.data_fields = {"switching_frequency_Hz": 0, "blanking_period": 0}
+        self.data_fields = {"noise_diode_switching_frequency_Hz": 0, "noise_blanking_period": 0}
 
 class recording_status(spectrometer_log_line):
 
