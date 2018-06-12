@@ -5,8 +5,6 @@ namespace hose
 
 HServer::HServer():
     fStop(false),
-    fContext(nullptr),
-    fSocket(nullptr),
     fAppBackend(nullptr)
     {
         fConnection = "tcp://127.0.0.1:12345";
@@ -14,19 +12,14 @@ HServer::HServer():
 
 HServer::HServer(std::string ip, std::string port):
     fStop(false),
-    fContext(nullptr),
-    fSocket(nullptr),
     fAppBackend(nullptr)
     {
         //note we do not check ip/port for validlity
         fConnection = "tcp://" + ip +":" + port; 
     }
 
-HServer::~HServer()
-{
-    if(fContext){delete fContext;};
-    if(fSocket){delete fSocket;};
-}
+HServer::~HServer(){}
+
 
 void 
 HServer::Initialize()
@@ -59,15 +52,15 @@ void HServer::Run()
 {
     fStop = false;
 
-    fContext = new zmq::context_t(1);
-    fSocket = new zmq::socket_t(*fContext, ZMQ_REP);
-    fSocket->bind( fConnection.c_str() );
+    zmq::context_t aContext(1);
+    zmq::socket_t aSocket(aContext, ZMQ_REP);
+    aSocket.bind( fConnection.c_str() );
 
     while(!fStop)
     {
         //  Wait for next request from client
         zmq::message_t request;
-        fSocket->recv (&request);
+        aSocket.recv (&request);
         std::string request_data = std::string(static_cast<char*>( request.data() ), request.size() );
 
         #ifdef HOSE_USE_SPDLOG
@@ -124,7 +117,7 @@ void HServer::Run()
             }
             zmq::message_t reply( reply_msg.size() );
             memcpy( (void *) reply.data (), reply_msg.c_str(), reply_msg.size() );
-            fSocket->send(reply);
+            aSocket.send(reply);
         }
         else
         {
@@ -138,17 +131,14 @@ void HServer::Run()
             std::string error_msg("error: invalid request.");
             zmq::message_t reply( error_msg.size() );
             memcpy( (void *) reply.data (), error_msg.c_str(), error_msg.size() );
-            fSocket->send (reply);
+            aSocket.send (reply);
         }
     }
 
     //close the socket, context_t
-    fSocket->close();
+    aSocket.close();
     usleep(1000);
-    fContext->close();
-
-    delete fSocket; fSocket = nullptr;
-    delete fContext; fContext = nullptr;
+    aContext.close();
 }
 
 
