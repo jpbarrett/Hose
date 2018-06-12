@@ -124,7 +124,7 @@ def as_datetime(jt):
     hour = int(jt[7:9])
     minute = int(jt[9:11])
     second = int(jt[11:13])
-    abstime = datetime(year,1,1) + timedelta( days=day-1, hours=hour, minutes=minute, seconds=seconds, microseconds=0)
+    abstime = datetime(year,1,1) + timedelta( days=day-1, hours=hour, minutes=minute, seconds=second, microseconds=0)
     return abstime
 
 
