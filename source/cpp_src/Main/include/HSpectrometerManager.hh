@@ -868,7 +868,7 @@ class HSpectrometerManager: public HApplicationBackend
                         }
 
                         //check if that process is running, and it is not us
-                        if( kill(pid, 0) = 0 && pid != fPID)
+                        if( kill(pid, 0) == 0 && pid != fPID)
                         {
                             other_daemon_running = true;
                         }
@@ -888,7 +888,7 @@ class HSpectrometerManager: public HApplicationBackend
                 fLockFileName = ss.str();
 
                 std::fstream fs;
-                fs.open( fLockFileName.c_str(), ios::out);
+                fs.open( fLockFileName.c_str(), std::ios::out);
                 fs.close();
                 return true; //success
             }
