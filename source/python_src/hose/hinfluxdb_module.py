@@ -27,7 +27,8 @@ class wf_influxdb(object):
         end_time_string = ( end_time + datetime.timedelta(seconds=time_buffer_sec) ).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
         query = "SELECT * FROM " + measurement_name + " WHERE time < '" + end_time_string + "' AND time > '" + start_time_string + "' "
         result = self.client.query(query)
-        print(measurement_name, " result: {0}".format( result.get_points() ) )
+        points = list( result.get_points() )
+        print(measurement_name, " result: {0}".format( points ) )
         return result
 
 
@@ -37,5 +38,6 @@ class wf_influxdb(object):
         time_string = current_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
         query = "SELECT * FROM " + measurement_name + " WHERE time < '" + time_string + "' GROUP BY * ORDER BY DESC LIMIT 1"
         result = self.client.query(query)
-        print(measurement_name, " result: {0}".format( result.get_points() ) )
+        points = list( result.get_points() )
+        print(measurement_name, " result: {0}".format( points ) )
         return result
