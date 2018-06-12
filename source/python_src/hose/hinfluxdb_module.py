@@ -6,5 +6,5 @@ class wf_influxdb(object):
         self.dbport = 8086
         self.dbuser = "GPUSpecOper"
         self.dbpwd = "kLx14f2p"
-        self.dbname = "gpu-spec"
+        self.dbname = "gpu_spec"
         self.client = InfluxDBClient(self.dbhostname, self.dbport, self.dbuser, self.dbpwd, self.dbname)
