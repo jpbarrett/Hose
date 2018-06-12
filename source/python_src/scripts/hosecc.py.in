@@ -194,7 +194,7 @@ def main(input_fn, hose_host, hose_port):
 
         #source dunno starting 2018163135822 dur 47 scan_name 163-1358
         start_time_stamp = as_datetime(start_time)
-        end_time_stamp = start_time_stamp + datetime.timedelta(seconds=int(delta))
+        end_time_stamp = start_time_stamp + timedelta(seconds=int(delta))
 
         # --- get time from system
         dot_time = time.strftime('%Y%j%H%M%S',time.gmtime());
