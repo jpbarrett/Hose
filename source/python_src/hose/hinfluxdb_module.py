@@ -28,8 +28,7 @@ class wf_influxdb(object):
         query = "SELECT * FROM " + measurement_name + " WHERE time < '" + end_time_string + "' AND time > '" + start_time_string + "' "
         result = self.client.query(query)
         points = list( result.get_points() )
-        print(measurement_name, " result: {0}".format( points ) )
-        return result
+        return points
 
 
     def get_most_recent_measurement(self, measurement_name, current_time):
@@ -39,5 +38,4 @@ class wf_influxdb(object):
         query = "SELECT * FROM " + measurement_name + " WHERE time < '" + time_string + "' GROUP BY * ORDER BY DESC LIMIT 1"
         result = self.client.query(query)
         points = list( result.get_points() )
-        print(measurement_name, " result: {0}".format( points ) )
-        return result
+        return points
