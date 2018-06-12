@@ -57,8 +57,10 @@ class spectrometer_log_line(object):
                 self.log_time.initialize_from_line(args[0])
                 for i in range(1, len(args)):
                     sub_args = args[i].split("=")
-                    print "sub args = ", str(sub_args)
                     if len(sub_args) == 2:
+                        for j in range(0, len(sub_args) ):
+                            sub_args[j] = sub_args[j].strip()
+                        print "sub args = ", str(sub_args)
                         if sub_args[0] in self.data_fields:
                             self.data_fields[ sub_args[0] ] = sub_args[1]
                         else:
