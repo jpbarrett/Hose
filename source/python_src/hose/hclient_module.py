@@ -63,6 +63,15 @@ class hprompt(Cmd):
         self.interface.Shutdown()
         raise SystemExit
 
+    def do_shutdown(self, args):
+        """Shutdown the recording daemon and quit the client."""
+        print "Shutting down."
+        cmd_string = "shutdown" 
+        self.interface.SendRecieveMessage(cmd_string)
+        sleep(1)
+        self.interface.Shutdown()
+        raise SystemExit
+
     def parse_record_command(self, args):
         if( len(args) == 1 and args[0] == "?" ):
             cmd_string = "record?" 

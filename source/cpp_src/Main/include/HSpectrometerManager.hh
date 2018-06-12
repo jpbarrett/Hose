@@ -42,7 +42,7 @@ extern "C"
 #define RECORD_OFF 2
 #define CONFIGURE_NEXT_RECORDING 3
 #define QUERY 4
-
+#define SHUTDOWN 5
 
 //recording states
 #define RECORDING_UNTIL_OFF 1
@@ -352,26 +352,6 @@ class HSpectrometerManager: public HApplicationBackend
 
                     //sleep for 5 microsecond
                     //usleep(5);
-
-                    // //sleep for 1 second
-                    // sleep(1);
-                    // 
-                    // switch(fRecordingState)
-                    // {
-                    //     case RECORDING_UNTIL_OFF:
-                    //         std::cout<<"recording"<<std::endl;
-                    //     break;
-                    //     case RECORDING_UNTIL_TIME:
-                    //         std::cout<<"recording"<<std::endl;
-                    //     break;
-                    //     case IDLE:
-                    //         std::cout<<"idle"<<std::endl;
-                    //     break;
-                    //     case PENDING:
-                    //         std::cout<<"pending"<<std::endl;
-                    //     break;
-                    // }
-
                 }
 
                 //kill the command server
@@ -413,10 +393,30 @@ class HSpectrometerManager: public HApplicationBackend
 
                 switch(command_type)
                 {
+                    case SHUTDOWN:
+                        fStop = true;
+                        if(fRecordingState == RECORDING_UNTIL_OFF || fRecordingState == RECORDING_UNTIL_TIME || fRecordingState == PENDING )
+                        {
+                            //stop recording immediately
+                            if(fRecordingState == RECORDING_UNTIL_OFF || fRecordingState == RECORDING_UNTIL_TIME)
+                            {
+                                fDigitizer->StopAfterNextBuffer();
+                            }
+                            fRecordingState = IDLE;
+                            #ifdef HOSE_USE_SPDLOG
+                            std::stringstream ss;
+                            ss << "recording_status; ";
+                            ss << "recording=off; ";
+                            ss << "experiment_name=" << fExperimentName << "; ";
+                            ss << "source_name=" << fSourceName << "; ";
+                            ss << "scan_name=" << fScanName;
+                            fStatusLogger->info( ss.str().c_str() );
+                            #endif
+                        }
+                        break;
                     case QUERY:
                             //do nothing
                             return;
-                            break;
                     case RECORD_ON:
                         if(fRecordingState == IDLE)
                         {
@@ -562,6 +562,10 @@ class HSpectrometerManager: public HApplicationBackend
                 if( command_tokens[0] == std::string("record?") )
                 {
                     return QUERY;
+                }
+                if( command_tokens[0] == std::string("shutdown") )
+                {
+                    return SHUTDOWN;
                 }
             }
 
@@ -758,6 +762,9 @@ class HSpectrometerManager: public HApplicationBackend
                 int command_type = LookUpCommand(tokens);
                 switch(command_type)
                 {
+                    case SHUTDOWN:
+                        return true;
+                    break;
                     case QUERY:
                         return true;
                     break;
