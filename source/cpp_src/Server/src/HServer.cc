@@ -31,10 +31,6 @@ HServer::~HServer()
 void 
 HServer::Initialize()
 {
-    fContext = new zmq::context_t(1);
-    fSocket = new zmq::socket_t(*fContext, ZMQ_REP);
-    fSocket->bind( fConnection.c_str() );
-
     if(fAppBackend == nullptr)
     {
         std::cout<<"HServer::Initialize(): Error, application backend unset."<<std::endl;
@@ -57,13 +53,15 @@ HServer::Initialize()
     {
         std::cout << "Server log initialization failed: " << ex.what() << std::endl;
     }
-
 }
-
 
 void HServer::Run()
 {
     fStop = false;
+
+    fContext = new zmq::context_t(1);
+    fSocket = new zmq::socket_t(*fContext, ZMQ_REP);
+    fSocket->bind( fConnection.c_str() );
 
     while(!fStop)
     {
