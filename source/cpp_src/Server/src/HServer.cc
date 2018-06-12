@@ -138,7 +138,7 @@ void HServer::Run()
     //close the socket, context_t
     aSocket.close();
     usleep(1000);
-    aContext.close();
+    // aContext.close();
 }
 
 
