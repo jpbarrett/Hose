@@ -2,17 +2,18 @@
 #define HSpectrometerManager_HH__
 
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <memory>
 #include <fstream>
 #include <sstream>
 #include <thread>
-#include <unistd.h>
-#include <dirent.h>
-#include <signal.h>
 #include <ctime>
 #include <cstdio>
 
+#include <unistd.h>
+#include <dirent.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -94,7 +95,10 @@ class HSpectrometerManager: public HApplicationBackend
             fSpectrometer(nullptr),
             fWriter(nullptr),
             fDigitizerSourcePool(nullptr),
-            fSpectrometerSinkPool(nullptr)
+            fSpectrometerSinkPool(nullptr),
+            fStatusLogger(nullptr),
+            fConfigLogger(nullptr),
+            fSink(nullptr)
         {
             fCannedStopCommand = "record=off";
         }
@@ -141,22 +145,19 @@ class HSpectrometerManager: public HApplicationBackend
                         std::stringstream lfss;
                         lfss << STR2(LOG_INSTALL_DIR);
                         lfss << "/status.log";
+                        fSinkFileName = lfss.str();
 
                         std::string status_logger_name("status");
                         std::string config_logger_name("config");    
 
-                        std::cout<<"creating a log file: "<<lfss.str()<<std::endl;
-                        auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>( lfss.str().c_str(), 10*1024*1024, 100);
-                        fStatusLogger = std::make_shared<spdlog::logger>(status_logger_name.c_str(), rotating_sink);
-                        fConfigLogger = std::make_shared<spdlog::logger>(config_logger_name.c_str(), rotating_sink);
+                        std::cout<<"creating a log file: "<<fSinkFileName<<std::endl;
+                        bool trunc = true;
+                        fSink = std::make_shared<spdlog::sinks::simple_file_sink_mt>( fSinkFileName.c_str(), trunc );
+                        fStatusLogger = std::make_shared<spdlog::logger>(status_logger_name.c_str(), fSink);
+                        fConfigLogger = std::make_shared<spdlog::logger>(config_logger_name.c_str(), fSink);
+
                         fStatusLogger->flush_on(spdlog::level::info); //make logger flush on every message
                         fConfigLogger->flush_on(spdlog::level::info); //make logger flush on every message
-
-                        //spdlog::set_formatter(std::make_shared<spdlog::pattern_formatter>("[%^+++%$] [%Y-%m-%dT%H:%M:%S.%fZ] [thread %t] %v", spdlog::pattern_time_type::utc)  );
-                        //auto rotating_logger = spdlog::rotating_logger_mt("spectrometer_logger", lfss.str().c_str(), 10*1024*1024, 5);
-                        //spdlog::async_logger logger("spectrometer_logger", rotating_logger, 8192); 
-                        //globally register the loggers so they can be accessed using spdlog::get(logger_name)
-                        //spdlog::register_logger(rotating_logger);
 
                         fStatusLogger->info("$$$ New session, manager log initialized. $$$");
                         // spdlog::drop_all(); 
@@ -379,8 +380,7 @@ class HSpectrometerManager: public HApplicationBackend
                 sleep(1);
                 fWriter->StopConsumption();
 
-                //remove the lock file
-                remove( fLockFileName.c_str() );
+                CleanUp();
 
                 //join the server thread
                 server_thread.join();
@@ -394,6 +394,33 @@ class HSpectrometerManager: public HApplicationBackend
         }
 
     private:
+
+        void CleanUp()
+        {
+            //remove the lock file
+            remove( fLockFileName.c_str() );
+
+            //close and archive the log file
+            if(fStatusLogger){delete fStatusLogger;}
+            if(fConfigLogger){delete fConfigLogger;}
+            if(fSink)
+            {
+                fSink->flush();
+                delete fSink;
+
+            time_t current_time = std::time(nullptr);
+            current_utc_tm = *(std::gmtime(&current_time))
+
+            std::stringstream lfss;
+            lfss << STR2(LOG_INSTALL_DIR);
+            lfss << "/status-";
+            lfss << std::put_time(&current_utc_tm, "%d-%m-%YT%H-%M-%SZ");
+            lfss << ".log";
+
+            //rename the
+            std::rename(fSinkFileName.c_str(), lfss.str().c_str());
+        }
+
 
         //this is quite primitive, but we only have a handful of commands to support for now
         void ProcessCommand(std::string command)
@@ -930,6 +957,8 @@ class HSpectrometerManager: public HApplicationBackend
 
         //logger
         #ifdef HOSE_USE_SPDLOG
+        std::string fSinkFileName;
+        std::shared_ptr<spdlog::sinks::simple_file_sink_mt> fSink;
         std::shared_ptr<spdlog::logger> fStatusLogger;
         std::shared_ptr<spdlog::logger> fConfigLogger;
         #endif

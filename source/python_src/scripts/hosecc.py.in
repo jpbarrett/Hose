@@ -251,7 +251,6 @@ def main(input_fn, hose_host, hose_port):
 
             meta_data_filename = "meta_data.json"
             meta_data_filepath = os.path.join(data_install_dir, exp, sn, meta_data_filename)
-            print "meta data file = ", meta_data_filepath
             with open(meta_data_filepath, 'w') as outfile:
                 digi_config = dbclient.get_most_recent_measurement("digitizer_config", end_time_stamp)
                 spec_config = dbclient.get_most_recent_measurement("spectrometer_config", end_time_stamp)
