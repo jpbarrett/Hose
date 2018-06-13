@@ -401,8 +401,6 @@ class HSpectrometerManager: public HApplicationBackend
 
             #ifdef HOSE_USE_SPDLOG
             //close and archive the log file
-            if(fStatusLogger){delete fStatusLogger;}
-            if(fConfigLogger){delete fConfigLogger;}
             if(fSink)
             {
                 fSink->flush();
