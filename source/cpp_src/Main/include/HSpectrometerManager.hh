@@ -154,25 +154,14 @@ class HSpectrometerManager: public HApplicationBackend
 
                         std::cout<<"creating a log file: "<<fSinkFileName<<std::endl;
                         bool trunc = true;
-                        fSink = std::make_shared<spdlog::sinks::simple_file_sink_mt>( fSinkFileName.c_str(), trunc );
-                        fStatusLogger = std::make_shared<spdlog::logger>(status_logger_name.c_str(), fSink);
-                        fConfigLogger = std::make_shared<spdlog::logger>(config_logger_name.c_str(), fSink);
+                        fSink = new spdlog::sinks::simple_file_sink_mt( fSinkFileName.c_str(), trunc );
+                        fStatusLogger = new spdlog::logger(status_logger_name.c_str(), fSink);
+                        fConfigLogger = new spdlog::logger(config_logger_name.c_str(), fSink);
 
                         fStatusLogger->flush_on(spdlog::level::info); //make logger flush on every message
                         fConfigLogger->flush_on(spdlog::level::info); //make logger flush on every message
 
                         fStatusLogger->info("$$$ New session, manager log initialized. $$$");
-                        // spdlog::drop_all(); 
-                        // auto daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("logfile", 23, 59);
-                        // // create synchronous  loggers
-                        // auto net_logger = std::make_shared<spdlog::logger>("net", daily_sink);
-                        // auto hw_logger  = std::make_shared<spdlog::logger>("hw",  daily_sink);
-                        // auto db_logger  = std::make_shared<spdlog::logger>("db",  daily_sink);      
-                        // 
-                        // net_logger->set_level(spdlog::level::critical); // independent levels
-                        // hw_logger->set_level(spdlog::level::debug);
-                        //  
-
                     }
                     catch (const spdlog::spdlog_ex& ex)
                     {
@@ -964,9 +953,9 @@ class HSpectrometerManager: public HApplicationBackend
         //logger
         #ifdef HOSE_USE_SPDLOG
         std::string fSinkFileName;
-        std::shared_ptr<spdlog::sinks::simple_file_sink_mt> fSink;
-        std::shared_ptr<spdlog::logger> fStatusLogger;
-        std::shared_ptr<spdlog::logger> fConfigLogger;
+        spdlog::sinks::simple_file_sink_mt* fSink;
+        spdlog::logger* fStatusLogger;
+        spdlog::logger* fConfigLogger;
         #endif
 
         //PID management
