@@ -251,11 +251,11 @@ def main(input_fn, hose_host, hose_port):
             udc_info = dbclient.get_most_recent_measurement("udc_status", end_time_stamp)
             source_info = dbclient.get_most_recent_measurement("source", end_time_stamp)
 
-            print(digi_config[0]) # json.dumps(digi_config[0])
-            print(spec_config[0]) # json.dumps(spec_config[0])
-            print(noise_config[0]) # json.dumps(noise_config[0])
-            print(udc_info[0])
-            print(source_info[0])
+            print( json.dumps(digi_config[0]) )
+            print( json.dumps(spec_config[0]) )
+            print( json.dumps(noise_config[0]) )
+            print( json.dumps(udc_info[0]) )
+            print( json.dumps(source_info[0]) )
 
             recording_info = dbclient.get_measurement_from_time_range("recording_status", start_time_stamp, end_time_stamp, 3)
             for x in recording_info:
@@ -264,6 +264,9 @@ def main(input_fn, hose_host, hose_port):
             data_validity_info = dbclient.get_measurement_from_time_range("data_validity", start_time_stamp, end_time_stamp, 3)
             for x in data_validity_info:
                 print json.dumps(x)
+
+            # with open('data.txt', 'w') as outfile:
+            #     json.dump(data, outfile)
 
             # --- nothing more to do for this scan
             logger.debug ("%s - sleeping for %d secs", st, 2)
