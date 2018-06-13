@@ -71,7 +71,7 @@ def log_to_db():
                 json_body = stripper.get_data_points()[0]
                 print("Write points: {0}".format(json_body))
                 dbinterface.client.write_points([json_body], protocol='json')
-        if tail.poll() is not None and os.path.isfile(logfilename) and schedule_is_running:
+        if tail.poll() is not None or os.path.isfile(logfilename) is False or schedule_is_running is False:
             run_loop = False
 
 
@@ -190,7 +190,6 @@ def main(input_fn, hose_host, hose_port):
 
     t = threading.Thread(name='log2db', target=log_to_db)
     t.start()
-    t.run()
 
     #open up a meta-data database client
     dbclient = wf_influxdb()
