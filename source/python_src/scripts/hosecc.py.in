@@ -190,6 +190,7 @@ def main(input_fn, hose_host, hose_port):
 
     t = threading.Thread(name='log2db', target=log_to_db)
     t.start()
+    t.run()
 
     #open up a meta-data database client
     dbclient = wf_influxdb()
