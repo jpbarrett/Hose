@@ -414,7 +414,7 @@ class HSpectrometerManager: public HApplicationBackend
                 std::stringstream lfss;
                 lfss << STR2(LOG_INSTALL_DIR);
                 lfss << "/status-";
-                lfss << std::put_time(&current_utc_tm, "%d-%m-%YT%H:%M:%SZ");
+                lfss << std::put_time(&current_utc_tm, "%d-%m-%YT%H-%M-%SZ");
                 lfss << ".log";
 
                 //rename the
