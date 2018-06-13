@@ -249,7 +249,7 @@ def main(input_fn, hose_host, hose_port):
             #source 
             #data_validity
 
-            meta_data_filename = sn + ".meta"
+            meta_data_filename = sn + "-meta.json"
             meta_data_filepath = os.path.join(data_install_dir, exp, sn, meta_data_filename)
             print "meta data file = ", meta_data_filepath
             with open(meta_data_filepath, 'w') as outfile:
