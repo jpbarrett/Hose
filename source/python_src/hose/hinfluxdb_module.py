@@ -33,7 +33,7 @@ class wf_influxdb(object):
         if as_dict is True:
             mod_points = []
             for x in points:
-                x_dict ={"measurement": measurement_name, "data": x }
+                x_dict ={"time": x.pop("time", None),  "measurement": measurement_name, "fields": x }
                 mod_points.append(x_dict)
             return mod_points
         else:
@@ -52,7 +52,7 @@ class wf_influxdb(object):
         if as_dict is True:
             mod_points = []
             for x in points:
-                x_dict ={"measurement": measurement_name, "data": x }
+                x_dict ={"time": x.pop("time", None),  "measurement": measurement_name, "fields": x }
                 mod_points.append(x_dict)
             return mod_points
         else:
