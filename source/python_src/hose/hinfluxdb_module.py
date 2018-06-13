@@ -20,7 +20,7 @@ class wf_influxdb(object):
         #source 
         #data_validity
 
-    def get_measurement_from_time_range(self, measurement_name, start_time, end_time, time_buffer_sec=0):
+    def get_measurement_from_time_range(self, measurement_name, start_time, end_time, time_buffer_sec=0, as_dict=True):
         # query must be in the form:
         # SELECT * FROM data_validity WHERE time < '2018-03-01 18:26:08.400' AND time > '2018-03-01 18:16:00.500' 
         start_time_string = ( start_time - timedelta(seconds=time_buffer_sec) ).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
@@ -28,14 +28,32 @@ class wf_influxdb(object):
         query = "SELECT * FROM " + measurement_name + " WHERE time < '" + end_time_string + "' AND time > '" + start_time_string + "' "
         result = self.client.query(query)
         points = list( result.get_points() )
-        return points
+        
+        #now we want to convert the points data to dict objects with the measurement_name attached
+        if as_dict is True:
+            mod_points = []
+            for x in points:
+                x_dict ={"measurement": measurement_name, "data": x }
+                mod_points.append(x_dict)
+            return mod_points
+        else:
+            return points
 
 
-    def get_most_recent_measurement(self, measurement_name, current_time):
+    def get_most_recent_measurement(self, measurement_name, current_time, as_dict=True):
         # query must be in the form:
         #  SELECT * FROM <measurement_name> WHERE time < '2018-03-01 18:26:08.400' GROUP BY * ORDER BY DESC LIMIT 1
         time_string = current_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
         query = "SELECT * FROM " + measurement_name + " WHERE time < '" + time_string + "' GROUP BY * ORDER BY DESC LIMIT 1"
         result = self.client.query(query)
         points = list( result.get_points() )
-        return points
+
+        #now we want to convert the points data to dict objects with the measurement_name attached
+        if as_dict is True:
+            mod_points = []
+            for x in points:
+                x_dict ={"measurement": measurement_name, "data": x }
+                mod_points.append(x_dict)
+            return mod_points
+        else:
+            return points
