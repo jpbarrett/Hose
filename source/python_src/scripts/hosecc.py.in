@@ -273,16 +273,6 @@ def main(input_fn, hose_host, hose_port):
 
                 outfile.close()
 
-                # print( json.dumps(digi_config[0]) )
-                # print( json.dumps(spec_config[0]) )
-                # print( json.dumps(noise_config[0]) )
-                # print( json.dumps(udc_info[0]) )
-                # print( json.dumps(source_info[0]) )
-
-
-
-
-
             # --- nothing more to do for this scan
             logger.debug ("%s - sleeping for %d secs", st, 2)
             time.sleep(2)
