@@ -271,6 +271,8 @@ def main(input_fn, hose_host, hose_port):
                 for x in data_validity_info:
                     json.dump(x, outfile, indent=4, sort_keys=True)
 
+                outfile.close()
+
                 # print( json.dumps(digi_config[0]) )
                 # print( json.dumps(spec_config[0]) )
                 # print( json.dumps(noise_config[0]) )
