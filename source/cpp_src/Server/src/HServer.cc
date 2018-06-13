@@ -37,8 +37,9 @@ HServer::Initialize()
         lfss << STR2(LOG_INSTALL_DIR);
         lfss << "/server.log";
         std::string command_logger_name("server");
-        auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>( lfss.str().c_str(), 10*1024*1024, 100);
-        fLogger = std::make_shared<spdlog::logger>(command_logger_name.c_str(), rotating_sink);
+        bool trunc = true;
+        auto sink = std::make_shared<spdlog::sinks::simple_file_sink_mt>(  lfss.str().c_str(), trunc );
+        fLogger = std::make_shared<spdlog::logger>(command_logger_name.c_str(), sink);
         fLogger->flush_on(spdlog::level::info); //make logger flush on every message
         fLogger->info("$$$ New session, server log initialized. $$$");
     }
