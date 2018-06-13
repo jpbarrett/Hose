@@ -58,7 +58,7 @@ def log_to_db():
     #set up ssh-tail command to grab field system log file lines
     #to change port edit ~/.ssh/config
     command = "tail -f " + logfilename
-    tail = subprocess.Popen([command], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    tail = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     stripper = hfslog_stripper()
 
