@@ -95,10 +95,12 @@ class HSpectrometerManager: public HApplicationBackend
             fSpectrometer(nullptr),
             fWriter(nullptr),
             fDigitizerSourcePool(nullptr),
-            fSpectrometerSinkPool(nullptr),
-            fStatusLogger(nullptr),
+            fSpectrometerSinkPool(nullptr)
+            #ifdef HOSE_USE_SPDLOG
+            ,fStatusLogger(nullptr),
             fConfigLogger(nullptr),
             fSink(nullptr)
+            #endif
         {
             fCannedStopCommand = "record=off";
         }
@@ -400,6 +402,7 @@ class HSpectrometerManager: public HApplicationBackend
             //remove the lock file
             remove( fLockFileName.c_str() );
 
+            #ifdef HOSE_USE_SPDLOG
             //close and archive the log file
             if(fStatusLogger){delete fStatusLogger;}
             if(fConfigLogger){delete fConfigLogger;}
@@ -408,17 +411,20 @@ class HSpectrometerManager: public HApplicationBackend
                 fSink->flush();
                 delete fSink;
 
-            time_t current_time = std::time(nullptr);
-            current_utc_tm = *(std::gmtime(&current_time))
+                time_t current_time = std::time(nullptr);
+                current_utc_tm = *(std::gmtime(&current_time))
 
-            std::stringstream lfss;
-            lfss << STR2(LOG_INSTALL_DIR);
-            lfss << "/status-";
-            lfss << std::put_time(&current_utc_tm, "%d-%m-%YT%H-%M-%SZ");
-            lfss << ".log";
+                std::stringstream lfss;
+                lfss << STR2(LOG_INSTALL_DIR);
+                lfss << "/status-";
+                lfss << std::put_time(&current_utc_tm, "%d-%m-%YT%H-%M-%SZ");
+                lfss << ".log";
 
-            //rename the
-            std::rename(fSinkFileName.c_str(), lfss.str().c_str());
+                //rename the
+                std::rename(fSinkFileName.c_str(), lfss.str().c_str());
+            }
+
+            #endif
         }
 
 
