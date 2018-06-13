@@ -119,7 +119,7 @@ def xmlscan(now, scan, expn, code, no, numb, aux, full, verb):
     if no:
         sn = ('No%04d' % numb) # actually up to 16 chars are legal
     else:
-        sn = time.strftime('%j-%H%M', time.gmtime(now + scan[0]))
+        sn = time.strftime('%j-%H%M%S', time.gmtime(now + scan[0]))
     if aux != 'noaux':
         sn = sn + '_' + aux
     fn = fn + sn
