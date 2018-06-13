@@ -261,15 +261,15 @@ def main(input_fn, hose_host, hose_port):
                 recording_info = dbclient.get_measurement_from_time_range("recording_status", start_time_stamp, end_time_stamp, 3)
                 data_validity_info = dbclient.get_measurement_from_time_range("data_validity", start_time_stamp, end_time_stamp, 3)
 
-                json.dump(digi_config[0], outfile, indent=4, sort_keys=True)
-                json.dump(spec_config[0], outfile, indent=4, sort_keys=True)
-                json.dump(noise_config[0], outfile, indent=4, sort_keys=True)
-                json.dump(udc_info[0], outfile, indent=4, sort_keys=True)
-                json.dump(source_info[0], outfile, indent=4, sort_keys=True)
+                outfile.write( json.dumps(digi_config[0], indent=4, sort_keys=True) + "\n")
+                outfile.write( json.dumps(spec_config[0], indent=4, sort_keys=True) + "\n")
+                outfile.write( json.dumps(noise_config[0], indent=4, sort_keys=True) + "\n")
+                outfile.write( json.dumps(udc_info[0], indent=4, sort_keys=True) + "\n")
+                outfile.write( json.dumps(source_info[0], indent=4, sort_keys=True) + "\n")
                 for x in recording_info:
-                    json.dump(x, outfile, indent=4, sort_keys=True)
+                    outfile.write( json.dumps(x, indent=4, sort_keys=True) + "\n")
                 for x in data_validity_info:
-                    json.dump(x, outfile, indent=4, sort_keys=True)
+                    outfile.write( json.dumps(x, indent=4, sort_keys=True) + "\n")
 
                 outfile.close()
 
