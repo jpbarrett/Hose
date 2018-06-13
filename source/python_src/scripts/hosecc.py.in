@@ -1,5 +1,7 @@
 #!@PYTHON_EXECUTABLE@
 
+#
+
 ## Copyright 2012 MIT Haystack Observatory
 ##
 ## This file is part of Mark6 command and control file.
@@ -40,6 +42,8 @@ import xml.etree.ElementTree as ET
 from hose import *
 
 logger = logging.getLogger("Hose_CC")
+
+data_install_dir = "@DATA_INSTALL_DIR@"
 
 def setup_logging(logfile):
     '''
@@ -245,28 +249,36 @@ def main(input_fn, hose_host, hose_port):
             #source 
             #data_validity
 
-            digi_config = dbclient.get_most_recent_measurement("digitizer_config", end_time_stamp)
-            spec_config = dbclient.get_most_recent_measurement("spectrometer_config", end_time_stamp)
-            noise_config = dbclient.get_most_recent_measurement("noise_diode_config", end_time_stamp)
-            udc_info = dbclient.get_most_recent_measurement("udc_status", end_time_stamp)
-            source_info = dbclient.get_most_recent_measurement("source", end_time_stamp)
+            meta_data_filename = sn + ".meta"
+            meta_data_filepath = os.join(data_install_dir, exp, sn, meta_data_filename)
+            with open(meta_data_filepath, 'w') as outfile:
+                digi_config = dbclient.get_most_recent_measurement("digitizer_config", end_time_stamp)
+                spec_config = dbclient.get_most_recent_measurement("spectrometer_config", end_time_stamp)
+                noise_config = dbclient.get_most_recent_measurement("noise_diode_config", end_time_stamp)
+                udc_info = dbclient.get_most_recent_measurement("udc_status", end_time_stamp)
+                source_info = dbclient.get_most_recent_measurement("source", end_time_stamp)
+                recording_info = dbclient.get_measurement_from_time_range("recording_status", start_time_stamp, end_time_stamp, 3)
+                data_validity_info = dbclient.get_measurement_from_time_range("data_validity", start_time_stamp, end_time_stamp, 3)
 
-            print( json.dumps(digi_config[0]) )
-            print( json.dumps(spec_config[0]) )
-            print( json.dumps(noise_config[0]) )
-            print( json.dumps(udc_info[0]) )
-            print( json.dumps(source_info[0]) )
+                json.dump(digi_config[0], outfile)
+                json.dump(spec_config[0], outfile)
+                json.dump(noise_config[0], outfile)
+                json.dump(udc_info[0], outfile)
+                json.dump(source_info[0], outfile)
+                for x in recording_info:
+                    json.dump(x, outfile)
+                for x in data_validity_info:
+                    json.dump(x, outfile)
 
-            recording_info = dbclient.get_measurement_from_time_range("recording_status", start_time_stamp, end_time_stamp, 3)
-            for x in recording_info:
-                print json.dumps(x)
+                # print( json.dumps(digi_config[0]) )
+                # print( json.dumps(spec_config[0]) )
+                # print( json.dumps(noise_config[0]) )
+                # print( json.dumps(udc_info[0]) )
+                # print( json.dumps(source_info[0]) )
 
-            data_validity_info = dbclient.get_measurement_from_time_range("data_validity", start_time_stamp, end_time_stamp, 3)
-            for x in data_validity_info:
-                print json.dumps(x)
 
-            # with open('data.txt', 'w') as outfile:
-            #     json.dump(data, outfile)
+
+
 
             # --- nothing more to do for this scan
             logger.debug ("%s - sleeping for %d secs", st, 2)
