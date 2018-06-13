@@ -95,10 +95,12 @@ class HSpectrometerManager: public HApplicationBackend
             fSpectrometer(nullptr),
             fWriter(nullptr),
             fDigitizerSourcePool(nullptr),
-            fSpectrometerSinkPool(nullptr),
+            fSpectrometerSinkPool(nullptr)
+            #ifdef HOSE_USE_SPDLOG
+            ,fSink(nullptr),
             fStatusLogger(nullptr),
-            fConfigLogger(nullptr),
-            fSink(nullptr)
+            fConfigLogger(nullptr)
+            #endif
         {
             fCannedStopCommand = "record=off";
         }
@@ -412,7 +414,7 @@ class HSpectrometerManager: public HApplicationBackend
                 std::stringstream lfss;
                 lfss << STR2(LOG_INSTALL_DIR);
                 lfss << "/status-";
-                lfss << std::put_time(&current_utc_tm, "%d-%m-%YT%H-%M-%SZ");
+                lfss << std::put_time(&current_utc_tm, "%d-%m-%YT%H:%M:%SZ");
                 lfss << ".log";
 
                 //rename the
