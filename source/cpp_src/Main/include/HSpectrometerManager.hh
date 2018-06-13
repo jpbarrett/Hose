@@ -406,7 +406,7 @@ class HSpectrometerManager: public HApplicationBackend
                 fSink->flush();
 
                 time_t current_time = std::time(nullptr);
-                current_utc_tm = *(std::gmtime(&current_time))
+                tm current_utc_tm = *(std::gmtime(&current_time));
 
                 std::stringstream lfss;
                 lfss << STR2(LOG_INSTALL_DIR);
