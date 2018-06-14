@@ -185,7 +185,12 @@ int main(int argc, char** argv)
         }
     }
 
-    std::cout<<" meta data file = "<< metaDataFile<<std::endl;
+    //now sort the spec and npow files by time stamp (filename)
+    std::sort( specFiles.begin(), specFiles.end() , less_than_spec() );
+    std::sort( powerFiles.begin(), powerFiles.end() , less_than_spec() );
+
+
+    std::cout<<"meta data file = "<< metaDataFile<<std::endl;
 
     for(auto it = specFiles.begin(); it != specFiles.end(); it++)
     {
@@ -200,8 +205,6 @@ int main(int argc, char** argv)
 
 /*
 
-    // //now sort the spec files by time stamp (filename)
-    std::sort( specFiles.begin(), specFiles.end() , less_than_spec() );
 
     //now open up all the spec data (hope it fits in memory)
     std::vector< HSpectrumObject<float> > spectrum_vec;
