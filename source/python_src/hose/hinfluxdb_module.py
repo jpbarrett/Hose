@@ -57,3 +57,15 @@ class wf_influxdb(object):
             return mod_points
         else:
             return points
+
+
+def dump_dict_list_to_json_file(obj_list, filename):
+    with open(filename, 'w') as outfile:
+        outfile.write("[ \n") #open root element
+        n_obj = len(obj_list)
+        for i in range(0, n_obj):
+            if (i == n_obj-1):
+                outfile.write( json.dumps(x, indent=4, sort_keys=True) + "\n")
+            else:
+                outfile.write( json.dumps(x, indent=4, sort_keys=True) + ", \n")
+        outfile.write("] \n") #close root element
