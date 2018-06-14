@@ -25,7 +25,7 @@ extern "C"
 // #include "TGraph2D.h"
 // #include "TH2D.h"
 
-using namespace hose;
+// using namespace hose;
 
 double eps = 1e-15;
 
@@ -55,7 +55,7 @@ get_time_stamped_files(std::string fext, std::string delim, const std::vector<st
     for(auto it = file_list.begin(); it != file_list.end(); it++)
     {
         std::cout<< *it <<std::endl;
-        if( it->find(spec_ext) != std::string::npos)
+        if( it->find(fext) != std::string::npos)
         {
             std::string fname =  it->substr(it->find_last_of("\\/")+1, it->size() - 1);
             std::cout<<"fname = "<<fname<<std::endl;
@@ -70,7 +70,7 @@ get_time_stamped_files(std::string fext, std::string delim, const std::vector<st
                     std::string acq_second = fname.substr(0, delim_loc);
                     std::string remaining = fname.substr(delim_loc+1, fname.size() );
                     //get the leading sample index
-                    std::string next_delim_loc = remaining.find( delim );
+                    size_t next_delim_loc = remaining.find( delim );
                     if(next_delim_loc != std::string::npos)
                     {
                         std::string sample_index = remaining.substr(0, next_delim_loc);
@@ -82,7 +82,7 @@ get_time_stamped_files(std::string fext, std::string delim, const std::vector<st
                         ss2 << sample_index;
                         uint64_t val_si;
                         ss2 >> val_si;
-                        std::cout<<"adding file at: sec:"<<val_sec<<" and ns: "<<val_ns<<std::endl;
+                        std::cout<<"adding file at: sec:"<<val_sec<<" and ns: "<<val_si<<std::endl;
                         stamped_files.push_back( std::pair< std::string, std::pair<uint64_t, uint64_t > >(*it, std::pair< uint64_t, uint64_t >(val_sec, val_si ) ) ); 
                     }
                 }
@@ -153,7 +153,7 @@ int main(int argc, char** argv)
     std::string spec_ext = ".spec";
     std::string npow_ext = ".npow";
     std::string meta_data_name = "meta_data.json";
-    std::string udelim = "_"
+    std::string udelim = "_";
     std::vector< std::string > allFiles;
     std::vector< std::pair< std::string, std::pair< uint64_t, uint64_t > > > specFiles;
     std::vector< std::pair< std::string, std::pair< uint64_t, uint64_t > > > powerFiles;
