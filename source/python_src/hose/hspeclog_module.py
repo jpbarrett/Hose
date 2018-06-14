@@ -129,6 +129,8 @@ class hstatuslog_stripper(object):
             success = False
         else:
             for line_type in self.line_type_tuple:
+                print("looking for ", line_type.line_key)
+                print("in: ", line)
                 if line_type.line_key in line:
                     print "found line key = ", line_type.line_key
                     success = line_type.initialize_from_line(line)
