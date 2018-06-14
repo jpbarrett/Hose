@@ -160,8 +160,6 @@ int main(int argc, char** argv)
     bool have_meta_data = false;
     std::string metaDataFile = "";
 
-    std::string data_dir(argv[1]);
-
     //get list of all file in directory
     DIR *dpdf;
     struct dirent* epdf = NULL;
