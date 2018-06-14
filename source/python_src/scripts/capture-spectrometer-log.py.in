@@ -34,9 +34,7 @@ def main():
 
     run_loop = True
     while run_loop == True:
-        print "grab line:"
         line = tail.stdout.readline()
-        print "line = ", line
         result_valid = stripper.process_line(line.strip())
         if result_valid is True:
             json_body = stripper.get_data_points()[0]
