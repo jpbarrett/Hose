@@ -54,13 +54,10 @@ get_time_stamped_files(std::string fext, std::string delim, const std::vector<st
 {
     for(auto it = file_list.begin(); it != file_list.end(); it++)
     {
-        std::cout<< *it <<std::endl;
         if( it->find(fext) != std::string::npos)
         {
             std::string fname =  it->substr(it->find_last_of("\\/")+1, it->size() - 1);
-            std::cout<<"fname = "<<fname<<std::endl;
             size_t fext_location = fname.find( fext );
-            std::cout<<"fext location = "<<fext_location<<std::endl;
             if( fext_location != std::string::npos)
             {
                 size_t delim_loc = fname.find( delim );
@@ -82,7 +79,6 @@ get_time_stamped_files(std::string fext, std::string delim, const std::vector<st
                         ss2 << sample_index;
                         uint64_t val_si;
                         ss2 >> val_si;
-                        std::cout<<"adding file at: sec:"<<val_sec<<" and ns: "<<val_si<<std::endl;
                         stamped_files.push_back( std::pair< std::string, std::pair<uint64_t, uint64_t > >(*it, std::pair< uint64_t, uint64_t >(val_sec, val_si ) ) ); 
                     }
                 }
@@ -182,7 +178,6 @@ int main(int argc, char** argv)
     //look for meta_data file
     for(auto it = allFiles.begin(); it != allFiles.end(); it++)
     {
-        std::cout<< *it <<std::endl;
         if( it->find(meta_data_name) != std::string::npos)
         {
             have_meta_data = true;
@@ -190,13 +185,18 @@ int main(int argc, char** argv)
         }
     }
 
+    std::cout<<" meta data file = "<< metaDataFile<<std::endl;
 
-
-    if(specFiles.size() == 0)
+    for(auto it = specFiles.begin(); it != specFiles.end(); it++)
     {
-        std::cout<<"Error, could not find any files"<<std::endl;
-        return 1;
+        std::cout<<"spec file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
     }
+
+    for(auto it = powerFiles.begin(); it != powerFiles.end(); it++)
+    {
+        std::cout<<"npow file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
+    }
+
 
 /*
 
