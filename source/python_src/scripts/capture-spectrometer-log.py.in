@@ -26,13 +26,17 @@ def main():
     #set up ssh-tail command to grab field system log file lines
     #to change port edit ~/.ssh/config
     command = "tail -f " + logfilename
+
+    print "command = ", command
     tail = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     stripper = hfslog_stripper()
 
     run_loop = True
     while run_loop == True:
+        print "grab line:"
         line = tail.stdout.readline()
+        print "line = ", line
         if line:
             result_valid = stripper.process_line(line.strip())
             if result_valid is True:
