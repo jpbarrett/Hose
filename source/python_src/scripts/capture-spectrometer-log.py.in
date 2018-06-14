@@ -8,41 +8,42 @@ import sys
 import os
 import subprocess
 
-from influxdb import InfluxDBClient
-
 from hose import *
+
+
+#global vars
+log_install_dir = "@LOG_INSTALL_DIR@"
 
 ################################################################################
 
 def main():
-    usage_text = '\n capture-fs-log <fs-hostname> <log-filename>'
-    parser = optparse.OptionParser(usage=usage_text)
-
-    (opts, args) = parser.parse_args()
-
-    fshostname, logfilename = args
+    usage_text = '\n capture-spectrometer-log'
 
     #create interface and connect to (Westford) data base
+    logfilename = os.path.join(log_install_dir, "status.log")
     dbinterface = wf_influxdb()
 
     #set up ssh-tail command to grab field system log file lines
     #to change port edit ~/.ssh/config
     command = "tail -f " + logfilename
-    sshtail = subprocess.Popen(["ssh", "%s" % fshostname, command], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    tail = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    stripper = hstatuslog_stripper()
+    stripper = hfslog_stripper()
 
     run_loop = True
     while run_loop == True:
-        line = sshtail.stdout.readline()
+        line = tail.stdout.readline()
         if line:
             result_valid = stripper.process_line(line.strip())
             if result_valid is True:
                 json_body = stripper.get_data_points()[0]
                 print("Write points: {0}".format(json_body))
                 dbinterface.client.write_points([json_body], protocol='json')
-        if sshtail.poll() is not None:
+        if tail.poll() is not None or os.path.isfile(logfilename) is False:
             run_loop = False
+
+    tail.kill()
+
 
 ################################################################################
 
