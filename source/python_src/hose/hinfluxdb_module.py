@@ -1,5 +1,6 @@
 from influxdb import InfluxDBClient
 from datetime import datetime, timedelta
+import json
 
 class wf_influxdb(object):
     def __init__(self):
