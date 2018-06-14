@@ -37,12 +37,11 @@ def main():
         print "grab line:"
         line = tail.stdout.readline()
         print "line = ", line
-        if line:
-            result_valid = stripper.process_line(line.strip())
-            if result_valid is True:
-                json_body = stripper.get_data_points()[0]
-                print("Write points: {0}".format(json_body))
-                dbinterface.client.write_points([json_body], protocol='json')
+        result_valid = stripper.process_line(line.strip())
+        if result_valid is True:
+            json_body = stripper.get_data_points()[0]
+            print("Write points: {0}".format(json_body))
+            dbinterface.client.write_points([json_body], protocol='json')
         if tail.poll() is not None or os.path.isfile(logfilename) is False:
             run_loop = False
 
