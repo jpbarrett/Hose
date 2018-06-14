@@ -51,6 +51,7 @@ class spectrometer_log_line(object):
         self.parse_valid = True
         if( self.line_key in line):
             args = line.split(";")
+            print( "args = ", args)
             if len(args) == len(self.data_fields) + 1:
                 self.log_time.initialize_from_line(args[0])
                 for i in range(1, len(args)):
@@ -129,6 +130,7 @@ class hstatuslog_stripper(object):
         else:
             for line_type in self.line_type_tuple:
                 if line_type.line_key in line:
+                    print "found line key = ", line_type.line_key
                     success = line_type.initialize_from_line(line)
                     if success is True:
                         self.data_points = [ line_type.as_dict() ]
