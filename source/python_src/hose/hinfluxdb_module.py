@@ -65,6 +65,7 @@ def dump_dict_list_to_json_file(obj_list, filename):
         outfile.write("[ \n") #open root element
         n_obj = len(obj_list)
         for i in range(0, n_obj):
+            x = obj_list[i]
             if (i == n_obj-1):
                 outfile.write( json.dumps(x, indent=4, sort_keys=True) + "\n")
             else:
