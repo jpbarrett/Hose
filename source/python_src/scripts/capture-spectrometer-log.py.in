@@ -30,7 +30,7 @@ def main():
     print "command = ", command
     tail = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    stripper = hfslog_stripper()
+    stripper = hstatuslog_stripper()
 
     run_loop = True
     while run_loop == True:
