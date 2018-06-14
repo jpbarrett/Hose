@@ -32,6 +32,7 @@ if(HOSE_USE_CUDA AND HOSE_USE_ZEROMQ AND HOSE_USE_PX14)
     set(SOURCE_BASENAMES
         RunSpectrometer
         LaunchSpectrometerDaemon
+        SpectrumPlot
     )
 
     foreach( BASENAME ${SOURCE_BASENAMES} )
