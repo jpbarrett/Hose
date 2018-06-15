@@ -66,11 +66,12 @@ class hprompt(Cmd):
         #source dunno starting 2018163135822 dur 47 scan_name 163-1358
         self.start_time_stamp = datetime.utcnow()
         self.end_time_stamp = datetime.utcnow()
-        self.is_running = True
+        self.is_running = False
         self.thread_list = []
 
     def do_startlog2db(self, args):
         """Parse the spectrometer log and set results to database."""
+        self.is_running = True
         t = threading.Thread(name='log2db', target=self.log_to_db)
         t.start()
         self.thread_list.append(t)
