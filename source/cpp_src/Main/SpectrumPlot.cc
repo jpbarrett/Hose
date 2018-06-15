@@ -316,6 +316,8 @@ int main(int argc, char** argv)
 
 
 
+*/
+
 
     
     std::cout<<"starting root plotting"<<std::endl;
@@ -356,11 +358,9 @@ int main(int argc, char** argv)
     c->SetFillColor(0);
     c->SetRightMargin(0.2);
 
-    TGraph* g = new TGraph();
-    std::stringstream ss;
-    ss <<"Averaged spectrum, acquisition start time: ";
-    ss << std::asctime(std::gmtime(&start_time));
-    graph.push_back(g);
+    // std::stringstream ss;
+    // ss <<"Averaged spectrum, acquisition start time: ";
+    // ss << std::asctime(std::gmtime(&start_time));
 
     double n_samples_per_spec = spectrum_vec[0].GetSampleLength() / spectrum_vec[0].GetNAverages();
     double sample_rate = spectrum_vec[0].GetSampleRate();    
@@ -372,60 +372,50 @@ int main(int argc, char** argv)
     std::cout<<"sample rate = "<<sample_rate<<std::endl;
     std::cout<<"spec_res= "<<spec_res<<std::endl;
 
-    size_t spec_length = spectrum_vec[0].GetSpectrumLength();
-
+    
     std::vector<double> avespec;
     avespec.resize(spec_length,0);
     for(unsigned int n=0; n < spectrum_vec.size(); n++)
     {
+        TGraph* g = new TGraph();
+        graph.push_back(g);
         float* spec_val = spectrum_vec[n].GetSpectrumData();
+        uint64_t spec_length = spectrum_vec[n].GetSpectrumLength()
         for(unsigned int j=0; j<spec_length; j++)
         {
-            avespec[j] += spec_val[j];
+            g->SetPoint(j, j*spec_res/1e6, 10.0*std::log10( spec_val[j] ) );
         }
+        if(n == 0){g->Draw("ALP");}
+        else{g->Draw("ALP SAME");}
+
+        g->SetTitle(ss.str().c_str());
+        g->GetXaxis()->SetTitle("Frequency (MHz)");
+        g->GetYaxis()->SetTitle("Relative Power (dB)");
+        g->GetYaxis()->CenterTitle();
+        g->GetXaxis()->CenterTitle();
+
+        if(n == 0){g->Draw("ALP");}
+        else{g->Draw("ALP SAME");}
+
+        c->Update();
     }
 
-    for(unsigned int j=0; j<spec_length-1; j++)
-    {
-        avespec[j] /= (double) spectrum_vec.size();
-    }
-    
-
-    for(unsigned int n=0; n < spectrum_vec.size(); n++)
-    {
-        for(unsigned int j=0; j<spec_length-1; j++)
-        {
-            g->SetPoint(j, j*spec_res/1e6, 10.0*std::log10( avespec[j] + eps ) );
-        }
-    }
-    
-    g->Draw("ALP");
-    c->Update();
-
-    g->SetTitle(ss.str().c_str());
-    g->GetXaxis()->SetTitle("Frequency (MHz)");
-    g->GetYaxis()->SetTitle("Relative Power (dB)");
-    g->GetYaxis()->CenterTitle();
-    g->GetXaxis()->CenterTitle();
-
-    g->Draw("ALP");
-    c->Update();
 
 
-    
-    size_t start_sec = spectrum_vec[0].GetStartTime();
-    size_t now_sec = spectrum_vec.back().GetStartTime();
-
-    //calculate the start time of this spectral averages
-    double sample_index = spectrum_vec.back().GetLeadingSampleIndex() + spectrum_vec.back().GetSampleLength();
-    double stime = sample_index / sample_rate;
-
-    double time_diff = (double)(now_sec - start_sec) + stime;
-
-
-    std::cout<<"seconds difference = "<<(double)(now_sec - start_sec)<<std::endl;
-    std::cout<<"sub sec difference = "<<stime<<std::endl;
-    std::cout<<"total time from first to last sample (s): "<<time_diff<<std::endl;
+    // 
+    // size_t start_sec = spectrum_vec[0].GetStartTime();
+    // size_t now_sec = spectrum_vec.back().GetStartTime();
+    // 
+    // //calculate the start time of this spectral averages
+    // double sample_index = spectrum_vec.back().GetLeadingSampleIndex() + spectrum_vec.back().GetSampleLength();
+    // double stime = sample_index / sample_rate;
+    // 
+    // double time_diff = (double)(now_sec - start_sec) + stime;
+    // 
+    // 
+    // std::cout<<"seconds difference = "<<(double)(now_sec - start_sec)<<std::endl;
+    // std::cout<<"sub sec difference = "<<stime<<std::endl;
+    // std::cout<<"total time from first to last sample (s): "<<time_diff<<std::endl;
 
 /*
 
@@ -491,10 +481,9 @@ int main(int argc, char** argv)
 
     c2->Update();
 
-
+*/
 
     App->Run();
 
-*/
     return 0;
 }
