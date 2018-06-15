@@ -42,7 +42,7 @@ class HSpectrumFileStructWrapper
 
         HSpectrumFileStructWrapper(const HSpectrumFileStructWrapper& copy)
         {
-            InitializeSpectrumFileStruct(&fFileStruct)
+            InitializeSpectrumFileStruct(&fFileStruct);
             CopySpectrumFileStruct( &(copy.fFileStruct), &fFileStruct);
         }
 
