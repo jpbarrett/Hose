@@ -383,7 +383,7 @@ int main(int argc, char** argv)
         uint64_t spec_length = spectrum_vec[n].GetSpectrumLength()
         for(unsigned int j=0; j<spec_length; j++)
         {
-            g->SetPoint(j, j*spec_res/1e6, 10.0*std::log10( spec_val[j] ) );
+            g->SetPoint(j, j*spec_res/1e6, 10.0*std::log10( spec_val[j] + eps ) );
         }
         if(n == 0){g->Draw("ALP");}
         else{g->Draw("ALP SAME");}
