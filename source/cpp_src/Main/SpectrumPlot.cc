@@ -18,6 +18,7 @@ extern "C"
 
 
 #include "HSpectrumFileStructWrapper.hh"
+using namespace hose;
 
 // 
 // #include "TCanvas.h"
@@ -28,7 +29,7 @@ extern "C"
 // #include "TGraph2D.h"
 // #include "TH2D.h"
 
-// using namespace hose;
+
 
 double eps = 1e-15;
 
@@ -206,7 +207,7 @@ int main(int argc, char** argv)
     }
 
     //now open up all the spec data (hope it fits in memory)
-    std::vector< HSpectrumFileStructWrapper<float> > spectrum_vec;
+    std::vector< HSpectrumFileStructWrapper< float > > spectrum_vec;
     for(auto it = specFiles.begin(); it != specFiles.end(); it++)
     {
         spectrum_vec.push_back( HSpectrumFileStructWrapper<float>( it->first ) );
