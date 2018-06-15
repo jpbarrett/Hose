@@ -44,9 +44,11 @@ class HSpectrumFileStructWrapper
 
         virtual ~HSpectrumFileStructWrapper()
         {
+
             if(fFileStruct != nullptr)
             {
-                DestroySpectrumFileStruct(fFileStruct);
+                ClearSpectrumFileStruct(fFileStruct);
+                //DestroySpectrumFileStruct(fFileStruct);
             }
         }
 
