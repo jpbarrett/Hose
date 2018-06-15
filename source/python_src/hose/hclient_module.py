@@ -2,7 +2,7 @@ import sys
 import zmq
 import os
 from cmd import Cmd
-import datetime
+from datetime import datetime
 import time
 import threading
 import subprocess
@@ -64,8 +64,8 @@ class hprompt(Cmd):
         self.data_install_dir = ""
         self.dbclient = wf_influxdb()
         #source dunno starting 2018163135822 dur 47 scan_name 163-1358
-        self.start_time_stamp = datetime.datetime()
-        self.end_time_stamp = datetime.datetime()
+        self.start_time_stamp = datetime()
+        self.end_time_stamp = datetime()
         self.is_running = True
         self.thread_list = []
 
@@ -113,7 +113,7 @@ class hprompt(Cmd):
             #this is a record=on command, determine the remaining arguments, if we
             #are not given any, we use the default experiment/source names, and construct
             #a default scan name based on the start time (now)
-            tnow = datetime.datetime.utcnow()
+            tnow = datetime.utcnow()
             self.start_time_stamp = tnow
             day_of_year = str(tnow.timetuple().tm_yday).zfill(3)
             hour = str(tnow.hour).zfill(2)
@@ -165,7 +165,7 @@ class hprompt(Cmd):
             #this is a record=off command
             self.interface.SendRecieveMessage("record=off")
             time.sleep(1)
-            self.end_time_stamp = datetime.datetime.utcnow()
+            self.end_time_stamp = datetime.utcnow()
             self.create_meta_data_file()
             self.is_recording = False
             return 0
