@@ -25,6 +25,7 @@ set(HInterface_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/DestroyNoisePowerFileStruct.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/WriteNoisePowerFile.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ReadNoisePowerFile.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopyNoisePowerFileStruct.c
 )
 
 #this is a c library

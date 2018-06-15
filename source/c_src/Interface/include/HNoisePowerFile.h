@@ -11,6 +11,7 @@ extern struct HNoisePowerFileStruct* CreateNoisePowerFileStruct();
 extern void InitializeNoisePowerFileStruct(struct HNoisePowerFileStruct* spectrum);
 extern void ClearNoisePowerFileStruct(struct HNoisePowerFileStruct* spectrum);
 extern void DestroyNoisePowerFileStruct(struct HNoisePowerFileStruct* spectrum);
+extern void CopyNoisePowerFileStruct(const struct HNoisePowerFileStruct* src, struct HNoisePowerFileStruct* dest);
 extern int ReadNoisePowerFile(const char* filename, struct HNoisePowerFileStruct* spectrum);
 extern int WriteNoisePowerFile(const char* filename, struct HNoisePowerFileStruct* spectrum);
 
