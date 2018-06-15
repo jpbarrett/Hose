@@ -208,9 +208,10 @@ int main(int argc, char** argv)
 
     //now open up all the spec data (hope it fits in memory)
     std::vector< HSpectrumFileStructWrapper< float > > spectrum_vec;
+    spectrum_vec.resize(specFiles.size());
     for(auto it = specFiles.begin(); it != specFiles.end(); it++)
     {
-        spectrum_vec.push_back( HSpectrumFileStructWrapper<float>( it->first ) );
+        spectrum_vec[i].ReadFromFile(it->first);
     }
 
 /*
