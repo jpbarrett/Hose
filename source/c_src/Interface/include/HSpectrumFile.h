@@ -11,6 +11,7 @@ extern struct HSpectrumFileStruct* CreateSpectrumFileStruct();
 extern void InitializeSpectrumFileStruct(struct HSpectrumFileStruct* spectrum);
 extern void ClearSpectrumFileStruct(struct HSpectrumFileStruct* spectrum);
 extern void DestroySpectrumFileStruct(struct HSpectrumFileStruct* spectrum);
+extern void CopySpectrumFileStruct(const struct HSpectrumFileStruct* src, struct HSpectrumFileStruct* dest);
 extern int ReadSpectrumFile(const char* filename, struct HSpectrumFileStruct* spectrum);
 extern int WriteSpectrumFile(const char* filename, struct HSpectrumFileStruct* spectrum);
 

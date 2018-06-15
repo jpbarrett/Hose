@@ -18,6 +18,7 @@ set(HInterface_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/DestroySpectrumFileStruct.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/WriteSpectrumFile.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ReadSpectrumFile.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopySpectrumFileStruct.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CreateNoisePowerFileStruct.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/InitializeNoisePowerFileStruct.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ClearNoisePowerFileStruct.c

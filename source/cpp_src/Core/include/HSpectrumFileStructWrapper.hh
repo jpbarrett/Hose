@@ -40,6 +40,12 @@ class HSpectrumFileStructWrapper
             ReadFromFile(filename);
         }
 
+        HSpectrumFileStructWrapper(const HSpectrumFileStructWrapper& copy)
+        {
+            InitializeSpectrumFileStruct(&fFileStruct)
+            CopySpectrumFileStruct( &(copy.fFileStruct), &fFileStruct);
+        }
+
         virtual ~HSpectrumFileStructWrapper()
         {
             ClearSpectrumFileStruct(&fFileStruct);
