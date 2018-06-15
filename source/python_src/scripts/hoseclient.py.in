@@ -7,6 +7,7 @@ log_install_dir = "@LOG_INSTALL_DIR@"
 
 if __name__ == '__main__':
     prompt = hprompt()
+    hprompt_log2db_run = False;
     prompt.data_install_dir = data_install_dir
     prompt.log_install_dir = log_install_dir
     prompt.prompt = '> '
