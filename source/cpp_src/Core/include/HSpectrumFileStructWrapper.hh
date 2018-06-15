@@ -33,20 +33,21 @@ class HSpectrumFileStructWrapper
             fFileStruct(nullptr)
         {
             fFileStruct = CreateSpectrumFileStruct();
-            InitializeSpectrumFileStruct(fFileStruct);
         }
 
         HSpectrumFileStructWrapper(std::string filename):
             fFileStruct(nullptr)
         {
             fFileStruct = CreateSpectrumFileStruct();
-            InitializeSpectrumFileStruct(fFileStruct);
             ReadFromFile(filename);
         }
 
         virtual ~HSpectrumFileStructWrapper()
         {
-            DestroySpectrumFileStruct(fFileStruct);
+            if(fFileStruct != nullptr)
+            {
+                DestroySpectrumFileStruct(fFileStruct);
+            }
         }
 
         void ReadFromFile(std::string filename)

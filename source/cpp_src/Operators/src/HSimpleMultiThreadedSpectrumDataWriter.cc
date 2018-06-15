@@ -179,7 +179,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                     int ret_val = WriteSpectrumFile(spec_filename.c_str(), spec_data);
                     if(ret_val != HSUCCESS){std::cout<<"file error!"<<std::endl;}
 
-                    //wipe the struct
+                    //wipe the struct (init removes ptr to the sdata->spectrum which we do not want to delete!)
                     InitializeSpectrumFileStruct(spec_data);
                     DestroySpectrumFileStruct(spec_data);
                 }
