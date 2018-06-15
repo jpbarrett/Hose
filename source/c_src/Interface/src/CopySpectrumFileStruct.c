@@ -1,5 +1,7 @@
 #include "HSpectrumFile.h"
 
+#include <string.h>
+
 void CopySpectrumFileStruct(const struct HSpectrumFileStruct* src, struct HSpectrumFileStruct* dest)
 {
     ClearSpectrumFileStruct(dest);
