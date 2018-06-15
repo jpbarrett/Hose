@@ -372,15 +372,12 @@ int main(int argc, char** argv)
     std::cout<<"sample rate = "<<sample_rate<<std::endl;
     std::cout<<"spec_res= "<<spec_res<<std::endl;
 
-    
-    std::vector<double> avespec;
-    avespec.resize(spec_length,0);
     for(unsigned int n=0; n < spectrum_vec.size(); n++)
     {
         TGraph* g = new TGraph();
         graph.push_back(g);
         float* spec_val = spectrum_vec[n].GetSpectrumData();
-        uint64_t spec_length = spectrum_vec[n].GetSpectrumLength()
+        uint64_t spec_length = spectrum_vec[n].GetSpectrumLength();
         for(unsigned int j=0; j<spec_length; j++)
         {
             g->SetPoint(j, j*spec_res/1e6, 10.0*std::log10( spec_val[j] + eps ) );
