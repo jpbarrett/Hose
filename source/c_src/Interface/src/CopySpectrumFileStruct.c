@@ -1,6 +1,6 @@
 #include "HSpectrumFile.h"
 
-void CopySpectrumFileStruct(const struct HSpectrumFileStruct* src, struct HSpectrumFileStruct* dest);
+void CopySpectrumFileStruct(const struct HSpectrumFileStruct* src, struct HSpectrumFileStruct* dest)
 {
     ClearSpectrumFileStruct(dest);
     InitializeSpectrumFileStruct(dest);
@@ -38,5 +38,4 @@ void CopySpectrumFileStruct(const struct HSpectrumFileStruct* src, struct HSpect
             memcpy( dest->fRawSpectrumData, src->fRawSpectrumData, (dest->fHeader.fSpectrumLength)*(dest->fHeader.fSpectrumDataTypeSize) );
         }
     }
-
-}
+};
