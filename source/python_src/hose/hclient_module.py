@@ -130,7 +130,6 @@ class hprompt(Cmd):
             arg_list = args.split(':')
             if( len(arg_list) == 1 and "=on" in arg_list[0]):
                 cmd_string += ":" + exp_name + ":" + src_name + ":" + scan_name
-                self.start_time_stamp = 
                 self.interface.SendRecieveMessage(cmd_string)
                 self.is_recording = True
                 return 0
