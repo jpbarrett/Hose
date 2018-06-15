@@ -1,0 +1,113 @@
+2018.166.18:38:11.24;Log Opened: Mark IV Field System Version 9.12.11
+2018.166.18:38:11.24;location,WESTFORD,71.49,42.61,94.0
+2018.166.18:38:11.24;horizon1,0.,4.,360.
+2018.166.18:38:11.24;antenna,18.3,240.0,180.0,100.0,460.0,4.0,87.2,AZEL
+2018.166.18:38:11.24;equip,rdbe,mk6,none,mk4,500.10,3,a/d,101,100,90,none,41,1,in,8bit,50001:thumper3,3,return,v101,v12,4,15000,15000,15000,15000,0
+2018.166.18:38:11.24;time,1.892,147.246,computer
+2018.166.18:38:11.24;flagr,100
+2018.166.18:38:11.24;rdbe,20.0,12.0,28.0,normalized
+2018.166.18:38:18.01;source=casa,232324.8,+584859.,2000.,neutral
+2018.166.18:38:18.01#antcn#new source
+2018.166.18:38:19.01#flagr#flagr/antenna,new-source
+2018.166.18:40:13.93;initp
+2018.166.18:40:13.93&initp/setuppnt
+2018.166.18:40:13.93&initp/auto
+2018.166.18:40:13.93&initp/"caloff
+2018.166.18:40:13.93&initp/"sample fivept set-up for azel antenna with mark iii/iv rack
+2018.166.18:40:13.93&initp/fivept=azel,-2,9,.4,1,15d0,120
+2018.166.18:40:13.93&initp/"sample fivept set-up for xyns antenna with vlba/4 rack
+2018.166.18:40:13.93&initp/"fivept=xyns,-2,9,.4,1,ia,120
+2018.166.18:40:13.93&initp/" sample onoff set-up for mark iii/iv
+2018.166.18:40:13.93&initp/onoff=2,1,75,3,,120,15a0,15a1,15b0,15b1,15c0,15c1,15d0,15d1
+2018.166.18:40:13.93&initp/"onoff=4,4,75,3,,120,all
+2018.166.18:40:13.93&initp/" sample onoff set-up for vlba/4
+2018.166.18:40:13.93&initp/"onoff=2,1,75,3,,120,allu,ia,ib,ic
+2018.166.18:40:13.93&initp/check=
+2018.166.18:40:13.93&initp/sy=go aquir &
+2018.166.18:40:13.93&setuppnt/pcalon
+2018.166.18:40:13.93&setuppnt/"tpicd=off
+2018.166.18:40:13.93&setuppnt/ifdpnt
+2018.166.18:40:13.93&setuppnt/rdbepnt
+2018.166.18:40:13.93&setuppnt/"mk6bb
+2018.166.18:40:13.93&setuppnt/"tpicd=no,0
+2018.166.18:40:13.93&setuppnt/"tpicd
+2018.166.18:40:13.93&pcalon/"No pcal control here
+2018.166.18:40:13.93&ifdpnt/lo=
+2018.166.18:40:13.93&ifdpnt/lo=loa0,2472.4,usb,lcp,5
+2018.166.18:40:13.93&ifdpnt/lo=loa1,2472.4,usb,rcp,5
+2018.166.18:40:13.93&ifdpnt/lo=lob0,4712.4,usb,lcp,5
+2018.166.18:40:13.93&ifdpnt/lo=lob1,4712.4,usb,rcp,5
+2018.166.18:40:13.93&ifdpnt/lo=loc0,5832.4,usb,lcp,5
+2018.166.18:40:13.93&ifdpnt/lo=loc1,5832.4,usb,rcp,5
+2018.166.18:40:13.93&ifdpnt/lo=lod0,9672.4,usb,lcp,5
+2018.166.18:40:13.93&ifdpnt/lo=lod1,9672.4,usb,rcp,5
+2018.166.18:40:13.93&ifdpnt/"lo=4*luff-22500
+2018.166.18:40:13.93&ifdpnt/"luff=(lo+22500)/4
+2018.166.18:40:13.93&ifdpnt/sy=popen 'udceth0 udca 6243.1 20 20' -n udcca &
+2018.166.18:40:13.93&ifdpnt/sy=popen 'udceth0 udcb 6803.1 20 20' -n udccb &
+2018.166.18:40:13.93&ifdpnt/sy=popen 'udceth0 udcc 7083.1 20 20' -n udccc &
+2018.166.18:40:13.93&ifdpnt/sy=popen 'udceth0 udcd 8043.1 20 20' -n udccd &
+2018.166.18:40:13.94&rdbepnt/rdbe=dbe_data_send=off;
+2018.166.18:40:13.94&rdbepnt/!+1s
+2018.166.18:40:13.94&rdbepnt/rdbe=dbe_chsel_en=2:chsel_enable:psn_enable;
+2018.166.18:40:13.94&rdbepnt/rdbe=dbe_chsel=0:1:2:4:6:9:13:14:15;
+2018.166.18:40:13.94&rdbepnt/rdbe=dbe_chsel=1:1:2:4:6:9:13:14:15;
+2018.166.18:40:13.94&rdbepnt/"offset= mod(lo+1024),5)
+2018.166.18:40:13.94&rdbepnt/"loa is 2472.4
+2018.166.18:40:13.94&rdbepnt/"lob is 4712.4
+2018.166.18:40:13.94&rdbepnt/"loa is 5832.4
+2018.166.18:40:13.94&rdbepnt/"loa is 9672.4
+2018.166.18:40:13.94&rdbepnt/rdbe=pcal=1.4e6;
+2018.166.18:40:13.94&rdbepnt/!+1s
+2018.166.18:40:13.94&rdbepnt/rdbe=dbe_data_send=on;
+2018.166.18:40:13.95/rdbea/!dbe_data_send=0:on:2018-166-18-40-13:2018-166-18-40-13:2018-166-18-40-13:0:0;
+2018.166.18:40:13.95/rdbed/!dbe_data_send=0:on:2018-166-18-40-13:2018-166-18-40-13:2018-166-18-40-13:0:0;
+2018.166.18:40:13.95/rdbec/!dbe_data_send=0:on:2018-166-18-40-13:2018-166-18-40-13:2018-166-18-40-13:0:0;
+2018.166.18:40:13.95/rdbeb/!dbe_data_send=0:on:2018-166-18-40-13:2018-166-18-40-13:2018-166-18-40-13:0:0;
+2018.166.18:40:14.96/rdbed/!dbe_chsel_en=0:2:chsel_enabled:psn_enabled:vtp_disabled;
+2018.166.18:40:14.96/rdbeb/!dbe_chsel_en=0:2:chsel_enabled:psn_enabled:vtp_disabled;
+2018.166.18:40:14.96/rdbea/!dbe_chsel_en=0:2:chsel_enabled:psn_enabled:vtp_disabled;
+2018.166.18:40:14.96/rdbec/!dbe_chsel_en=0:2:chsel_enabled:psn_enabled:vtp_disabled;
+2018.166.18:40:14.96/rdbea/!dbe_chsel=0:0:1:2:4:6:9:13:14:15:chsel_enabled;
+2018.166.18:40:14.96/rdbeb/!dbe_chsel=0:0:1:2:4:6:9:13:14:15:chsel_enabled;
+2018.166.18:40:14.96/rdbec/!dbe_chsel=0:0:1:2:4:6:9:13:14:15:chsel_enabled;
+2018.166.18:40:14.96/rdbed/!dbe_chsel=0:0:1:2:4:6:9:13:14:15:chsel_enabled;
+2018.166.18:40:14.96/rdbea/!dbe_chsel=0:1:1:2:4:6:9:13:14:15:chsel_enabled;
+2018.166.18:40:14.96/rdbed/!dbe_chsel=0:1:1:2:4:6:9:13:14:15:chsel_enabled;
+2018.166.18:40:14.96/rdbec/!dbe_chsel=0:1:1:2:4:6:9:13:14:15:chsel_enabled;
+2018.166.18:40:14.96/rdbeb/!dbe_chsel=0:1:1:2:4:6:9:13:14:15:chsel_enabled;
+2018.166.18:40:14.96/rdbec/!dbe_pcal=0:1400000.000000;
+2018.166.18:40:14.96/rdbeb/!dbe_pcal=0:1400000.000000;
+2018.166.18:40:14.96/rdbed/!dbe_pcal=0:1400000.000000;
+2018.166.18:40:14.96/rdbea/!dbe_pcal=0:1400000.000000;
+2018.166.18:40:15.97/rdbec/!dbe_data_send=0:off:2018-166-18-40-15:2019-166-18-40-15:2018-166-18-40-15:0:-31536000;
+2018.166.18:40:15.97/rdbed/!dbe_data_send=0:off:2018-166-18-40-15:2019-166-18-40-15:2018-166-18-40-15:0:-31536000;
+2018.166.18:40:15.97/rdbeb/!dbe_data_send=0:off:2018-166-18-40-15:2019-166-18-40-15:2018-166-18-40-15:0:-31536000;
+2018.166.18:40:15.98/rdbea/!dbe_data_send=0:off:2018-166-18-40-15:2019-166-18-40-15:2018-166-18-40-15:0:-31536000;
+2018.166.18:40:15.98&auto/rdbe_atten=
+2018.166.18:40:16.40/rdbe_attend/,,,0,9.5,19.9,1,8.0,20.9
+2018.166.18:40:16.40/rdbe_attenb/,,,0,16.0,19.4,1,11.0,19.3
+2018.166.18:40:16.40/rdbe_attena/,,,0,18.0,19.9,1,5.0,20.5
+2018.166.18:40:16.40/rdbe_attenc/,,,0,7.5,18.9,1,14.5,19.2
+2018.166.18:40:20.47#popen#udccb/updown 6803.1 20 20 0 0 status 8
+2018.166.18:40:20.47#popen#udcca/updown 6243.1 20 20 0 0 status 0
+2018.166.18:40:20.47#popen#udccd/updown 8043.1 20 20 0 0 status 0
+2018.166.18:40:20.47#popen#udccc/updown 7083.1 20 20 0 0 status 0
+2018.166.18:41:09.73;data_valid=on
+2018.166.18:41:57.93;data_valid=off
+2018.166.18:43:23.18;onsource
+2018.166.18:43:23.21#antcn#ONSOURCE/SLEWING
+2018.166.18:43:23.21/onsource/SLEWING
+2018.166.18:43:23.21?ERROR qo -301 WARNING: ONSOURCE status is SLEWING!
+2018.166.18:44:28.28;onsource
+2018.166.18:44:28.28#antcn#ONSOURCE/SLEWING
+2018.166.18:44:28.28/onsource/SLEWING
+2018.166.18:44:28.28?ERROR qo -301 WARNING: ONSOURCE status is SLEWING!
+2018.166.18:44:41.29#flagr#flagr/antenna,acquired
+2018.166.18:44:42.50;onsource
+2018.166.18:44:42.50#antcn#ONSOURCE/TRACKING
+2018.166.18:44:42.50/onsource/TRACKING
+2018.166.18:45:29.56#flagr#flagr/antenna,off-source
+2018.166.18:45:46.57#flagr#flagr/antenna,re-acquired
+2018.166.19:12:54.11;terminate
+2018.166.19:12:54.11:*boss terminated
