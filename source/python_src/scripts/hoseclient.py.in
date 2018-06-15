@@ -2,8 +2,12 @@
 
 from hose import *
 
+data_install_dir = "@DATA_INSTALL_DIR@"
+log_install_dir = "@LOG_INSTALL_DIR@"
 
 if __name__ == '__main__':
     prompt = hprompt()
+    prompt.data_install_dir = data_install_dir
+    prompt.log_install_dir = log_install_dir
     prompt.prompt = '> '
     prompt.cmdloop('Starting client...')

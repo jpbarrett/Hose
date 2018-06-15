@@ -1,9 +1,15 @@
 import sys
 import zmq
+import os
 from cmd import Cmd
-from datetime import datetime
+import datetime
 import time
- 
+import threading
+import subprocess
+
+from .hinfluxdb_module import *
+from .hspeclog_module import *
+
 class hclient(object):
 
     def __init__(self):
@@ -50,6 +56,24 @@ class hprompt(Cmd):
         self.default_experiment_name="ExpX"
         self.default_source_name="SrcX"
         self.default_scan_name="ScnX"
+        self.is_recording = False
+        self.current_experiment_name = ""
+        self.current_source_name = ""
+        self.current_scan_name = ""
+        self.log_install_dir = ""
+        self.data_install_dir = ""
+        self.dbclient = wf_influxdb()
+        #source dunno starting 2018163135822 dur 47 scan_name 163-1358
+        self.start_time_stamp = datetime.datetime()
+        self.end_time_stamp = datetime.datetime()
+        self.is_running = True
+        self.thread_list = []
+
+    def do_startlog2db(self, args):
+        """Parse the spectrometer log and set results to database."""
+        t = threading.Thread(name='log2db', target=self.log_to_db)
+        t.start()
+        self.thread_list.append(t)
 
     def do_record(self, args):
         """Set up recording state of the spectrometer."""
@@ -61,6 +85,10 @@ class hprompt(Cmd):
     def do_quit(self, args):
         """Quits the client."""
         print "Quitting."
+        self.is_running = False
+        time.sleep(1)
+        for x in self.thread_list:
+            x.join()
         self.interface.Shutdown()
         raise SystemExit
 
@@ -70,6 +98,9 @@ class hprompt(Cmd):
         cmd_string = "shutdown" 
         self.interface.SendRecieveMessage(cmd_string)
         time.sleep(1)
+        self.is_running = False
+        for x in self.thread_list:
+            x.join()
         self.interface.Shutdown()
         raise SystemExit
 
@@ -82,7 +113,8 @@ class hprompt(Cmd):
             #this is a record=on command, determine the remaining arguments, if we
             #are not given any, we use the default experiment/source names, and construct
             #a default scan name based on the start time (now)
-            tnow = datetime.utcnow()
+            tnow = datetime.datetime.utcnow()
+            self.start_time_stamp = tnow
             day_of_year = str(tnow.timetuple().tm_yday).zfill(3)
             hour = str(tnow.hour).zfill(2)
             minute = str(tnow.minute).zfill(2)
@@ -90,12 +122,17 @@ class hprompt(Cmd):
             scan_name = day_of_year + "-" + hour + minute + sec
             exp_name = self.default_experiment_name
             src_name = self.default_source_name
+            self.current_experiment_name = exp_name
+            self.current_scan_name = scan_name
+            self.current_source_name = src_name
             cmd_string = "record=on" 
             #split on ':' tokens, and construct well formatted command
             arg_list = args.split(':')
             if( len(arg_list) == 1 and "=on" in arg_list[0]):
                 cmd_string += ":" + exp_name + ":" + src_name + ":" + scan_name
+                self.start_time_stamp = 
                 self.interface.SendRecieveMessage(cmd_string)
+                self.is_recording = True
                 return 0
             else:
                 if( len(arg_list) >= 4 ):
@@ -106,6 +143,9 @@ class hprompt(Cmd):
                     if( len(arg_list[3]) >= 1 ):
                         scan_name = arg_list[3]
                     cmd_string += ":" + exp_name + ":" + src_name + ":" + scan_name
+                    self.current_experiment_name = exp_name
+                    self.current_scan_name = scan_name
+                    self.current_source_name = src_name
                     if( len(arg_list) == 6): 
                         start_time = arg_list[4]
                         duration = arg_list[5]
@@ -118,12 +158,17 @@ class hprompt(Cmd):
                             if self.check_time_range(st_year, st_day, st_hour, st_min, st_sec ):
                                 cmd_string += ":" + start_time + ":" + duration
                                 self.interface.SendRecieveMessage(cmd_string)
+                                self.is_recording = True
                     return 0
                 else:
                     return 1 #error parsing record command
         elif( len(args) ==4 and "=off" in args ):
             #this is a record=off command
             self.interface.SendRecieveMessage("record=off")
+            time.sleep(1)
+            self.end_time_stamp = datetime.datetime.utcnow()
+            self.create_meta_data_file()
+            self.is_recording = False
             return 0
 
         return 1 #error command not understood
@@ -137,3 +182,53 @@ class hprompt(Cmd):
                         if second >= 0 and second <= 59:
                             return True
         return False
+
+    def create_meta_data_file():
+        meta_data_filename = "meta_data.json"
+        meta_data_filepath = os.path.join(self.data_install_dir, self.current_experiment_name, self.current_scan_name, meta_data_filename)
+        obj_list = []
+
+        digi_config = self.dbclient.get_most_recent_measurement("digitizer_config", self.end_time_stamp)
+        for x in digi_config:
+            obj_list.append(x)
+        spec_config = self.dbclient.get_most_recent_measurement("spectrometer_config", self.end_time_stamp)
+        for x in spec_config:
+            obj_list.append(x)
+        noise_config = self.dbclient.get_most_recent_measurement("noise_diode_config", self.end_time_stamp)
+        for x in noise_config:
+            obj_list.append(x)
+        udc_info = self.dbclient.get_most_recent_measurement("udc_status", self.end_time_stamp)
+        for x in udc_info:
+            obj_list.append(x)
+        source_info = self.dbclient.get_most_recent_measurement("source", self.end_time_stamp)
+        for x in source_info:
+            obj_list.append(x)
+        recording_info = self.dbclient.get_measurement_from_time_range("recording_status", self.start_time_stamp, self.end_time_stamp, 3)
+        for x in recording_info:
+            obj_list.append(x)
+        data_validity_info = self.dbclient.get_measurement_from_time_range("data_validity", self.start_time_stamp, self.end_time_stamp, 3)
+        for x in data_validity_info:
+            obj_list.append(x)
+        dump_dict_list_to_json_file(obj_list, meta_data_filepath)
+
+    def log_to_db():
+
+        #create interface and connect to (Westford) data base
+        logfilename = os.path.join(self.log_install_dir, "status.log")
+
+        command = "tail -f " + logfilename
+        tail = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        stripper = hstatuslog_stripper()
+
+        run_loop = True
+        while run_loop == True:
+            line = tail.stdout.readline()
+            if line:
+                result_valid = stripper.process_line(line.strip())
+                if result_valid is True:
+                    json_body = stripper.get_data_points()[0]
+                    print("Write points: {0}".format(json_body))
+                    self.dbclient.client.write_points([json_body], protocol='json')
+            if tail.poll() is not None or os.path.isfile(logfilename) is False or self.is_running is False:
+                run_loop = False
