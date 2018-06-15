@@ -89,7 +89,7 @@ class hfslog_stripper(object):
         self.data_flag_set = list()
         #set up dictionary of key words we look for in the log:
         #currently we only care about UDC-C, the data validity on/off and source information
-        self.data_flag_dict = {"#popen#udccc/updown" : 1,  ":data_valid": 2, ":source=": 3}
+        self.data_flag_dict = {"#popen#udccc/updown" : 1,  "data_valid": 2, "source=": 3}
         self.data_flag_list = []
         for key, val in self.data_flag_dict.items():
             self.data_flag_list.append(key)
@@ -171,7 +171,7 @@ class hfslog_stripper(object):
         stat = data_status()
         tokens = line.split('=')
         if len(tokens) == 2:
-            if ":data_valid" in tokens[0]:
+            if "data_valid" in tokens[0]:
                 stat.parse_valid = True
                 stat.log_time = self.strip_date(line)
                 stat.status_code = tokens[1]
@@ -182,7 +182,7 @@ class hfslog_stripper(object):
         stat = source_status()
         tokens = line.split('=')
         if len(tokens) == 2:
-            if ":source" in tokens[0]:
+            if "source" in tokens[0]:
                 tokens2 = tokens[1].split(',')
                 if len(tokens2) == 5:
                     stat.parse_valid = True
