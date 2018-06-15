@@ -48,7 +48,8 @@ class HSpectrumFileStructWrapper
             if(fFileStruct != nullptr)
             {
                 ClearSpectrumFileStruct(fFileStruct);
-                //DestroySpectrumFileStruct(fFileStruct);
+                DestroySpectrumFileStruct(fFileStruct);
+                fFileStruct = nullptr;
             }
         }
 
