@@ -10,6 +10,8 @@ import subprocess
 from .hinfluxdb_module import *
 from .hspeclog_module import *
 
+hprompt_log2db_run = False
+
 class hclient(object):
 
     def __init__(self):
@@ -66,12 +68,12 @@ class hprompt(Cmd):
         #source dunno starting 2018163135822 dur 47 scan_name 163-1358
         self.start_time_stamp = datetime.utcnow()
         self.end_time_stamp = datetime.utcnow()
-        self.is_running = False
+        hprompt_log2db_run = False
         self.thread_list = []
 
     def do_startlog2db(self, args):
         """Parse the spectrometer log and set results to database."""
-        self.is_running = True
+        hprompt_log2db_run = True
         t = threading.Thread(name='log2db', target=self.log_to_db)
         t.start()
         self.thread_list.append(t)
@@ -86,7 +88,7 @@ class hprompt(Cmd):
     def do_quit(self, args):
         """Quits the client."""
         print "Quitting."
-        self.is_running = False
+        hprompt_log2db_run = False
         time.sleep(1)
         for x in self.thread_list:
             x.join()
@@ -99,7 +101,7 @@ class hprompt(Cmd):
         cmd_string = "shutdown" 
         self.interface.SendRecieveMessage(cmd_string)
         time.sleep(1)
-        self.is_running = False
+        hprompt_log2db_run = False
         for x in self.thread_list:
             x.join()
         self.interface.Shutdown()
@@ -230,5 +232,5 @@ class hprompt(Cmd):
                     json_body = stripper.get_data_points()[0]
                     print("Write points: {0}".format(json_body))
                     self.dbclient.client.write_points([json_body], protocol='json')
-            if tail.poll() is not None or os.path.isfile(logfilename) is False or self.is_running is False:
+            if tail.poll() is not None or os.path.isfile(logfilename) is False or hprompt_log2db_run is False:
                 run_loop = False
