@@ -47,7 +47,11 @@ class HSpectrumFileStructWrapper
 
         void ReadFromFile(std::string filename)
         {
-             ReadSpectrumFile(filename.c_str(), &fFileStruct);
+             int ReadSpectrumFile(filename.c_str(), &fFileStruct);
+             if(code != HSUCCESS)
+             {
+                 std::cout<<"file error: "<<code<<std::endl;
+             }
         }
 
         void WriteToFile(std::string filename)
