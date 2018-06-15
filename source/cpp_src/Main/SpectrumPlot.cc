@@ -169,7 +169,7 @@ int main(int argc, char** argv)
         do
         {
             epdf = readdir(dpdf);
-            if(epdf != NULL){allFiles.push_back( data_dir  + std::string(epdf->d_name) );}
+            if(epdf != NULL){allFiles.push_back( data_dir + "/" + std::string(epdf->d_name) );}
         }
         while(epdf != NULL);
     }
