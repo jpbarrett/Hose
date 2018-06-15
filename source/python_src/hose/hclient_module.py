@@ -210,7 +210,7 @@ class hprompt(Cmd):
             obj_list.append(x)
         dump_dict_list_to_json_file(obj_list, meta_data_filepath)
 
-    def log_to_db():
+    def log_to_db(self):
 
         #create interface and connect to (Westford) data base
         logfilename = os.path.join(self.log_install_dir, "status.log")
