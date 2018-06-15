@@ -64,8 +64,8 @@ class hprompt(Cmd):
         self.data_install_dir = ""
         self.dbclient = wf_influxdb()
         #source dunno starting 2018163135822 dur 47 scan_name 163-1358
-        self.start_time_stamp = datetime()
-        self.end_time_stamp = datetime()
+        self.start_time_stamp = datetime.utcnow()
+        self.end_time_stamp = datetime.utcnow()
         self.is_running = True
         self.thread_list = []
 
