@@ -10,6 +10,7 @@ extern "C"
 
 #include <vector>
 #include <string>
+#include <cstring>
 
 /*
 *File: HSpectrumFileStructWrapper.hh
