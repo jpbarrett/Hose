@@ -20,14 +20,14 @@ extern "C"
 #include "HSpectrumFileStructWrapper.hh"
 using namespace hose;
 
-// 
-// #include "TCanvas.h"
-// #include "TApplication.h"
-// #include "TStyle.h"
-// #include "TColor.h"
-// #include "TGraph.h"
-// #include "TGraph2D.h"
-// #include "TH2D.h"
+
+#include "TCanvas.h"
+#include "TApplication.h"
+#include "TStyle.h"
+#include "TColor.h"
+#include "TGraph.h"
+#include "TGraph2D.h"
+#include "TH2D.h"
 
 
 
