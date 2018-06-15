@@ -362,14 +362,17 @@ int main(int argc, char** argv)
     // ss <<"Averaged spectrum, acquisition start time: ";
     // ss << std::asctime(std::gmtime(&start_time));
 
-    double n_samples_per_spec = spectrum_vec[0].GetSampleLength() / spectrum_vec[0].GetNAverages();
-    double sample_rate = spectrum_vec[0].GetSampleRate();    
-    double spec_res = sample_rate / n_samples_per_spec; 
+
 
     std::cout<<"sample length = "<< spectrum_vec[0].GetSampleLength() <<std::endl;
     std::cout<<"n averages = "<<spectrum_vec[0].GetNAverages() << std::endl;
-    std::cout<<"n samples per spec = "<<n_samples_per_spec<<std::endl;
+    double sample_rate = spectrum_vec[0].GetSampleRate();
     std::cout<<"sample rate = "<<sample_rate<<std::endl;
+
+    double n_samples_per_spec = spectrum_vec[0].GetSampleLength() / spectrum_vec[0].GetNAverages();
+    double spec_res = sample_rate / n_samples_per_spec; 
+
+    std::cout<<"n samples per spec = "<<n_samples_per_spec<<std::endl;
     std::cout<<"spec_res= "<<spec_res<<std::endl;
 
     for(unsigned int n=0; n < spectrum_vec.size(); n++)
