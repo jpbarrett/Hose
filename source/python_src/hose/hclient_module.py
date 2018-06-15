@@ -10,8 +10,6 @@ import subprocess
 from .hinfluxdb_module import *
 from .hspeclog_module import *
 
-hprompt_log2db_run = False
-
 class hclient(object):
 
     def __init__(self):
@@ -64,18 +62,21 @@ class hprompt(Cmd):
         self.current_scan_name = ""
         self.log_install_dir = ""
         self.data_install_dir = ""
+        self.bin_install_dir = ""
         self.dbclient = wf_influxdb()
         #source dunno starting 2018163135822 dur 47 scan_name 163-1358
         self.start_time_stamp = datetime.utcnow()
         self.end_time_stamp = datetime.utcnow()
-        self.thread_list = []
+        self.process_list = []
 
     def do_startlog2db(self, args):
-        """Parse the spectrometer log and set results to database."""
-        hprompt_log2db_run = True
-        t = threading.Thread(name='log2db', target=self.log_to_db)
-        t.start()
-        self.thread_list.append(t)
+        """Parse the spectrometer log and send results to database."""
+        #launch log to db as subprocess
+        if(len(process_list) == 0):
+            log2db_exe = "capture-spectrometer-log.py"
+            command =  os.path.join(self.bin_install_dir, log2db_exe)
+            log2db = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.process_list.append(log2db)
 
     def do_record(self, args):
         """Set up recording state of the spectrometer."""
@@ -87,10 +88,9 @@ class hprompt(Cmd):
     def do_quit(self, args):
         """Quits the client."""
         print "Quitting."
-        hprompt_log2db_run = False
         time.sleep(1)
-        for x in self.thread_list:
-            x.join()
+        for x in self.process_list:
+            x.kill()
         self.interface.Shutdown()
         raise SystemExit
 
@@ -100,9 +100,8 @@ class hprompt(Cmd):
         cmd_string = "shutdown" 
         self.interface.SendRecieveMessage(cmd_string)
         time.sleep(1)
-        hprompt_log2db_run = False
-        for x in self.thread_list:
-            x.join()
+        for x in self.process_list:
+            x.kill()
         self.interface.Shutdown()
         raise SystemExit
 
@@ -211,25 +210,3 @@ class hprompt(Cmd):
         for x in data_validity_info:
             obj_list.append(x)
         dump_dict_list_to_json_file(obj_list, meta_data_filepath)
-
-    def log_to_db(self):
-
-        #create interface and connect to (Westford) data base
-        logfilename = os.path.join(self.log_install_dir, "status.log")
-
-        command = "tail -f " + logfilename
-        tail = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-        stripper = hstatuslog_stripper()
-
-        run_loop = True
-        while run_loop == True:
-            line = tail.stdout.readline()
-            if line:
-                result_valid = stripper.process_line(line.strip())
-                if result_valid is True:
-                    json_body = stripper.get_data_points()[0]
-                    print("Write points: {0}".format(json_body))
-                    self.dbclient.client.write_points([json_body], protocol='json')
-            if tail.poll() is not None or os.path.isfile(logfilename) is False or hprompt_log2db_run is False:
-                run_loop = False
