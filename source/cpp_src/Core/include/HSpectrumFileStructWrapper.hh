@@ -50,7 +50,7 @@ class HSpectrumFileStructWrapper
              int code = ReadSpectrumFile(filename.c_str(), &fFileStruct);
              if(code != HSUCCESS)
              {
-                 std::cout<<"file error: "<<code<<std::endl;
+                 std::cout<<"file error: "<<code<<", file: "<<filename<<std::endl;
              }
         }
 
