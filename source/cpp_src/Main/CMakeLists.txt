@@ -8,6 +8,12 @@ if(HOSE_USE_CUDA AND HOSE_USE_ZEROMQ AND HOSE_USE_PX14)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../CUDASpectrometer/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+    set(SOURCE_BASENAMES
+        RunSpectrometer
+        LaunchSpectrometerDaemon
+        
+    )
+
     if(HOSE_USE_SPDLOG)
         include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Logging/include)
     endif(HOSE_USE_SPDLOG)
@@ -29,11 +35,14 @@ if(HOSE_USE_CUDA AND HOSE_USE_ZEROMQ AND HOSE_USE_PX14)
     include_directories(${PX14400_INCLUDE_DIRS})
     list(APPEND HOSE_MAIN_LIBS ${PX14400_LIBRARIES})
 
-    set(SOURCE_BASENAMES
-        RunSpectrometer
-        LaunchSpectrometerDaemon
-        SpectrumPlot
-    )
+    if (HOSE_USE_ROOT)
+        include(FindROOT)
+        find_package(ROOT REQUIRED)
+        include_directories(${ROOT_INCLUDE_DIRS})
+        list(APPEND HOSE_MAIN_LIBS ${ROOT_LIBRARIES})
+        list(APPEND SOURCE_BASENAMES SpectrumPlot)
+    endif()
+
 
     foreach( BASENAME ${SOURCE_BASENAMES} )
         add_executable( ${BASENAME} ${BASENAME}.cc )
