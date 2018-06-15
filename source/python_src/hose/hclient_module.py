@@ -182,7 +182,7 @@ class hprompt(Cmd):
                             return True
         return False
 
-    def create_meta_data_file():
+    def create_meta_data_file(self):
         meta_data_filename = "meta_data.json"
         meta_data_filepath = os.path.join(self.data_install_dir, self.current_experiment_name, self.current_scan_name, meta_data_filename)
         obj_list = []
