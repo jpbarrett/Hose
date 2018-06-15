@@ -135,7 +135,7 @@ class HSpectrumFileStructWrapper
 
     private:
 
-        HSpectrumFileStruct* fFileStruct;
+        struct HSpectrumFileStruct* fFileStruct;
 
 };
 
