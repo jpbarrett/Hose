@@ -72,7 +72,7 @@ class hprompt(Cmd):
     def do_startlog2db(self, args):
         """Parse the spectrometer log and send results to database."""
         #launch log to db as subprocess
-        if(len(process_list) == 0):
+        if(len(self.process_list) == 0):
             log2db_exe = "capture-spectrometer-log.py"
             command =  os.path.join(self.bin_install_dir, log2db_exe)
             log2db = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
