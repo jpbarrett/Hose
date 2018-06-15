@@ -205,31 +205,14 @@ int main(int argc, char** argv)
         std::cout<<"npow file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
     }
 
-    
-    // //now open up all the spec data (hope it fits in memory)
-    // std::vector< HSpectrumFileStruct* > spectrum_vec;
-    // for(size_t i=0; i<specFiles.size(); i++)
-    // {
-    //     HSpectrumFileStruct* obj = CreateSpectrumFileStruct();
-    //     InitializeSpectrumFileStruct(obj);
-    //     spectrum_vec.push_back(obj);
-    //     spectrum_vec.back().ReadFromFile(specFiles[i].first);
-    //     std::cout<<"spec file: "<<i<<" = "<<specFiles[i].first<< " has spectrum of length: "<<spectrum_vec.back().GetSpectrumLength()<<std::endl;
-    // }
-    // 
+    //now open up all the spec data (hope it fits in memory)
+    std::vector< HSpectrumFileStructWrapper<float> > spectrum_vec;
+    for(auto it = specFiles.begin(); it != specFiles.end(); it++)
+    {
+        spectrum_vec.push_back( HSpectrumFileStructWrapper<float>( it->first ) );
+    }
 
 /*
-
-
-
-
-
-
-
-
-
-
-
 
 
     //now open up all the spec data (hope it fits in memory)
