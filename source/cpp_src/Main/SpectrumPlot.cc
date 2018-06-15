@@ -385,7 +385,7 @@ int main(int argc, char** argv)
         if(n == 0){g->Draw("ALP");}
         else{g->Draw("ALP SAME");}
 
-        g->SetTitle(ss.str().c_str());
+        // g->SetTitle(ss.str().c_str());
         g->GetXaxis()->SetTitle("Frequency (MHz)");
         g->GetYaxis()->SetTitle("Relative Power (dB)");
         g->GetYaxis()->CenterTitle();
