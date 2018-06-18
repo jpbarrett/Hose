@@ -8,8 +8,7 @@ import sys
 import os
 import subprocess
 
-from hose import *
-
+from hose import hspeclog_module, hinfluxdb_module
 
 #global vars
 log_install_dir = "@LOG_INSTALL_DIR@"
