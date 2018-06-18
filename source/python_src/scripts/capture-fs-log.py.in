@@ -28,14 +28,14 @@ def main():
     fshostname, logfilename = args
 
     #create interface and connect to (Westford) data base
-    dbinterface = wf_influxdb()
+    dbinterface = hinfluxdb_module.wf_influxdb()
 
     #set up ssh-tail command to grab field system log file lines
     #to change port edit ~/.ssh/config
     command = "tail -f " + logfilename
     sshtail = subprocess.Popen(["ssh", "%s" % fshostname, command], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    stripper = hfslog_stripper()
+    stripper = hfslog_module.hfslog_stripper()
 
     run_loop = True
     while run_loop == True:

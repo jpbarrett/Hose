@@ -16,7 +16,7 @@ class time_stamp(object):
     #strip the date code from a log line, return time stamp object
     def initialize_from_line(self, line):
         self.valid = False
-        if(len(line) >= date_string_length ):
+        if(len(line) >= self.date_string_length ):
             self.valid = True
             date_string = line[0:self.date_string_length]
             #date string should be formatted like 2018.060.15:05:26.36
@@ -33,17 +33,17 @@ class time_stamp(object):
                 self.minute = int(sminute)
                 self.seconds = int(ssec)
                 self.microseconds = int(shundredths)*10000
-                if year > 3000:
+                if self.year > 3000:
                     self.valid = False
-                if day < 1 or day > 366:
+                if self.day < 1 or self.day > 366:
                     self.valid = False
-                if hour > 24:
+                if self.hour > 24:
                     self.valid = False
-                if minute > 59:
+                if self.minute > 59:
                     self.valid = False
-                if ssec > 59:
+                if self.seconds > 59:
                     self.valid = False
-                if microseconds > 1000000:
+                if self.microseconds > 1000000:
                     self.valid = False
             else:
                 self.valid = False
@@ -77,7 +77,7 @@ class fs_log_line(object):
                 if len(primary_split) == 2:
                     payload = primary_split[1].strip()
                     tokens = payload.split(self.secondary_delim)
-                    for key,val in token_map:
+                    for key,val in self.token_map.items():
                         if key < len(tokens):
                             self.data_fields[val] = tokens[key]
                 else:
@@ -93,6 +93,7 @@ class fs_log_line(object):
 
     def init_hook(self):
         #provide interface for sub-class to modify data_fields, but do nothing by default
+        return
 
     def as_dict(self):
         point_value = {
@@ -141,9 +142,9 @@ class antenna_target_status(fs_log_line):
             self.data_fields["acquired"] = "no"
 
 #2018.166.18:24:44.00&casa/source=casa,232324.8,+584859.,2000.
-class source_status(object):
+class source_status(fs_log_line):
     def __init__(self):
-        super(source, self).__init__()
+        super(source_status, self).__init__()
         self.line_key = "source="
         self.name = "source_status"
         self.data_fields = {"source": "", "ra": "", "dec": "", "epoch" : "" }
@@ -157,10 +158,10 @@ class hfslog_stripper(object):
 
     def __init__(self):
         self.date_string_length = 20
-        self.line_type_tuple = ( udc_status(), antenna_target_status(), source() )
+        self.line_type_tuple = ( udc_status(), antenna_target_status(), source_status() )
         #temporary storage of a parse data item (list of dicts), only valid if process_line returns true
         self.data_points = []
-s
+
     def process_line(self,line):
         #quick check that the line is longer than the required date string format length
         success = False

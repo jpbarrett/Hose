@@ -10,6 +10,7 @@ class wf_influxdb(object):
         self.dbpwd = "kLx14f2p"
         self.dbname = "gpu_spec"
         self.client = InfluxDBClient(self.dbhostname, self.dbport, self.dbuser, self.dbpwd, self.dbname)
+        self.debug_mode = debug
 
         #time arguments must be datetime objects
         #valid measurement names are:
