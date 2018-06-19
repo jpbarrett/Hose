@@ -189,52 +189,51 @@ class hprompt(Cmd):
 
         digi_config = self.dbclient.get_most_recent_measurement("digitizer_config", self.end_time_stamp)
         for x in digi_config:
-            obj_list.append(x)
+            obj_list.append( json.dumps(x, indent=4, sort_keys=True) + "\n") )
 
         spec_config = self.dbclient.get_most_recent_measurement("spectrometer_config", self.end_time_stamp)
         for x in spec_config:
-            obj_list.append(x)
+            obj_list.append( json.dumps(x, indent=4, sort_keys=True) + "\n") )
 
         noise_config = self.dbclient.get_most_recent_measurement("noise_diode_config", self.end_time_stamp)
         for x in noise_config:
-            obj_list.append(x)
+            obj_list.append( json.dumps(x, indent=4, sort_keys=True) + "\n") )
 
         udc_info = self.dbclient.get_most_recent_measurement("udc_status", self.end_time_stamp)
         for x in udc_info:
-            obj_list.append(x)
+            obj_list.append( json.dumps(x, indent=4, sort_keys=True) + "\n") )
 
         source_info = self.dbclient.get_most_recent_measurement("source_status", self.end_time_stamp)
         for x in source_info:
-            obj_list.append(x)
+            obj_list.append( json.dumps(x, indent=4, sort_keys=True) + "\n") )
 
         recording_info = self.dbclient.get_measurement_from_time_range("recording_status", self.start_time_stamp, self.end_time_stamp, 3)
         for x in recording_info:
-            obj_list.append(x)
+            obj_list.append( json.dumps(x, indent=4, sort_keys=True) + "\n") )
 
         temp_list = []
         most_recent_data_validity_info = self.dbclient.get_most_recent_measurement("data_validity", self.start_time_stamp)
         for x in most_recent_data_validity_info:
-            temp_list.append(x)
+            temp_list.append( json.dumps(x, indent=4, sort_keys=True) + "\n") )
         data_validity_info = self.dbclient.get_measurement_from_time_range("data_validity", self.start_time_stamp, self.end_time_stamp, 3)
         for x in data_validity_info:
-            temp_list.append(x)
+            temp_list.append( json.dumps(x, indent=4, sort_keys=True) + "\n") )
         fset = frozenset(temp_list)
-        for x in fset:
-            obj_list.append(x)
+        for z in fset:
+            obj_list.append( z )
 
         temp_list = []
         most_recent_antenna_target_info = self.dbclient.get_most_recent_measurement("antenna_target_status", self.start_time_stamp)
         for x in most_recent_antenna_target_info:
-            temp_list.append(x)
+            temp_list.append( json.dumps(x, indent=4, sort_keys=True) + "\n") )
         antenna_target_info = self.dbclient.get_measurement_from_time_range("antenna_target_status", self.start_time_stamp, self.end_time_stamp, 3)
         for x in antenna_target_info:
-            temp_list.append(x)
+            temp_list.append( json.dumps(x, indent=4, sort_keys=True) + "\n") )
         fset = frozenset(temp_list)
-        for x in fset:
-            obj_list.append(x)
+        for z in fset:
+            obj_list.append( z )
     
-
         antenna_position_info = self.dbclient.get_measurement_from_time_range("antenna_position", self.start_time_stamp, self.end_time_stamp, 3)
         for x in antenna_position_info:
-            obj_list.append(x)
+            obj_list.append( json.dumps(x, indent=4, sort_keys=True) + "\n") )
         dump_dict_list_to_json_file(obj_list, meta_data_filepath)
