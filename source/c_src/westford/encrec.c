@@ -196,7 +196,7 @@ void lpread()
  scanf("%d", &tdelay);
  */
 
- usleep(5000000); /* sleep for a while, wait for DIO board init */
+ usleep(15000000); /* sleep for a while, wait for DIO board init */
 
  outfile = fopen("encs.txt","w");
  if (outfile == NULL) {
@@ -216,7 +216,7 @@ void lpread()
  do
    {
    gettimeofday(&t, &tz);
-   localtime_r(&t.tv_sec, &timestruct);
+   gmtime_r(&t.tv_sec, &timestruct);
    dt = (t.tv_sec + (t.tv_usec/1.e6)) - ts;
    tcur = timestruct.tm_sec + (t.tv_usec/1.e6);
    scanf("%c", &key);
