@@ -174,13 +174,23 @@ class source_status(fs_log_line):
         self.primary_delim = "source="
         self.secondary_delim = ","
 
-
+#we expect the line to have the following format: 2018.061.13:11:54.00:data_valid=on 
+#or alternatively: 2018.061.13:12:24.00:data_valid=off
+class data_status(fs_log_line):
+    def __init__(self):
+        super(data_status, self).__init__()
+        self.line_key = "data_valid="
+        self.name = "data_validity"
+        self.data_fields = {"status": "off"}
+        self.token_map = {1 : "status"}
+        self.primary_delim = "data_valid"
+        self.secondary_delim = "="
 
 class hfslog_stripper(object):
 
     def __init__(self):
         self.date_string_length = 20
-        self.line_type_tuple = ( udc_status(), antenna_target_status(), source_status() )
+        self.line_type_tuple = ( udc_status(), antenna_target_status(), source_status(), data_status() )
         #temporary storage of a parse data item (list of dicts), only valid if process_line returns true
         self.data_points = []
 
