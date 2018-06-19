@@ -256,7 +256,7 @@ class encrec_log_stripper(object):
         success = False
         self.data_points = []
         antpos = antenna_position()
-        success = antenna_position.initialize_from_line(line)
+        success = antpos.initialize_from_line(line)
         if success is True:
             self.data_points = [ antpos.as_dict() ]
         else:
