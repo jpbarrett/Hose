@@ -191,8 +191,13 @@ void lpread()
  double dt, ts, tcur;
  int tdelay;
  
+ /* dont need to adjust the delay
  printf("Enter time between points (milliseconds): ");
  scanf("%d", &tdelay);
+ */
+
+ usleep(5000000); /* sleep for a while, wait for DIO board init */
+
  outfile = fopen("encs.txt","w");
  if (outfile == NULL) {
 	 printf("** Cannot open file **\n");
@@ -216,7 +221,7 @@ void lpread()
    tcur = timestruct.tm_sec + (t.tv_usec/1.e6);
    scanf("%c", &key);
    read_encoders(&az, &el);
-   usleep(tdelay*1000);
+   usleep(1000000); /* read every 1 sec */
    fprintf(outfile,"%d %d %02d %02d %lf %lf %f %f",
 		   timestruct.tm_year+1900,timestruct.tm_yday+1,
 		   timestruct.tm_hour,timestruct.tm_min,tcur, dt, az, el);
