@@ -225,13 +225,13 @@ class antenna_position(object):
             if len(args) != 8:
                 self.parse_valid = False
             else:
-                year = int(arg[0])
-                day = int(arg[1])
-                hour = int(arg[2])
-                minute = int(arg[3])
-                seconds = float(arg[4])
-                self.data_fields["az"] = float(arg[6])
-                self.data_fields["el"] = float(arg[7])
+                year = int(args[0])
+                day = int(args[1])
+                hour = int(args[2])
+                minute = int(args[3])
+                seconds = float(args[4])
+                self.data_fields["az"] = float(args[6])
+                self.data_fields["el"] = float(args[7])
                 self.parse_valid = self.log_time.initialize_from_values(year, day, hour, minute, seconds)
         return self.parse_valid
 
