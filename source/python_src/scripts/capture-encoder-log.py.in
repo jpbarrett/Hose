@@ -44,7 +44,7 @@ def main():
             json_body = stripper.get_data_points()[0]
             print("Write points: {0}".format(json_body))
             dbinterface.client.write_points([json_body], protocol='json')
-        if ssh_encrec.poll() is not None and sshtail.poll() is not None:
+        if sshtail.poll() is not None:
             run_loop = False
 
     #escape_char = chr(0x1b)
