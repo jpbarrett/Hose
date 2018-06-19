@@ -209,10 +209,10 @@ class hprompt(Cmd):
         data_validity_info = self.dbclient.get_measurement_from_time_range("data_validity", self.start_time_stamp, self.end_time_stamp, 3)
         for x in data_validity_info:
             obj_list.append(x)
-        antenna_target_info = self.dbclient.get_measurement_from_time_range("antenna_target_status", start_time_stamp, end_time_stamp, 3)
+        antenna_target_info = self.dbclient.get_measurement_from_time_range("antenna_target_status", self.start_time_stamp, self.end_time_stamp, 3)
         for x in antenna_target_info:
             obj_list.append(x)
-        antenna_position_info = self.dbclient.get_measurement_from_time_range("antenna_position", start_time_stamp, end_time_stamp, 3)
+        antenna_position_info = self.dbclient.get_measurement_from_time_range("antenna_position", self.start_time_stamp, self.end_time_stamp, 3)
         for x in antenna_position_info:
             obj_list.append(x)
         dump_dict_list_to_json_file(obj_list, meta_data_filepath)
