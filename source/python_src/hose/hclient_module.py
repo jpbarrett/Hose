@@ -211,17 +211,28 @@ class hprompt(Cmd):
         for x in recording_info:
             obj_list.append(x)
 
+        temp_list = []
+        most_recent_data_validity_info = self.dbclient.get_most_recent_measurement("data_validity", self.start_time_stamp)
+        for x in most_recent_data_validity_info:
+            temp_list.append(x)
         data_validity_info = self.dbclient.get_measurement_from_time_range("data_validity", self.start_time_stamp, self.end_time_stamp, 3)
         for x in data_validity_info:
+            temp_list.append(x)
+        fset = frozenset(temp_list)
+        for x in fset:
             obj_list.append(x)
 
+        temp_list = []
         most_recent_antenna_target_info = self.dbclient.get_most_recent_measurement("antenna_target_status", self.start_time_stamp)
         for x in most_recent_antenna_target_info:
-            obj_list.append(x)
-
+            temp_list.append(x)
         antenna_target_info = self.dbclient.get_measurement_from_time_range("antenna_target_status", self.start_time_stamp, self.end_time_stamp, 3)
         for x in antenna_target_info:
+            temp_list.append(x)
+        fset = frozenset(temp_list)
+        for x in fset:
             obj_list.append(x)
+    
 
         antenna_position_info = self.dbclient.get_measurement_from_time_range("antenna_position", self.start_time_stamp, self.end_time_stamp, 3)
         for x in antenna_position_info:
