@@ -203,7 +203,7 @@ class hprompt(Cmd):
         for x in udc_info:
             obj_list.append(x)
 
-        source_info = self.dbclient.get_most_recent_measurement("source", self.end_time_stamp)
+        source_info = self.dbclient.get_most_recent_measurement("source_status", self.end_time_stamp)
         for x in source_info:
             obj_list.append(x)
 
