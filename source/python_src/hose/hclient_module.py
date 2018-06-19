@@ -64,7 +64,6 @@ class hprompt(Cmd):
         self.data_install_dir = ""
         self.bin_install_dir = ""
         self.dbclient = wf_influxdb()
-        #source dunno starting 2018163135822 dur 47 scan_name 163-1358
         self.start_time_stamp = datetime.utcnow()
         self.end_time_stamp = datetime.utcnow()
         self.process_list = []
@@ -191,27 +190,39 @@ class hprompt(Cmd):
         digi_config = self.dbclient.get_most_recent_measurement("digitizer_config", self.end_time_stamp)
         for x in digi_config:
             obj_list.append(x)
+
         spec_config = self.dbclient.get_most_recent_measurement("spectrometer_config", self.end_time_stamp)
         for x in spec_config:
             obj_list.append(x)
+
         noise_config = self.dbclient.get_most_recent_measurement("noise_diode_config", self.end_time_stamp)
         for x in noise_config:
             obj_list.append(x)
+
         udc_info = self.dbclient.get_most_recent_measurement("udc_status", self.end_time_stamp)
         for x in udc_info:
             obj_list.append(x)
+
         source_info = self.dbclient.get_most_recent_measurement("source", self.end_time_stamp)
         for x in source_info:
             obj_list.append(x)
+
         recording_info = self.dbclient.get_measurement_from_time_range("recording_status", self.start_time_stamp, self.end_time_stamp, 3)
         for x in recording_info:
             obj_list.append(x)
+
         data_validity_info = self.dbclient.get_measurement_from_time_range("data_validity", self.start_time_stamp, self.end_time_stamp, 3)
         for x in data_validity_info:
             obj_list.append(x)
+
+        most_recent_antenna_target_info = self.dbclient.get_most_recent_measurement("antenna_target_status", self.start_time_stamp)
+        for x in most_recent_antenna_target_info:
+            obj_list.append(x)
+
         antenna_target_info = self.dbclient.get_measurement_from_time_range("antenna_target_status", self.start_time_stamp, self.end_time_stamp, 3)
         for x in antenna_target_info:
             obj_list.append(x)
+
         antenna_position_info = self.dbclient.get_measurement_from_time_range("antenna_position", self.start_time_stamp, self.end_time_stamp, 3)
         for x in antenna_position_info:
             obj_list.append(x)
