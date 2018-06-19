@@ -24,9 +24,9 @@ def main():
     encrec_command = "/home/westford/encoder_software/encrec"
     encrec_file = "/home/westford/encoder_software/encs.txt"
     ssh_encrec = subprocess.Popen(["ssh", "%s" % encrec_userhost_ip, encrec_command], shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    time.sleep(1)
+    time.sleep(5)
     ssh_encrec.stdin.write("1000\n")    #tell the encorder reader to read every 1000 milliseconds
-
+    time.sleep(5)
     #set up ssh-tail command to grab field system log file lines
     #to change port edit ~/.ssh/config
     tail_command = "tail -f " + encrec_file

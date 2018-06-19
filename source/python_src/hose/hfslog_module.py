@@ -255,9 +255,10 @@ class encrec_log_stripper(object):
         #quick check that the line is longer than the required date string format length
         success = False
         self.data_points = []
-        success = line_type.initialize_from_line(line)
+        antpos = antenna_position()
+        success = antenna_position.initialize_from_line(line)
         if success is True:
-            self.data_points = [ line_type.as_dict() ]
+            self.data_points = [ antpos.as_dict() ]
         else:
             print("Could not parse line: ", line)
         return success
