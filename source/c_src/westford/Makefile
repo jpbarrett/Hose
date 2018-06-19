@@ -19,7 +19,7 @@ encoderd: encoderd.o
 	$(CC) -lpowerdaq32 encoderd.o networkinglib.o safecalls.o -o $@
 
 encrec: encrec.o
-	$(CC) -L/usr/local/lib -lpowerdaq32 encrec.o networkinglib.o safecalls.o -lmi -lmx -lut -lmat -o $@
+	$(CC) -L/usr/local/lib -L/home/westford/encoder_software/libmat -lpowerdaq32 encrec.o networkinglib.o safecalls.o -lmi -lmx -lut -lmat -o $@
 
 %.o: %.c
 	$(CC) $(CCFLAGS) -c $< -o $@

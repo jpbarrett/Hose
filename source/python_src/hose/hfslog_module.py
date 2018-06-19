@@ -49,6 +49,28 @@ class time_stamp(object):
                 self.valid = False
         return self.valid
 
+    def initialize_from_values(self, year, day, hour, minute, seconds):
+        self.valid = True
+        self.year = year
+        self.day = day
+        self.hour = hour
+        self.minute = minute
+        self.seconds = int(seconds)
+        self.microseconds = round(seconds - self.seconds,6)*1000000
+        if self.year > 3000:
+            self.valid = False
+        if self.day < 1 or self.day > 366:
+            self.valid = False
+        if self.hour > 24:
+            self.valid = False
+        if self.minute > 59:
+            self.valid = False
+        if self.seconds > 59:
+            self.valid = False
+        if self.microseconds > 1000000:
+            self.valid = False
+        return self.valid
+
 
     def get_formatted_utc(self):
         abstime = datetime(self.year,1,1) + timedelta(days=self.day-1, hours=self.hour, minutes=self.minute, seconds=self.seconds, microseconds = self.microseconds)
@@ -178,6 +200,66 @@ class hfslog_stripper(object):
                     else:
                         print("Could not parse line: ", line)
                         break
+        return success
+
+    def get_data_points(self):
+        return self.data_points
+
+
+#line format looks like:
+#Year  DayofYear  Hour  Min  Sec  Elapsed_Sec  Az  El
+#2018  170  09  50  22.806036  18.004702  180.000000  44.998627'
+class antenna_position(object):
+    def __init__(self):
+        self.log_time = time_stamp() #every log line must have a time stamp
+        self.name = "antenna_position"
+        self.data_fields = {"az": 0, "el": 0}
+
+    def initialize_from_line(self, line):
+        self.parse_valid = True
+        self.log_time = time_stamp()
+        if '#' in line:
+            self.parse_valid = False
+        else:
+            args = (line.strip()).split(' ')
+            if len(args) != 8:
+                self.parse_valid = False
+            else:
+                year = int(arg[0])
+                day = int(arg[1])
+                hour = int(arg[2])
+                minute = int(arg[3])
+                seconds = float(arg[4])
+                self.data_fields["az"] = float(arg[6])
+                self.data_fields["el"] = float(arg[7])
+                self.parse_valid = self.log_time.initialize_from_values(year, day, hour, minute, seconds)
+        return self.parse_valid
+
+    def as_dict(self):
+        point_value = {
+                "time": self.log_time.get_formatted_utc(),
+                "measurement": self.name,
+                "fields": self.data_fields
+            }
+        return point_value
+
+
+class encrec_log_stripper(object):
+
+    def __init__(self):
+        self.line_type_tuple = ( udc_status(), antenna_target_status(), source_status() )
+        #temporary storage of a parse data item (list of dicts), only valid if process_line returns true
+        self.data_points = []
+
+    def process_line(self,line):
+        #quick check that the line is longer than the required date string format length
+        success = False
+        self.data_points = []
+        success = line_type.initialize_from_line(line)
+        if success is True:
+            self.data_points = [ line_type.as_dict() ]
+        else:
+            print("Could not parse line: ", line)
         return success
 
     def get_data_points(self):

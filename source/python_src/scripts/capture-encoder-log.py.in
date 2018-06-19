@@ -1,0 +1,58 @@
+#!@PYTHON_EXECUTABLE@
+
+import datetime
+import optparse
+import time
+import string
+import sys
+import os
+import subprocess
+
+from hose import hfslog_module, hinfluxdb_module
+
+################################################################################
+
+def main():
+    usage_text = '\n capture-encoder-log'
+
+    #create interface and connect to (Westford) data base
+    dbinterface = hinfluxdb_module.wf_influxdb()
+
+    #set up ssh-tail command to grab field system log file lines
+    #to change port edit ~/.ssh/config
+    encrec_userhost_ip = "westford@192.52.63.141"
+    encrec_command = "/home/westford/encoder_software/encrec"
+    encrec_file = "/home/westford/encoder_software/encs.txt"
+    ssh_encrec = subprocess.Popen(["ssh", "%s" % encrec_userhost_ip, command], shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    time.sleep(1)
+    ssh_encrec.stdin.write("1000\n")    #tell the encorder reader to read every 1000 milliseconds
+
+    #set up ssh-tail command to grab field system log file lines
+    #to change port edit ~/.ssh/config
+    command = "tail -f " + encrec_file
+    sshtail = subprocess.Popen(["ssh", "%s" % encrec_userhost_ip, command], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    stripper = hfslog_module.encrec_log_stripper()
+
+    run_loop = True
+    while run_loop == True:
+        line = sshtail.stdout.readline()
+        result_valid = stripper.process_line(line.strip())
+        if result_valid is True:
+            json_body = stripper.get_data_points()[0]
+            print("Write points: {0}".format(json_body))
+            dbinterface.client.write_points([json_body], protocol='json')
+        if ssh_encrec.poll() is not None and sshtail.poll() is not None:
+            run_loop = False
+
+    escape_char = chr(0x1b)
+    ssh_encrec.stdin.write(escape_char)
+    time.sleep(1)
+    ssh_encrec.kill()
+    sshtail.kill()
+
+################################################################################
+
+if __name__ == '__main__':          # official entry point
+    main()
+    sys.exit(0)

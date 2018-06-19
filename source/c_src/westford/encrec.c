@@ -193,13 +193,13 @@ void lpread()
  
  printf("Enter time between points (milliseconds): ");
  scanf("%d", &tdelay);
- outfile = fopen("encs.txt","a");
+ outfile = fopen("encs.txt","w");
  if (outfile == NULL) {
 	 printf("** Cannot open file **\n");
 	 sleep(3);
 	 return;
  }
- fprintf(outfile, "#Year\tDayofYear\tHour\tMin\tSec\tElapsed_Sec\tAz\tEl\n");
+ fprintf(outfile, "#Year DayofYear Hour Min Sec Elapsed_Sec Az El\n");
  printf("Press the ESC key to end loop.\n");
  tcgetattr(0, &options);
  options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
@@ -217,11 +217,12 @@ void lpread()
    scanf("%c", &key);
    read_encoders(&az, &el);
    usleep(tdelay*1000);
-   fprintf(outfile,"%d\t%d\t%02d\t%02d\t%lf\t%lf\t%f\t%f",
+   fprintf(outfile,"%d %d %02d %02d %lf %lf %f %f",
 		   timestruct.tm_year+1900,timestruct.tm_yday+1,
 		   timestruct.tm_hour,timestruct.tm_min,tcur, dt, az, el);
-   fprintf(stdout,"%lf\t%f\t%f", dt, az, el);
+   fprintf(stdout,"%lf %f %f", dt, az, el);
    fprintf(outfile,"\n");
+   fflush(outfile);
    fprintf(stdout,"\n");
    }
  while (key != 27);
