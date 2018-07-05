@@ -22,5 +22,7 @@ if (PYTHON_EXECUTABLE)
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/capture-encoder-log.py.in" "${CMAKE_CURRENT_BINARY_DIR}/capture-encoder-log.py" @ONLY)
     install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/capture-encoder-log.py" DESTINATION ${BIN_INSTALL_DIR})
 
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/create-meta-data.py.in" "${CMAKE_CURRENT_BINARY_DIR}/create-meta-data.py" @ONLY)
+    install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/create-meta-data.py" DESTINATION ${BIN_INSTALL_DIR})
 
 endif (PYTHON_EXECUTABLE)
