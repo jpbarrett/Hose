@@ -8,6 +8,7 @@ import glob
 from datetime import datetime
 import time
 import math
+import json
 
 from hose import hinfluxdb_module
 from hose import hinterface_module
@@ -67,7 +68,7 @@ def generate_meta_data_file(dbclient, path_to_scan_data, start_time_stamp, end_t
     antenna_position_info = dbclient.get_measurement_from_time_range("antenna_position", start_time_stamp, end_time_stamp, 1)
     for x in antenna_position_info:
         obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
-    dump_dict_list_to_json_file(obj_list, meta_data_filepath)
+    hinfluxdb_module.dump_dict_list_to_json_file(obj_list, meta_data_filepath)
 
 
 def main():
