@@ -5,8 +5,8 @@ from datetime import datetime, timezone
 import time
 import math
 
-from hinfluxdb_module import *
-from hinterface_module import *
+from hose import hinfluxdb_module
+from hose import hinterface_module
 
 def generate_meta_data_file(dbclient, path_to_scan_data, start_time_stamp, end_time_stamp):
 
