@@ -3,7 +3,7 @@
 import sys
 import os
 import glob
-from datetime import datetime, timezone
+from datetime import datetime
 import time
 import math
 
@@ -108,9 +108,12 @@ def main():
     stop_time_sec = math.ceil( max(spec_times) )
     
 
-    start_time_stamp = datetime.fromtimestamp(start_time_sec, timezone.utc)
-    end_time_stamp = datetime.fromtimestamp(stop_time_sec, timezone.utc)
+    start_time_stamp = datetime.utcfromtimestamp(start_time_sec)
+    end_time_stamp = datetime.utcfromtimestamp(stop_time_sec)
 
+    print("start = ", start_time_stamp)
+    print("end = ", end_time_stamp)
+    
     #create db interface and connect to (Westford) data base
     dbinterface = hinfluxdb_module.wf_influxdb()
 
