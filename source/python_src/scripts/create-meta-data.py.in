@@ -114,7 +114,7 @@ def main():
     #create db interface and connect to (Westford) data base
     dbinterface = hinfluxdb_module.wf_influxdb()
 
-    generate_meta_data_file(dbclient, path_to_scan_data, start_time_stamp, end_time_stamp):
+    generate_meta_data_file(dbclient, path_to_scan_data, start_time_stamp, end_time_stamp)
 
 
 
