@@ -1,5 +1,7 @@
 #!@PYTHON_EXECUTABLE@
 
+
+import optparse
 import sys
 import os
 import glob
