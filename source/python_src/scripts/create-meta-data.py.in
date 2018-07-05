@@ -99,7 +99,7 @@ def main():
     #now strip start/end second and sample index
     spec_times = []
     for spec in spec_file_list:
-        pieces = os.path.basename( spec.split("_") )
+        pieces = os.path.basename(spec).split('_')
         sec_stamp = float(pieces[0])
         index_stamp = float(pieces[1])
         t = sec_stamp +  index_stamp/sampling_freq
