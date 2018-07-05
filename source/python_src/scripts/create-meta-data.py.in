@@ -81,7 +81,7 @@ def main():
         print(usage_text)
         sys.exit(1)
 
-    data_dir = args
+    data_dir = args[0]
     path_to_scan_data = os.path.abspath(data_dir)
 
     #get list of all .spec files in the data directory and determine the start/stop times of this scan
