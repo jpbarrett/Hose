@@ -93,7 +93,7 @@ def main():
 
     #read the header of the first file to determine the sampling frequency
     tmp_spec = hinterface_module.open_spectrum_file(spec_file_list[0])
-    sampling_freq = float(tmp.spec.header.sample_rate)
+    sampling_freq = float(tmp_spec.header.sample_rate)
 
     #format of spec names is: 1530805758_36607885312_UX.spec  
     #now strip start/end second and sample index
