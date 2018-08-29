@@ -127,24 +127,24 @@ class accumulation_struct(hose_structure_base):
     ('stop_index', ctypes.c_uint64)
     ]
 
-    def is_noise_diode_on():
+    def is_noise_diode_on(self):
         #define H_NOISE_DIODE_OFF 0
         #define H_NOISE_DIODE_ON 1
         if self.state_flag == 1:
             return True
-        else: 
+        else:
             return False
 
     #the 'DC' component
     def get_mean(self):
         return self.sum/self.count
-    
+
     def get_rms(self):
         return math.sqrt( self.sum_squared/self.count )
 
     def get_rms_squared(self):
         return self.sum_squared/self.count
-        
+
     def get_stddev(self):
         return math.sqrt( self.get_variance() )
 
