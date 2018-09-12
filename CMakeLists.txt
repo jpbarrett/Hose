@@ -77,10 +77,11 @@ add_subdirectory(${CPPSOURCE}/Operators)
 add_subdirectory(${CPPSOURCE}/Devices)
 add_subdirectory(${CPPSOURCE}/Server)
 add_subdirectory(${CPPSOURCE}/Test)
-add_subdirectory(${CPPSOURCE}/Main)
 else()
 message(STATUS "No devices (PX14400 or ADQ7) were selected, only some libraries will be built.")
 endif()
+
+add_subdirectory(${CPPSOURCE}/Main)
 
 #python package setup
 find_package(PythonInterp REQUIRED)
@@ -89,8 +90,8 @@ find_package(PythonLibs REQUIRED)
 if (PYTHON_EXECUTABLE)
   #figure out the python install path
   #so we can add it to PYTHONPATH
-  file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/pypath.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} 
-      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+  file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/pypath.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
       GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
   )
   execute_process(COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_CURRENT_BINARY_DIR}/pypath.py"  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} OUTPUT_VARIABLE PYTHON_SITE_PREFIX)

@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <utility>
 #include <stdint.h>
@@ -9,17 +10,19 @@
 #include <ctime>
 #include <getopt.h>
 
-extern "C" 
+//single header JSON lib
+#include <json.hpp>
+using json = nlohmann::json;
+
+extern "C"
 {
     #include "HBasicDefines.h"
     #include "HSpectrumFile.h"
     #include "HNoisePowerFile.h"
 }
 
-
 #include "HSpectrumFileStructWrapper.hh"
 using namespace hose;
-
 
 #include "TCanvas.h"
 #include "TApplication.h"
@@ -45,7 +48,7 @@ struct less_than_spec
         {
             return (file_int1.second.second < file_int2.second.second );
         }
-        else 
+        else
         {
             return false;
         }
@@ -53,7 +56,7 @@ struct less_than_spec
 };
 
 
-void 
+void
 get_time_stamped_files(std::string fext, std::string delim, const std::vector<std::string>& file_list, std::vector< std::pair< std::string, std::pair< uint64_t, uint64_t > > >& stamped_files)
 {
     for(auto it = file_list.begin(); it != file_list.end(); it++)
@@ -83,7 +86,7 @@ get_time_stamped_files(std::string fext, std::string delim, const std::vector<st
                         ss2 << sample_index;
                         uint64_t val_si;
                         ss2 >> val_si;
-                        stamped_files.push_back( std::pair< std::string, std::pair<uint64_t, uint64_t > >(*it, std::pair< uint64_t, uint64_t >(val_sec, val_si ) ) ); 
+                        stamped_files.push_back( std::pair< std::string, std::pair<uint64_t, uint64_t > >(*it, std::pair< uint64_t, uint64_t >(val_sec, val_si ) ) );
                     }
                 }
             }
@@ -178,7 +181,7 @@ int main(int argc, char** argv)
     //sort files, locate .spec, .npow and .json meta data file
     get_time_stamped_files(spec_ext, udelim, allFiles, specFiles);
     get_time_stamped_files(npow_ext, udelim, allFiles, powerFiles);
-    
+
     //look for meta_data file
     for(auto it = allFiles.begin(); it != allFiles.end(); it++)
     {
@@ -195,6 +198,14 @@ int main(int argc, char** argv)
 
 
     std::cout<<"meta data file = "<< metaDataFile<<std::endl;
+    std::ifstream metadata(metaDataFile.c_str());
+    json j;
+    metadata >> j;
+    for (json::iterator it = j.begin(); it != j.end(); ++it) {
+      std::cout << (*it)["measurement"] << '\n';
+    }
+
+
 
     for(auto it = specFiles.begin(); it != specFiles.end(); it++)
     {
@@ -246,7 +257,7 @@ int main(int argc, char** argv)
         off_accum.insert( off_accum.end(), vec->begin(), vec->end() );
 
 
-        
+
 
         //if(i < 10)
         {
@@ -291,7 +302,7 @@ int main(int argc, char** argv)
         onx2 += on_accum[i].sum_x2;
         onN += on_accum[i].count;
     }
-    
+
     double offx, offx2, offN;
     for(unsigned int i=0; i<off_accum.size(); i++)
     {
@@ -320,9 +331,9 @@ int main(int argc, char** argv)
 */
 
 
-    
+
     std::cout<<"starting root plotting"<<std::endl;
-    
+
     //ROOT stuff for plots
     TApplication* App = new TApplication("TestSpectrumPlot",&argc,argv);
     TStyle* myStyle = new TStyle("Plain", "Plain");
@@ -347,12 +358,12 @@ int main(int argc, char** argv)
     TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
     myStyle->SetNumberContours(NCont);
     myStyle->cd();
-    
+
     //plotting objects
     std::vector< TCanvas* > canvas;
     std::vector< TGraph* > graph;
     std::vector< TGraph2D* > graph2d;
-    
+
     std::string name("spec");
     TCanvas* c = new TCanvas(name.c_str(),name.c_str(), 50, 50, 950, 850);
     c->cd();
@@ -371,7 +382,7 @@ int main(int argc, char** argv)
     std::cout<<"sample rate = "<<sample_rate<<std::endl;
 
     double n_samples_per_spec = spectrum_vec[0].GetSampleLength() / spectrum_vec[0].GetNAverages();
-    double spec_res = sample_rate / n_samples_per_spec; 
+    double spec_res = sample_rate / n_samples_per_spec;
 
     std::cout<<"n samples per spec = "<<n_samples_per_spec<<std::endl;
     std::cout<<"spec_res= "<<spec_res<<std::endl;
@@ -403,17 +414,17 @@ int main(int argc, char** argv)
 
 
 
-    // 
+    //
     // size_t start_sec = spectrum_vec[0].GetStartTime();
     // size_t now_sec = spectrum_vec.back().GetStartTime();
-    // 
+    //
     // //calculate the start time of this spectral averages
     // double sample_index = spectrum_vec.back().GetLeadingSampleIndex() + spectrum_vec.back().GetSampleLength();
     // double stime = sample_index / sample_rate;
-    // 
+    //
     // double time_diff = (double)(now_sec - start_sec) + stime;
-    // 
-    // 
+    //
+    //
     // std::cout<<"seconds difference = "<<(double)(now_sec - start_sec)<<std::endl;
     // std::cout<<"sub sec difference = "<<stime<<std::endl;
     // std::cout<<"total time from first to last sample (s): "<<time_diff<<std::endl;
@@ -438,7 +449,7 @@ int main(int argc, char** argv)
     size_t count = 0;
     for(unsigned int n=0; n < spectrum_vec.size(); n++)
     {
-        //calculate the start time of this spectral average 
+        //calculate the start time of this spectral average
         //w.r.t to the first
 
         size_t start_sec = spectrum_vec[0].GetStartTime();
@@ -461,7 +472,7 @@ int main(int argc, char** argv)
         }
         //std::cout<<"smax = "<<smax<<std::endl;
     }
-    
+
     g2d->SetNpx(100);
     g2d->SetNpy(100);
     g2d->Draw("COLZ");
