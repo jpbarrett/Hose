@@ -22,7 +22,7 @@
 #include "spdlog/spdlog.h"
 #endif
 
-extern "C" 
+extern "C"
 {
     #include "HBasicDefines.h"
 }
@@ -54,7 +54,7 @@ extern "C"
 #define IDLE 3
 #define PENDING 4
 
-//time states 
+//time states
 #define TIME_ERROR -1
 #define TIME_BEFORE 0
 #define TIME_PENDING 1
@@ -150,7 +150,7 @@ class HSpectrometerManager: public HApplicationBackend
                         fSinkFileName = lfss.str();
 
                         std::string status_logger_name("status");
-                        std::string config_logger_name("config");    
+                        std::string config_logger_name("config");
 
                         std::cout<<"creating a log file: "<<fSinkFileName<<std::endl;
                         bool trunc = true;
@@ -162,16 +162,16 @@ class HSpectrometerManager: public HApplicationBackend
                         fConfigLogger->flush_on(spdlog::level::info); //make logger flush on every message
 
                         fStatusLogger->info("$$$ New session, manager log initialized. $$$");
-                        // spdlog::drop_all(); 
+                        // spdlog::drop_all();
                         // auto daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("logfile", 23, 59);
                         // // create synchronous  loggers
                         // auto net_logger = std::make_shared<spdlog::logger>("net", daily_sink);
                         // auto hw_logger  = std::make_shared<spdlog::logger>("hw",  daily_sink);
-                        // auto db_logger  = std::make_shared<spdlog::logger>("db",  daily_sink);      
-                        // 
+                        // auto db_logger  = std::make_shared<spdlog::logger>("db",  daily_sink);
+                        //
                         // net_logger->set_level(spdlog::level::critical); // independent levels
                         // hw_logger->set_level(spdlog::level::debug);
-                        //  
+                        //
 
                     }
                     catch (const spdlog::spdlog_ex& ex)
@@ -314,7 +314,7 @@ class HSpectrometerManager: public HApplicationBackend
                 };
 
                 fRecordingState = IDLE;
-    
+
                 std::cout<<"Ready."<<std::endl;
 
                 #ifdef HOSE_USE_SPDLOG
@@ -323,13 +323,13 @@ class HSpectrometerManager: public HApplicationBackend
 
                 while(!fStop)
                 {
-                    //loop, recieve commands from the server, and process them 
+                    //loop, recieve commands from the server, and process them
                     if(fServer->GetNMessages() != 0)
                     {
                         std::string command = fServer->PopMessage();
                         ProcessCommand(command);
                     }
-                    
+
                     //if we are pending, check if we are within 1 second of starting the recording
                     if(fRecordingState == PENDING)
                     {
@@ -409,7 +409,10 @@ class HSpectrometerManager: public HApplicationBackend
                 fSink->flush();
 
                 time_t current_time = std::time(nullptr);
-                tm current_utc_tm = *(std::gmtime(&current_time));
+                tm current_utc_tm;
+
+                //make sure to use thread safe version of gmtime
+                tm* tmp = std::gmtime_r(&current_time, &current_utc_tm);
 
                 std::stringstream lfss;
                 lfss << STR2(LOG_INSTALL_DIR);
@@ -589,11 +592,11 @@ class HSpectrometerManager: public HApplicationBackend
 
             if(temp_tokens.size() != 2)
             {
-                //error, bail out 
+                //error, bail out
                 return tokens;
             }
-            
-            //now we split the second string by the ':' delimiter 
+
+            //now we split the second string by the ':' delimiter
             fTokenizer.SetString(&(temp_tokens[1]));
             fTokenizer.SetIncludeEmptyTokensTrue();
             fTokenizer.SetDelimiter(std::string(":"));
@@ -717,7 +720,7 @@ class HSpectrometerManager: public HApplicationBackend
                 int min = 0;
                 int sec = 0;
 
-                
+
                 // std::cout<<"year, doy, hour, min, sec = "<<syear<<", "<<sdoy<<", "<<shour<<", "<<smin<<", "<<ssec<<std::endl;
 
                 //conver to ints w/ sanity checks
@@ -733,7 +736,7 @@ class HSpectrometerManager: public HApplicationBackend
                     std::stringstream ss;
                     ss.str(std::string());
                     ss << sdoy;
-                    ss >> doy;  
+                    ss >> doy;
                     // std::cout<<"doy = "<<doy<<std::endl;
                     if(doy < 1 || doy > 366 ){epoch_sec = 0; return false;}
                     // std::cout<<"day ok"<<std::endl;
@@ -763,7 +766,7 @@ class HSpectrometerManager: public HApplicationBackend
                 }
 
                 // std::cout<<"year, doy, hour, min, sec = "<<year<<", "<<doy<<", "<<hour<<", "<<min<<", "<<sec<<std::endl;
-                // 
+                //
 
                 //now convert year, doy, hour, min, sec to epoch second
                 struct tm tmdate;
@@ -780,11 +783,11 @@ class HSpectrometerManager: public HApplicationBackend
                 // std::cout<<"epsec = "<<epsec<<std::endl;
 
                 epoch_sec = (uint64_t) epsec;
-                // 
+                //
                 // std::cout<<"start time is epoch sec: "<<epoch_sec<<std::endl;
                 return true;
             }
-            // 
+            //
             // std::cout<<"failure"<<std::endl;
             epoch_sec = 0;
             return false;
@@ -800,10 +803,14 @@ class HSpectrometerManager: public HApplicationBackend
             {
                 return (uint64_t) sec;
             }
-            return 0;
+            else
+            {
+                fStatusLogger->info("Scan durations longer than 12 hours not allowed, setting duration to 0.");
+                return 0;
+            }
         }
 
-        
+
         virtual bool CheckRequest(const std::string& request_string) override
         {
             //std::cout<<"got: "<<request_string<<std::endl;
@@ -875,7 +882,7 @@ class HSpectrometerManager: public HApplicationBackend
         {
             bool other_daemon_running = false;
             std::string lock_dir( STR2(LOG_INSTALL_DIR) );
-            //scan the list of all files in the directory 
+            //scan the list of all files in the directory
             //for ones with the ".lock" extension
             DIR* d;
             struct dirent* dir;
@@ -888,11 +895,11 @@ class HSpectrometerManager: public HApplicationBackend
                     {
                         std::string lock_file_name(dir->d_name);
                         //split off the PID from the lock file name
-        
+
                         std::stringstream ss;
                         int pid = -1;
                         size_t pos = lock_file_name.find('.');
-                        if(pos != std::string::npos) 
+                        if(pos != std::string::npos)
                         {
                             ss << lock_file_name.substr(0, pos);
                             ss >> pid;

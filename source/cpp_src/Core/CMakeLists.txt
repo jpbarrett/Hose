@@ -24,6 +24,7 @@ set (HCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HConsumerProducer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HDataAccumulation.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HTokenizer.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HTimeStampConverter.hh
 )
 
 #list source files #############################################################
@@ -31,6 +32,7 @@ set (HCORE_HEADERFILES
 set( HCORE_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HTimer.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HThreadPool.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/HTimeStampConverter.cc
 )
 
 #declare header paths ##########################################################

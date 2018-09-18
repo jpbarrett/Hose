@@ -11,18 +11,12 @@ namespace hose
 class HAntennaPosition: public HMetaDataBase
 {
     public:
+
         HAntennaPosition():HMetaDataBase( std::string("antenna_position") )
         {
-            f
-
+            fFieldNames.push_back( std::string("az") );
+            fFieldNames.push_back( std::string("el") );
         }
-
-
-        ~HAntennaPosition() = default;
-        HAntennaPosition(const HAntennaPosition& other) = default;
-        HAntennaPosition(HAntennaPosition&& other) = default;
-        HAntennaPosition& operator=(const HAntennaPosition& other) = default;
-        HAntennaPosition& operator=(HAntennaPosition&& other) = default;
 };
 
 }
