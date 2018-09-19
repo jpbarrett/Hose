@@ -53,6 +53,7 @@ option( HOSE_USE_CUDA "Build CUDA support." OFF)
 option( HOSE_USE_ROOT "Build ROOT based utilities." OFF)
 option( HOSE_USE_ZEROMQ "Build client-server library" OFF )
 option( HOSE_USE_SPDLOG "Build logging support using spdlog library" ON)
+option (HOSE_ENABLE_TEST "Build developer tests." OFF)
 
 if(HOSE_USE_SPDLOG)
     hose_add_cxxflag(HOSE_USE_SPDLOG)
@@ -76,12 +77,13 @@ if( HOSE_USE_PX14 OR HOSE_USE_ADQ7)
 add_subdirectory(${CPPSOURCE}/Operators)
 add_subdirectory(${CPPSOURCE}/Devices)
 add_subdirectory(${CPPSOURCE}/Server)
-add_subdirectory(${CPPSOURCE}/Test)
+
 else()
 message(STATUS "No devices (PX14400 or ADQ7) were selected, only some libraries will be built.")
 endif()
 
 add_subdirectory(${CPPSOURCE}/Main)
+add_subdirectory(${CPPSOURCE}/Test)
 
 #python package setup
 find_package(PythonInterp REQUIRED)

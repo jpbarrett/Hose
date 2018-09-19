@@ -1,5 +1,7 @@
 #include "HTimeStampConverter.hh"
 
+#include <iostream>
+
 namespace hose
 {
 
@@ -59,7 +61,6 @@ bool HTimeStampConverter::ConvertTimeStampToEpochSecond(const std::string& date,
         std::string syear = date.substr(0,4);
         std::string smonth = date.substr(5,2);
         std::string sday = date.substr(8,2);
-
         std::string shour = date.substr(11,2);
         std::string smin = date.substr(14,2);
         std::string ssec = date.substr(17,2);
@@ -82,29 +83,42 @@ bool HTimeStampConverter::ConvertTimeStampToEpochSecond(const std::string& date,
 
         //convert to int/double with some sanity checks
         std::stringstream ss;
-        ss.str(std::string());
+        ss.str(std::string()); ss.clear();
         ss << syear;
-        ss >> year; if(year < 1970 || year > 3000 ){epoch_sec = 0; return false;}
-        ss.str(std::string());
+        ss >> year; 
+        std::cout<<"year = "<<year<<std::endl;
+        if(year < 1970 || year > 3000 ){epoch_sec = 0; return false;}
+        ss.str(std::string()); ss.clear();
         ss << smonth;
         ss >> month;
+        std::cout<<"month = "<<smonth<<std::endl;
+        std::cout<<"month = "<<month<<std::endl;
         if(month < 1 || month > 12 ){epoch_sec = 0; return false;}
-        ss.str(std::string());
+        ss.str(std::string()); ss.clear();
         ss << sday;
         ss >> day;
+        std::cout<<"day = "<<day<<std::endl;
         if(day < 1 || day > 31 ){epoch_sec = 0; return false;}
-        ss.str(std::string());
+        ss.str(std::string()); ss.clear();
         ss << shour;
-        ss >> hour;  if(hour < 0 || hour > 23 ){epoch_sec = 0; return false;}
-        ss.str(std::string());
+        ss >> hour;
+        std::cout<<"hour = "<<hour<<std::endl;
+        if(hour < 0 || hour > 23 ){epoch_sec = 0; return false;}
+        ss.str(std::string()); ss.clear();
         ss << smin;
-        ss >> min;  if(min < 0 || min > 59 ){epoch_sec = 0; return false;}
-        ss.str(std::string());
+        ss >> min;  
+        std::cout<<"min = "<<min<<std::endl;
+        if(min < 0 || min > 59 ){epoch_sec = 0; return false;}
+        ss.str(std::string()); ss.clear();
         ss << ssec;
-        ss >> sec;  if( sec < 0 || sec > 61 ){epoch_sec = 0; return false;}
-        ss.str(std::string());
+        ss >> sec;  
+        std::cout<<"sec = "<<sec<<std::endl;
+        if( sec < 0 || sec > 61 ){epoch_sec = 0; return false;}
+        ss.str(std::string()); ss.clear();
         ss << sfrac;
-        ss >> frac;  if( frac < 0.0 || frac > 1.0 ){epoch_sec = 0; return false;}
+        ss >> frac;  
+        std::cout<<"frac = "<<frac<<std::endl;
+        if( frac < 0.0 || frac > 1.0 ){epoch_sec = 0; return false;}
 
         // tm_sec	int	seconds after the minute	0-61*
         // tm_min	int	minutes after the hour	0-59

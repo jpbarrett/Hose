@@ -1,20 +1,24 @@
-option (HOSE_ENABLE_TEST "Build developer tests." OFF)
 if (HOSE_ENABLE_TEST)
 
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../c_src/Interface/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Array/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Core/include)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Devices/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Operators/include)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Devices/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-    set (HOSE_TEST_LIBS HCore HInterface HDevices)
+    set (HOSE_TEST_LIBS HCore HInterface)
 
     set(SOURCE_BASENAMES
         TestBufferAllocator
+        TestTimeStampConverter
         # TestDummyDigitizer
         TestMultiThreadDummy
     )
+
+    if( HOSE_USE_PX14 OR HOSE_USE_ADQ7)
+        list(APPEND HOSE_TEST_LIBS HDevices)
+    endif(HOSE_USE_PX14 OR HOSE_USE_ADQ7)
 
     if(HOSE_USE_ZEROMQ)
         include(FindZeroMQ)
@@ -24,7 +28,6 @@ if (HOSE_ENABLE_TEST)
         list(APPEND HOSE_TEST_LIBS HServer ${ZMQ_LIBRARIES})
         list(APPEND SOURCE_BASENAMES TestServer)
     endif(HOSE_USE_ZEROMQ)
-
 
     if(HOSE_USE_CUDA)
         include(FindCUDA)

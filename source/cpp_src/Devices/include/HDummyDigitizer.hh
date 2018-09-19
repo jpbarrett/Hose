@@ -13,6 +13,10 @@
 #include <queue>
 #include <utility>
 
+extern "C"
+{
+    #include "HBasicDefines.h"
+}
 
 #include "HDummyUniformRawArrayFiller.hh"
 #include "HDummyGaussianRawArrayFiller.hh"
@@ -168,7 +172,7 @@ HDummyDigitizer< XSampleType >::AcquireImpl()
 
     //create data output directory, TODO need to make this configurable and move it elsewhere
     std::stringstream ss;
-    ss << DATA_INSTALL_DIR;
+    ss << STR2(DATA_INSTALL_DIR);
     ss << "/";
     ss << fAcquisitionStartTime;
     int dirstatus = mkdir(ss.str().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
