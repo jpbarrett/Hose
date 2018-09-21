@@ -10,7 +10,6 @@ endif(HOSE_USE_ZEROMQ)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../c_src/Interface/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Array/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Core/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Devices/include)
 
 if(HOSE_USE_SPDLOG)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Logging/include)

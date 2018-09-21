@@ -44,7 +44,7 @@ class HArrayFillingOperator: public HArrayOperator<T,NDIM>
 
 };
 
-}//end of nts namespace
+}//end of namespace
 
 
 #endif /* __HArrayFillingOperator_H__ */

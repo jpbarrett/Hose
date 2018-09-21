@@ -43,7 +43,7 @@ class HUnaryArrayOperator: public HArrayOperator<ArrayType, NDIM>
 
 };
 
-}//end of nts namespace
+}//end of namespace
 
 
 #endif /* __HUnaryArrayOperator_H__ */

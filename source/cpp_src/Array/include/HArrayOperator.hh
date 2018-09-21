@@ -123,6 +123,6 @@ class HArrayOperator
 };
 
 
-}//end of nts namespace
+}//end of namespace
 
 #endif /* __HArrayOperator_H__ */

@@ -13,7 +13,7 @@ if (HOSE_ENABLE_TEST)
         TestBufferAllocator
         TestTimeStampConverter
         # TestDummyDigitizer
-        TestMultiThreadDummy
+        # TestMultiThreadDummy
     )
 
     if( HOSE_USE_PX14 OR HOSE_USE_ADQ7)
@@ -28,6 +28,10 @@ if (HOSE_ENABLE_TEST)
         list(APPEND HOSE_TEST_LIBS HServer ${ZMQ_LIBRARIES})
         list(APPEND SOURCE_BASENAMES TestServer)
     endif(HOSE_USE_ZEROMQ)
+
+    if(HOSE_USE_SPDLOG)
+        include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Logging/include)
+    endif(HOSE_USE_SPDLOG)
 
     if(HOSE_USE_CUDA)
         include(FindCUDA)

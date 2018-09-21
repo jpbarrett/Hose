@@ -222,6 +222,6 @@ struct HArrayMath::Divide<numerator, 1>
 
 
 
-}//end of nts namespace
+}//end of namespace
 
 #endif /* HArrayMath_H__ */
