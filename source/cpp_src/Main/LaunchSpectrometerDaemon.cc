@@ -38,7 +38,7 @@ static void daemonize(void)
         if (fd > 2){close (fd);}
     }
 
-    /*resettign File Creation Mask */
+    /*resetting File Creation Mask */
     umask(022);
 }
 
