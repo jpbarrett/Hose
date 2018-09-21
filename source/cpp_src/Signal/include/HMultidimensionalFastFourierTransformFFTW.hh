@@ -19,7 +19,7 @@ namespace hose
 *
 */
 
-template<unsigned int NDIM>
+template<size_t NDIM>
 class HMultidimensionalFastFourierTransformFFTW: public HUnaryArrayOperator< std::complex<double>, NDIM >
 {
     public:
@@ -29,7 +29,7 @@ class HMultidimensionalFastFourierTransformFFTW: public HUnaryArrayOperator< std
             fInPtr = NULL;
             fOutPtr = NULL;
             fInPlacePtr = NULL;
-            for(unsigned int i=0; i<NDIM; i++)
+            for(size_t i=0; i<NDIM; i++)
             {
                 fDimensionSize[i] = 0;
             }
@@ -165,7 +165,7 @@ class HMultidimensionalFastFourierTransformFFTW: public HUnaryArrayOperator< std
             fHowManyDims.is = HArrayMath::TotalArraySize<NDIM>(fDimensionSize);
             fHowManyDims.os = HArrayMath::TotalArraySize<NDIM>(fDimensionSize);
 
-            for(unsigned int i=0; i<NDIM; i++)
+            for(size_t i=0; i<NDIM; i++)
             {
                 fDims[i].n = fDimensionSize[i];
                 fDims[i].is = HArrayMath::StrideFromRowMajorIndex<NDIM>(i,fDimensionSize);
@@ -197,13 +197,13 @@ class HMultidimensionalFastFourierTransformFFTW: public HUnaryArrayOperator< std
 
         virtual bool DoInputOutputDimensionsMatch()
         {
-            unsigned int in[NDIM];
-            unsigned int out[NDIM];
+            size_t in[NDIM];
+            size_t out[NDIM];
 
             this->fInput->GetArrayDimensions(in);
             this->fOutput->GetArrayDimensions(out);
 
-            for(unsigned int i=0; i<NDIM; i++)
+            for(size_t i=0; i<NDIM; i++)
             {
                 if(in[i] != out[i])
                 {
@@ -218,7 +218,7 @@ class HMultidimensionalFastFourierTransformFFTW: public HUnaryArrayOperator< std
         bool fInitialized;
 
         size_t fTotalArraySize;
-        unsigned int fDimensionSize[NDIM];
+        size_t fDimensionSize[NDIM];
 
         fftw_iodim fDims[NDIM];
         fftw_iodim fHowManyDims;

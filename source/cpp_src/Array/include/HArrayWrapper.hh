@@ -51,6 +51,7 @@ class HArrayWrapper
 
         void SetData(ArrayType* ptr){fData = ptr;}
         ArrayType* GetData(){return fData;};
+        const ArrayType* GetData() const {return fData;};
 
         std::size_t GetArraySize() const {return HArrayMath::TotalArraySize<NDIM>(fDimensions); };
 

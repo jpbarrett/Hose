@@ -17,13 +17,13 @@ namespace hose
 *@details
 */
 
-template<unsigned int NDIM>
+template<size_t NDIM>
 class HMultidimensionalFastFourierTransform: public HUnaryArrayOperator< std::complex<double>, NDIM >
 {
     public:
         HMultidimensionalFastFourierTransform()
         {
-            for(unsigned int i=0; i<NDIM; i++)
+            for(size_t i=0; i<NDIM; i++)
             {
                 fDimensionSize[i] = 0;
                 fWorkspace[i] = NULL;
@@ -70,8 +70,8 @@ class HMultidimensionalFastFourierTransform: public HUnaryArrayOperator< std::co
             if(fIsValid && fInitialized)
             {
 
-                unsigned int total_size = 1;
-                for(unsigned int i=0; i<NDIM; i++)
+                size_t total_size = 1;
+                for(size_t i=0; i<NDIM; i++)
                 {
                     total_size *= fDimensionSize[i];
                     if(fForward)
@@ -91,19 +91,19 @@ class HMultidimensionalFastFourierTransform: public HUnaryArrayOperator< std::co
                     std::memcpy( (void*) this->fOutput->GetData(), (void*) this->fInput->GetData(), total_size*sizeof(std::complex<double>) );
                  }
 
-                unsigned int index[NDIM];
-                unsigned int non_active_dimension_size[NDIM-1];
-                unsigned int non_active_dimension_value[NDIM-1];
-                unsigned int non_active_dimension_index[NDIM-1];
+                size_t index[NDIM];
+                size_t non_active_dimension_size[NDIM-1];
+                size_t non_active_dimension_value[NDIM-1];
+                size_t non_active_dimension_index[NDIM-1];
 
                 //select the dimension on which to perform the FFT
-                for(unsigned int d = 0; d < NDIM; d++)
+                for(size_t d = 0; d < NDIM; d++)
                 {
                     //now we loop over all dimensions not specified by d
                     //first compute the number of FFTs to perform
-                    unsigned int n_fft = 1;
-                    unsigned int count = 0;
-                    for(unsigned int i = 0; i < NDIM; i++)
+                    size_t n_fft = 1;
+                    size_t count = 0;
+                    for(size_t i = 0; i < NDIM; i++)
                     {
                         if(i != d)
                         {
@@ -115,20 +115,20 @@ class HMultidimensionalFastFourierTransform: public HUnaryArrayOperator< std::co
                     }
 
                     //loop over the number of FFTs to perform
-                    for(unsigned int n=0; n<n_fft; n++)
+                    for(size_t n=0; n<n_fft; n++)
                     {
                         //invert place in list to obtain indices of block in array
                         HArrayMath::RowMajorIndexFromOffset<NDIM-1>(n, non_active_dimension_size, non_active_dimension_value);
 
                         //copy the value of the non-active dimensions in to index
-                        for(unsigned int i=0; i<NDIM-1; i++)
+                        for(size_t i=0; i<NDIM-1; i++)
                         {
                             index[ non_active_dimension_index[i] ] = non_active_dimension_value[i];
                         }
 
-                        unsigned int data_location;
+                        size_t data_location;
                         //copy the row selected by the other dimensions
-                        for(unsigned int i=0; i<fDimensionSize[d]; i++)
+                        for(size_t i=0; i<fDimensionSize[d]; i++)
                         {
                             index[d] = i;
                             data_location = HArrayMath::OffsetFromRowMajorIndex<NDIM>(fDimensionSize, index);
@@ -139,7 +139,7 @@ class HMultidimensionalFastFourierTransform: public HUnaryArrayOperator< std::co
                         fTransformCalculator[d]->ExecuteOperation();
 
                         //copy the row selected back
-                        for(unsigned int i=0; i<fDimensionSize[d]; i++)
+                        for(size_t i=0; i<fDimensionSize[d]; i++)
                         {
                             index[d] = i;
                             data_location = HArrayMath::OffsetFromRowMajorIndex<NDIM>(fDimensionSize, index);
@@ -155,8 +155,8 @@ class HMultidimensionalFastFourierTransform: public HUnaryArrayOperator< std::co
 
         virtual void AllocateWorkspace()
         {
-            unsigned int dim[1];
-            for(unsigned int i=0; i<NDIM; i++)
+            size_t dim[1];
+            for(size_t i=0; i<NDIM; i++)
             {
                 dim[0] = fDimensionSize[i];
                 fWorkspace[i] = new std::complex<double>[ fDimensionSize[i] ];
@@ -171,7 +171,7 @@ class HMultidimensionalFastFourierTransform: public HUnaryArrayOperator< std::co
 
         virtual void DealocateWorkspace()
         {
-            for(unsigned int i=0; i<NDIM; i++)
+            for(size_t i=0; i<NDIM; i++)
             {
                 delete[] fWorkspace[i]; fWorkspace[i] = NULL;
                 delete fWorkspaceWrapper[i]; fWorkspaceWrapper[i] = NULL;
@@ -181,13 +181,13 @@ class HMultidimensionalFastFourierTransform: public HUnaryArrayOperator< std::co
 
         virtual bool DoInputOutputDimensionsMatch()
         {
-            unsigned int in[NDIM];
-            unsigned int out[NDIM];
+            size_t in[NDIM];
+            size_t out[NDIM];
 
             this->fInput->GetArrayDimensions(in);
             this->fOutput->GetArrayDimensions(out);
 
-            for(unsigned int i=0; i<NDIM; i++)
+            for(size_t i=0; i<NDIM; i++)
             {
                 if(in[i] != out[i])
                 {
@@ -201,7 +201,7 @@ class HMultidimensionalFastFourierTransform: public HUnaryArrayOperator< std::co
         bool fForward;
         bool fInitialized;
 
-        unsigned int fDimensionSize[NDIM];
+        size_t fDimensionSize[NDIM];
 
         HFastFourierTransform* fTransformCalculator[NDIM];
         std::complex<double>* fWorkspace[NDIM];

@@ -21,6 +21,7 @@ set (HSIGNAL_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HFastFourierTransformUtilities.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HMultidimensionalFastFourierTransform.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSimulatedAnalogSignalSampleGenerator.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HPowerLawNoiseSignal.hh
     # ${CMAKE_CURRENT_SOURCE_DIR}/include/HDummyUniformRawArrayFiller.hh
     # ${CMAKE_CURRENT_SOURCE_DIR}/include/HDummyGaussianRawArrayFiller.hh
 )
@@ -31,6 +32,7 @@ set (HSIGNAL_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HFastFourierTransform.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HFastFourierTransformUtilities.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HSimulatedAnalogSignalSampleGenerator.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/HPowerLawNoiseSignal.cc
 )
 
 #additional FFTW dependent files ###############################################

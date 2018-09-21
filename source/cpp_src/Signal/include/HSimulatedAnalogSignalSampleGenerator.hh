@@ -12,7 +12,8 @@ namespace hose
 *@class HSimulatedAnalogSignalSampleGenerator
 *@brief abstract class template for an analog signal
 * that is to be sampled by a digitizer at some frequency
-* over a limited time range
+* over a limited time range, it is expected that the signal is bandwidth limited
+* and in the case that it is not time limited, that it is periodic
 *@details
 */
 
@@ -36,7 +37,7 @@ class HSimulatedAnalogSignalSampleGenerator
         void SetPeriodic(bool is_periodic);
         void SetPeriodicTrue();
         void SetPeriodicFalse();
-        bool IsPeriodic() const;
+        virtual bool IsPeriodic() const;
 
         //implementation specific
         virtual void Initialize(){;};
