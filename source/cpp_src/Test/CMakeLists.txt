@@ -5,9 +5,10 @@ if (HOSE_ENABLE_TEST)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Core/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Operators/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Devices/include)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Signal/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-    set (HOSE_TEST_LIBS HCore HInterface)
+    set (HOSE_TEST_LIBS HCore HInterface HSignal)
 
     set(SOURCE_BASENAMES
         TestBufferAllocator
@@ -75,7 +76,7 @@ if (HOSE_ENABLE_TEST)
         find_package(ROOT REQUIRED)
         include_directories(${ROOT_INCLUDE_DIRS})
         list(APPEND HOSE_TEST_LIBS ${ROOT_LIBRARIES})
-        list(APPEND SOURCE_BASENAMES TestSpectrumPlot TestSpectrumDifference)
+        list(APPEND SOURCE_BASENAMES TestSpectrumPlot TestSpectrumDifference TestNoiseGenerator)
     endif()
 
     if (HOSE_USE_PX14)

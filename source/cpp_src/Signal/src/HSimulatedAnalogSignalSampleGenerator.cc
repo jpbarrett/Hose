@@ -1,5 +1,7 @@
 #include "HSimulatedAnalogSignalSampleGenerator.hh"
 
+#include <iostream>
+
 namespace hose
 {
 

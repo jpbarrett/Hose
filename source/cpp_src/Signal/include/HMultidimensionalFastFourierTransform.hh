@@ -2,6 +2,7 @@
 #define HMultidimensionalFastFourierTransform_HH__
 
 #include <cstring>
+#include <iostream>
 
 #include "HArrayWrapper.hh"
 #include "HFastFourierTransform.hh"
@@ -44,7 +45,7 @@ class HMultidimensionalFastFourierTransform: public HUnaryArrayOperator< std::co
         virtual void SetForward(){fForward = true;}
         virtual void SetBackward(){fForward = false;};
 
-        virtual void Initialize()
+        virtual void Initialize() override
         {
             if(DoInputOutputDimensionsMatch())
             {
@@ -65,11 +66,10 @@ class HMultidimensionalFastFourierTransform: public HUnaryArrayOperator< std::co
             }
         }
 
-        virtual void ExecuteOperation()
+        virtual void ExecuteOperation() override
         {
             if(fIsValid && fInitialized)
             {
-
                 size_t total_size = 1;
                 for(size_t i=0; i<NDIM; i++)
                 {
@@ -89,7 +89,7 @@ class HMultidimensionalFastFourierTransform: public HUnaryArrayOperator< std::co
                 {
                     //the arrays are not identical so copy the input over to the output
                     std::memcpy( (void*) this->fOutput->GetData(), (void*) this->fInput->GetData(), total_size*sizeof(std::complex<double>) );
-                 }
+                }
 
                 size_t index[NDIM];
                 size_t non_active_dimension_size[NDIM-1];

@@ -10,7 +10,7 @@
 
 #include "HSimulatedAnalogSignalSampleGenerator.hh"
 
-#ifdef H_USE_FFTW
+#ifdef HOSE_USE_FFTW
     #include "HMultidimensionalFastFourierTransformFFTW.hh"
     #define FFT_TYPE HMultidimensionalFastFourierTransformFFTW<1>
 #else
@@ -65,8 +65,10 @@ class HPowerLawNoiseSignal: public HSimulatedAnalogSignalSampleGenerator
         std::mt19937::result_type fSeed;
         double fAlpha;
         double fSamplePeriod;
-        std::vector< std::complex< double > > fSamples;
-        HArrayWrapper< std::complex< double >, 1 > fWrapper;
+        std::vector< std::complex< double > > fSamplesIn;
+        std::vector< std::complex< double > > fSamplesOut;
+        HArrayWrapper< std::complex< double >, 1 > fWrapperIn;
+        HArrayWrapper< std::complex< double >, 1 > fWrapperOut;
 
         FFT_TYPE* fFFTCalculator;
 
