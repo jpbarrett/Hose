@@ -23,6 +23,7 @@ set (HSIGNAL_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSimulatedAnalogSignalSampleGenerator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HPowerLawNoiseSignal.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HGaussianWhiteNoiseSignal.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HSwitchedSignal.hh
     # ${CMAKE_CURRENT_SOURCE_DIR}/include/HDummyUniformRawArrayFiller.hh
     # ${CMAKE_CURRENT_SOURCE_DIR}/include/HDummyGaussianRawArrayFiller.hh
 )
@@ -35,6 +36,7 @@ set (HSIGNAL_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HSimulatedAnalogSignalSampleGenerator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HPowerLawNoiseSignal.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HGaussianWhiteNoiseSignal.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/HSwitchedSignal.cc
 )
 
 #additional FFTW dependent files ###############################################

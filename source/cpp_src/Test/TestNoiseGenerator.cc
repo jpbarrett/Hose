@@ -13,6 +13,7 @@
 
 #include "HPowerLawNoiseSignal.hh"
 #include "HGaussianWhiteNoiseSignal.hh"
+#include "HSwitchedSignal.hh"
 
 using namespace hose;
 
@@ -28,7 +29,8 @@ int main(int argc, char** argv)
     "\t -h, --help               (shows this message and exits)\n"
     "\t -g, --gaussian           (generate gaussian white noise)\n"
     "\t -p, --power              (generate power low noise with the given exponent)\n"
-    "\t -s, --sampling-frequency (sampling frequency)\n"
+    "\t -f, --frequency          (frequency (sampling))\n"
+    "\t -s, --switch             (switching frequency, noise signal with be turned on/off with 50% duty-cycle)\n"
     ;
 
     static struct option longOptions[] =
@@ -36,14 +38,17 @@ int main(int argc, char** argv)
         {"help", no_argument, 0, 'h'},
         {"gaussian", no_argument, 0, 'g'},
         {"power", required_argument, 0, 'p'},
-        {"sampling-frequency", required_argument, 0, 's'}
+        {"frequency", required_argument, 0, 'f'},
+        {"switch", required_argument, 0, 's'}
     };
 
-    static const char *optString = "hgp:s:";
+    static const char *optString = "hgp:f:s:";
 
     bool do_gaussian = false;
     double power = 0.0;
     double sampling_frequency = 1e5;
+    bool do_switching = false;
+    double switching_frequency = 100;
 
     while(1)
     {
@@ -60,8 +65,12 @@ int main(int argc, char** argv)
             case('p'):
             power = atof(optarg);
             break;
-            case('s'):
+            case('f'):
             sampling_frequency = atof(optarg);
+            break;
+            case('s'):
+            do_switching = true;
+            switching_frequency = atof(optarg);
             break;
             default:
             std::cout<<usage<<std::endl;
@@ -91,14 +100,35 @@ int main(int argc, char** argv)
         gnoise->SetRandomSeed(123);
         gnoise->Initialize();
 
-        bool testval;
-        double samp;
-        for(size_t i=0; i<num_samples; i++)
+        if(do_switching)
         {
-            testval = gnoise->GetSample(0.0, samp);
-            noise_samples[i] = samp;
-            noise_xform_in[i] = std::complex<double>(samp, 0.0);
+            std::cout<<"generating switch signal"<<std::endl;
+            HSwitchedSignal* snoise = new HSwitchedSignal();
+            snoise->SetSwitchingFrequency(switching_frequency);
+            snoise->SetSignalGenerator(gnoise);
+            bool testval;
+            double samp;
+            for(size_t i=0; i<num_samples; i++)
+            {
+                testval = snoise->GetSample(i*delta, samp);
+                noise_samples[i] = samp;
+                std::cout<<i<<", "<<samp<<std::endl;
+                noise_xform_in[i] = std::complex<double>(samp, 0.0);
+            }
+            delete snoise;
         }
+        else
+        {
+            bool testval;
+            double samp;
+            for(size_t i=0; i<num_samples; i++)
+            {
+                testval = gnoise->GetSample(i*delta, samp);
+                noise_samples[i] = samp;
+                noise_xform_in[i] = std::complex<double>(samp, 0.0);
+            }
+        }
+
         delete gnoise;
     }
     else
@@ -112,12 +142,30 @@ int main(int argc, char** argv)
         pnoise->SetTimePeriod(1.0);
         pnoise->Initialize();
 
-        bool testval;
-        double samp;
-        for(size_t i=0; i<num_samples; i++)
+        if(do_switching)
         {
-            testval = pnoise->GetSample(i*delta, samp);
-            noise_samples[i] = samp;
+            HSwitchedSignal* snoise = new HSwitchedSignal();
+            snoise->SetSwitchingFrequency(switching_frequency);
+            snoise->SetSignalGenerator(pnoise);
+            bool testval;
+            double samp;
+            for(size_t i=0; i<num_samples; i++)
+            {
+                testval = snoise->GetSample(i*delta, samp);
+                noise_samples[i] = samp;
+                noise_xform_in[i] = std::complex<double>(samp, 0.0);
+            }
+            delete snoise;
+        }
+        else
+        {
+            bool testval;
+            double samp;
+            for(size_t i=0; i<num_samples; i++)
+            {
+                testval = pnoise->GetSample(i*delta, samp);
+                noise_samples[i] = samp;
+            }
         }
         delete pnoise;
     }
