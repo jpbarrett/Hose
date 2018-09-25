@@ -17,7 +17,7 @@ HSimulatedAnalogSignalSampleGenerator::SetSamplingFrequency(double max_freq)
     fSamplingFrequency = std::fabs(max_freq);
 };
 
-double 
+double
 HSimulatedAnalogSignalSampleGenerator::GetSamplingFrequency() const 
 {
     return fSamplingFrequency;
@@ -65,7 +65,7 @@ HSimulatedAnalogSignalSampleGenerator::IsPeriodic() const
 bool 
 HSimulatedAnalogSignalSampleGenerator::GetSample(const double& sample_time, double& sample) const
 {
-    if(fIsPeriodicSignal)
+    if( IsPeriodic() )
     {
         //get time into sample range and compute
         double trimmed_time = sample_time - std::floor(sample_time/fPeriod)*fPeriod;

@@ -46,7 +46,7 @@ class HSimulatedAnalogSignalSampleGenerator
 
     protected:
 
-        virtual double GenerateSample(const double& sample_time) const = 0;
+        virtual double GenerateSample(const double& /*sample_time*/) const = 0;
 
         //data
         bool fIsPeriodicSignal;
