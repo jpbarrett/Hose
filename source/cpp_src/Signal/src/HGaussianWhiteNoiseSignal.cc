@@ -11,7 +11,6 @@ HGaussianWhiteNoiseSignal::HGaussianWhiteNoiseSignal():
     fGenerator(nullptr),
     fDistribution(nullptr)
 {
-    fPeriod = std::numeric_limits<double>::infinity();
     fDistribution = new std::normal_distribution<double>(0.0, 1.0);
 };
 
@@ -22,12 +21,6 @@ HGaussianWhiteNoiseSignal::~HGaussianWhiteNoiseSignal()
 };
 
 void 
-HGaussianWhiteNoiseSignal::HGaussianWhiteNoiseSignal::SetTimePeriod(double /*period*/){ fPeriod =  std::numeric_limits<double>::infinity();};
-
-bool 
-HGaussianWhiteNoiseSignal::IsPeriodic() const {return false;}
-
-void 
 HGaussianWhiteNoiseSignal::Initialize()
 {
     if(fGenerator == nullptr)
@@ -36,10 +29,12 @@ HGaussianWhiteNoiseSignal::Initialize()
     }
 }
 
-double 
-HGaussianWhiteNoiseSignal::GenerateSample(const double& /*sample_time*/) const
+bool 
+HGaussianWhiteNoiseSignal::GenerateSample(const double& /*sample_time*/, double& sample) const
 {
-    return (*fDistribution)( *fGenerator );
+    sample = (*fDistribution)( *fGenerator );
+    return true;
 }
+
 
 }//end namespace

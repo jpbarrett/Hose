@@ -33,7 +33,6 @@ set (HSIGNAL_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HBitReversalPermutation.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HFastFourierTransform.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HFastFourierTransformUtilities.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/HSimulatedAnalogSignalSampleGenerator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HPowerLawNoiseSignal.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HGaussianWhiteNoiseSignal.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HSwitchedSignal.cc

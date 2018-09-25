@@ -53,13 +53,20 @@ class HPowerLawNoiseSignal: public HSimulatedAnalogSignalSampleGenerator
         void SetRandomSeed(unsigned int seed);
         void SetPowerLawExponent(double alpha);
 
+        //since the signal must be pre-allocated (which is memory expensive), we need to limit
+        //the signal to specific time range, samples for times outside of
+        //this time range will be mapped onto it so the overall signal is periodic
+        void SetTimePeriod(double period){fSignalPeriod = std::fabs(period); };
+        double GetTimePeriod() const { return fSignalPeriod; }
+
         virtual void Initialize();
 
     protected:
 
-        virtual double GenerateSample(const double& sample_time) const;
+        virtual double GenerateSample(const double& sample_time) const override;
 
         //data
+        double fSignalPeriod;
         unsigned int fNSamples;
         size_t fDim[1];
         std::mt19937::result_type fSeed;

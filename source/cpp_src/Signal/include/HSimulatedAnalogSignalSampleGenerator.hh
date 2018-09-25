@@ -12,46 +12,34 @@ namespace hose
 *@class HSimulatedAnalogSignalSampleGenerator
 *@brief abstract class template for an analog signal
 * that is to be sampled by a digitizer at some frequency
-* over a limited time range, it is expected that the signal is bandwidth limited
-* and in the case that it is not time limited, that it is periodic
+* it is expected that the signal is bandwidth limited
 *@details
 */
 
-class HSimulatedAnalogSignalSampleGenerator: public HSimulatedAnalogSignalSampleGenerator
+class HSimulatedAnalogSignalSampleGenerator
 {
     public:
-        HSimulatedAnalogSignalSampleGenerator();
-        virtual ~HSimulatedAnalogSignalSampleGenerator();
+        HSimulatedAnalogSignalSampleGenerator(){};
+        virtual ~HSimulatedAnalogSignalSampleGenerator(){};
 
         //tells the sample generation implementation what the expected the sampling frequency is
-        virtual void SetSamplingFrequency(double max_freq);
-        virtual double GetSamplingFrequency() const;
-
-        //set valid time range, or period of the signal
-        //signal generation always starts at t=0, period is forced to be positive
-        virtual void SetTimePeriod(double period);
-        virtual double GetTimePeriod() const;
-
-        //allows the signal to repeat indefinitely if true
-        //if false, the signal is time limited, and zero outside of the time limits
-        virtual void SetPeriodic(bool is_periodic);
-        virtual void SetPeriodicTrue();
-        virtual void SetPeriodicFalse();
-        virtual bool IsPeriodic() const;
+        virtual void SetSamplingFrequency(double max_freq){fSamplingFrequency = max_freq;};
+        virtual double GetSamplingFrequency() const {reuturn fSamplingFrequency;};
 
         //implementation specific
         virtual void Initialize(){;};
 
-        virtual bool GetSample(const double& sample_time, double& sample) const;
+        bool GetSample(const double& sample_time, double& sample) const
+        {
+            return GenerateSample(sample_time, sample);
+        }
 
     protected:
 
-        virtual double GenerateSample(const double& /*sample_time*/) const = 0;
+        virtual bool GenerateSample(const double& sample_time, double& sample) const = 0;
 
         //data
-        bool fIsPeriodicSignal;
         double fSamplingFrequency;
-        double fPeriod;
 };
 
 }

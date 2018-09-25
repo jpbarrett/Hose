@@ -9,6 +9,7 @@ namespace hose
 
 HPowerLawNoiseSignal::HPowerLawNoiseSignal():
     HSimulatedAnalogSignalSampleGenerator(),
+    fSignalPeriod(0),
     fWrapperIn(),
     fWrapperOut(),
     fSeed(0)
@@ -35,7 +36,7 @@ HPowerLawNoiseSignal::Initialize()
 {
     //determine number of random samples and generate them
     fSamplePeriod = 1.0/(this->fSamplingFrequency);
-    fNSamples = fPeriod/fSamplePeriod;
+    fNSamples = fSignalPeriod/fSamplePeriod;
 
     fDim[0] = fNSamples;
 
@@ -111,23 +112,24 @@ HPowerLawNoiseSignal::Initialize()
 }
 
 
-double 
-HPowerLawNoiseSignal::GenerateSample(const double& sample_time) const
+bool 
+HSimulatedAnalogSignalSampleGenerator::GenerateSample(const double& sample_time, double& sample) const
 {
-    
-    //TODO FIXME upgrade this so we can use linear/cubic interpolation (directly in time domain) for times which lie in between samples.
-    //Interpolating in the time domain may introduce higher-frequency components which cause aliasing 
-    //but since we don't expect a real world noise signal to be bandlimited this is not a problem at the moment 
-    //If the system to be simulated has a band-limiting filter, then this needs to be dealt with separately.
-
-    //just need to figure out where in the array we want to pull from
-    unsigned int index = std::floor(sample_time/fSamplePeriod);
-
+    //get time into sample range and compute
+    double trimmed_time = sample_time - std::floor(sample_time/fSignalPeriod)*fSignalPeriod;
+    //within the sample range, ok
+    unsigned int index = std::floor(trimmed_time/fSamplePeriod);
     //dead simple, sample and hold
-    return std::real<double>( (fWrapperOut.GetData())[index] );
-
+    if(index < fNSamples)
+    {
+        sample = std::real<double>( (fWrapperOut.GetData())[index] );
+        return true;
+    }
+    else
+    {
+        sample = 0;
+        return false;
+    }
 }
-
-
 
 } //end of namespace
