@@ -38,8 +38,8 @@ int main(int /*argc*/, char** /*argv*/)
 
     HSpectrometerCUDASigned m_spec;
     m_spec.SetDataLength(items_per_chunk);
-    std::cout<<"data install dir = "<<DATA_INSTALL_DIR<<std::endl;
-    m_spec.SetOutputDirectory(DATA_INSTALL_DIR);
+    std::cout<<"data install dir = "<<STR2(DATA_INSTALL_DIR)<<std::endl;
+    m_spec.SetOutputDirectory(STR2(DATA_INSTALL_DIR));
     m_spec.SetNThreads(1);
     m_spec.SetBufferPool(pool);
     m_spec.LaunchThreads();
