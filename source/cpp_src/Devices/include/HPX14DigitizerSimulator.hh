@@ -79,7 +79,7 @@ class HPX14DigitizerSimulator: public HDigitizer< px14_sample_t, HPX14DigitizerS
         virtual void ExecuteThreadTask() override; //do thread work assoicated with fill the buffer
         virtual bool WorkPresent() override; //check if we have buffer filling work to do
 
-        void SimulateDataTransfer(uint64_t global_count, size_t n_samples, px14_sample_t* buffer)
+        void SimulateDataTransfer(uint64_t global_count, size_t n_samples, px14_sample_t* buffer);
 
         char fSidebandFlag;
         char fPolarizationFlag;
