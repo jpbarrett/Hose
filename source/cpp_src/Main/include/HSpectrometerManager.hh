@@ -201,8 +201,8 @@ class HSpectrometerManager: public HApplicationBackend
                     if(digitizer_init_success)
                     {
                         //create source buffer pool
-                        fCUDABufferAllocator = new HCudaHostBufferAllocator<  XDigitizerType::sample_type >();
-                        fDigitizerSourcePool = new HBufferPool< XDigitizerType::sample_type  >( fCUDABufferAllocator );
+                        fCUDABufferAllocator = new HCudaHostBufferAllocator< typename XDigitizerType::sample_type >();
+                        fDigitizerSourcePool = new HBufferPool< typename XDigitizerType::sample_type  >( fCUDABufferAllocator );
                         fDigitizerSourcePool->Allocate(fDigitizerPoolSize, fNSpectrumAverages*fFFTSize);
                         fDigitizer->SetBufferPool(fDigitizerSourcePool);
 
@@ -961,11 +961,11 @@ class HSpectrometerManager: public HApplicationBackend
         HTokenizer fTokenizer;
         HServer* fServer;
         XDigitizerType* fDigitizer;
-        HCudaHostBufferAllocator<  HPX14Digitizer::sample_type >* fCUDABufferAllocator;
+        HCudaHostBufferAllocator< typename XDigitizerType::sample_type >* fCUDABufferAllocator;
         HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >* fSpectrometerBufferAllocator;
         HSpectrometerCUDA* fSpectrometer;
         HSimpleMultiThreadedSpectrumDataWriter* fWriter;
-        HBufferPool< HPX14Digitizer::sample_type >* fDigitizerSourcePool;
+        HBufferPool< typename XDigitizerType::sample_type >* fDigitizerSourcePool;
         HBufferPool< spectrometer_data >* fSpectrometerSinkPool;
         std::string fCannedStopCommand;
 
