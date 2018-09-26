@@ -73,6 +73,9 @@ namespace hose
 */
 
 
+//XDigitizerType must inherit from HDigitizer<> and HProducer<>
+
+template< class XDigitizerType = HPX14Digitizer >
 class HSpectrometerManager: public HApplicationBackend
 {
     public:
@@ -191,21 +194,21 @@ class HSpectrometerManager: public HApplicationBackend
                     fServer->Initialize();
 
                     //create digitizer
-                    fDigitizer = new HPX14Digitizer();
+                    fDigitizer = new XDigitizerType();
                     fDigitizer->SetNThreads(fNDigitizerThreads);
                     bool digitizer_init_success = fDigitizer->Initialize();
 
                     if(digitizer_init_success)
                     {
                         //create source buffer pool
-                        fCUDABufferAllocator = new HCudaHostBufferAllocator<  HPX14Digitizer::sample_type >();
-                        fDigitizerSourcePool = new HBufferPool< HPX14Digitizer::sample_type  >( fCUDABufferAllocator );
+                        fCUDABufferAllocator = new HCudaHostBufferAllocator<  XDigitizerType::sample_type >();
+                        fDigitizerSourcePool = new HBufferPool< XDigitizerType::sample_type  >( fCUDABufferAllocator );
                         fDigitizerSourcePool->Allocate(fDigitizerPoolSize, fNSpectrumAverages*fFFTSize);
                         fDigitizer->SetBufferPool(fDigitizerSourcePool);
 
                         //TODO fill these in with real values!
-                        fDigitizer->SetSidebandFlag('U');
-                        fDigitizer->SetPolarizationFlag('X');
+                        // fDigitizer->SetSidebandFlag('U');
+                        // fDigitizer->SetPolarizationFlag('X');
 
                         //create spectrometer data pool
                         fSpectrometerBufferAllocator = new HBufferAllocatorSpectrometerDataCUDA<spectrometer_data>();
@@ -957,7 +960,7 @@ class HSpectrometerManager: public HApplicationBackend
         //objects
         HTokenizer fTokenizer;
         HServer* fServer;
-        HPX14Digitizer* fDigitizer;
+        XDigitizerType* fDigitizer;
         HCudaHostBufferAllocator<  HPX14Digitizer::sample_type >* fCUDABufferAllocator;
         HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >* fSpectrometerBufferAllocator;
         HSpectrometerCUDA* fSpectrometer;

@@ -28,6 +28,7 @@ class HProducer: public HThreadPool
         HProducer():
             HThreadPool(),
             fStopProduction(false),
+            fStopAfterNextBuffer(false),
             fProductionManagementThread(),
             fBufferPool(nullptr)
         {};
@@ -73,6 +74,9 @@ class HProducer: public HThreadPool
             Join();
         }
 
+        //signaling bool
+        void StopAfterNextBuffer(){fStopAfterNextBuffer = true;}
+
     protected:
 
         void ProduceWork()
@@ -107,6 +111,7 @@ class HProducer: public HThreadPool
         virtual void ExecutePostWorkTasks(){};
 
         volatile bool fStopProduction;
+        volatile bool fStopAfterNextBuffer;
         std::thread fProductionManagementThread;
         HBufferPool<XBufferItemType>* fBufferPool;
         XProducerBufferHandlerPolicyType fBufferHandler;

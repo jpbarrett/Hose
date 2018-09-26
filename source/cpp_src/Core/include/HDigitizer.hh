@@ -139,6 +139,9 @@ class HDigitizer
             }
         }
 
+        //should override this!
+        virtual double GetSamplingFrequency() const {return 0.0;};
+
     protected:
 
         mutable std::mutex fMutex;
