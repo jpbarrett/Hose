@@ -20,10 +20,12 @@ if (HOSE_USE_PX14)
     list(APPEND HDEVICES_HEADERFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HPX14BufferAllocator.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HPX14Digitizer.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/HPX14DigitizerSimulator.hh
     )
     list(APPEND HDEVICES_SOURCEFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HPX14BufferAllocator.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HPX14Digitizer.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/HPX14DigitizerSimulator.cc
     )
     list(APPEND HDEVICES_LIBS ${PX14400_LIBRARIES})
 endif()
