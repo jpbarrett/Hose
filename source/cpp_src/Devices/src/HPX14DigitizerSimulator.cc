@@ -52,7 +52,7 @@ HPX14DigitizerSimulator::InitializeImpl()
 
         //build our allocator
         if(this->fAllocator){delete this->fAllocator;};
-        this->fAllocator = new HBufferAllocatorNew();
+        this->fAllocator = new HBufferAllocatorNew< px14_sample_t >();
 
         //now we allocate the internal buffer pool (we use 32 X 2 MB buffers)
         fInternalBufferPool = new HBufferPool< px14_sample_t >( this->GetAllocator() );
