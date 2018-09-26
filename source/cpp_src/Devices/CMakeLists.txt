@@ -2,11 +2,12 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../c_src/Interface/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Array/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Core/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Devices/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Signal/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set(HDEVICES_LIBS HCore HInterface)
+set(HDEVICES_LIBS HCore HInterface HSignal)
 
 set( HDEVICES_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HDummyDigitizer.hh
