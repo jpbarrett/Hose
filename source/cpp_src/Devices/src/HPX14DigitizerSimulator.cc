@@ -21,7 +21,7 @@ HPX14DigitizerSimulator::HPX14DigitizerSimulator():
     fErrorCode(0),
     fNInternalBuffers(PX14_N_INTERNAL_BUFF),
     fInternalBufferSize(PX14_INTERNAL_BUFF_SIZE),
-    fInternalBufferPool(nullptr)
+    fInternalBufferPool(nullptr),
     fPower1(nullptr),
     fPower2(nullptr),
     fSwitchedPower(nullptr),
