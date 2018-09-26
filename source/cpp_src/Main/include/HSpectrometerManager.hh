@@ -415,7 +415,7 @@ class HSpectrometerManager: public HApplicationBackend
                 tm current_utc_tm;
 
                 //make sure to use thread safe version of gmtime
-                tm* tmp = std::gmtime_r(&current_time, &current_utc_tm);
+                tm* tmp = gmtime_r(&current_time, &current_utc_tm);
 
                 std::stringstream lfss;
                 lfss << STR2(LOG_INSTALL_DIR);
