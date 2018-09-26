@@ -1,6 +1,6 @@
 #include "HPX14Digitizer.hh"
 
-#define USE_SOFTWARE_TRIGGER 1
+//#define USE_SOFTWARE_TRIGGER 1
 #define PX14_N_INTERNAL_BUFF 32
 #define PX14_INTERNAL_BUFF_SIZE 1048576
 
