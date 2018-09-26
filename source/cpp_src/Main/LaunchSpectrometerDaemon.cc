@@ -48,7 +48,7 @@ int main(int /*argc*/, char** /*argv*/)
     daemonize();
 
     /* this thread runs now runs as a daemon in the background */
-    HSpectrometerManager<>* specManager = new HSpectrometerManager();
+    HSpectrometerManager<>* specManager = new HSpectrometerManager<>();
     specManager->Initialize();
     std::thread spectrometer_thread( &HSpectrometerManager<>::Run, specManager);
     spectrometer_thread.join();
