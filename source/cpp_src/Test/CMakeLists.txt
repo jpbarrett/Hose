@@ -76,7 +76,7 @@ if (HOSE_ENABLE_TEST)
         find_package(ROOT REQUIRED)
         include_directories(${ROOT_INCLUDE_DIRS})
         list(APPEND HOSE_TEST_LIBS ${ROOT_LIBRARIES})
-        list(APPEND SOURCE_BASENAMES TestSpectrumPlot TestSpectrumDifference TestNoiseGenerator)
+        list(APPEND SOURCE_BASENAMES TestSpectrumPlot TestSpectrumDifference TestNoiseGenerator TestSummedNoiseGenerator)
     endif()
 
     if (HOSE_USE_PX14)

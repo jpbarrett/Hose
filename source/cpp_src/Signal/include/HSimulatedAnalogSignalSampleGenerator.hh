@@ -24,7 +24,7 @@ class HSimulatedAnalogSignalSampleGenerator
 
         //tells the sample generation implementation what the expected the sampling frequency is
         virtual void SetSamplingFrequency(double max_freq){fSamplingFrequency = max_freq;};
-        virtual double GetSamplingFrequency() const {reuturn fSamplingFrequency;};
+        virtual double GetSamplingFrequency() const {return fSamplingFrequency;};
 
         //implementation specific
         virtual void Initialize(){;};

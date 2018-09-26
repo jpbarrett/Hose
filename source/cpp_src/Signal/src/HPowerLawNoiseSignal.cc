@@ -113,23 +113,26 @@ HPowerLawNoiseSignal::Initialize()
 
 
 bool 
-HSimulatedAnalogSignalSampleGenerator::GenerateSample(const double& sample_time, double& sample) const
+HPowerLawNoiseSignal::GenerateSample(const double& sample_time, double& sample) const
 {
-    //get time into sample range and compute
-    double trimmed_time = sample_time - std::floor(sample_time/fSignalPeriod)*fSignalPeriod;
-    //within the sample range, ok
-    unsigned int index = std::floor(trimmed_time/fSamplePeriod);
-    //dead simple, sample and hold
-    if(index < fNSamples)
-    {
-        sample = std::real<double>( (fWrapperOut.GetData())[index] );
-        return true;
-    }
-    else
-    {
-        sample = 0;
-        return false;
-    }
+    unsigned int index = std::floor(sample_time/fSamplePeriod);
+    sample = std::real<double>( (fWrapperOut.GetData())[index%fNSamples] );
+    return true;
+    // //get time into sample range and compute
+    // double trimmed_time = sample_time - std::floor(sample_time/fSignalPeriod)*fSignalPeriod;
+    // //within the sample range, ok
+    // unsigned int index = std::floor(trimmed_time/fSamplePeriod);
+    // //dead simple, sample and hold
+    // if(index < fNSamples)
+    // {
+    //     sample = std::real<double>( (fWrapperOut.GetData())[index ] );
+    //     return true;
+    // }
+    // else
+    // {
+    //     sample = 0;
+    //     return false;
+    // }
 }
 
 } //end of namespace

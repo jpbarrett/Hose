@@ -14,6 +14,7 @@
 #include "HPowerLawNoiseSignal.hh"
 #include "HGaussianWhiteNoiseSignal.hh"
 #include "HSwitchedSignal.hh"
+#include "HSummedSignal.hh"
 
 using namespace hose;
 
@@ -28,8 +29,8 @@ int main(int argc, char** argv)
     "\tOptions:\n"
     "\t -h, --help               (shows this message and exits)\n"
     "\t -g, --gaussian           (generate gaussian white noise)\n"
-    "\t -p, --power              (generate power low noise with the given exponent)\n"
     "\t -f, --frequency          (frequency (sampling))\n"
+    "\t -r, --ratio              (ratio of switched signal amplitude to constant signal amplitude)\n"
     "\t -s, --switch             (switching frequency, noise signal with be turned on/off with 50% duty-cycle)\n"
     ;
 
@@ -37,18 +38,18 @@ int main(int argc, char** argv)
     {
         {"help", no_argument, 0, 'h'},
         {"gaussian", no_argument, 0, 'g'},
-        {"power", required_argument, 0, 'p'},
+        {"ratio", required_argument, 0, 'r'},
         {"frequency", required_argument, 0, 'f'},
         {"switch", required_argument, 0, 's'}
     };
 
-    static const char *optString = "hgp:f:s:";
+    static const char *optString = "hgr:f:s:";
 
     bool do_gaussian = false;
-    double power = 0.0;
     double sampling_frequency = 1e5;
     bool do_switching = false;
-    double switching_frequency = 100;
+    double switching_frequency = 10;
+    double ratio = 1.0;
 
     while(1)
     {
@@ -62,11 +63,11 @@ int main(int argc, char** argv)
             case('g'):
             do_gaussian = true;
             break;
-            case('p'):
-            power = atof(optarg);
-            break;
             case('f'):
             sampling_frequency = atof(optarg);
+            break;
+            case('r'):
+            ratio = atof(optarg);
             break;
             case('s'):
             do_switching = true;
@@ -94,81 +95,36 @@ int main(int argc, char** argv)
     std::vector< std::complex<double> > noise_xform_out; noise_xform_out.resize(num_samples);
     bool testval;
 
-    if(do_gaussian)
+    //generate gaussian white noise
+    HGaussianWhiteNoiseSignal* gnoise1 = new HGaussianWhiteNoiseSignal();
+    gnoise1->SetRandomSeed(123);
+    gnoise1->Initialize();
+
+    HGaussianWhiteNoiseSignal* gnoise2 = new HGaussianWhiteNoiseSignal();
+    gnoise2->SetRandomSeed(456);
+    gnoise2->Initialize();
+
+    HSwitchedSignal* snoise = new HSwitchedSignal();
+    snoise->SetSwitchingFrequency(switching_frequency);
+    snoise->SetSignalGenerator(gnoise2);
+
+    HSummedSignal* summed_noise = new HSummedSignal();
+    summed_noise->AddSignalGenerator(gnoise1, 1.0);
+    summed_noise->AddSignalGenerator(snoise, ratio);
+
+    double samp;
+    for(size_t i=0; i<num_samples; i++)
     {
-        //generate gaussian white noise
-        HGaussianWhiteNoiseSignal* gnoise = new HGaussianWhiteNoiseSignal();
-        gnoise->SetRandomSeed(123);
-        gnoise->Initialize();
-
-        if(do_switching)
-        {
-            HSwitchedSignal* snoise = new HSwitchedSignal();
-            snoise->SetSwitchingFrequency(switching_frequency);
-            snoise->SetSignalGenerator(gnoise);
-
-            double samp;
-            for(size_t i=0; i<num_samples; i++)
-            {
-                testval = snoise->GetSample(i*delta, samp);
-                (void) testval;
-                noise_samples[i] = samp;
-                noise_xform_in[i] = std::complex<double>(samp, 0.0);
-            }
-            delete snoise;
-        }
-        else
-        {
-            double samp;
-            for(size_t i=0; i<num_samples; i++)
-            {
-                testval = gnoise->GetSample(i*delta, samp);
-                (void) testval;
-                noise_samples[i] = samp;
-                noise_xform_in[i] = std::complex<double>(samp, 0.0);
-            }
-        }
-
-        delete gnoise;
-    }
-    else
-    {
-        //generate power law noise
-        HPowerLawNoiseSignal* pnoise = new HPowerLawNoiseSignal();
-        pnoise->SetRandomSeed(123);
-        pnoise->SetPowerLawExponent(power);
-        pnoise->SetSamplingFrequency(sample_frequency);
-        pnoise->SetTimePeriod(1.0);
-        pnoise->Initialize();
-
-        if(do_switching)
-        {
-            HSwitchedSignal* snoise = new HSwitchedSignal();
-            snoise->SetSwitchingFrequency(switching_frequency);
-            snoise->SetSignalGenerator(pnoise);
-            double samp;
-            for(size_t i=0; i<num_samples; i++)
-            {
-                testval = snoise->GetSample(i*delta, samp);
-                (void) testval;
-                noise_samples[i] = samp;
-                noise_xform_in[i] = std::complex<double>(samp, 0.0);
-            }
-            delete snoise;
-        }
-        else
-        {
-            double samp;
-            for(size_t i=0; i<num_samples; i++)
-            {
-                testval = pnoise->GetSample(i*delta, samp);
-                (void) testval;
-                noise_samples[i] = samp;
-            }
-        }
-        delete pnoise;
+        testval = summed_noise->GetSample(i*delta, samp);
+        (void) testval;
+        noise_samples[i] = samp;
+        noise_xform_in[i] = std::complex<double>(samp, 0.0);
     }
 
+    delete summed_noise;
+    delete snoise;
+    delete gnoise2;
+    delete gnoise1;
 
     //now we are going to plot the time series, and histogram the noise
     

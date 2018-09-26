@@ -55,7 +55,7 @@ class HPowerLawNoiseSignal: public HSimulatedAnalogSignalSampleGenerator
 
         //since the signal must be pre-allocated (which is memory expensive), we need to limit
         //the signal to specific time range, samples for times outside of
-        //this time range will be mapped onto it so the overall signal is periodic
+        //this time range will be mapped onto this range so the overall signal is periodic
         void SetTimePeriod(double period){fSignalPeriod = std::fabs(period); };
         double GetTimePeriod() const { return fSignalPeriod; }
 
@@ -63,7 +63,7 @@ class HPowerLawNoiseSignal: public HSimulatedAnalogSignalSampleGenerator
 
     protected:
 
-        virtual double GenerateSample(const double& sample_time) const override;
+        virtual bool GenerateSample(const double& sample_time, double& sample) const override;
 
         //data
         double fSignalPeriod;
