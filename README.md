@@ -4,10 +4,9 @@
 1. A compiler with C++11 support, e.g gcc >= 4.8 or clang >= 3.3.
 2. CMake 3.0 or greater (https://cmake.org/) required by the build system.
     To configure options you may want to obtain the command line GUI
-    interface for cmake, (ccmake). On a debian base Linux system this can be 
-    done with:
+    interface for cmake, (ccmake). On a debian based Linux system (other systems
+    may name these packages differently) this can be done with:
     - sudo apt-get install cmake cmake-curses-gui 
-    Other systems may name these packages differently.
 
 3. Python 2.7 (Python 3 not yet supported)
 
