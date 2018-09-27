@@ -27,12 +27,11 @@
     up ssh-keys on your machine for your github account.
 
 2. To compile, do the following:
-    cd ./Hose
-    mkdir build
-    cd ./build
-    ccmake ../
-    <..configure options as needed..>
-    make && make install
+    1. cd ./Hose && mkdir build
+    2. cd ./build
+    3. ccmake ../
+    4. <..configure options as needed..>
+    5. make && make install
 
 3. To place the necessary libraries and executables in your path, run:
     source <Hose>/install/bin/hoseenv.sh
