@@ -52,10 +52,10 @@ HPX14DigitizerSimulator::InitializeImpl()
 
         //build our allocator
         if(this->fAllocator){delete this->fAllocator;};
-        this->fAllocator = new HBufferAllocatorNew< px14_sample_t >();
+        this->fAllocator = new HBufferAllocatorNew< uint16_t >();
 
         //now we allocate the internal buffer pool (we use 32 X 2 MB buffers)
-        fInternalBufferPool = new HBufferPool< px14_sample_t >( this->GetAllocator() );
+        fInternalBufferPool = new HBufferPool< uint16_t >( this->GetAllocator() );
         fInternalBufferPool->Allocate(fNInternalBuffers, fInternalBufferSize); //size and number not currently configurable]
 
         //generate 1 second of fake data to be used
@@ -79,7 +79,7 @@ HPX14DigitizerSimulator::InitializeImpl()
         fSwitchedPower->Initialize();
 
         fSummedSignalGenerator = new HSummedSignal();
-        fSummedSignalGenerator->AddSignalGenerator(fPower1, 1.0);
+        fSummedSignalGenerator->AddSignalGenerator(fPower1, 0.00);
         fSummedSignalGenerator->AddSignalGenerator(fSwitchedPower, 1.0);
         fSummedSignalGenerator->Initialize();
 
@@ -125,7 +125,7 @@ HPX14DigitizerSimulator::TransferImpl()
             unsigned int samples_in_buffer = std::min( (unsigned int) samples_to_collect, fInternalBufferSize);
 
             //grab a buffer from the internal pool
-            HLinearBuffer< px14_sample_t >* internal_buff = nullptr;
+            HLinearBuffer< uint16_t >* internal_buff = nullptr;
             HProducerBufferPolicyCode internal_code = fInternalProducerBufferHandler.ReserveBuffer(fInternalBufferPool, internal_buff);
 
             if(internal_code & HProducerBufferPolicyCode::success && internal_buff != nullptr)
@@ -211,7 +211,7 @@ HPX14DigitizerSimulator::ExecutePreWorkTasks()
     if(fArmed)
     {
         //get a buffer from the buffer handler
-        HLinearBuffer< px14_sample_t >* buffer = nullptr;
+        HLinearBuffer< uint16_t >* buffer = nullptr;
         fBufferCode = this->fBufferHandler.ReserveBuffer(this->fBufferPool, buffer);
         //set the digitizer buffer if succesful
         if( buffer != nullptr && (fBufferCode & HProducerBufferPolicyCode::success))
@@ -274,7 +274,7 @@ HPX14DigitizerSimulator::ExecuteThreadTask()
         if(fInternalBufferPool->GetConsumerPoolSize() != 0)
         {
             //grab a buffer from the internal pool
-            HLinearBuffer< px14_sample_t >* internal_buff = nullptr;
+            HLinearBuffer< uint16_t >* internal_buff = nullptr;
             HConsumerBufferPolicyCode internal_code = fInternalConsumerBufferHandler.ReserveBuffer(fInternalBufferPool, internal_buff);
 
             if(internal_code & HConsumerBufferPolicyCode::success && internal_buff != nullptr)
@@ -308,7 +308,7 @@ HPX14DigitizerSimulator::WorkPresent()
 }
 
 void 
-HPX14DigitizerSimulator::SimulateDataTransfer(uint64_t global_count, size_t n_samples, px14_sample_t* buffer)
+HPX14DigitizerSimulator::SimulateDataTransfer(uint64_t global_count, size_t n_samples, uint16_t* buffer)
 {
     //copy fake data into the buffer
     //should also wait an appropriate amount of time based on the sample rate
@@ -318,14 +318,16 @@ HPX14DigitizerSimulator::SimulateDataTransfer(uint64_t global_count, size_t n_sa
     bool retval = false;;
     for(size_t i=0; i<n_samples; i++)
     {
-        time += fSamplePeriod;
-        retval = fSummedSignalGenerator->GetSample(time, sample); (void) retval;
-        //clip samples to be in [-10,10] //TODO FIXME make sure this is the right range
+        if(i%2 == 0){sample = 9.9;}
+        else{sample = 0.0;}
+        // time += fSamplePeriod;
+        // retval = fSummedSignalGenerator->GetSample(time, sample); (void) retval;
+        // //clip samples to be in [-10,10] //TODO FIXME make sure this is the right range
         if(sample < -10.0){sample = -10.0;};
         if(sample > 10.0){sample = 10.0;};
         //map floats in range -10 to 10 to range [0,65535]
         sample = ( (sample + 10.0)/(20.0) )*32767.0 + 32768.0;
-        buffer[i] = (px14_sample_t)sample; //cast to px14_sample_t (unsigned 2 byte integer)
+        buffer[i] = (uint16_t)sample; //cast to uint16_t (unsigned 2 byte integer)
     }
 
 }

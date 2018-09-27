@@ -196,15 +196,16 @@ int main(int argc, char** argv)
     std::sort( specFiles.begin(), specFiles.end() , less_than_spec() );
     std::sort( powerFiles.begin(), powerFiles.end() , less_than_spec() );
 
-
-    std::cout<<"meta data file = "<< metaDataFile<<std::endl;
-    std::ifstream metadata(metaDataFile.c_str());
-    json j;
-    metadata >> j;
-    for (json::iterator it = j.begin(); it != j.end(); ++it) {
-      std::cout << (*it)["measurement"] << '\n';
+    if(have_meta_data)
+    {
+        std::cout<<"meta data file = "<< metaDataFile<<std::endl;
+        std::ifstream metadata(metaDataFile.c_str());
+        json j;
+        metadata >> j;
+        for (json::iterator it = j.begin(); it != j.end(); ++it) {
+          std::cout << (*it)["measurement"] << '\n';
+        }
     }
-
 
 
     for(auto it = specFiles.begin(); it != specFiles.end(); it++)

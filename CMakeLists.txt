@@ -48,7 +48,6 @@ message(STATUS "Using compiler ${COMPILER_ID} ${COMPILER_VERSION}")
 #options for triggering additional dependencies
 option( HOSE_USE_PX14 "Build PX14400 device support" OFF )
 option( HOSE_USE_ADQ7 "Build ADQ7 device support" OFF )
-option( HOSE_USE_DIGITAL_RF "Build digital_rf I/O support" OFF )
 option( HOSE_USE_CUDA "Build CUDA support." OFF)
 option( HOSE_USE_ROOT "Build ROOT based utilities." OFF)
 option( HOSE_USE_ZEROMQ "Build client-server library" OFF )
@@ -71,18 +70,11 @@ add_subdirectory(${CPPSOURCE}/Array)
 add_subdirectory(${CPPSOURCE}/Core)
 add_subdirectory(${CPPSOURCE}/Signal)
 add_subdirectory(${CPPSOURCE}/Server)
-
 if(HOSE_USE_CUDA)
     add_subdirectory( ${CPPSOURCE}/CUDASpectrometer)
 endif(HOSE_USE_CUDA)
-
-if( HOSE_USE_PX14 OR HOSE_USE_ADQ7)
 add_subdirectory(${CPPSOURCE}/Operators)
 add_subdirectory(${CPPSOURCE}/Devices)
-else()
-message(STATUS "No devices (PX14400 or ADQ7) were selected, only some libraries will be built.")
-endif()
-
 add_subdirectory(${CPPSOURCE}/Main)
 add_subdirectory(${CPPSOURCE}/Test)
 

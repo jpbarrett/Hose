@@ -11,9 +11,12 @@ set(HDEVICES_LIBS HCore HInterface HSignal)
 
 set( HDEVICES_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HDummyDigitizer.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HPX14DigitizerSimulator.hh
 )
 
-set( HDEVICES_SOURCEFILES )
+set( HDEVICES_SOURCEFILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/HPX14DigitizerSimulator.cc
+)
 
 if (HOSE_USE_PX14)
     find_package(PX14400 REQUIRED)
@@ -21,12 +24,11 @@ if (HOSE_USE_PX14)
     list(APPEND HDEVICES_HEADERFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HPX14BufferAllocator.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HPX14Digitizer.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/HPX14DigitizerSimulator.hh
+
     )
     list(APPEND HDEVICES_SOURCEFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HPX14BufferAllocator.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HPX14Digitizer.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/HPX14DigitizerSimulator.cc
     )
     list(APPEND HDEVICES_LIBS ${PX14400_LIBRARIES})
 endif()

@@ -36,7 +36,6 @@ template< typename XBufferItemType >
 XBufferItemType* 
 HBufferAllocatorNew< XBufferItemType >::AllocateImpl(size_t size)
 {
-    std::cout<<"alloc of size"<<size<<std::endl;
     //don't throw exeception on alloc error, just return nullptr
     XBufferItemType* ptr = new(std::nothrow) XBufferItemType[size];
     return ptr;

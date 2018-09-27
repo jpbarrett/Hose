@@ -28,7 +28,23 @@ extern "C"
 }
 
 #include "HTokenizer.hh"
-#include "HPX14Digitizer.hh"
+
+#include "HPX14DigitizerSimulator.hh"
+#ifdef HOSE_USE_PX14
+    #include "HPX14Digitizer.hh"
+    #define DIGITIZER_TYPE HPX14Digitizer
+    #define N_DIGITIZER_THREADS 2
+    #define N_DIGITIZER_POOL_SIZE 32  
+    #define N_SPECTROMETER_POOL_SIZE 16  
+    #define N_SPECTROMETER_THREADS 3
+#else
+    #define DIGITIZER_TYPE HPX14DigitizerSimulator
+    #define N_DIGITIZER_THREADS 4
+    #define N_DIGITIZER_POOL_SIZE 3
+    #define N_SPECTROMETER_POOL_SIZE 3  
+    #define N_SPECTROMETER_THREADS 1
+#endif
+
 #include "HBufferPool.hh"
 #include "HSpectrometerCUDA.hh"
 #include "HCudaHostBufferAllocator.hh"
@@ -75,7 +91,7 @@ namespace hose
 
 //XDigitizerType must inherit from HDigitizer<> and HProducer<>
 
-template< class XDigitizerType = HPX14Digitizer >
+template< class XDigitizerType = DIGITIZER_TYPE >
 class HSpectrometerManager: public HApplicationBackend
 {
     public:
@@ -87,10 +103,10 @@ class HSpectrometerManager: public HApplicationBackend
             fPort("12345"),
             fNSpectrumAverages(256),
             fFFTSize(131072),
-            fDigitizerPoolSize(32),
-            fSpectrometerPoolSize(16),
-            fNDigitizerThreads(2),
-            fNSpectrometerThreads(3),
+            fDigitizerPoolSize(N_DIGITIZER_POOL_SIZE),
+            fSpectrometerPoolSize(N_SPECTROMETER_POOL_SIZE),
+            fNDigitizerThreads(N_DIGITIZER_THREADS),
+            fNSpectrometerThreads(N_SPECTROMETER_THREADS),
             fServer(nullptr),
             fDigitizer(nullptr),
             fCUDABufferAllocator(nullptr),
@@ -420,7 +436,10 @@ class HSpectrometerManager: public HApplicationBackend
                 std::stringstream lfss;
                 lfss << STR2(LOG_INSTALL_DIR);
                 lfss << "/status-";
-                lfss << std::put_time(&current_utc_tm, "%d-%m-%YT%H-%M-%SZ");
+                // lfss << std::put_time(&current_utc_tm, "%d-%m-%YT%H-%M-%SZ");
+                char tmpbuff[50];
+                strftime(tmpbuff, sizeof(tmpbuff), "%d-%m-%YT%H-%M-%SZ", &current_utc_tm);
+                lfss << std::string(tmpbuff);
                 lfss << ".log";
 
                 //rename the

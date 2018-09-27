@@ -166,7 +166,7 @@ class hprompt(Cmd):
             self.interface.SendRecieveMessage("record=off")
             time.sleep(1)
             self.end_time_stamp = datetime.utcnow()
-            self.create_meta_data_file()
+            #self.create_meta_data_file()
             self.is_recording = False
             return 0
 
@@ -187,10 +187,12 @@ class hprompt(Cmd):
         meta_data_filepath = os.path.join(self.data_install_dir, self.current_experiment_name, self.current_scan_name, meta_data_filename)
         obj_list = []
 
+        print "flag1"
         digi_config = self.dbclient.get_most_recent_measurement("digitizer_config", self.end_time_stamp)
         for x in digi_config:
             obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
 
+        print "flag2"
         spec_config = self.dbclient.get_most_recent_measurement("spectrometer_config", self.end_time_stamp)
         for x in spec_config:
             obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
@@ -211,6 +213,7 @@ class hprompt(Cmd):
         for x in recording_info:
             obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
 
+        print "flag3"
         temp_list = []
         most_recent_data_validity_info = self.dbclient.get_most_recent_measurement("data_validity", self.start_time_stamp)
         for x in most_recent_data_validity_info:
@@ -222,6 +225,7 @@ class hprompt(Cmd):
         for z in fset:
             obj_list.append( z )
 
+        print "flag4"
         temp_list = []
         most_recent_antenna_target_info = self.dbclient.get_most_recent_measurement("antenna_target_status", self.start_time_stamp)
         for x in most_recent_antenna_target_info:
@@ -233,6 +237,7 @@ class hprompt(Cmd):
         for z in fset:
             obj_list.append( z )
     
+        print "flag5"
         antenna_position_info = self.dbclient.get_measurement_from_time_range("antenna_position", self.start_time_stamp, self.end_time_stamp, 1)
         for x in antenna_position_info:
             obj_list.append( json.dumps(x, indent=4, sort_keys=True) )

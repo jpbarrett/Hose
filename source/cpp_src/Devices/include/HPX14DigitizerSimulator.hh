@@ -4,11 +4,6 @@
 #include <cstddef>
 #include <stdint.h>
 
-extern "C"
-{
-    #include "px14.h"
-}
-
 #include <mutex>
 
 #include "HDigitizer.hh"
@@ -36,7 +31,7 @@ namespace hose {
 
 
 
-class HPX14DigitizerSimulator: public HDigitizer< px14_sample_t, HPX14DigitizerSimulator >,  public HProducer< px14_sample_t, HProducerBufferHandler_Steal< px14_sample_t > >
+class HPX14DigitizerSimulator: public HDigitizer< uint16_t, HPX14DigitizerSimulator >,  public HProducer< uint16_t, HProducerBufferHandler_Steal< uint16_t > >
 {
     public:
         HPX14DigitizerSimulator();
@@ -51,14 +46,13 @@ class HPX14DigitizerSimulator: public HDigitizer< px14_sample_t, HPX14DigitizerS
 
         virtual double GetSamplingFrequency() const override {return fAcquisitionRateMHz*1e6;};
 
-        HPX14 GetBoard() {return fBoard;};
         bool IsInitialized() const {return fInitialized;};
         bool IsConnected() const {return fConnected;};
         bool IsArmed() const {return fArmed;};
 
     protected:
 
-        friend class HDigitizer<px14_sample_t, HPX14DigitizerSimulator >;
+        friend class HDigitizer<uint16_t, HPX14DigitizerSimulator >;
 
         //required by digitizer interface
         bool InitializeImpl();
@@ -79,12 +73,11 @@ class HPX14DigitizerSimulator: public HDigitizer< px14_sample_t, HPX14DigitizerS
         virtual void ExecuteThreadTask() override; //do thread work assoicated with fill the buffer
         virtual bool WorkPresent() override; //check if we have buffer filling work to do
 
-        void SimulateDataTransfer(uint64_t global_count, size_t n_samples, px14_sample_t* buffer);
+        void SimulateDataTransfer(uint64_t global_count, size_t n_samples, uint16_t* buffer);
 
         char fSidebandFlag;
         char fPolarizationFlag;
 
-        HPX14 fBoard;
         unsigned int fBoardNumber; //board id
         double fAcquisitionRateMHz; //effective sampling frequency in MHz
         bool fConnected;
@@ -108,9 +101,9 @@ class HPX14DigitizerSimulator: public HDigitizer< px14_sample_t, HPX14DigitizerS
         //internal DMA buffer pool handling
         unsigned int fNInternalBuffers;
         unsigned int fInternalBufferSize;
-        HBufferPool< px14_sample_t >* fInternalBufferPool; //buffer pool of px14 allocated buffers (limited to 2MB max size)
-        HProducerBufferHandler_Immediate< px14_sample_t > fInternalProducerBufferHandler;
-        HConsumerBufferHandler_Immediate< px14_sample_t > fInternalConsumerBufferHandler;
+        HBufferPool< uint16_t >* fInternalBufferPool; //buffer pool of px14 allocated buffers (limited to 2MB max size)
+        HProducerBufferHandler_Immediate< uint16_t > fInternalProducerBufferHandler;
+        HConsumerBufferHandler_Immediate< uint16_t > fInternalConsumerBufferHandler;
 
         //fake data generation
         HGaussianWhiteNoiseSignal* fPower1;
