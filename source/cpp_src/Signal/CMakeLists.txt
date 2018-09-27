@@ -25,6 +25,7 @@ set (HSIGNAL_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HGaussianWhiteNoiseSignal.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSwitchedSignal.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSummedSignal.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HSimpleAnalogToDigitalConverter.hh
     # ${CMAKE_CURRENT_SOURCE_DIR}/include/HDummyUniformRawArrayFiller.hh
     # ${CMAKE_CURRENT_SOURCE_DIR}/include/HDummyGaussianRawArrayFiller.hh
 )

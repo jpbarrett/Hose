@@ -15,6 +15,7 @@
 #include "HGaussianWhiteNoiseSignal.hh"
 #include "HSwitchedSignal.hh"
 #include "HSummedSignal.hh"
+#include "HSimpleAnalogToDigitalConverter.hh"
 
 using namespace hose;
 
@@ -112,12 +113,17 @@ int main(int argc, char** argv)
     summed_noise->AddSignalGenerator(gnoise1, 1.0);
     summed_noise->AddSignalGenerator(snoise, ratio);
 
+    HSimpleAnalogToDigitalConverter<double, int16_t, 2> simple4bit_ADC(-2,2);
+
     double samp;
     for(size_t i=0; i<num_samples; i++)
     {
         testval = summed_noise->GetSample(i*delta, samp);
         (void) testval;
-        noise_samples[i] = samp;
+        double conv = simple4bit_ADC.Convert(samp);
+        noise_samples[i] = conv;
+
+    //    std::cout<<"sample, quantized_sample = "<<samp<<", "<<conv<<std::endl;
         noise_xform_in[i] = std::complex<double>(samp, 0.0);
     }
 
