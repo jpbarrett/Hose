@@ -1,0 +1,497 @@
+a\documentclass[a4paper,14pt]{article}
+\usepackage[utf8]{inputenc}
+
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tabularx}
+    \newcolumntype{L}{>{\raggedright\arraybackslash}X}
+
+
+
+\definecolor{light-gray}{gray}{0.92}
+
+\usepackage{listings}
+
+\lstset{
+basicstyle=\scriptsize\ttfamily,
+columns=flexible,
+breaklines=true,
+backgroundcolor = \color{light-gray}
+}
+
+
+\usepackage[margin=1.3in]{geometry}
+
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\@verbatim}
+  {\verbatim@font}
+  {\verbatim@font\small}
+  {}{}
+\makeatother
+
+\let\endtitlepage\relax
+
+% Title Page
+\title{GPU spectrometer operation and file formats}
+\author{J. Barrett}
+
+
+\begin{document}
+\maketitle
+
+
+\section{Operation at Westford}
+
+Currently the operation of the GPU spectrometer at Westford is somewhat ad-hoc and requires access to several computers. These are given in the following table.
+
+\begin{center}
+\begin{tabular}{| c | c | c | c |}
+\hline
+ Hostname & IP & User & Description \\  \hline
+ gpu1080 & 192.52.63.49 & oper & GPU spectrometer \\ \hline
+ antenna-encoder & 192.52.63.141 & westford & Antenna position readout machine \\ \hline
+ wfmark5-19 & 192.52.63.119 & oper & Utility and database \\ \hline
+ thumper3 & 192.52.63.33 & oper & Field system \\ \hline
+\end{tabular}
+\end{center}
+
+At the moment, the system is configured to record only a single polarization at a 400MHz sampling rate. The number of spectral points is set to 131072 and the
+number of spectral averages is fixed at 256. These parameters will be user-adjustable in the future, but for current test purposes will remain fixed.
+
+The basic series of operations to get the GPU spectrometer ready for recording is as follows:
+\begin{enumerate}
+ \item Log into the oper account on gpu1080 and run the spectrometer daemon launch script with the command \verb|LaunchSpectrometerDaemon|.
+ \item Log into the westford account on the antenna-encoder machine. Start a screen session with the command \verb|screen| and then launch the
+ encoder read-out program with the command \verb|/home/westford/encoder_software/encrec|. You can detach the screen session with \verb|ctrl-a| followed by \verb|d|.
+ \item Log into the oper account on wfmark5-19. Start a screen session and run the command \verb|capture-encoder-log.py|. Detach the screen session.
+ \item On thumper3 start a new field system session. In the field system window create a new log file with the command: \verb|log=<log-name>|.
+ \item Then on wfmark5-19 start a new screen session, and run the command to capture the field system log: \verb|capture-fs-log.py 192.52.63.33 </path/to/log-name>|. Typically field system
+ logs are stored to the directory \verb|/usr2/log| on thumper3. Detach the screen session.
+ \item Log into the oper account on gpu1080 and either start the recording schedule with the command \verb|hosecc.py -f <schedule.xml>|. Or start the client
+ interface with with the command \verb|hoseclient.py|. If you are using the client interface to issue recording commands for a session it is import to start
+ the log to database script in the background with the client command \verb|startlog2db|. 
+\end{enumerate}
+
+In the GPU spectrometer client interface provides the following commands for interactive sessions.
+\begin{enumerate}
+ \item Start recording for an unknown duration without specifying an experiment, source or scan name (defaults will be used): \verb|record=on|.
+ \item Start recording for an unknown duration and specify an experiment, source and scan name: \verb|record=on:experiment_name:source_name:scan_name|.
+ \item Start recording at a specific start time and duration and specify an experiment, source and scan name: \verb|record=on:experiment_name:source_name:scan_name:YYYYDDDHHMMSS:duration|. Duration must be given in seconds, and the time in UTC.
+ \item Stop a recording immediately: \verb|record=off|.
+ \item Get the current recording state (on/of): \verb|record?|.
+ \item Start the export of spectrometer log data to the InfluxDB database: \verb|startlog2db|.
+ \item List available commands: \verb|help|.
+ \item Quit the client interface: \verb|quit|.
+ \item Quit the client interface and shutdown the spectrometer daemon entirely: \verb|shutdown|.
+\end{enumerate}
+Spectrometer data files are stored under the data directory: \verb|/home/oper/software/Hose/install/data/|.
+
+\section{File/Software Overview}
+
+The binary format of the GPU spectrometer output files is fairly straightforward and consists of a binary header followed by formatted binary data. Meta-data files
+are provided in JSON format for which many open source libraries are available in a variety of languages. For simplicity the binary
+spectrum files have been separated from the noise-diode power measurement files. The input/output (I/O) library which allows writing 
+and reading this formatted data to and from files is written in C so that it may be accessible in both C++ code and python. Python bindings to this
+library are provided as part of the Hose package. This software can be downloaded from the MIT github page with:
+\begin{lstlisting}
+ git clone git@github.mit.edu:barrettj/Hose.git
+\end{lstlisting}
+provided you have an account with access.
+
+To compile the code you will need a modern C/C++ compiler\footnote{This has been tested to work with gcc 4.9.2 and gcc 5.4.0, clang/LLVM should work but is untested.} with support for the C++11 language extensions, and
+the cmake build system generator. To compile the base libraries (including the I/O library) with default options, change into the Hose source directory (\verb|<Hose>|) and run the commands:
+\begin{lstlisting}
+mkdir build
+cd build/
+cmake ../
+make install
+\end{lstlisting}
+This will compile and install the I/O library and python bindings to \verb|<Hose>/install/lib|. To ensure that the library is your execution path and accessible to external code, you will need to run the script \verb|hosenv.sh|
+to set up the proper environmental variables. This is done with:
+\begin{lstlisting}
+ source <Hose>/install/bin/hoseenv.sh
+\end{lstlisting}
+This can be added to your \verb|.bashrc| file if needed on a regular basis. Once the environmental variables are set up, you should have access to the I/O python bindings. To test this, open a python or ipython window
+and type \verb|import hose|, if the module is imported you have compiled and installed the library successfully.
+
+Additional optional dependencies of the Hose software can be enabled when desired through the cmake command line interface if you instead run the command \verb|ccmake| instead of \verb|cmake|. These options and 
+their requirements are beyond the scope of this document but will be addressed later.
+
+At the moment no significant effort has been made to ensure portability (correct endianness, data type size, etc) of the binary formats across disparate system, which is something to take into consideration
+when operating on GPU spectrometer files on other machines.
+
+
+\section{Meta-data File Format}
+
+During operation, various sets of meta-data from the GPU spectrometer and field system log files are exported to an InfluxDB database. At Westford these meta-data sets are stored in the database named \verb|"gpu_spec"| in an instance of InfluxDB 
+running on \verb|wfmark5-19|. If the GPU spectrometer is operated through the scheduling program \verb|hosecc.py| or the client interface \verb|hoseclient.py|, meta-data associated with each scan will be collected from the database and 
+stored in a JSON file alongside the binary spectrometer files. This is done to allow later file conversion and interpretation without access to the InfluxDB database.
+
+The meta-data file consists of a list of JSON objects, while the number of objects in a file may vary, each object type has a fixed format. Each meta-data object contains a measurement name, a time stamp, and one or more data fields. 
+The JSON format was chosen to allow ease in parsing and conversion to python dictionary objects. The current list of available data objects (measurements) is:
+
+\begin{enumerate}
+  \item \verb|digitizer_config|
+  \item \verb|spectrometer_config|
+  \item \verb|noise_diode_config|
+  \item \verb|udc_status|
+  \item \verb|source_status|
+  \item \verb|recording_status|
+  \item \verb|data_validity|
+  \item \verb|antenna_target_status|
+  \item \verb|antenna_position|
+\end{enumerate}
+
+The time stamp is given in UTC with date and time in the following format: YYYY-MM-DDTHH:MM:SS.$\langle$F$\rangle$Z. The number of digits in the fractional part of the second $\langle$F$\rangle$ may vary, 
+some examples are: \verb|2018-06-19T18:23:08.289999872Z| or \verb|2018-06-19T18:20:11.24Z|. The data fields of each object are for the most part self-explanatory, examples of each are given as follows:
+The digitizer configuration specifies the set-up of the digitizer and mirrors some information that is in the binary spectrum file headers. An example is given below:
+\begin{lstlisting}
+{
+    "fields": {
+        "n_digitizer_threads": "2", 
+        "polarization": "X", 
+        "sampling_frequency_Hz": "4e+08", 
+        "sideband": "U"
+    }, 
+    "measurement": "digitizer_config", 
+    "time": "2018-06-19T18:15:38.381999872Z"
+}
+\end{lstlisting}
+The spectrometer configuration specifies the configuration of the spectrometer and also mirrors some information in the binary spectrum file headers for convenience. An example is:
+\begin{lstlisting}
+{
+    "fields": {
+        "fft_size": "131072", 
+        "n_averages": "256", 
+        "n_spectrometer_threads": "3", 
+        "n_writer_threads": "1"
+    }, 
+    "measurement": "spectrometer_config", 
+    "time": "2018-06-19T18:15:38.381999872Z"
+}
+\end{lstlisting}
+The noise diode configuration specifies the configuration of the noise diode, mirroring information in the binary noise power file headers. An example is:
+\begin{lstlisting}
+{
+    "fields": {
+        "noise_blanking_period": "5e-08", 
+        "noise_diode_switching_frequency_Hz": "80"
+    }, 
+    "measurement": "noise_diode_config", 
+    "time": "2018-06-19T18:15:38.381999872Z"
+}
+\end{lstlisting}
+The UDC status specifies the LO frequency and input attenuation. The attenuation values are given in dB, the extensions \verb|h| and \verb|v| indicate horizontal and vertical polarizations). An example is given below:
+\begin{lstlisting}
+{
+    "fields": {
+        "attenuation_h": 20, 
+        "attenuation_v": 20, 
+        "frequency_MHz": 7083.1, 
+        "udc": "c"
+    }, 
+    "measurement": "udc_status", 
+    "time": "2018-06-19T18:20:11.24Z"
+} 
+\end{lstlisting}
+The source status records the source name and position (right-ascension,declination) as reported from the telescope field system log. An example is:
+\begin{lstlisting}
+ {
+    "fields": {
+        "dec": "+122328.0", 
+        "epoch": "2000.", 
+        "ra": "123049.42", 
+        "source": "virgoa"
+    }, 
+    "measurement": "source_status", 
+    "time": "2018-06-19T18:23:08.289999872Z"
+}
+\end{lstlisting}
+The spectrometer recording status indicates the 'on/off' state of the GPU spectrometer. It also records the schedule or user specified experiment, source, and scan names. An example is:
+\begin{lstlisting}
+ {
+    "fields": {
+        "experiment_name": "ExpX", 
+        "recording": "on", 
+        "scan_name": "170-182351", 
+        "source_name": "SrcX"
+    }, 
+    "measurement": "recording_status", 
+    "time": "2018-06-19T18:23:51.933000192Z"
+}
+\end{lstlisting}
+The data validity flag is an optional user/schedule defined flag to indicate times where the acquired data is deemed valid or invalid (on/off) as follows.
+\begin{lstlisting}
+ {
+    "fields": {
+        "status": "off"
+    }, 
+    "measurement": "data_validity", 
+    "time": "2018-03-01T18:26:28Z"
+}
+\end{lstlisting}
+The antenna target acquisition status indicates if the antenna has acquired the specified source, or is slewing. It records a boolean (yes/no) value as to whether the source is acquired in the beam, also available is a status indicator which 
+describes the actual antenna state (acquired, off-source, re-acquired, etc.).
+\begin{lstlisting}
+ {
+    "fields": {
+        "acquired": "yes", 
+        "status": "acquired"
+    }, 
+    "measurement": "antenna_target_status", 
+    "time": "2018-06-19T18:23:49.32Z"
+}
+\end{lstlisting}
+The antenna position position object provides a time stamped location of the antenna in local coordinates (azimuth and elevation). This measurement is typically generated once a second, but the system can be made to report this data at shorter intervals if necessary.
+\begin{lstlisting}
+{
+    "fields": {
+        "az": 90.602188, 
+        "el": 18.869705
+    }, 
+    "measurement": "antenna_position", 
+    "time": "2018-06-19T18:23:52.84024704Z"
+}
+\end{lstlisting}
+
+
+\section{Spectrum File Format}
+
+The GPU spectrometer generates binary files to store the averaged spectrum results. At recording time, it is assumed each acquisition will be associated with an experiment, source
+and scan name, if they are not assigned default values will be used. With these names defined the spectrum files are written to disk in real time and are stored in the directory:
+\begin{lstlisting}
+<Hose>/install/data/<experiment>/<scan>/
+\end{lstlisting}
+with the following naming convention:
+\begin{lstlisting}
+<aquisition_start_time>_<file_sample_start_index>_<sideband><polarization>.spec
+\end{lstlisting}
+For example the first spectrum file recording starting at UNIX UTC epoch second 1528140171 for an upper sideband, X polarization recording would be named:  
+\begin{lstlisting}
+1528140171_0_UX.spec  
+\end{lstlisting}
+This naming convention was chosen to ensure uniqueness and avoid data loss.
+
+The spectrometer file binary format is defined by the following struct:
+\begin{lstlisting}
+struct HSpectrumFileStruct
+{
+    struct HSpectrumHeaderStruct fHeader;
+    char* fRawSpectrumData;
+};
+\end{lstlisting}
+with the binary header format defined by:
+\begin{lstlisting}
+struct HSpectrumHeaderStruct
+{
+    uint64_t fHeaderSize;
+    char fVersionFlag[8];
+    char fSidebandFlag[8];
+    char fPolarizationFlag[8]; 
+    uint64_t fStartTime;
+    uint64_t fSampleRate;
+    uint64_t fLeadingSampleIndex;
+    uint64_t fSampleLength; 
+    uint64_t fNAverages;
+    uint64_t fSpectrumLength;
+    uint64_t fSpectrumDataTypeSize; 
+    char fExperimentName[256];
+    char fSourceName[256];
+    char fScanName[256];
+};
+\end{lstlisting}
+\newpage
+The binary header elements are described in the following table:
+\begin{center}
+\begin{tabularx}{\linewidth} {| c | c | c | L |}
+\hline
+ Header element name & data type & nominal size (bytes) & Description \\  \hline
+ fHeaderSize & uint64\_t & 8 & Total size of the header in bytes (equivalently, offset from the start to the data payload) \\  \hline
+ fVersionFlag & char array & 8 & Space for header/file format version tracking \\  \hline
+ fSidebandFlag & char array & 8 &  Polarization indicator \\  \hline
+ fPolarizationFlag & char array & 8 & Sideband indicator \\  \hline
+ fStartTime & uint64\_t & 8 & Start time in seconds from (UNIX) epoch \\ \hline
+ fSampleRate  & uint64\_t & 8 & Data rate (Hz) \\ \hline
+ fLeadingSampleIndex & uint64\_t & 8 & Index of the first ADC sample in the file \\ \hline
+ fSampleLength  & uint64\_t & 8 & Number of ADC samples collected for this file \\ \hline
+ fNAverages  & uint64\_t & 8 & Number of spectrums averaged together \\ \hline
+ fSpectrumLength  & uint64\_t & 8 & Number of spectral points \\ \hline
+ fSpectrumDataTypeSize  & uint64\_t & 8 & Size in bytes of spectral point data type \\ \hline
+ fExperimentName  & char array & 256 & Fixed length array to store experiment name \\ \hline
+ fSourceName & char array & 256 & Fixed length array to store source name \\ \hline
+ fScanName & char array & 256 & Fixed length array to store scan name \\ \hline
+\end{tabularx}
+\end{center}
+
+The raw spectrum data is stored as an un-typed binary blob and must be cast to the proper data type to be read properly. To enable reconstruction of the stored format two pieces of information are stored.
+The first is simply the total size (in bytes) of the data type storing each spectral point. This value is saved in \verb|fSpectrumDataTypeSize|. Second two characters are stored the header version flag
+to indicate real or complex data, and whether the floating point format has (single) float or double precision. 
+The 8 bytes of the version flag are broken down to:
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|l|l|}
+\hline
+ Byte index &    0   &    1   &   2    &  3 & 4 &   5    &     6  &  7     \\ \hline
+  Usage & \multicolumn{3}{l|}{version number} & real/complex  & float/double & \multicolumn{3}{l|}{un-assigned} \\ \hline
+\end{tabular}
+\end{table}
+For example the string \verb|"001RF"| denotes what is currently the only supported spectrum format. This encodes the version number \verb|"001"| and indicates the spectrum data consists of real valued (\verb|R|) single precision floats (\verb|F|).
+
+Reading a spectrum file in python using the provided bindings is relatively simple. This is demonstrated in the following ipython snippet:
+\begin{lstlisting}
+In [1]: import hose
+
+In [2]: spectrum_file = hose.open_spectrum_file("../data/ExpX/156-140822/1528207702_0_UX.spec")
+
+In [3]: spectrum_file.printsummary()
+spectrum_file_data :
+header :
+spectrum_file_header :
+header_size : 856
+version_flag : 001RF
+sideband_flag : U
+polarization_flag : X
+start_time : 1528207702
+sample_rate : 400000000
+leading_sample_index : 0
+sample_length : 33554432
+n_averages : 256
+spectrum_length : 65537
+spectrum_data_type_size : 4
+experiment_name : ExpX
+source_name : SrcX
+scan_name : 156-140822
+raw_spectrum_data : <ctypes.LP_c_char object at 0x7f1e70948b00>
+\end{lstlisting}
+Access to the formatted spectrum data in python should be done using:
+\begin{lstlisting}
+spectrum = spectrum_file.get_spectrum_data()
+\end{lstlisting}
+which handles the unpacking of spectrum data from the file into the correct floating point type for manipulation in python.
+
+
+
+\section{Noise Power File}
+
+Along with the spectrum files, the GPU spectrometer also generates binary files to store information for the relative power measurement using the switched noise diode. 
+For each spectrum file, a noise power file will be written to disk into the same directory using the same naming convention as described in the above section but with a
+different file extension (\verb|".npow"|).
+
+The noise power file binary format is defined by the following struct:
+\begin{lstlisting}
+struct HNoisePowerFileStruct
+{
+    struct HNoisePowerHeaderStruct fHeader;
+    struct HDataAccumulationStruct* fAccumulations;
+};
+\end{lstlisting}
+The noise power header contains much of the same information as the spectrum file header (to maintain independence during later processing)
+and is described as follows.
+
+
+\begin{lstlisting}
+ struct HNoisePowerHeaderStruct
+{
+    uint64_t fHeaderSize; 
+    char fVersionFlag[8];
+    char fSidebandFlag[8];
+    char fPolarizationFlag[8];
+    uint64_t fStartTime;
+    uint64_t fSampleRate;
+    uint64_t fLeadingSampleIndex;
+    uint64_t fSampleLength;
+    uint64_t fAccumulationLength;
+    double fSwitchingFrequency;
+    double fBlankingPeriod;
+    char fExperimentName[256];
+    char fSourceName[256];
+    char fScanName[256];
+}
+\end{lstlisting}
+
+To avoid redundancy, only the elements which differ from the spectrum file header are described in the table below:
+
+\begin{center}
+\begin{tabularx}{\linewidth} {| c | c | c | L |}
+\hline
+ Header element name & data type & nominal size (bytes) & Description \\  \hline
+ fAccumulationLength  & uint64\_t & 8 & Number accumulation periods stored in the file \\ \hline
+ fSwitchingFrequency  & double & 8 & The noise diode switching frequency (Hz) \\ \hline
+ fBlankingPeriod  & double & 8 & The switch transition blanking period (sec) \\ \hline
+\end{tabularx}
+\end{center}
+
+The noise statistics data is stored in the file element \verb|fAccumulations|, and is formatted
+according to the following struct:
+
+\begin{lstlisting}
+struct HDataAccumulationStruct
+{
+    double sum_x; 
+    double sum_x2;
+    double count;
+    uint64_t state_flag;
+    uint64_t start_index;
+    uint64_t stop_index;
+};
+\end{lstlisting}
+
+and described in the following table:
+
+\begin{center}
+\begin{tabularx}{\linewidth} {| c | c | c | L |}
+\hline
+ Header element name & data type & nominal size (bytes) & Description \\  \hline
+ sum\_x  & uint64\_t & 8 & accumulated sum of each ADC sample during the accumulation period \\ \hline
+ sum\_x2  & double & 8 & accumulated sum of $x^2$ for each ADC sample, $x$, during the accumulation period \\ \hline
+ count  & double & 8 & total number of samples accumulated \\ \hline
+ state\_flag & uint64\_t & 8 & indicates the data state (diode on=1, diode off=0) \\ \hline
+ start\_index & uint64\_t & 8 & start index of the first sample in the accumulation period \\ \hline
+ stop\_index & uint64\_t & 8 & stop index of the last sample in the accumulation period \\ \hline
+\end{tabularx}
+\end{center}
+
+Access to the noise power files is also provided by the python bindings. The following ipython snippet demonstrates reading a noise power file and retrieving
+the mean ADC sample value of the first accumulation period.
+
+\begin{lstlisting}
+In [1]: import hose
+
+In [2]: power_file = hose.open_noise_power_file("../data/ExpX/156-140822/1528207702_0_UX.npow")
+
+In [3]: power_file.printsummary()
+noise_power_file_data :
+header :
+noise_power_file_header :
+header_size : 856
+version_flag : 001
+sideband_flag : U
+polarization_flag : X
+start_time : 1528207702
+sample_rate : 400000000
+leading_sample_index : 0
+sample_length : 33554432
+accumulation_length : 14
+switching_frequency : 0.0
+blanking_period : 0.0
+experiment_name : ExpX
+source_name : SrcX
+scan_name : 156-140822
+accumulations : <hose.hinterface_module.LP_accumulation_struct object at 0x7f40acee2b00>
+
+In [4]: first_accumulation_period = power_file.get_accumulation(0)
+
+In [5]: print first_accumulation_period.get_mean()
+19008.6903127
+
+\end{lstlisting}
+
+
+\end{document}          
