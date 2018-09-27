@@ -5,7 +5,7 @@ using namespace hose;
 
 int main(int /*argc*/, char** /*argv*/)
 {
-    HSpectrometerManager<HPX14DigitizerSimulator>* specManager = new HSpectrometerManager<>();
+    HSpectrometerManager<HPX14DigitizerSimulator>* specManager = new HSpectrometerManager<HPX14DigitizerSimulator>();
     
     specManager->Initialize();
 
