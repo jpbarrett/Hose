@@ -1,4 +1,4 @@
-#Hose: Haystack Observatory Spectrometer Experiment
+# Hose: Haystack Observatory Spectrometer Experiment
 
 # Required dependencies: 
 1. A compiler with C++11 support, e.g gcc >= 4.8 or clang >= 3.3.
@@ -11,7 +11,7 @@
 
 3. Python 2.7 (Python 3 not yet supported)
 
-#Optional external dependencies
+# Optional external dependencies
 1. Signatec library for interfacing with PX14400 digitizer.
 2. Teledyne SP devices library for interfacing with ADQ7 digitizer.
 3. NVidia CUDA Toolkit (https://developer.nvidia.com/cuda-zone). 
@@ -19,7 +19,7 @@
 4. ROOT (https://root.cern.ch/), needed for spectrum plotting.
 5. ZeroMQ (http://zeromq.org/), needed for GPU spectrometer client/server interface.
 
-#To compile and install:
+# To compile and install:
 1. Download the repository with:
     git clone git@github.mit.edu:barrettj/Hose.git
 
