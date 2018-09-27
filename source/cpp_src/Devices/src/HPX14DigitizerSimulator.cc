@@ -318,11 +318,9 @@ HPX14DigitizerSimulator::SimulateDataTransfer(uint64_t global_count, size_t n_sa
     bool retval = false;;
     for(size_t i=0; i<n_samples; i++)
     {
-        if(i%2 == 0){sample = 9.9;}
-        else{sample = 0.0;}
-        // time += fSamplePeriod;
-        // retval = fSummedSignalGenerator->GetSample(time, sample); (void) retval;
-        // //clip samples to be in [-10,10] //TODO FIXME make sure this is the right range
+        time += fSamplePeriod;
+        retval = fSummedSignalGenerator->GetSample(time, sample); (void) retval;
+        //clip samples to be in [-10,10] //TODO FIXME make sure this is the right range
         if(sample < -10.0){sample = -10.0;};
         if(sample > 10.0){sample = 10.0;};
         //map floats in range -10 to 10 to range [0,65535]
