@@ -1,33 +1,45 @@
 #!@PYTHON_EXECUTABLE@
-
-from hose import *
-
+import hose
 import numpy as np
 import datetime
 import os
+import math
+import glob
 
+import matplotlib.pyplot as plt
 
 data_install_dir = "@DATA_INSTALL_DIR@"
 log_install_dir = "@LOG_INSTALL_DIR@"
-bin_install_dir = "@BIN_INSTALL_DIR@"
+
+#TODO FIXE ME
+#hard coded spectrum length and sampling frequency
+SAMPLING_FREQUENCY = 400e6
+N_SAMPLES_PER_SPECTRUM = 131072.0
+SPECTRUM_LENGTH = 65537
+SPECTRUM_RESOLUTION = SAMPLING_FREQUENCY/N_SAMPLES_PER_SPECTRUM
 
 #class which computes a running average spectrum
 #updated by added a spectrum file
 class AveragedSpectrum(object):
 
-    def __init__(self, length):
-        self.length = length
+    def __init__(self):
+        self.length = SPECTRUM_LENGTH
         self.count = 0
-        self.sum_array = np.zeros(length, dtype=np.float64)
-        self.ave_array = np.zeros(length, dtype=np.float64)
+        self.sum_array = np.zeros(self.length, dtype=np.float64)
+        self.ave_array = np.zeros(self.length, dtype=np.float64)
+        self.freqs = []
+        self.spec_res = SAMPLING_FREQUENCY/N_SAMPLES_PER_SPECTRUM
+        for n in range(0,self.length):
+            self.freqs.append(n*self.spec_res)
 
     #read a spectrum file and return an array of values
     def add_spectrum(self, spec_file_data):
+        print "spec file = ", spec_file_data
         spectrum = spec_file_data.get_spectrum_data();
         self.count += 1
         for n in range(0,self.length):
             self.sum_array[n] += spectrum[n]
-            self.ave_array[n] = self.sum_array[n]/count
+            self.ave_array[n] = self.sum_array[n]/self.count
 
     def clear(self):
         self.count = 0
@@ -35,37 +47,80 @@ class AveragedSpectrum(object):
             self.sum_array[n] = 0
             self.ave_array[n] = 0
 
-#locate the most recently created scan directory under the data directory
-def get_most_recent_scan_directory(data_directory_path):
-    #recursively search the data directory path
-    #for directories, determine the directory creation time 
-    #and locate the most recent one
+    #x-axis
+    def get_frequency_array(self):
+        return self.freqs
 
+    #y-axis
+    def get_power_array(self):
+        arr = []
+        for x in self.ave_array:
+            if(x > 0.0):
+                arr.append( 10*math.log10(x) )
+            else:
+                arr.append(-10)
+        return arr
+
+#locate the most recently created scan directory under the data directory
+#not strictly the most recetly created, but rather the most recently modified
+def get_most_recent_scan_directory(data_directory_path):
+
+    all_subdir = []
+    for current_root, subdirectories, files in os.walk(data_directory_path):
+        subdirs = [ os.path.abspath( os.path.join(data_directory_path, current_root, d) ) for d in subdirectories ]
+        all_subdir.extend(subdirs)
+
+    most_recent_subdir = max(all_subdir, key=os.path.getmtime)
+    return os.path.abspath(most_recent_subdir)
 
 #list all spectrum files in a directory
 def get_set_of_spectrum_files(scan_directory_path):
-
+    file_list = glob.glob(os.path.join( scan_directory_path, "*.spec"))
+    return set(file_list)
 
 def calculate_wait_time(previous_time):
     time_now = datetime.datetime.now()
     delta = time_now - previous_time
     return delta.total_seconds()
 
-#initialize plot display
-def init_plot():
 
-#update the plot with the new averaged spectrum
-def update_plot(averaged_spectrum):
+class DynamicSpectrumPlot(object):
 
-#save plot to file
-def save_plot():
+    #initialize plot display
+    def __init__(self):
+        #Set up plot
+        self.figure, self.ax = plt.subplots()
+        self.lines, = self.ax.plot([],[], '-')
+        self.ax.set_autoscaley_on(True)
+        self.ax.set_xlim(0,SPECTRUM_LENGTH*SPECTRUM_RESOLUTION)
+        self.ax.grid()
+
+    #update the plot with the new averaged spectrum
+    def update_plot(self, averaged_spectrum):
+        x = averaged_spectrum.get_frequency_array()
+        y = averaged_spectrum.get_power_array()
+        self.lines.set_xdata(x)
+        self.lines.set_ydata(y)
+        self.ax.relim()
+        self.ax.autoscale_view()
+        self.figure.canvas.draw()
+        self.figure.canvas.flush_events()
+
+    #save plot to file
+    #def save_plot():
 
 
 
 ################################################################################
 
 def main():
-    usage_text = '\n monitor-spectrometer'
+    usage_text = '\n monitor-spectrometer.py'
+
+    #turn on matplotlib interactive mode
+    plt.ion()
+
+
+    print "data dir = ", data_install_dir
 
     #to initialize:
     # (1) locate most recent scan in data directory
@@ -81,18 +136,20 @@ def main():
 
     ave_spec = AveragedSpectrum()
 
-    current_scan_dir = ""
-    most_recent_scan_dir = 
     existing_spec_files = set()   
     current_spec_files = set()
-    most_recent_scan_dir = get_most_recent_scan_directory()
+    most_recent_scan_dir = get_most_recent_scan_directory(os.path.abspath(data_install_dir))
     current_scan_dir = most_recent_scan_dir
     wait_time = 0.0
     wait_threshold = 2.0
+    new_file_time = datetime.datetime.now()
+    
+    dynamic_plot = DynamicSpectrumPlot()
 
     while True:
         #loop over spectrum files being generated for a scan
         while wait_time < wait_threshold:
+            #print current_scan_dir
             current_spec_files = get_set_of_spectrum_files(current_scan_dir)
             new_spec_files = current_spec_files.difference(existing_spec_files)
             if len(new_spec_files) != 0:
@@ -103,7 +160,7 @@ def main():
                     spec_data = hose.open_spectrum_file(spec_filename)
                     ave_spec.add_spectrum(spec_data)
                 #update the plot
-                update_plot(ave_spec)
+                dynamic_plot.update_plot(ave_spec)
                 #update list of spec files
                 existing_spec_files = current_spec_files
             else:
@@ -113,12 +170,12 @@ def main():
 
         #wait time exceeded the threshold...so spectrometer is not creating any
         #new spec files in the scan directory, so save the plot 
-        update_plot(ave_spec)
-        save_plot()
+        #dynamic_plot.update_plot(ave_spec)
+        #save_plot()
 
         #start looking and keep looking for a new scan directory
         while current_scan_dir == most_recent_scan_dir:
-            most_recent_scan_dir = get_most_recent_scan_directory(data_install_dir)
+            most_recent_scan_dir = get_most_recent_scan_directory(os.path.abspath(data_install_dir))
 
         #new scan directory, so clear list of spec files and reset
         current_scan_dir = most_recent_scan_dir

@@ -388,6 +388,8 @@ int main(int argc, char** argv)
     std::cout<<"n samples per spec = "<<n_samples_per_spec<<std::endl;
     std::cout<<"spec_res= "<<spec_res<<std::endl;
 
+    std::cout<<"spectrum length = "<<spectrum_vec[0].GetSpectrumLength()<<std::endl;
+
     for(unsigned int n=0; n < spectrum_vec.size(); n++)
     {
         TGraph* g = new TGraph();
