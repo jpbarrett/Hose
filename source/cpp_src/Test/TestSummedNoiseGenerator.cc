@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 
     std::string usage =
     "\n"
-    "Usage: TestNoiseGenerator <options> \n"
+    "Usage: TestSummedNoiseGenerator <options> \n"
     "\n"
     "Generate one second of noise samples with the specified power distribution.\n"
     "\tOptions:\n"
@@ -113,17 +113,17 @@ int main(int argc, char** argv)
     summed_noise->AddSignalGenerator(gnoise1, 1.0);
     summed_noise->AddSignalGenerator(snoise, ratio);
 
-    HSimpleAnalogToDigitalConverter<double, int16_t, 2> simple4bit_ADC(-2,2);
+    HSimpleAnalogToDigitalConverter<double, int16_t, 14> simple14bitADC(-4,4);
 
     double samp;
     for(size_t i=0; i<num_samples; i++)
     {
         testval = summed_noise->GetSample(i*delta, samp);
         (void) testval;
-        double conv = simple4bit_ADC.Convert(samp);
+        double conv = simple14bitADC.Convert(samp);
         noise_samples[i] = conv;
 
-    //    std::cout<<"sample, quantized_sample = "<<samp<<", "<<conv<<std::endl;
+        std::cout<<"sample, quantized_sample = "<<samp<<", "<<conv<<std::endl;
         noise_xform_in[i] = std::complex<double>(samp, 0.0);
     }
 
