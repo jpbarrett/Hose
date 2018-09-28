@@ -25,10 +25,13 @@ HPX14DigitizerSimulator::HPX14DigitizerSimulator():
     fPower1(nullptr),
     fPower2(nullptr),
     fSwitchedPower(nullptr),
-    fSummedSignalGenerator(nullptr)
+    fSummedSignalGenerator(nullptr),
+    fSimpleADC(nullptr)
 {
     this->fAllocator = nullptr;
     fSamplePeriod = 1.0/(fAcquisitionRateMHz*1e6);
+    //TODO make the clipping/range thresholds user configurable
+    fSimpleADC = new HSimpleAnalogToDigitalConverter<double, uint16_t, 14>(-10.0,10.0);
 }
 
 HPX14DigitizerSimulator::~HPX14DigitizerSimulator()
@@ -39,6 +42,7 @@ HPX14DigitizerSimulator::~HPX14DigitizerSimulator()
         delete fSwitchedPower;
         delete fPower2;
         delete fPower1;
+        delete fSimpleADC;
         TearDownImpl();
     }
 }
@@ -58,7 +62,6 @@ HPX14DigitizerSimulator::InitializeImpl()
         fInternalBufferPool = new HBufferPool< uint16_t >( this->GetAllocator() );
         fInternalBufferPool->Allocate(fNInternalBuffers, fInternalBufferSize); //size and number not currently configurable]
 
-        //generate 1 second of fake data to be used
         //generate gaussian white noise
         fPower1 = new HGaussianWhiteNoiseSignal();
         fPower1->SetRandomSeed(123);
@@ -79,8 +82,8 @@ HPX14DigitizerSimulator::InitializeImpl()
         fSwitchedPower->Initialize();
 
         fSummedSignalGenerator = new HSummedSignal();
-        fSummedSignalGenerator->AddSignalGenerator(fPower1, 0.00);
-        fSummedSignalGenerator->AddSignalGenerator(fSwitchedPower, 1.0);
+        fSummedSignalGenerator->AddSignalGenerator(fPower1, 1.0);
+        fSummedSignalGenerator->AddSignalGenerator(fSwitchedPower, 0.01);
         fSummedSignalGenerator->Initialize();
 
         fErrorCode = 0;
@@ -320,12 +323,7 @@ HPX14DigitizerSimulator::SimulateDataTransfer(uint64_t global_count, size_t n_sa
     {
         time += fSamplePeriod;
         retval = fSummedSignalGenerator->GetSample(time, sample); (void) retval;
-        //clip samples to be in [-10,10] //TODO FIXME make sure this is the right range
-        if(sample < -10.0){sample = -10.0;};
-        if(sample > 10.0){sample = 10.0;};
-        //map floats in range -10 to 10 to range [0,65535]
-        sample = ( (sample + 10.0)/(20.0) )*32767.0 + 32768.0;
-        buffer[i] = (uint16_t)sample; //cast to uint16_t (unsigned 2 byte integer)
+        buffer[i] = fSimpleADC->Convert(sample);
     }
 
 }

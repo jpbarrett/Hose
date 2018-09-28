@@ -1,0 +1,135 @@
+#!@PYTHON_EXECUTABLE@
+
+from hose import *
+
+import numpy as np
+import datetime
+import os
+
+
+data_install_dir = "@DATA_INSTALL_DIR@"
+log_install_dir = "@LOG_INSTALL_DIR@"
+bin_install_dir = "@BIN_INSTALL_DIR@"
+
+#class which computes a running average spectrum
+#updated by added a spectrum file
+class AveragedSpectrum(object):
+
+    def __init__(self, length):
+        self.length = length
+        self.count = 0
+        self.sum_array = np.zeros(length, dtype=np.float64)
+        self.ave_array = np.zeros(length, dtype=np.float64)
+
+    #read a spectrum file and return an array of values
+    def add_spectrum(self, spec_file_data):
+        spectrum = spec_file_data.get_spectrum_data();
+        self.count += 1
+        for n in range(0,self.length):
+            self.sum_array[n] += spectrum[n]
+            self.ave_array[n] = self.sum_array[n]/count
+
+    def clear(self):
+        self.count = 0
+        for n in range(0, self.length):
+            self.sum_array[n] = 0
+            self.ave_array[n] = 0
+
+#locate the most recently created scan directory under the data directory
+def get_most_recent_scan_directory(data_directory_path):
+    #recursively search the data directory path
+    #for directories, determine the directory creation time 
+    #and locate the most recent one
+
+
+#list all spectrum files in a directory
+def get_set_of_spectrum_files(scan_directory_path):
+
+
+def calculate_wait_time(previous_time):
+    time_now = datetime.datetime.now()
+    delta = time_now - previous_time
+    return delta.total_seconds()
+
+#initialize plot display
+def init_plot():
+
+#update the plot with the new averaged spectrum
+def update_plot(averaged_spectrum):
+
+#save plot to file
+def save_plot():
+
+
+
+################################################################################
+
+def main():
+    usage_text = '\n monitor-spectrometer'
+
+    #to initialize:
+    # (1) locate most recent scan in data directory
+    # (2) create an averages spectrum objects
+    # (3) get list of all spec files in the data directory
+    # (4) load and sum all the spectrum files and compute the average
+
+    #to run:
+    # (1) Monitor the age of the last read-in file, compared to now
+    # if it is more then X sec old, then check the data directory for a new scan 
+    # (2) Monitor scan directory, if a new spectrum file appears, load and average it in
+    # (3) Update plot of spectrum average
+
+    ave_spec = AveragedSpectrum()
+
+    current_scan_dir = ""
+    most_recent_scan_dir = 
+    existing_spec_files = set()   
+    current_spec_files = set()
+    most_recent_scan_dir = get_most_recent_scan_directory()
+    current_scan_dir = most_recent_scan_dir
+    wait_time = 0.0
+    wait_threshold = 2.0
+
+    while True:
+        #loop over spectrum files being generated for a scan
+        while wait_time < wait_threshold:
+            current_spec_files = get_set_of_spectrum_files(current_scan_dir)
+            new_spec_files = current_spec_files.difference(existing_spec_files)
+            if len(new_spec_files) != 0:
+                #update the time at which we located a new file
+                new_file_time = datetime.datetime.now()
+                #sum the new spectrum files into the average
+                for spec_filename in new_spec_files:
+                    spec_data = hose.open_spectrum_file(spec_filename)
+                    ave_spec.add_spectrum(spec_data)
+                #update the plot
+                update_plot(ave_spec)
+                #update list of spec files
+                existing_spec_files = current_spec_files
+            else:
+                #no new spectrum files found yet...check how long we have waited
+                #since the last one was produced
+                wait_time = calculate_wait_time(new_file_time)
+
+        #wait time exceeded the threshold...so spectrometer is not creating any
+        #new spec files in the scan directory, so save the plot 
+        update_plot(ave_spec)
+        save_plot()
+
+        #start looking and keep looking for a new scan directory
+        while current_scan_dir == most_recent_scan_dir:
+            most_recent_scan_dir = get_most_recent_scan_directory(data_install_dir)
+
+        #new scan directory, so clear list of spec files and reset
+        current_scan_dir = most_recent_scan_dir
+        wait_time = 0;
+        new_file_time = datetime.datetime.now()
+        existing_spec_files = set()
+        ave_spec.clear()
+
+
+################################################################################
+
+if __name__ == '__main__':          # official entry point
+    main()
+    sys.exit(0)

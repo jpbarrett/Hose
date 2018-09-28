@@ -16,6 +16,7 @@
 #include "HGaussianWhiteNoiseSignal.hh"
 #include "HSwitchedSignal.hh"
 #include "HSummedSignal.hh"
+#include "HSimpleAnalogToDigitalConverter.hh"
 
 namespace hose {
 
@@ -110,6 +111,7 @@ class HPX14DigitizerSimulator: public HDigitizer< uint16_t, HPX14DigitizerSimula
         HGaussianWhiteNoiseSignal* fPower2;
         HSwitchedSignal* fSwitchedPower;
         HSummedSignal* fSummedSignalGenerator;
+        HSimpleAnalogToDigitalConverter< double, uint16_t, 14 >* fSimpleADC;
         double fSamplePeriod;
 
 

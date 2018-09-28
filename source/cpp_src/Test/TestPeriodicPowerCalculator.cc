@@ -326,6 +326,11 @@ int main(int argc, char** argv)
     TGraph* np_time_series_off = new TGraph();
     TMultiGraph* mg = new TMultiGraph();
 
+    double var_min = 1e100;
+    double var_max = -1e100;
+
+    std::vector<double> vec_on_var;
+    std::vector<double> vec_off_var;
     for(size_t i=0; i<accums->size(); i++)
     {
         if(accums->at(i).state_flag == H_NOISE_DIODE_ON )
@@ -335,7 +340,10 @@ int main(int argc, char** argv)
             double sum_x2 = accums->at(i).sum_x2;
             double count = accums->at(i).count;
             double var = sum_x2/count - (sum_x/count)*(sum_x/count);
+            vec_on_var.push_back(var);
             double si = accums->at(i).start_index;
+            if(var < var_min){var_min = var;}
+            if(var > var_max){var_max = var;}
             np_time_series_on->SetPoint(np_time_series_on->GetN(), si*delta, var);
         }
         else
@@ -345,7 +353,10 @@ int main(int argc, char** argv)
             double sum_x2 = accums->at(i).sum_x2;
             double count = accums->at(i).count;
             double var = sum_x2/count - (sum_x/count)*(sum_x/count);
+            vec_off_var.push_back(var);
             double si = accums->at(i).start_index;
+            if(var < var_min){var_min = var;}
+            if(var > var_max){var_max = var;}
             np_time_series_off->SetPoint(np_time_series_off->GetN(), si*delta, var);
         }
     }
@@ -362,63 +373,29 @@ int main(int argc, char** argv)
     mg->Draw("ALP");
     c2->Update();
 
-    // 
-    // //histogram the values
-    // TH1D* histo2 = new TH1D("histogram2", "histogram2", 100, min, max);
-    // for(size_t i=0; i<accums->size(); i++)
-    // {
-    //     histo2->Fill()
-    // }
-    // c2->cd(2);
-    // 
-    // 
-    // double total_on_x = 0;
-    // double total_on_x2 = 0;
-    // double total_off_x = 0;
-    // double total_off_x2 = 0;
-    // double total_on_count = 0;
-    // double total_off_count = 0;
-    // for(size_t i=0; i<accums->size(); i++)
-    // {
-    //     if(accums->at(i).state_flag == H_NOISE_DIODE_ON )
-    //     {
-    //         //diode on
-    //         total_on_x += accums->at(i).sum_x;
-    //         total_on_x2 += accums->at(i).sum_x2;
-    //         total_on_count += accums->at(i).count;
-    //     }
-    //     else
-    //     {
-    //         //diode off
-    //         total_off_x += accums->at(i).sum_x;
-    //         total_off_x2 += accums->at(i).sum_x2;
-    //         total_off_count += accums->at(i).count;
-    //     }
-    //     // std::cout<<"i = "<<i<<std::endl;
-    //     // std::cout<<"sum_x = "<<accums->at(i).sum_x<<std::endl;
-    //     // std::cout<<"sum_x2 = "<<accums->at(i).sum_x2<<std::endl;
-    //     // std::cout<<"count = "<<accums->at(i).count<<std::endl;
-    //     // std::cout<<"state_flag = "<<accums->at(i).state_flag<<std::endl;
-    //     // std::cout<<"start_index = "<<accums->at(i).start_index<<std::endl;
-    //     // std::cout<<"stop_index = "<<accums->at(i).stop_index<<std::endl;
-    //     // std::cout<<"-------------------------"<<std::endl;
-    // }
-    // 
-    // 
-    // 
-    //     for(size_t i=0; i<accums->size(); i++)
-    //     {
-    //         std::cout<<"i = "<<i<<std::endl;
-    //         std::cout<<"sum_x = "<<accums->at(i).sum_x<<std::endl;
-    //         std::cout<<"sum_x2 = "<<accums->at(i).sum_x2<<std::endl;
-    //         std::cout<<"count = "<<accums->at(i).count<<std::endl;
-    //         std::cout<<"state_flag = "<<accums->at(i).state_flag<<std::endl;
-    //         std::cout<<"start_index = "<<accums->at(i).start_index<<std::endl;
-    //         std::cout<<"stop_index = "<<accums->at(i).stop_index<<std::endl;
-    //         std::cout<<"-------------------------"<<std::endl;
-    //     }
-    // 
+    //histogram the variance
+    TH1D* histo_on = new TH1D("histogram_on", "histogram_on", 100, var_min, var_max);
+    TH1D* histo_off = new TH1D("histogram_off", "histogram_off", 100, var_min, var_max);
+    
+    for(size_t i=0; i<vec_on_var.size(); i++)
+    {
+        histo_on->Fill(vec_on_var[i]);
+    }
 
+    for(size_t i=0; i<vec_off_var.size(); i++)
+    {
+        histo_off->Fill(vec_off_var[i]);
+    }
+
+
+    c2->cd(2);
+    histo_on->SetFillColor(2);
+    histo_on->SetFillStyle(3001);
+    histo_off->SetFillColor(4);
+    histo_off->SetFillStyle(3003);
+    histo_on->Draw("");
+    histo_off->Draw("SAME");
+    c2->Update();
 
 
     App->Run();
