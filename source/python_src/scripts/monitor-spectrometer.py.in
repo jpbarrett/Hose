@@ -61,17 +61,26 @@ class AveragedSpectrum(object):
                 arr.append(-10)
         return arr
 
-#locate the most recently created scan directory under the data directory
-#not strictly the most recetly created, but rather the most recently modified
-def get_most_recent_scan_directory(data_directory_path):
-
-    all_subdir = []
+def recursive_get_spectrum_file_list(data_directory_path):
+    spec_file_list = set()
+    assert os.path.isdir(data_directory_path)
     for current_root, subdirectories, files in os.walk(data_directory_path):
-        subdirs = [ os.path.abspath( os.path.join(data_directory_path, current_root, d) ) for d in subdirectories ]
-        all_subdir.extend(subdirs)
+        subdirectories[:] = [d for d in subdirectories]
+        for filename in files:
+            if '.spec' in filename:
+                full_name = os.path.join(current_root, filename) 
+                spec_file_list.add( os.path.abspath(full_name) )
+    return list(spec_file_list)
 
-    most_recent_subdir = max(all_subdir, key=os.path.getmtime)
-    return os.path.abspath(most_recent_subdir)
+def get_most_recent_spectrum_file(spec_file_list):
+    return max(spec_file_list, key=os.path.getctime)
+
+#locate the scan directory with the most recent spectrum file 
+def get_most_recent_scan_directory(data_directory_path):
+    spec_list = recursive_get_spectrum_file_list(data_directory_path)
+    most_recent_spec_file = get_most_recent_spectrum_file(spec_list)
+    print "most recent file =", most_recent_spec_file
+    return os.path.dirname(most_recent_spec_file)
 
 #list all spectrum files in a directory
 def get_set_of_spectrum_files(scan_directory_path):
@@ -141,7 +150,7 @@ def main():
     most_recent_scan_dir = get_most_recent_scan_directory(os.path.abspath(data_install_dir))
     current_scan_dir = most_recent_scan_dir
     wait_time = 0.0
-    wait_threshold = 2.0
+    wait_threshold = 0.3
     new_file_time = datetime.datetime.now()
     
     dynamic_plot = DynamicSpectrumPlot()
@@ -163,10 +172,7 @@ def main():
                 dynamic_plot.update_plot(ave_spec)
                 #update list of spec files
                 existing_spec_files = current_spec_files
-            else:
-                #no new spectrum files found yet...check how long we have waited
-                #since the last one was produced
-                wait_time = calculate_wait_time(new_file_time)
+            wait_time = calculate_wait_time(new_file_time)
 
         #wait time exceeded the threshold...so spectrometer is not creating any
         #new spec files in the scan directory, so save the plot 
@@ -175,6 +181,7 @@ def main():
 
         #start looking and keep looking for a new scan directory
         while current_scan_dir == most_recent_scan_dir:
+            sleep(wait_threshold)
             most_recent_scan_dir = get_most_recent_scan_directory(os.path.abspath(data_install_dir))
 
         #new scan directory, so clear list of spec files and reset
