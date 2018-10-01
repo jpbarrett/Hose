@@ -9,7 +9,7 @@
 4. The version control software git if you wish to interface with the repository.
 5. On a Debian based Linux system the basic pre-requisites can be installed with the following command:
     - sudo apt-get install git build-essential cmake cmake-curses-gui
-6. On a Red Hat base Linux system (untested), they be installed with:
+6. On a Red Hat base Linux system (untested), they may be installed with:
     - sudo yum install git gcc cmake
 
 # Optional external dependencies:
