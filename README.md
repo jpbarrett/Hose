@@ -38,7 +38,7 @@
     5. make && make install
 
 3. To place the necessary libraries and executables in your path, run:
-    source <Hose directory>/install/bin/hoseenv.sh
+    source \<Hose directory\>/install/bin/hoseenv.sh
 
 # Conversion of spectrum files to SDFITS (this may change):
 1. After installing Hose and setting the environmental variables with hoseenv.sh. You can convert a directory of spectrum files to a FITS file using the utilities in the folder <Hose directory>/ToFits.
@@ -46,7 +46,7 @@
 3. Make gpu_sdfits.py an executable (if not already) with:
     - chmod u+x ./gpu_sdfits.py
 4. Then run:
-    - ./gpu_sdfits <path to spectrum files>
+    - ./gpu_sdfits.py \<path-to-spectrum-files\>
 5. The output will be the file: <path to spectrum files>/.fits
 
 
