@@ -40,7 +40,7 @@
 3. To place the necessary libraries and executables in your path, run:
     source <Hose directory>/install/bin/hoseenv.sh
 
-# Conversion of spectrum files to SDFITS (this will change):
+# Conversion of spectrum files to SDFITS (this may change):
     1. After installing Hose and setting the environmental variables with hoseenv.sh. 
     You can convert a directory of spectrum files to a FITS file using the utilities in the folder <Hose directory>/ToFits.
     2. First do change into the ToFits directory:
