@@ -1,6 +1,6 @@
 #Try to find the PX14400 library and headers
 
-find_library(PX14400_LIBRARY NAMES libsig_px14400)
+find_library(PX14400_LIBRARY NAMES sig_px14400)
 
 find_path(PX14400_INCLUDE_DIR NAMES px14.h)
 
