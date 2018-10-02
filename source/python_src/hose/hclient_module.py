@@ -166,7 +166,7 @@ class hprompt(Cmd):
             self.interface.SendRecieveMessage("record=off")
             time.sleep(1)
             self.end_time_stamp = datetime.utcnow()
-            #self.create_meta_data_file()
+            self.create_meta_data_file()
             self.is_recording = False
             return 0
 
