@@ -1,6 +1,7 @@
 set(abs_srcdir "${CMAKE_CURRENT_SOURCE_DIR}")
 
 if (PYTHON_EXECUTABLE)
+
     set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in")
     set(SETUP_PY    "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
     set(DEPS        "${CMAKE_CURRENT_SOURCE_DIR}/hose/__init__.py")

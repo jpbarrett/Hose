@@ -28,7 +28,4 @@ if (PYTHON_EXECUTABLE)
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/monitor-spectrometer.py.in" "${CMAKE_CURRENT_BINARY_DIR}/monitor-spectrometer.py" @ONLY)
     install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/monitor-spectrometer.py" DESTINATION ${BIN_INSTALL_DIR})
 
-    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/gpu_sdfits.py.in" "${CMAKE_CURRENT_BINARY_DIR}/gpu_sdfits.py" @ONLY)
-    install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/gpu_sdfits.py" DESTINATION ${BIN_INSTALL_DIR})
-
 endif (PYTHON_EXECUTABLE)
