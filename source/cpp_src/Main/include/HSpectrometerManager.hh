@@ -39,9 +39,9 @@ extern "C"
     #define N_SPECTROMETER_THREADS 3
 #else
     #define DIGITIZER_TYPE HPX14DigitizerSimulator
-    #define N_DIGITIZER_THREADS 4
-    #define N_DIGITIZER_POOL_SIZE 3
-    #define N_SPECTROMETER_POOL_SIZE 3  
+    #define N_DIGITIZER_THREADS 1
+    #define N_DIGITIZER_POOL_SIZE 2
+    #define N_SPECTROMETER_POOL_SIZE 2  
     #define N_SPECTROMETER_THREADS 1
 #endif
 

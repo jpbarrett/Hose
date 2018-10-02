@@ -4,6 +4,7 @@ import numpy as np
 import datetime
 import os
 import math
+import time
 import glob
 
 import matplotlib.pyplot as plt
@@ -181,7 +182,7 @@ def main():
 
         #start looking and keep looking for a new scan directory
         while current_scan_dir == most_recent_scan_dir:
-            sleep(wait_threshold)
+            time.sleep(wait_threshold)
             most_recent_scan_dir = get_most_recent_scan_directory(os.path.abspath(data_install_dir))
 
         #new scan directory, so clear list of spec files and reset
