@@ -759,7 +759,6 @@ def list_dirs (dirname = './', echo=False):
     """
     Listing of names of subdirs in a directory.
     Sorts alphabetically.
-    Defaults to list .txt files in the current directory.
     """
     dirs = sorted(glob.glob(dirname))
     if (echo == True):
