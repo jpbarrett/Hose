@@ -21,7 +21,9 @@ gpu_sdfits - conversion of GPU spectrograph spectra and metadata into
   = read in the metadata file first
    * construct needed metadata based FITS header information
    * construct needed lookup tables
-  = loop over input spectra and noise files - sorted in time order
+  = loop over input noise files - sorted in time order
+  = loop over input spectra files - sorted in time order
+  = construct output SDFITS file(s)
 
  Debugging tip: 
  - Dump output binary tables using futils_tablist to check that the 
@@ -35,10 +37,6 @@ gpu_sdfits - conversion of GPU spectrograph spectra and metadata into
  Structure:
   - primary HDU
   - spectrum binary table (named MATRIX)
-  - noise binary table (named NOISE)
- For storage and binary table structure efficiency and simplicity, it makes
- sense to construct separate binary tables because the table structures are
- slightly different because the data formats differ.
 
  Operational order:
   1) construct list of directory(ies) and the files there-in.
@@ -47,20 +45,19 @@ gpu_sdfits - conversion of GPU spectrograph spectra and metadata into
     reconstruct anyway.
   3) read in meta-data.json file for the directory (assuming there is
     only 1).
-  4) loop over spectrum files:
+  4) loop over noise power files:
+    (a) construct metadata at time of noise reading
+    (b) add noise power info to the metadata available
+    (c) sort based on datetime to ensure they are in time order
+  5) loop over spectrum files:
     (a) construct metadata at time of spectrum
     (b) add metadata to the column lists
     (c) add spectrum to the data matrix list
     (d) sort based on datetime to ensure they are in time order
-  5) loop over noise power files:
-    (a) construct metadata at time of noise reading
-    (b) add metadata to the column lists
-    (c) add noise power info to the data matrix list
-    (d) sort based on datetime to ensure they are in time order
   6) Construct FITS - primary HDU, spectrum binary table HDU, noise 
     binary table HDU.
 """
-__usage__="""
+__usage__="""\
  Usage: ./gpu_sdfits.py Directory
 
  If directory contains wildcards, then you should quote it to avoid
@@ -69,9 +66,23 @@ __usage__="""
  will do ../Data/scan1
     sh> ./gpu_sdfits.py '../Data/scan[12]'
  will do ../Data/scan1 and ../Data/scan2
+
+ This will check each directory to see if there is already a FITS file.
+ If ANY FITS files are found in the directory, this will skip the directory
+ to avoid possibly overwriting data.
+
+ The FITS file will be named based on the basename of the directory. So,
+ for the directory Data/scan6/, the FITS file will be Data/scan6/scan6.fits.
+
+ If the program is run as:
+   gpu_sdfits.py '.'
+ or
+   gpu_sdfits.py './'
+ it will check the absolute pathname of the current directory and construct
+ the FITS file name based on the basename returned.
 """
 __author__="S. Levine"
-__date__="2018 Sep 23"
+__date__="2018 Oct 02"
 
 #------------------------------------------------------------------------
 # import the FITS io routines for the I/O
@@ -705,14 +716,12 @@ def sdf_mkfits (ofile=None, max1=0):
     # Loading the obs_spec and obs_nois dictionaries is done outside
     #  this.
     # sdf_getobs_spec()
-    # sdf_getobs_nois()
 
     phdu = sdf_primary_hdu (telescope='Westford')
     shdu = sdf_spectable_hdu (obsmode='LINEPSSW', max1=max1)
-    nhdu = sdf_noistable_hdu (obsmode='LINEPSSW', max1=max1)
     
     # include primary and table HDUs into one
-    hdu1 = fits.HDUList([phdu, shdu, nhdu])
+    hdu1 = fits.HDUList([phdu, shdu])
 
     # Write out FITS table file
     if (ofile != None):
@@ -741,10 +750,15 @@ def loop_over_dirs (inputs):
     d, fs, fn, fm, ff = r.construct_lists (argone)
 
     for n in range(len(d)):
-        numspec = load_spectra (n, d[n], fs[n], fm[n], ff[n])
         numnois = load_noise   (n, d[n], fn[n], fm[n], ff[n])
+        numspec = load_spectra (n, d[n], fs[n], fm[n], ff[n])
         if ((numspec > 0) or (numnois > 0)):
-            froot = os.path.basename(d[n])
+            # handle the case of ., or ./
+            if ( (d[n] == '.') or (d[n] == './') or (d[n] == '../')):
+                froot = (os.path.basename(os.path.abspath(d[n])))
+            else:
+                froot = os.path.basename(d[n])
+
             ofile = '{}/{}.fits'.format(d[n],froot)
             sdf_mkfits(ofile=ofile)
         
@@ -836,9 +850,6 @@ def load_noise(idnum, d, fn, fm, ff):
     fn == list of noise files
     fm == list of meta files
     ff == list of fits files
-    [NOT YET IMPLEMENTED OPTION:
-      maxper == max number of spectra to insert in a fits file. If < 0, do all.
-    ]
     """
     global obs_nois
     
