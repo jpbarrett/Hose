@@ -48,6 +48,8 @@
     - chmod u+x ./gpu_sdfits.py
 4. Then run:
     - ./gpu_sdfits.py \<path-to-spectrum-files\>
-5. The output will be the file: \<path to spectrum files\>/.fits
+    - If you plan to use any wildcard expansions, then the path should be quoted to avoid having the shell parse the wildcards. For example, to do both scan1/ and scan2/, pass './scan[12]' including the quotes.
+5. The output will be the file: \<path to spectrum files\>/<path basename>.fits
+6. ./gpu_sdfits.py with no arguments will cause it to print a rudimentary usage description.
 
 
