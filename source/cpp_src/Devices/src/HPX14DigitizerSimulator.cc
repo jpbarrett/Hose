@@ -1,6 +1,5 @@
 #include "HPX14DigitizerSimulator.hh"
 
-//#define USE_SOFTWARE_TRIGGER 1
 #define PX14_N_INTERNAL_BUFF 32
 #define PX14_INTERNAL_BUFF_SIZE 1048576
 
@@ -83,7 +82,7 @@ HPX14DigitizerSimulator::InitializeImpl()
 
         fSummedSignalGenerator = new HSummedSignal();
         fSummedSignalGenerator->AddSignalGenerator(fPower1, 1.0);
-        fSummedSignalGenerator->AddSignalGenerator(fSwitchedPower, 0.01);
+        fSummedSignalGenerator->AddSignalGenerator(fSwitchedPower, 0.1);
         fSummedSignalGenerator->Initialize();
 
         fErrorCode = 0;

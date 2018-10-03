@@ -162,7 +162,7 @@ class HBufferPool
             //for now, we do not check if the buff is an actual member of this pool
             //TODO: determine if this check is needed
 
-            //lock the buffer pool, so more than one thread modify the queue
+            //lock the buffer pool, so more than one thread can't modify the queue
             std::lock_guard<std::mutex> lock(fMutex);
             fConsumerQueue.push(buff);
         }

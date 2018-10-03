@@ -29,9 +29,6 @@ namespace hose {
 *Description: Partially ported from original gpu-spec code by Juha Vierinen/Russ McWirther
 */
 
-
-
-
 class HPX14DigitizerSimulator: public HDigitizer< uint16_t, HPX14DigitizerSimulator >,  public HProducer< uint16_t, HProducerBufferHandler_Steal< uint16_t > >
 {
     public:

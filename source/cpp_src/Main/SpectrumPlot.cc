@@ -310,10 +310,7 @@ int main(int argc, char** argv)
                 on_sumx2 += x2;
                 on_count += c;
                 double var = x2/c - (x/c)*(x/c);
-                if(on_count > 1e4 )
-                {
-                    fOnVarianceTimePairs.push_back(  std::pair<double,double>(var, start*sample_period) );
-                }
+                fOnVarianceTimePairs.push_back(  std::pair<double,double>(var, start*sample_period) );
                 if( std::fabs(var) > 0.0)
                 {
                     if(var < var_min){var_min = var;};
@@ -331,10 +328,7 @@ int main(int argc, char** argv)
                 off_sumx2 += x2;
                 off_count += c;
                 double var = x2/c - (x/c)*(x/c);
-                if(off_count > 1e4 )
-                {
-                    fOffVarianceTimePairs.push_back(  std::pair<double,double>(var, start*sample_period) );
-                }
+                fOffVarianceTimePairs.push_back(  std::pair<double,double>(var, start*sample_period) );
                 if( std::fabs(var) > 0.0)
                 {
                     if(var < var_min){var_min = var;};
@@ -363,6 +357,8 @@ int main(int argc, char** argv)
 
     std::cout<<"Average ON variance = "<<on_var<<std::endl;
     std::cout<<"Average OFF variance = "<<off_var<<std::endl;
+    std::cout<<"Difference: ON-OFF = "<<on_var - off_var<<std::endl;
+    std::cout<<"Relative Difference: (ON-OFF)/ON = "<< (on_var - off_var)/on_var <<std::endl;
 
     double on_var_mean = 0;
     double on_var_sigma = 0;
@@ -454,7 +450,7 @@ int main(int argc, char** argv)
 
     //histogram the values of the on/off noise variance
     c->cd(2);
-    TH1D* on_histo = new TH1D("on_noise_variance histogram", "on_noise_variance histogram", 500, on_var_mean - 3.0*on_var_sigma, on_var_mean + 3.0*on_var_sigma);
+    TH1D* on_histo = new TH1D("on_noise_variance histogram", "on_noise_variance histogram", 5000, on_var_mean - 1.0*on_var_sigma, on_var_mean + 1.0*on_var_sigma);
     for(size_t i=0; i<fOnVarianceTimePairs.size(); i++)
     {
         on_histo->Fill(fOnVarianceTimePairs[i].first);
@@ -464,7 +460,7 @@ int main(int argc, char** argv)
 
     //histogram the values
     c->cd(3);
-    TH1D* off_histo = new TH1D("off_noise_variance histogram", "off_noise_variance histogram", 500, off_var_mean - 3.0*off_var_sigma, off_var_mean + 3.0*off_var_sigma);
+    TH1D* off_histo = new TH1D("off_noise_variance histogram", "off_noise_variance histogram", 5000, off_var_mean - 1.0*off_var_sigma, off_var_mean + 1.0*off_var_sigma);
     for(size_t i=0; i<fOffVarianceTimePairs.size(); i++)
     {
         off_histo->Fill(fOffVarianceTimePairs[i].first);
