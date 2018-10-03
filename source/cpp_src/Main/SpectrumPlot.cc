@@ -9,6 +9,7 @@
 #include <sstream>
 #include <ctime>
 #include <getopt.h>
+#include <iomanip>
 
 //single header JSON lib
 #include <json.hpp>
@@ -343,6 +344,8 @@ int main(int argc, char** argv)
         }
         DestroyNoisePowerFileStruct(npow);
     }
+
+    std::cout<<std::setprecision(15)<<std::endl;
 
     std::cout<<"n accum on = "<<fOnAccumulations.size()<<std::endl;
     std::cout<<"n accum off = "<<fOnAccumulations.size()<<std::endl;
