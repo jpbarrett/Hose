@@ -196,142 +196,205 @@ int main(int argc, char** argv)
     std::sort( specFiles.begin(), specFiles.end() , less_than_spec() );
     std::sort( powerFiles.begin(), powerFiles.end() , less_than_spec() );
 
-    if(have_meta_data)
-    {
-        std::cout<<"meta data file = "<< metaDataFile<<std::endl;
-        std::ifstream metadata(metaDataFile.c_str());
-        json j;
-        metadata >> j;
-        for (json::iterator it = j.begin(); it != j.end(); ++it) {
-          std::cout << (*it)["measurement"] << '\n';
-        }
-    }
-
-
-    for(auto it = specFiles.begin(); it != specFiles.end(); it++)
-    {
-        std::cout<<"spec file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
-    }
-
-    for(auto it = powerFiles.begin(); it != powerFiles.end(); it++)
-    {
-        std::cout<<"npow file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
-    }
-
-    //now open up all the spec data (hope it fits in memory)
-    std::vector< HSpectrumFileStructWrapper< float > > spectrum_vec;
-    //spectrum_vec.resize(specFiles.size());
-    for(size_t i = 0; i < specFiles.size(); i++)
-    {
-        spectrum_vec.push_back( HSpectrumFileStructWrapper<float>(specFiles[i].first) ) ;
-    }
-
-/*
-
-
-    //now open up all the spec data (hope it fits in memory)
-    std::vector< HSpectrumObject<float> > spectrum_vec;
-    for(size_t i=0; i<specFiles.size(); i++)
-    {
-        HSpectrumObject<float> obj;
-        spectrum_vec.push_back(obj);
-        spectrum_vec.back().ReadFromFile(specFiles[i].first);
-        std::cout<<"spec file: "<<i<<" = "<<specFiles[i].first<< " has spectrum of length: "<<spectrum_vec.back().GetSpectrumLength()<<std::endl;
-    }
-
-    size_t acq_start = spectrum_vec[0].GetStartTime();
-    std::time_t start_time = (std::time_t) acq_start;
-    std::cout << "Acq start time = "<< std::asctime(std::gmtime(&start_time));
-
-
-    //look at noise statistics data
-    std::vector< HDataAccumulation > on_accum;
-    std::vector< HDataAccumulation > off_accum;
-    for(unsigned int i=0; i<spectrum_vec.size(); i++)
-    {
-        std::vector<HDataAccumulation>* vec = nullptr;
-
-        vec = spectrum_vec[i].GetOnAccumulations();
-        on_accum.insert( on_accum.end(), vec->begin(), vec->end() );
-
-        vec = spectrum_vec[i].GetOffAccumulations();
-        off_accum.insert( off_accum.end(), vec->begin(), vec->end() );
-
-
-
-
-        //if(i < 10)
-        {
-            vec = spectrum_vec[i].GetOnAccumulations();
-
-            std::cout<<"i = "<<i<<std::endl;
-            std::cout<<"spec file leading index "<<spectrum_vec[i].GetLeadingSampleIndex()<<std::endl;
-            std::cout<<"spec sideband: "<<spectrum_vec[i].GetSidebandFlag()<<std::endl;
-            std::cout<<"spec pol: "<<spectrum_vec[i].GetPolarizationFlag()<<std::endl;
-
-            for(unsigned int j=0; j<vec->size(); j++)
-            {
-                std::cout<<"j = "<<i<<std::endl;
-                std::cout<<"on ["<<vec->at(j).start_index<<", "<<vec->at(j).stop_index<<"]"<<std::endl;
-            }
-
-            vec = spectrum_vec[i].GetOffAccumulations();
-
-
-            for(unsigned int j=0; j<vec->size(); j++)
-            {
-                std::cout<<"j = "<<i<<std::endl;
-                std::cout<<"off ["<<vec->at(j).start_index<<", "<<vec->at(j).stop_index<<"]"<<std::endl;
-            }
-
-        }
-
-    }
-
-    // //print out the first few on/off accumulation periods
-    // for(unsigned int i=0; i<10; i++)
+    // if(have_meta_data)
     // {
-    //     std::cout<<"i = "<<i<<std::endl;
-    //     std::cout<<"on ["<<on_accum[i].start_index<<", "<<on_accum[i].stop_index<<"]"<<std::endl;
-    //     std::cout<<"off ["<<off_accum[i].start_index<<", "<<off_accum[i].stop_index<<"]"<<std::endl;
+    //     std::cout<<"meta data file = "<< metaDataFile<<std::endl;
+    //     std::ifstream metadata(metaDataFile.c_str());
+    //     json j;
+    //     metadata >> j;
+    //     for (json::iterator it = j.begin(); it != j.end(); ++it) {
+    //       std::cout << (*it)["measurement"] << '\n';
+    //     }
     // }
 
-    double onx, onx2, onN;
-    for(unsigned int i=0; i<on_accum.size(); i++)
+
+    // for(auto it = specFiles.begin(); it != specFiles.end(); it++)
+    // {
+    //     std::cout<<"spec file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
+    // }
+    // 
+    // for(auto it = powerFiles.begin(); it != powerFiles.end(); it++)
+    // {
+    //     std::cout<<"npow file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
+    // }
+
+////////////////////////////////////////////////////////////////////////////////
+//compute an averaged spectrum
+
+    //space to accumulate the raw spectrum
+    std::vector<float> raw_accumulated_spec;
+    size_t spec_length = 0;
+    double spec_res = 0;
+    double sample_rate = 0;
+    double n_samples = 0;
+    double n_ave = 0;
+    double n_samples_per_spec = 0;
+    double spec_count = 0;
+    double sample_period = 0;
+    //now open up all the spec data one by one and accumulate
+
+    //now open up all the spectrum files one by one and sum them
+    for(size_t i = 0; i < specFiles.size(); i++)
     {
-        onx += on_accum[i].sum_x;
-        onx2 += on_accum[i].sum_x2;
-        onN += on_accum[i].count;
+        HSpectrumFileStructWrapper<float> tempFile(specFiles[i].first);
+        
+        if(i==0)
+        {
+            spec_length = tempFile.GetSpectrumLength();
+            n_ave = tempFile.GetNAverages();
+            sample_rate = tempFile.GetSampleRate();
+            sample_period = 1.0/sample_rate;
+            n_samples = tempFile.GetSampleLength();
+            n_samples_per_spec = n_samples / n_ave;
+            spec_res = sample_rate/n_samples_per_spec;
+            std::cout<<"num samples = "<<n_samples<<std::endl;
+            std::cout<<"n averages = "<<n_ave<< std::endl;
+            std::cout<<"sample rate = "<<sample_rate<<std::endl;
+            std::cout<<"sample period = "<<sample_period<<std::endl;
+            std::cout<<"n samples per spec = "<<n_samples_per_spec<<std::endl;
+            std::cout<<"spec_res= "<<spec_res<<std::endl;
+            std::cout<<"spectrum length = "<<spec_length<<std::endl;
+            raw_accumulated_spec.resize(spec_length, 0);
+        }
+
+        float* spec_data = tempFile.GetSpectrumData();
+        for(size_t j=0; j<spec_length; j++)
+        {
+            raw_accumulated_spec[j] += spec_data[j];
+        }
+        spec_count += 1.0;
     }
 
-    double offx, offx2, offN;
-    for(unsigned int i=0; i<off_accum.size(); i++)
+    //compute average
+    for(size_t j=0; j<spec_length; j++)
     {
-        offx += off_accum[i].sum_x;
-        offx2 += off_accum[i].sum_x2;
-        offN += off_accum[i].count;
+        raw_accumulated_spec[j] /= spec_count;
     }
 
+////////////////////////////////////////////////////////////////////////////////
+//collect the raw accumulations
+    
+    std::vector< HDataAccumulationStruct > fOnAccumulations;
+    std::vector< std::pair<double,double> > fOnVarianceTimePairs;
+    std::vector< HDataAccumulationStruct > fOffAccumulations;
+    std::vector< std::pair<double,double> > fOffVarianceTimePairs;
 
-    std::cout<<"N on accum = "<<on_accum.size()<<std::endl;
-    std::cout<<"N off accum = "<<off_accum.size()<<std::endl;
+    double var_min = 1e100;
+    double var_max = -1e100;
+    
+    double on_sumx = 0;
+    double on_sumx2 = 0;
+    double on_count = 0;
+    double off_sumx = 0;
+    double off_sumx2 = 0;
+    double off_count = 0;
 
-    std::cout<<"on x: "<<onx<<" on x2: "<<onx2<<" on count "<<onN<<std::endl;
-    std::cout<<"off x: "<<offx<<" off x2: "<<offx2<<" off count "<<offN<<std::endl;
+    for(size_t i = 0; i < powerFiles.size(); i++)
+    {
+        HNoisePowerFileStruct* npow = CreateNoisePowerFileStruct();
+        int success = ReadNoisePowerFile(powerFiles[i].first.c_str(), npow);
 
-    double onrms = (onx2/onN) -(onx/onN)*(onx/onN);
-    double offrms = (offx2/offN) -(offx/offN)*(offx/offN);
+        uint64_t n_accum = npow->fHeader.fAccumulationLength;
+        for(uint64_t j=0; j<n_accum; j++)
+        {
+            HDataAccumulationStruct accum_dat = npow->fAccumulations[j];
+            if(accum_dat.state_flag == H_NOISE_DIODE_ON)
+            {
+                fOnAccumulations.push_back(accum_dat);
+                double x = accum_dat.sum_x;
+                double x2 = accum_dat.sum_x2;
+                double c = accum_dat.count;
+                double start = accum_dat.start_index;
+                on_sumx += x;
+                on_sumx2 += x2;
+                on_count += c;
+                double var = x2/c - (x/c)*(x/c);
+                if(on_count > 1e4 )
+                {
+                    fOnVarianceTimePairs.push_back(  std::pair<double,double>(var, start*sample_period) );
+                }
+                if( std::fabs(var) > 0.0)
+                {
+                    if(var < var_min){var_min = var;};
+                    if(var > var_max){var_max = var;};
+                }
+            }
+            else
+            {
+                fOffAccumulations.push_back(accum_dat);
+                double x = accum_dat.sum_x;
+                double x2 = accum_dat.sum_x2;
+                double c = accum_dat.count;
+                double start = accum_dat.start_index;
+                off_sumx += x;
+                off_sumx2 += x2;
+                off_count += c;
+                double var = x2/c - (x/c)*(x/c);
+                if(off_count > 1e4 )
+                {
+                    fOffVarianceTimePairs.push_back(  std::pair<double,double>(var, start*sample_period) );
+                }
+                if( std::fabs(var) > 0.0)
+                {
+                    if(var < var_min){var_min = var;};
+                    if(var > var_max){var_max = var;};
+                }
+            }
+        }
+        DestroyNoisePowerFileStruct(npow);
+    }
 
-    double Tsys = std::fabs( offrms/(onrms - offrms) );
-    std::cout<<"tsys in noise diode units (uncal.) = "<<Tsys<<std::endl;
+    std::cout<<"n accum on = "<<fOnAccumulations.size()<<std::endl;
+    std::cout<<"n accum off = "<<fOnAccumulations.size()<<std::endl;
 
+    double on_var = on_sumx2/on_count - (on_sumx/on_count)*(on_sumx/on_count);
+    double off_var = off_sumx2/off_count - (off_sumx/off_count)*(off_sumx/off_count);
 
+    std::cout<<"on_sumx = "<<on_sumx<<std::endl;
+    std::cout<<"on_sumx2 = "<<on_sumx2<<std::endl;
+    std::cout<<"on_count = "<<on_count<<std::endl;
 
+    std::cout<<"off_sumx = "<<off_sumx<<std::endl;
+    std::cout<<"off_sumx2 = "<<off_sumx2<<std::endl;
+    std::cout<<"off_count = "<<off_count<<std::endl;
 
+    std::cout<<"Average ON variance = "<<on_var<<std::endl;
+    std::cout<<"Average OFF variance = "<<off_var<<std::endl;
 
-*/
+    double on_var_mean = 0;
+    double on_var_sigma = 0;
+    double off_var_mean = 0;
+    double off_var_sigma = 0;
 
+    for(size_t j=0; j<fOnVarianceTimePairs.size(); j++)
+    {
+        on_var_mean += fOnVarianceTimePairs[j].first;
+    }
+    on_var_mean /= (double)fOnVarianceTimePairs.size();
 
+    for(size_t j=0; j<fOffVarianceTimePairs.size(); j++)
+    {
+        off_var_mean += fOffVarianceTimePairs[j].first;
+    }
+    off_var_mean /= (double)fOffVarianceTimePairs.size();
+
+    for(size_t j=0; j<fOnVarianceTimePairs.size(); j++)
+    {
+        double delta = fOnVarianceTimePairs[j].first - on_var_mean;
+        on_var_sigma += delta*delta;
+    }
+    on_var_sigma /= (double)fOnVarianceTimePairs.size();
+    on_var_sigma = std::sqrt(on_var_sigma);
+
+    for(size_t j=0; j<fOffVarianceTimePairs.size(); j++)
+    {
+        double delta = fOffVarianceTimePairs[j].first - off_var_mean;
+        off_var_sigma += delta*delta;
+    }
+    off_var_sigma /= (double)fOffVarianceTimePairs.size();
+    off_var_sigma = std::sqrt(off_var_sigma);
+
+////////////////////////////////////////////////////////////////////////////////
 
     std::cout<<"starting root plotting"<<std::endl;
 
@@ -367,136 +430,44 @@ int main(int argc, char** argv)
 
     std::string name("spec");
     TCanvas* c = new TCanvas(name.c_str(),name.c_str(), 50, 50, 950, 850);
-    c->cd();
     c->SetFillColor(0);
     c->SetRightMargin(0.2);
+    c->Divide(1,3);
+    c->cd(1);
 
-    // std::stringstream ss;
-    // ss <<"Averaged spectrum, acquisition start time: ";
-    // ss << std::asctime(std::gmtime(&start_time));
-
-
-
-    std::cout<<"sample length = "<< spectrum_vec[0].GetSampleLength() <<std::endl;
-    std::cout<<"n averages = "<<spectrum_vec[0].GetNAverages() << std::endl;
-    double sample_rate = spectrum_vec[0].GetSampleRate();
-    std::cout<<"sample rate = "<<sample_rate<<std::endl;
-
-    double n_samples_per_spec = spectrum_vec[0].GetSampleLength() / spectrum_vec[0].GetNAverages();
-    double spec_res = sample_rate / n_samples_per_spec;
-
-    std::cout<<"n samples per spec = "<<n_samples_per_spec<<std::endl;
-    std::cout<<"spec_res= "<<spec_res<<std::endl;
-
-    std::cout<<"spectrum length = "<<spectrum_vec[0].GetSpectrumLength()<<std::endl;
-
-    for(unsigned int n=0; n < spectrum_vec.size(); n++)
+    TGraph* g = new TGraph();
+    for(unsigned int j=0; j<spec_length; j++)
     {
-        TGraph* g = new TGraph();
-        graph.push_back(g);
-        float* spec_val = spectrum_vec[n].GetSpectrumData();
-        uint64_t spec_length = spectrum_vec[n].GetSpectrumLength();
-        for(unsigned int j=0; j<spec_length; j++)
-        {
-            g->SetPoint(j, j*spec_res/1e6, 10.0*std::log10( spec_val[j] + eps ) );
-        }
-        if(n == 0){g->Draw("ALP");}
-        else{g->Draw("ALP SAME");}
-
-        // g->SetTitle(ss.str().c_str());
-        g->GetXaxis()->SetTitle("Frequency (MHz)");
-        g->GetYaxis()->SetTitle("Relative Power (dB)");
-        g->GetYaxis()->CenterTitle();
-        g->GetXaxis()->CenterTitle();
-
-        if(n == 0){g->Draw("ALP");}
-        else{g->Draw("ALP SAME");}
-
-        c->Update();
+        g->SetPoint(j, j*spec_res/1e6, 10.0*std::log10( raw_accumulated_spec[j] + eps ) );
     }
+    g->Draw("ALP");
 
+    g->SetTitle("Average Spectrum");
+    g->GetXaxis()->SetTitle("Frequency (MHz)");
+    g->GetYaxis()->SetTitle("Relative Power (dB)");
+    g->GetYaxis()->CenterTitle();
+    g->GetXaxis()->CenterTitle();
+    c->Update();
 
-
-    //
-    // size_t start_sec = spectrum_vec[0].GetStartTime();
-    // size_t now_sec = spectrum_vec.back().GetStartTime();
-    //
-    // //calculate the start time of this spectral averages
-    // double sample_index = spectrum_vec.back().GetLeadingSampleIndex() + spectrum_vec.back().GetSampleLength();
-    // double stime = sample_index / sample_rate;
-    //
-    // double time_diff = (double)(now_sec - start_sec) + stime;
-    //
-    //
-    // std::cout<<"seconds difference = "<<(double)(now_sec - start_sec)<<std::endl;
-    // std::cout<<"sub sec difference = "<<stime<<std::endl;
-    // std::cout<<"total time from first to last sample (s): "<<time_diff<<std::endl;
-
-/*
-
-
-    std::string name2("spectrogram");
-    TCanvas* c2 = new TCanvas(name2.c_str(),name2.c_str(), 50, 50, 950, 850);
-    c2->cd();
-    c2->SetFillColor(0);
-    c2->SetRightMargin(0.2);
-
-
-    //double last_sample_index = spectrum_vec.back().GetLeadingSampleIndex();// + spectrum_vec.back().GetSampleLength();
-    //double last_stime = last_sample_index / sample_rate;
-    //TH2D* g2d = new TH2D("h2","", 256, 0.0, last_stime+1, 256, 0, (spec_length-1)*spec_res/1e6 );
-
-
-    TGraph2D* g2d = new TGraph2D();
-    //g2d->SetTitle("Spectrogram; Count; Frequency (MHz); Power (dB)");
-    size_t count = 0;
-    for(unsigned int n=0; n < spectrum_vec.size(); n++)
+    //histogram the values of the on/off noise variance
+    c->cd(2);
+    TH1D* on_histo = new TH1D("on_noise_variance histogram", "on_noise_variance histogram", 500, on_var_mean - 3.0*on_var_sigma, on_var_mean + 3.0*on_var_sigma);
+    for(size_t i=0; i<fOnVarianceTimePairs.size(); i++)
     {
-        //calculate the start time of this spectral average
-        //w.r.t to the first
-
-        size_t start_sec = spectrum_vec[0].GetStartTime();
-        size_t now_sec = spectrum_vec[n].GetStartTime();
-
-        //calculate the start time of this spectral averages
-        double sample_index = spectrum_vec[n].GetLeadingSampleIndex();
-        double stime = sample_index / sample_rate;
-
-        double time_diff = (now_sec - start_sec) + stime;
-
-        //std::cout<<"stime = "<<stime<<std::endl;
-        float* spec_valn = spectrum_vec[n].GetSpectrumData();
-        double smax = 0;
-        for(unsigned int j=0; j<spectrum_vec[n].GetSpectrumLength()-1; j++)
-        {
-            if( std::log10( spec_valn[j] ) > smax){smax = 10.0*std::log10( spec_valn[j] + eps ); } ;
-            //g2d->Fill(stime, j*spec_res/1e6, 10.0*std::log10(spec_valn[j] + 0.0001 )  );
-            g2d->SetPoint(count++, time_diff, j*spec_res/1e6, 10.0*std::log10( spec_valn[j] + eps) );
-        }
-        //std::cout<<"smax = "<<smax<<std::endl;
+        on_histo->Fill(fOnVarianceTimePairs[i].first);
     }
+    on_histo->Draw("");
+    c->Update();
 
-    g2d->SetNpx(100);
-    g2d->SetNpy(100);
-    g2d->Draw("COLZ");
-    std::stringstream ss2;
-    ss2 <<"Spectrogram, acquisition start time: ";
-    ss2 << std::asctime(std::gmtime(&start_time));
-    g2d->SetTitle(ss.str().c_str());
-    g2d->GetHistogram()->GetYaxis()->SetTitle("Frequency (MHz)");
-    g2d->GetHistogram()->GetYaxis()->CenterTitle();
-    g2d->GetHistogram()->GetYaxis()->SetTitleOffset(1.4);
-    g2d->GetHistogram()->GetZaxis()->SetTitle("Power (dB)");
-    g2d->GetHistogram()->GetZaxis()->CenterTitle();
-    g2d->GetHistogram()->GetZaxis()->SetTitleOffset(1.4);
-    g2d->GetHistogram()->GetXaxis()->SetTitle("Time (s)");
-    g2d->GetHistogram()->GetXaxis()->CenterTitle();
-    g2d->GetHistogram()->GetXaxis()->SetTitleOffset(1.4);
-    g2d->Draw("P0");
-
-    c2->Update();
-
-*/
+    //histogram the values
+    c->cd(3);
+    TH1D* off_histo = new TH1D("off_noise_variance histogram", "off_noise_variance histogram", 500, off_var_mean - 3.0*off_var_sigma, off_var_mean + 3.0*off_var_sigma);
+    for(size_t i=0; i<fOffVarianceTimePairs.size(); i++)
+    {
+        off_histo->Fill(fOffVarianceTimePairs[i].first);
+    }
+    off_histo->Draw("");
+    c->Update();
 
     App->Run();
 
