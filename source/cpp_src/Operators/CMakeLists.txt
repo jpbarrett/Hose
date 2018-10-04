@@ -30,6 +30,7 @@ if(HOSE_USE_CUDA)
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HCudaHostBufferAllocator.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HBufferAllocatorSpectrometerDataCUDA.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HSimpleMultiThreadedSpectrumDataWriter.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/HRawDataDumper.hh
     )
 
     set(CUDAOPERATOR_SOURCEFILES

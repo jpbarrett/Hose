@@ -50,6 +50,7 @@ extern "C"
 #include "HCudaHostBufferAllocator.hh"
 #include "HBufferAllocatorSpectrometerDataCUDA.hh"
 #include "HSimpleMultiThreadedSpectrumDataWriter.hh"
+#include "HRawDataDumper.hh"
 #include "HApplicationBackend.hh"
 #include "HServer.hh"
 
@@ -113,6 +114,7 @@ class HSpectrometerManager: public HApplicationBackend
             fSpectrometerBufferAllocator(nullptr),
             fSpectrometer(nullptr),
             fWriter(nullptr),
+            fDumper(nullptr),
             fDigitizerSourcePool(nullptr),
             fSpectrometerSinkPool(nullptr)
             #ifdef HOSE_USE_SPDLOG
@@ -130,6 +132,7 @@ class HSpectrometerManager: public HApplicationBackend
             delete fDigitizer;
             delete fSpectrometer;
             delete fWriter;
+            delete fDumper;
             delete fDigitizerSourcePool;
             delete fSpectrometerSinkPool;
             delete fCUDABufferAllocator;
@@ -251,6 +254,11 @@ class HSpectrometerManager: public HApplicationBackend
                         fWriter->SetBufferPool(fSpectrometerSinkPool);
                         fWriter->SetNThreads(1);
 
+                        fDumper = new HRawDataDumper< typename XDigitizerType::sample_type >();
+                        fDumper->SetBufferPool(fDigitizerSourcePool);
+                        fDumper->SetBufferDumpFrequency(2);
+                        fDumper->SetNThreads(1);
+
                         #ifdef HOSE_USE_SPDLOG
 
                         //digitizer configuration info
@@ -319,6 +327,7 @@ class HSpectrometerManager: public HApplicationBackend
                 //start the command server thread
                 std::thread server_thread( &HServer::Run, fServer );
                 fWriter->StartConsumption();
+                fDumper->StartConsumption();
 
                 fSpectrometer->StartConsumptionProduction();
                 for(size_t i=0; i<fNSpectrometerThreads; i++)
@@ -399,6 +408,7 @@ class HSpectrometerManager: public HApplicationBackend
                 sleep(1);
                 fSpectrometer->StopConsumptionProduction();
                 sleep(1);
+                fWriter->StopConsumption();
                 fWriter->StopConsumption();
 
                 CleanUp();
@@ -689,6 +699,7 @@ class HSpectrometerManager: public HApplicationBackend
             fWriter->SetScanName(fScanName);
             fWriter->InitializeOutputDirectory();
 
+            fDumper->SetOutputDirectory( fWriter->GetCurrentOutputDirectory() );
         }
 
 
@@ -984,6 +995,7 @@ class HSpectrometerManager: public HApplicationBackend
         HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >* fSpectrometerBufferAllocator;
         HSpectrometerCUDA* fSpectrometer;
         HSimpleMultiThreadedSpectrumDataWriter* fWriter;
+        HRawDataDumper< typename XDigitizerType::sample_type >* fDumper;
         HBufferPool< typename XDigitizerType::sample_type >* fDigitizerSourcePool;
         HBufferPool< spectrometer_data >* fSpectrometerSinkPool;
         std::string fCannedStopCommand;

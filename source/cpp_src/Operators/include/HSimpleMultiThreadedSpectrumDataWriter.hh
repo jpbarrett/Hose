@@ -64,6 +64,8 @@ class HSimpleMultiThreadedSpectrumDataWriter: public HConsumer< spectrometer_dat
         void SetBaseOutputDirectory(std::string output_dir);
         std::string GetBaseOutputDirectory() const {return fBaseOutputDirectory;};
 
+        std::string GetCurrentOutputDirectory() const {return fCurrentOutputDirectory;};
+
     private:
 
         virtual void ExecuteThreadTask() override;
@@ -71,6 +73,7 @@ class HSimpleMultiThreadedSpectrumDataWriter: public HConsumer< spectrometer_dat
         virtual void Idle() override;
 
         std::string fBaseOutputDirectory;
+        std::string fCurrentOutputDirectory;
 
         std::string fExperimentName;
         std::string fSourceName;
