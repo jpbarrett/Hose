@@ -1,7 +1,7 @@
 # Hose: Haystack Observatory Spectrometer Experiment
 
 # Required dependencies: 
-1. A compiler with C++11 support, e.g gcc >= 4.8 or clang >= 3.3.
+1. A compiler with C++11 support, e.g gcc >= 4.8 or clang >= 3.3. 
 2. Python 2.7.x (Python 3 not yet supported).
 3. CMake 3.0 or greater (https://cmake.org/) required by the build system.
     To configure options you may want to obtain the command line GUI
@@ -16,7 +16,8 @@
 1. Signatec library for interfacing with PX14400 digitizer.
 2. Teledyne SP devices library for interfacing with ADQ7 digitizer.
 3. NVidia CUDA Toolkit (https://developer.nvidia.com/cuda-zone). 
-    Needed for GPU support (only tested with version 6.0 and 8.0).
+    Needed for GPU support (only tested with version 6.0 and 8.0). 
+    If you enable CUDA, you must use a gcc <= 6.4, and more recent versions are not supported.
 4. ROOT (https://root.cern.ch/), needed for spectrum plotting.
 5. ZeroMQ (http://zeromq.org/), needed for GPU spectrometer client/server interface.
 

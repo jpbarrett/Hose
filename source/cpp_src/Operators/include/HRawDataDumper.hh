@@ -34,7 +34,7 @@ class HRawDataDumper: public HConsumer< XBufferItemType, HConsumerBufferHandler_
 {
 
     public:
-        HRawDataDumper():fBufferDumpFrequency(2),fOutputDirectory("./"){std::cout<<"dumper = "<<this<<std::endl;};  //spec size and averages are fixed at constuction time
+        HRawDataDumper():fBufferDumpFrequency(2),fOutputDirectory("./"){};  //spec size and averages are fixed at constuction time
         virtual ~HRawDataDumper(){};
 
         //frequency at which buffers are dumped to disk...1 is every buffer, 2 is every other, etc.

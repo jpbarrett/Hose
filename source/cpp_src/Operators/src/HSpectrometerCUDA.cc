@@ -10,9 +10,7 @@ namespace hose
 HSpectrometerCUDA::HSpectrometerCUDA(size_t spectrum_length, size_t n_averages):
     fSpectrumLength(spectrum_length),
     fNAverages(n_averages)
-    {
-        std::cout<<"spectro = "<<this<<std::endl;
-    };
+    {};
 
 
 HSpectrometerCUDA::~HSpectrometerCUDA(){};
