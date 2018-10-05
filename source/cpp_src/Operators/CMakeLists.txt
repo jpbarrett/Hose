@@ -5,10 +5,11 @@ set (HOPERATORS_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSimpleMultiThreadedWriter.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HRawDataDumper.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSwitchedPowerCalculator.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HDataAccumulationWriter.hh
 )
 
 set (HOPERATORS_SOURCEFILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/HSwitchedPowerCalculator.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/HDataAccumulationWriter.cc
 )
 
 #declare header paths ##########################################################

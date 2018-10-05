@@ -11,7 +11,6 @@
 #include "HLinearBuffer.hh"
 #include "HBufferPool.hh"
 #include "HConsumer.hh"
-#include "HSpectrumObject.hh"
 #include "HDirectoryWriter.hh"
 
 #include "spectrometer.h"

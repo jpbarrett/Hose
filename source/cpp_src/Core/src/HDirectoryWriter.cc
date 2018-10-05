@@ -1,6 +1,8 @@
 #include "HDirectoryWriter.hh"
 
 #include <cstring>
+#include <sstream>
+#include <iostream>
 
 //needed for mkdir on *NIX
 #include <sys/types.h>
@@ -9,7 +11,7 @@
 namespace hose
 {
 
-HDirectoryWriter::HDirectoryWriter()
+HDirectoryWriter::HDirectoryWriter():
     fExperimentName("unknown"),
     fSourceName("unknown"),
     fScanName("unknown")
@@ -46,7 +48,7 @@ HDirectoryWriter::GetSourceName() const
 void HDirectoryWriter::SetScanName(std::string scan_name)
 {
     if(scan_name.size() < HNAME_WIDTH){fScanName = scan_name;}
-    else{fScanName = scan_name.substr(0,HNAME_WIDTH-1);}    fBaseOutputDirectory = output_dir;
+    else{fScanName = scan_name.substr(0,HNAME_WIDTH-1);}
 };
 
 std::string 

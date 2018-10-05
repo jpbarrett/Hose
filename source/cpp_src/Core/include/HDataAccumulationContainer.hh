@@ -50,8 +50,7 @@ class HDataAccumulationContainer
         uint64_t GetLeadingSampleIndex() const {return fSampleIndex;};
         void SetLeadingSampleIndex(const uint64_t& index){fSampleIndex = index;};
 
-        //TODO remove me! this is only useful for the px14 internal buffer
-        //we really need to implement some sort of extensible struct functionality
+        //total lengthe of sample array
         uint64_t GetSampleLength() const {return fSampleLength;};
         void SetSampleLength(const uint64_t& len){fSampleLength = len;};
 

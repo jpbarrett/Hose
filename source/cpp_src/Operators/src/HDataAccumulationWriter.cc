@@ -10,7 +10,7 @@ HDataAccumulationWriter::HDataAccumulationWriter():
     
 void HDataAccumulationWriter::ExecuteThreadTask()
 {
-    HLinearBuffer< HDataAccumulationWriter >* tail = nullptr;
+    HLinearBuffer< HDataAccumulationContainer >* tail = nullptr;
     if( this->fBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) != 0 )
     {
         //grab a buffer to process
@@ -21,15 +21,15 @@ void HDataAccumulationWriter::ExecuteThreadTask()
             std::lock_guard<std::mutex> lock( tail->fMutex );
 
             //grab the pointer to the accumulation container
-            accum_container = &( (sink->GetData())[0] ); //should have buffer size of 1
+            auto accum_container = &( (tail->GetData())[0] ); //should have buffer size of 1
 
             //we rely on acquisitions start time, sample index, and sideband/pol flags to uniquely name/stamp a file
             std::stringstream ss;
             ss << fCurrentOutputDirectory;
             ss << "/";
-            ss <<  sdata->acquistion_start_second;
+            ss <<  accum_container->GetAcquisitionStartSecond();
             ss << "_";
-            ss <<  sdata->leading_sample_index;
+            ss <<  accum_container->GetLeadingSampleIndex();
             ss << "_";
             ss <<  accum_container->GetSidebandFlag();
             ss <<  accum_container->GetPolarizationFlag();
@@ -43,10 +43,10 @@ void HDataAccumulationWriter::ExecuteThreadTask()
                 memcpy( power_data->fHeader.fVersionFlag, NOISE_POWER_HEADER_VERSION, HVERSION_WIDTH);
                 power_data->fHeader.fSidebandFlag[0] = accum_container->GetSidebandFlag() ;
                 power_data->fHeader.fPolarizationFlag[0] = accum_container->GetPolarizationFlag();
-                power_data->fHeader.fStartTime = sdata->acquistion_start_second;
-                power_data->fHeader.fSampleRate = sdata->sample_rate;
-                power_data->fHeader.fLeadingSampleIndex = sdata->leading_sample_index;
-                power_data->fHeader.fSampleLength = (sdata->n_spectra)*(sdata->spectrum_length);
+                power_data->fHeader.fStartTime = accum_container->GetAcquisitionStartSecond();
+                power_data->fHeader.fSampleRate = accum_container->GetSampleRate();
+                power_data->fHeader.fLeadingSampleIndex = accum_container->GetLeadingSampleIndex();
+                power_data->fHeader.fSampleLength = accum_container->GetSampleLength();
                 power_data->fHeader.fAccumulationLength = accum_container->GetAccumulations()->size();
                 power_data->fHeader.fSwitchingFrequency =  accum_container->GetNoiseDiodeSwitchingFrequency();
                 power_data->fHeader.fBlankingPeriod = accum_container->GetNoiseDiodeBlankingPeriod();

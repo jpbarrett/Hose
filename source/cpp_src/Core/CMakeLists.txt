@@ -14,7 +14,7 @@ set (HCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HBufferAllocatorMalloc.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HDigitizer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HBufferMetaData.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumObject.hh
+    # ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumObject.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumFileStructWrapper.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HTimer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HThreadPool.hh
@@ -34,6 +34,7 @@ set( HCORE_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HTimer.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HThreadPool.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HTimeStampConverter.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/HDirectoryWriter.cc
 )
 
 #declare header paths ##########################################################

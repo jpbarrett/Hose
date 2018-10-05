@@ -35,7 +35,8 @@ extern "C"
     #define DIGITIZER_TYPE HPX14Digitizer
     #define N_DIGITIZER_THREADS 2
     #define N_DIGITIZER_POOL_SIZE 32  
-    #define N_SPECTROMETER_POOL_SIZE 16  
+    #define N_SPECTROMETER_POOL_SIZE 16
+    #define N_NOISE_POWER_POOL_SIZE 10
     #define N_SPECTROMETER_THREADS 3
     #define N_NOISE_POWER_THREADS 1
 #else
@@ -43,6 +44,7 @@ extern "C"
     #define N_DIGITIZER_THREADS 1
     #define N_DIGITIZER_POOL_SIZE 8
     #define N_SPECTROMETER_POOL_SIZE 4  
+    #define N_NOISE_POWER_POOL_SIZE 10
     #define N_SPECTROMETER_THREADS 1
     #define N_NOISE_POWER_THREADS 1
 #endif
@@ -113,6 +115,7 @@ class HSpectrometerManager: public HApplicationBackend
             fFFTSize(131072),
             fDigitizerPoolSize(N_DIGITIZER_POOL_SIZE),
             fSpectrometerPoolSize(N_SPECTROMETER_POOL_SIZE),
+            fNoisePowerPoolSize(N_NOISE_POWER_POOL_SIZE),
             fNDigitizerThreads(N_DIGITIZER_THREADS),
             fNSpectrometerThreads(N_SPECTROMETER_THREADS),
             fNNoisePowerThreads(N_NOISE_POWER_THREADS),
@@ -248,13 +251,14 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrometer->SetNThreads(fNSpectrometerThreads);
                         fSpectrometer->SetSourceBufferPool(fDigitizerSourcePool);
                         fSpectrometer->SetSinkBufferPool(fSpectrometerSinkPool);
-                        fSpectrometer->SetSamplingFrequency( fDigitizer->GetSamplingFrequency() );
 
                         //create the noise power calculator
+                        double noise_diode_switching_freq = 80.0;
+                        double noise_diode_blanking_period = 11e-3;
                         fNoisePowerCalculator = new HSwitchedPowerCalculator< typename XDigitizerType::sample_type >();
-                        fNoisePowerCalculator->SetSwitchingFrequency(80.0);
+                        fNoisePowerCalculator->SetSwitchingFrequency(noise_diode_switching_freq);
                         fNoisePowerCalculator->SetSamplingFrequency( fDigitizer->GetSamplingFrequency() );
-                        fNoisePowerCalculator->SetBlankingPeriod(11e-3); //11ms (from original GPU spec)
+                        fNoisePowerCalculator->SetBlankingPeriod(noise_diode_blanking_period); //11ms (from original GPU spec)
                         fNoisePowerCalculator->SetSourceBufferPool(fDigitizerSourcePool);
                         fNoisePowerCalculator->SetSinkBufferPool(fNoisePowerPool);
 
@@ -1006,6 +1010,7 @@ class HSpectrometerManager: public HApplicationBackend
         size_t fFFTSize;
         size_t fDigitizerPoolSize;
         size_t fSpectrometerPoolSize;
+        size_t fNoisePowerPoolSize;
         size_t fNDigitizerThreads;
         size_t fNSpectrometerThreads;
         size_t fNNoisePowerThreads;
@@ -1024,7 +1029,7 @@ class HSpectrometerManager: public HApplicationBackend
         XDigitizerType* fDigitizer;
         HCudaHostBufferAllocator< typename XDigitizerType::sample_type >* fCUDABufferAllocator;
         HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >* fSpectrometerBufferAllocator;
-        HBufferAllocatorNew< HDataAccumulationContainer > fNoisePowerContainerBufferAllocator;
+        HBufferAllocatorNew< HDataAccumulationContainer >* fNoisePowerContainerBufferAllocator;
         HSpectrometerCUDA* fSpectrometer;
         HSimpleMultiThreadedSpectrumDataWriter* fWriter;
         HSwitchedPowerCalculator< typename XDigitizerType::sample_type >* fNoisePowerCalculator;

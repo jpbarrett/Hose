@@ -54,7 +54,7 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
             HLinearBuffer< HDataAccumulationContainer >* sink = nullptr;
             HLinearBuffer< XBufferItemType >* source = nullptr;
 
-            if( fSourceBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) != 0 ) //only do work if there is stuff to process
+            if( this->fSourceBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) != 0 ) //only do work if there is stuff to process
             {
                 //first get a sink buffer from the buffer handler
                 HProducerBufferPolicyCode sink_code = this->fSinkBufferHandler.ReserveBuffer(this->fSinkBufferPool, sink);
@@ -71,7 +71,7 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
                         std::lock_guard<std::mutex> source_lock(source->fMutex);
                         
                         //grab the pointer to the accumulation container
-                        accum_container = &( (sink->GetData())[0] ); //should have buffer size of 1
+                        auto accum_container = &( (sink->GetData())[0] ); //should have buffer size of 1
 
                         //set appropriate meta data quantities for the accumulation container
                         accum_container->SetSampleRate( source->GetMetaData()->GetSampleRate() );
@@ -103,7 +103,7 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
 
         virtual bool WorkPresent() override
         {
-            return ( this->fBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) != 0 );
+            return ( this->fSourceBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) != 0 );
         }
 
 
@@ -113,7 +113,7 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
                               double switching_frequency, 
                               double blanking_period,
                               HLinearBuffer< XBufferItemType >* source, 
-                              HDataAccumulationContainer* accum_container);
+                              HDataAccumulationContainer* accum_container)
         {
             if( source != nullptr )
             {
