@@ -1,8 +1,4 @@
 #include "HSpectrometerCUDA.hh"
-#include "HSpectrumObject.hh"
-
-#include <fstream>
-#include <pthread.h>
 
 namespace hose
 {
@@ -30,9 +26,6 @@ HSpectrometerCUDA::WorkPresent()
 void 
 HSpectrometerCUDA::ExecuteThreadTask()
 {
-    //have to assume that the data buffers are constructed with the correct sizes right now
-    //TODO: add a 'get allocator function to return an allocator for appropriately size spectrum_data objects'
-
     //initialize the thread workspace
     spectrometer_data* sdata = nullptr;
 
@@ -56,14 +49,6 @@ HSpectrometerCUDA::ExecuteThreadTask()
 
                 std::lock_guard<std::mutex> source_lock(source->fMutex);
                 
-                //calculate the noise rms (may eventually need to move this calculation to the GPU)
-                HPeriodicPowerCalculator< uint16_t > powerCalc;
-                powerCalc.SetSamplingFrequency(fSamplingFrequency);
-                powerCalc.SetSwitchingFrequency(fSwitchingFrequency);
-                powerCalc.SetBlankingPeriod(fBlankingPeriod);
-                powerCalc.SetBuffer(source);
-                powerCalc.Calculate();
-
                 //point the sdata to the buffer object (this is a horrible hack)
                 sdata = &( (sink->GetData())[0] ); //should have buffer size of 1
 

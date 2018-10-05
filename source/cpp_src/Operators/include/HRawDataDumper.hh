@@ -17,6 +17,8 @@ extern "C"
 #include "HBufferPool.hh"
 #include "HConsumer.hh"
 
+#include "HDirectoryWriter.hh"
+
 namespace hose
 {
 
@@ -30,18 +32,19 @@ namespace hose
 */
 
 template< typename XBufferItemType >
-class HRawDataDumper: public HConsumer< XBufferItemType, HConsumerBufferHandler_Immediate< XBufferItemType > >
+class HRawDataDumper: public HConsumer< XBufferItemType, HConsumerBufferHandler_Immediate< XBufferItemType > >, public HDirectoryWriter
 {
 
     public:
-        HRawDataDumper():fBufferDumpFrequency(2),fOutputDirectory("./"){}; 
+        HRawDataDumper():
+            HDirectoryWriter(),
+            fBufferDumpFrequency(2)
+        {}; 
+
         virtual ~HRawDataDumper(){};
 
         //frequency at which buffers are dumped to disk...1 is every buffer, 2 is every other, etc.
         void SetBufferDumpFrequency(unsigned int buff_freq){fBufferDumpFrequency = buff_freq;};
-
-        void SetOutputDirectory(std::string output_dir){fOutputDirectory = output_dir;}
-        std::string GetOutputDirectory() const {return fOutputDirectory;};
 
     private:
 
@@ -75,8 +78,9 @@ class HRawDataDumper: public HConsumer< XBufferItemType, HConsumerBufferHandler_
                             //if the buffer count has reached the appropriate height, trigger a data dump
                             if(fBufferCount >= fBufferDumpFrequency)
                             {
+                                //we rely on acquisitions start time, sample index, and sideband/pol flags to uniquely name/stamp a file
                                 std::stringstream ss;
-                                ss << fOutputDirectory;
+                                ss << fCurrentOutputDirectory;
                                 ss << "/";
                                 ss <<  tail->GetMetaData()->GetAcquisitionStartSecond();
                                 ss << "_";
@@ -114,9 +118,6 @@ class HRawDataDumper: public HConsumer< XBufferItemType, HConsumerBufferHandler_
         unsigned int fBufferDumpFrequency;
         unsigned int fBufferCount;
         uint64_t fMostRecentSampleIndex;
-
-        std::string fOutputDirectory;
-
 
 };
 

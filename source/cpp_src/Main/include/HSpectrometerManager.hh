@@ -37,20 +37,27 @@ extern "C"
     #define N_DIGITIZER_POOL_SIZE 32  
     #define N_SPECTROMETER_POOL_SIZE 16  
     #define N_SPECTROMETER_THREADS 3
+    #define N_NOISE_POWER_THREADS 1
 #else
     #define DIGITIZER_TYPE HPX14DigitizerSimulator
     #define N_DIGITIZER_THREADS 1
     #define N_DIGITIZER_POOL_SIZE 8
     #define N_SPECTROMETER_POOL_SIZE 4  
     #define N_SPECTROMETER_THREADS 1
+    #define N_NOISE_POWER_THREADS 1
 #endif
 
 #include "HBufferPool.hh"
+
 #include "HSpectrometerCUDA.hh"
 #include "HCudaHostBufferAllocator.hh"
 #include "HBufferAllocatorSpectrometerDataCUDA.hh"
+
+#include "HSwitchedPowerCalculator.hh"
+#include "HDataAccumulationWriter.hh"
 #include "HSimpleMultiThreadedSpectrumDataWriter.hh"
 #include "HRawDataDumper.hh"
+
 #include "HApplicationBackend.hh"
 #include "HServer.hh"
 
@@ -108,15 +115,20 @@ class HSpectrometerManager: public HApplicationBackend
             fSpectrometerPoolSize(N_SPECTROMETER_POOL_SIZE),
             fNDigitizerThreads(N_DIGITIZER_THREADS),
             fNSpectrometerThreads(N_SPECTROMETER_THREADS),
+            fNNoisePowerThreads(N_NOISE_POWER_THREADS),
             fServer(nullptr),
             fDigitizer(nullptr),
             fCUDABufferAllocator(nullptr),
             fSpectrometerBufferAllocator(nullptr),
+            fNoisePowerContainerBufferAllocator(nullptr),
             fSpectrometer(nullptr),
             fWriter(nullptr),
+            fNoisePowerCalculator(nullptr),
+            fDataAccumulationWriter(nullptr),
             fDumper(nullptr),
             fDigitizerSourcePool(nullptr),
-            fSpectrometerSinkPool(nullptr)
+            fSpectrometerSinkPool(nullptr),
+            fNoisePowerPool(nullptr)
             #ifdef HOSE_USE_SPDLOG
             ,fSink(nullptr),
             fStatusLogger(nullptr),
@@ -131,12 +143,16 @@ class HSpectrometerManager: public HApplicationBackend
             delete fServer;
             delete fDigitizer;
             delete fSpectrometer;
+            delete fNoisePowerCalculator;
             delete fWriter;
             delete fDumper;
+            delete fDataAccumulationWriter;
+            delete fNoisePowerPool;
             delete fDigitizerSourcePool;
             delete fSpectrometerSinkPool;
             delete fCUDABufferAllocator;
             delete fSpectrometerBufferAllocator;
+            delete fNoisePowerContainerBufferAllocator;
         }
 
         void SetServerIP(std::string ip){fIP = ip;};
@@ -157,11 +173,9 @@ class HSpectrometerManager: public HApplicationBackend
 
             if(!fInitialized)
             {
-
                 bool lock_success = GetLockByPID();
                 if(lock_success)
                 {
-
                     //create the loggers
                     #ifdef HOSE_USE_SPDLOG
                     try
@@ -184,17 +198,6 @@ class HSpectrometerManager: public HApplicationBackend
                         fConfigLogger->flush_on(spdlog::level::info); //make logger flush on every message
 
                         fStatusLogger->info("$$$ New session, manager log initialized. $$$");
-                        // spdlog::drop_all();
-                        // auto daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("logfile", 23, 59);
-                        // // create synchronous  loggers
-                        // auto net_logger = std::make_shared<spdlog::logger>("net", daily_sink);
-                        // auto hw_logger  = std::make_shared<spdlog::logger>("hw",  daily_sink);
-                        // auto db_logger  = std::make_shared<spdlog::logger>("db",  daily_sink);
-                        //
-                        // net_logger->set_level(spdlog::level::critical); // independent levels
-                        // hw_logger->set_level(spdlog::level::debug);
-                        //
-
                     }
                     catch (const spdlog::spdlog_ex& ex)
                     {
@@ -205,7 +208,6 @@ class HSpectrometerManager: public HApplicationBackend
                     #endif
 
                     std::cout<<"Initializing..."<<std::endl;
-
 
                     //create command server
                     fServer = new HServer(fIP, fPort);
@@ -236,6 +238,11 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrometerSinkPool = new HBufferPool< spectrometer_data >( fSpectrometerBufferAllocator );
                         fSpectrometerSinkPool->Allocate(fSpectrometerPoolSize, 1);
 
+                        //create a noise accumulation container data pool
+                        fNoisePowerContainerBufferAllocator = new HBufferAllocatorNew< HDataAccumulationContainer >();
+                        fNoisePowerPool = new HBufferPool< HDataAccumulationContainer >(fNoisePowerContainerBufferAllocator);
+                        fNoisePowerPool->Allocate(fNoisePowerPoolSize, 1);
+
                         //create spectrometer
                         fSpectrometer = new HSpectrometerCUDA(fFFTSize, fNSpectrumAverages);
                         fSpectrometer->SetNThreads(fNSpectrometerThreads);
@@ -243,24 +250,33 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrometer->SetSinkBufferPool(fSpectrometerSinkPool);
                         fSpectrometer->SetSamplingFrequency( fDigitizer->GetSamplingFrequency() );
 
-                        double noise_diode_switching_freq = 80.0;
-                        double noise_diode_blanking_period = 20.0*(1.0/fDigitizer->GetSamplingFrequency());
+                        //create the noise power calculator
+                        fNoisePowerCalculator = new HSwitchedPowerCalculator< typename XDigitizerType::sample_type >();
+                        fNoisePowerCalculator->SetSwitchingFrequency(80.0);
+                        fNoisePowerCalculator->SetSamplingFrequency( fDigitizer->GetSamplingFrequency() );
+                        fNoisePowerCalculator->SetBlankingPeriod(11e-3); //11ms (from original GPU spec)
+                        fNoisePowerCalculator->SetSourceBufferPool(fDigitizerSourcePool);
+                        fNoisePowerCalculator->SetSinkBufferPool(fNoisePowerPool);
 
-                        fSpectrometer->SetSwitchingFrequency( noise_diode_switching_freq );
-                        fSpectrometer->SetBlankingPeriod( noise_diode_blanking_period );
-
-                        //file writing consumer to drain the spectrum data buffers
-                        fWriter = new HSimpleMultiThreadedSpectrumDataWriter();
-                        fWriter->SetBufferPool(fSpectrometerSinkPool);
-                        fWriter->SetNThreads(1);
-
+                        //create an itermittent raw data dumper
                         fDumper = new HRawDataDumper< typename XDigitizerType::sample_type >();
                         fDumper->SetBufferPool(fDigitizerSourcePool);
                         fDumper->SetBufferDumpFrequency(1);
                         fDumper->SetNThreads(1);
 
+                        //spectrum file writing consumer to drain the spectrum data buffers
+                        fWriter = new HSimpleMultiThreadedSpectrumDataWriter();
+                        fWriter->SetBufferPool(fSpectrometerSinkPool);
+                        fWriter->SetNThreads(1);
+
+                        //noise power file writing consumer to drain the noise power calculator buffers
+                        fDataAccumulationWriter = new HDataAccumulationWriter();
+                        fDataAccumulationWriter->SetBufferPool(fNoisePowerPool);
+                        fDataAccumulationWriter->SetNThreads(1);
+
                         fDigitizerSourcePool->Initialize();
                         fSpectrometerSinkPool->Initialize();
+                        fNoisePowerPool->Initialize();
 
                         #ifdef HOSE_USE_SPDLOG
 
@@ -331,12 +347,15 @@ class HSpectrometerManager: public HApplicationBackend
                 std::thread server_thread( &HServer::Run, fServer );
                 fWriter->StartConsumption();
                 fDumper->StartConsumption();
+                fDataAccumulationWriter->StartConsumption();
 
                 fSpectrometer->StartConsumptionProduction();
                 for(size_t i=0; i<fNSpectrometerThreads; i++)
                 {
                     fSpectrometer->AssociateThreadWithSingleProcessor(i, i+1);
                 };
+
+                fNoisePowerCalculator->StartConsumptionProduction();
 
                 fDigitizer->StartProduction();
                 for(size_t i=0; i<fNDigitizerThreads; i++)
@@ -505,7 +524,7 @@ class HSpectrometerManager: public HApplicationBackend
                             fExperimentName = tokens[2];
                             fSourceName = tokens[3];
                             fScanName = tokens[4];
-                            ConfigureWriter();
+                            ConfigureWriters();
                             //start recording immediately
                             fDigitizer->Acquire();
                             fRecordingState = RECORDING_UNTIL_OFF;
@@ -548,7 +567,7 @@ class HSpectrometerManager: public HApplicationBackend
                             fExperimentName = tokens[2];
                             fSourceName = tokens[3];
                             fScanName = tokens[4];
-                            ConfigureWriter();
+                            ConfigureWriters();
                             bool success = ConvertStringToTime(tokens[5], fStartTime);
                             // std::cout<<"success flag = "<<success<<std::endl;
                             uint64_t duration = ConvertStringToDuration(tokens[6]);
@@ -679,7 +698,7 @@ class HSpectrometerManager: public HApplicationBackend
         }
 
 
-        void ConfigureWriter()
+        void ConfigureWriters()
         {
 
             if(fExperimentName.size() == 0)
@@ -702,7 +721,15 @@ class HSpectrometerManager: public HApplicationBackend
             fWriter->SetScanName(fScanName);
             fWriter->InitializeOutputDirectory();
 
-            fDumper->SetOutputDirectory( fWriter->GetCurrentOutputDirectory() );
+            fDataAccumulationWriter->SetExperimentName(fExperimentName);
+            fDataAccumulationWriter->SetSourceName(fSourceName);
+            fDataAccumulationWriter->SetScanName(fScanName);
+            fDataAccumulationWriter->InitializeOutputDirectory();
+
+            fDumper->SetExperimentName(fExperimentName);
+            fDumper->SetSourceName(fSourceName);
+            fDumper->SetScanName(fScanName);
+            fDumper->InitializeOutputDirectory();
         }
 
 
@@ -981,6 +1008,7 @@ class HSpectrometerManager: public HApplicationBackend
         size_t fSpectrometerPoolSize;
         size_t fNDigitizerThreads;
         size_t fNSpectrometerThreads;
+        size_t fNNoisePowerThreads;
 
         //state data
         int fRecordingState;
@@ -996,11 +1024,15 @@ class HSpectrometerManager: public HApplicationBackend
         XDigitizerType* fDigitizer;
         HCudaHostBufferAllocator< typename XDigitizerType::sample_type >* fCUDABufferAllocator;
         HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >* fSpectrometerBufferAllocator;
+        HBufferAllocatorNew< HDataAccumulationContainer > fNoisePowerContainerBufferAllocator;
         HSpectrometerCUDA* fSpectrometer;
         HSimpleMultiThreadedSpectrumDataWriter* fWriter;
+        HSwitchedPowerCalculator< typename XDigitizerType::sample_type >* fNoisePowerCalculator;
+        HDataAccumulationWriter* fDataAccumulationWriter;
         HRawDataDumper< typename XDigitizerType::sample_type >* fDumper;
         HBufferPool< typename XDigitizerType::sample_type >* fDigitizerSourcePool;
         HBufferPool< spectrometer_data >* fSpectrometerSinkPool;
+        HBufferPool< HDataAccumulationContainer >* fNoisePowerPool;
         std::string fCannedStopCommand;
 
         //logger
