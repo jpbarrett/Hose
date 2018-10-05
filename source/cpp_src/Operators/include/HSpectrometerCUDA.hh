@@ -44,7 +44,7 @@ class HSpectrometerCUDA: public HConsumerProducer< uint16_t, spectrometer_data, 
         void SetSwitchingFrequency(double switch_freq){fSwitchingFrequency = switch_freq;};
         void SetBlankingPeriod(double blank_period){fBlankingPeriod = blank_period;}
 
-    private:
+    protected:
 
         virtual void ExecuteThreadTask() override;
         virtual bool WorkPresent() override;

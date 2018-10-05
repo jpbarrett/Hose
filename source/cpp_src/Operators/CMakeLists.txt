@@ -4,14 +4,26 @@
 set (HOPERATORS_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSimpleMultiThreadedWriter.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HPeriodicPowerCalculator.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HRawDataDumper.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HSwitchedPowerCalculator.hh
+)
+
+set (HOPERATORS_SOURCEFILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HSwitchedPowerCalculator.cc
 )
 
 #declare header paths ##########################################################
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../c_src/Interface/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Array/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-#install the header only library ###############################################
-hose_install_headers (${HOPERATORS_HEADERFILES})
+
+#install the library ###############################################
+
+add_library (HOperators SHARED ${HOPERATORS_SOURCEFILES})
+target_link_libraries ( HOperators HInterface HCore )
+
+hose_install_headers( ${HOPERATORS_HEADERFILES} )
+hose_install_libraries( HOperators )
 
 #if cuda is enabled, compile and install the cuda files
 
@@ -30,7 +42,6 @@ if(HOSE_USE_CUDA)
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HCudaHostBufferAllocator.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HBufferAllocatorSpectrometerDataCUDA.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HSimpleMultiThreadedSpectrumDataWriter.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/HRawDataDumper.hh
     )
 
     set(CUDAOPERATOR_SOURCEFILES
