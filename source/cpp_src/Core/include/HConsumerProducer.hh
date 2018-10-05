@@ -22,11 +22,12 @@ namespace hose
 */
 
 template< typename XSourceBufferItemType, typename XSinkBufferItemType, typename XProducerSinkBufferHandlerPolicyType, typename XConsumerSourceBufferHandlerPolicyType> 
-class HConsumerProducer: public HThreadPool
+class HConsumerProducer: public HRegisteredConsumer, public HThreadPool
 {
     public:
 
         HConsumerProducer():
+            HRegisteredConsumer(),
             HThreadPool(),
             fStopConsumptionProduction(false),
             fManagementThread(),
@@ -36,10 +37,16 @@ class HConsumerProducer: public HThreadPool
 
         virtual ~HConsumerProducer(){};
 
-        void SetSourceBufferPool(HBufferPool<XSourceBufferItemType>* buffer_pool){fSourceBufferPool = buffer_pool;};
+        //source is where consumer grabs new data
+        void SetSourceBufferPool(HBufferPool<XSourceBufferItemType>* buffer_pool)
+        {
+            fSourceBufferPool = buffer_pool;
+            fSourceBufferPool->RegisterConsumer(this);
+        };
         HBufferPool<XSourceBufferItemType>* GetSourceBufferPool() {return fSourceBufferPool;};
         const HBufferPool<XSourceBufferItemType>* GetSourceBufferPool() const {return fSourceBufferPool;};
 
+        //sink is where the producer dumps results
         void SetSinkBufferPool(HBufferPool<XSinkBufferItemType>* buffer_pool){fSinkBufferPool = buffer_pool;};
         HBufferPool<XSinkBufferItemType>* GetSinkBufferPool() {return fSinkBufferPool;};
         const HBufferPool<XSinkBufferItemType>* GetSinkBufferPool() const {return fSinkBufferPool;};

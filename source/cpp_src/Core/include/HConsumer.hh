@@ -22,11 +22,12 @@ namespace hose
 */
 
 template< typename XBufferItemType, typename XConsumerBufferHandlerPolicyType > 
-class HConsumer: public HThreadPool
+class HConsumer: public HRegisteredConsumer, public HThreadPool
 {
     public:
 
         HConsumer():
+            HRegisteredConsumer(),
             HThreadPool(),
             fStopConsumption(false),
             fConsumptionManagementThread(),
@@ -35,7 +36,12 @@ class HConsumer: public HThreadPool
 
         virtual ~HConsumer(){};
 
-        void SetBufferPool(HBufferPool<XBufferItemType>* buffer_pool){fBufferPool = buffer_pool;};
+        void SetBufferPool(HBufferPool<XBufferItemType>* buffer_pool)
+        {
+            fBufferPool = buffer_pool;
+            fBufferPool->RegisterConsumer(this);
+        };
+
         HBufferPool<XBufferItemType>* GetBufferPool() {return fBufferPool;};
         const HBufferPool<XBufferItemType>* GetBufferPool() const {return fBufferPool;};
 

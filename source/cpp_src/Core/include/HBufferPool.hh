@@ -11,6 +11,8 @@
 
 #include "HLinearBuffer.hh"
 #include "HBufferAllocatorBase.hh"
+#include "HRegisteringBufferPool.hh"
+
 
 namespace hose {
 
@@ -20,15 +22,16 @@ namespace hose {
 *Author: J. Barrett
 *Email: barrettj@mit.edu
 *Date: Sat Feb 10 02:01:00 EST 2018
-*Description: ring of data buffers
+*Description: ring of data buffers to be shared between a single producer and multiple (sequential) consumers
 */
 
 template< typename XBufferItemType >
-class HBufferPool
+class HBufferPool: public HRegisteringBufferPool
 {
     public:
 
         HBufferPool(HBufferAllocatorBase< XBufferItemType >* allocator):
+            HRegisteringBufferPool(),
             fAllocator(allocator),
             fNChunks(0),
             fNItemsPerChunk(0),
@@ -37,6 +40,7 @@ class HBufferPool
         {};
 
         HBufferPool(HBufferAllocatorBase< XBufferItemType >* allocator, std::size_t n_chunks, std::size_t items_per_chunk):
+            HRegisteringBufferPool(),
             fAllocator(allocator),
             fNChunks(n_chunks),
             fNItemsPerChunk(items_per_chunk),
@@ -104,10 +108,19 @@ class HBufferPool
 
         bool IsAllocated() const { return fAllocated; }
 
-        size_t GetConsumerPoolSize() const
+        virtual void Initialize() override
+        {
+            //need to resize the consumer queue vector to match the number of registered consumers
+            if(fNRegisteredConsumers != 0)
+            {
+                fConsumerQueueVector.resize( fNRegisteredConsumers );
+            }
+        }
+
+        size_t GetConsumerPoolSize(unsigned int id = 0) const
         {
             std::lock_guard<std::mutex> lock(fMutex);
-            return fConsumerQueue.size();
+            return fConsumerQueueVector[id].size();
         }
 
         size_t GetProducerPoolSize() const 
@@ -133,38 +146,46 @@ class HBufferPool
         //return a buffer to the producer queue
         void PushProducerBuffer(HLinearBuffer< XBufferItemType >* buff)
         {
-            //for now, we do not check if the buff is an actual member of this pool
-            //TODO: determine if this check is needed
-
             //lock the buffer pool, so more than one thread modify the queue
             std::lock_guard<std::mutex> lock(fMutex);
-            fProducerQueue.push(buff);
+            if(buff != nullptr)
+            {
+                fProducerQueue.push(buff);
+            }
         }
 
-
-        //pop a buffer off of the consumer queue for use by a consumer
-        HLinearBuffer< XBufferItemType >* PopConsumerBuffer()
+        //pop a buffer off of the consumer queue for use by a registered consumer
+        //with the given id
+        HLinearBuffer< XBufferItemType >* PopConsumerBuffer(unsigned int id=0)
         {
             //lock the buffer pool, so more than one thread cannot grab the same buffer
             std::lock_guard<std::mutex> lock(fMutex);
             HLinearBuffer< XBufferItemType >* buff = nullptr;
-            if(fConsumerQueue.size() != 0 )
+            if(id < fNRegisteredConsumers)
             {
-                buff = fConsumerQueue.front();
-                fConsumerQueue.pop();
+                if(fConsumerQueueVector[id].size() != 0 )
+                {
+                    buff = fConsumerQueueVector[id].front();
+                    fConsumerQueueVector[id].pop();
+                }
             }
             return buff;
         }
 
-        //return a buffer to the consumer queue
-        void PushConsumerBuffer(HLinearBuffer< XBufferItemType >* buff)
+        //return a buffer to the (next available consumer w/ id) queue
+        //if there is no next consumer, then push to the producer
+        void PushConsumerBuffer(HLinearBuffer< XBufferItemType >* buff, unsigned int id=0)
         {
-            //for now, we do not check if the buff is an actual member of this pool
-            //TODO: determine if this check is needed
-
             //lock the buffer pool, so more than one thread can't modify the queue
             std::lock_guard<std::mutex> lock(fMutex);
-            fConsumerQueue.push(buff);
+            if(id < fNRegisteredConsumers)
+            {
+                fConsumerQueueVector[id].push(buff);
+            }
+            else
+            {
+                fProducerQueue.push(buff);
+            }
         }
 
     protected:
@@ -183,7 +204,7 @@ class HBufferPool
 
         //FIFO queue's of the buffers, for producer/consumer use
         std::queue< HLinearBuffer< XBufferItemType >* > fProducerQueue;
-        std::queue< HLinearBuffer< XBufferItemType >* > fConsumerQueue;
+        std::vector< std::queue< HLinearBuffer< XBufferItemType >* > > fConsumerQueueVector;
 
         //modification mutex
         mutable std::mutex fMutex;
