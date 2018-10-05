@@ -37,7 +37,10 @@ class HBufferPool: public HRegisteringBufferPool
             fNItemsPerChunk(0),
             fTotalItems(0),
             fAllocated(false)
-        {};
+        {
+            //make sure we have at least 1 consumer queue
+            fConsumerQueueVector.resize(1);
+        };
 
         HBufferPool(HBufferAllocatorBase< XBufferItemType >* allocator, std::size_t n_chunks, std::size_t items_per_chunk):
             HRegisteringBufferPool(),
@@ -111,8 +114,9 @@ class HBufferPool: public HRegisteringBufferPool
         virtual void Initialize() override
         {
             //need to resize the consumer queue vector to match the number of registered consumers
-            if(fNRegisteredConsumers != 0)
+            if(fNRegisteredConsumers >= 1)
             {
+                std::cout<<"resizing n reg consum = "<<fNRegisteredConsumers<<std::endl;
                 fConsumerQueueVector.resize( fNRegisteredConsumers );
             }
         }
@@ -120,6 +124,7 @@ class HBufferPool: public HRegisteringBufferPool
         size_t GetConsumerPoolSize(unsigned int id = 0) const
         {
             std::lock_guard<std::mutex> lock(fMutex);
+
             return fConsumerQueueVector[id].size();
         }
 

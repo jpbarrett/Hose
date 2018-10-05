@@ -11,7 +11,7 @@ HSpectrometerCUDA::HSpectrometerCUDA(size_t spectrum_length, size_t n_averages):
     fSpectrumLength(spectrum_length),
     fNAverages(n_averages)
     {
-
+        std::cout<<"spectro = "<<this<<std::endl;
     };
 
 
@@ -21,7 +21,7 @@ HSpectrometerCUDA::~HSpectrometerCUDA(){};
 bool 
 HSpectrometerCUDA::WorkPresent()
 {
-    if( fSourceBufferPool->GetConsumerPoolSize() == 0)
+    if( fSourceBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) == 0)
     {
         return false;
     }
@@ -42,7 +42,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
     HLinearBuffer< spectrometer_data >* sink = nullptr;
     HLinearBuffer< uint16_t>* source = nullptr;
 
-    if( fSourceBufferPool->GetConsumerPoolSize() != 0 ) //only do work if there is stuff to process
+    if( fSourceBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) != 0 ) //only do work if there is stuff to process
     {
         //first get a sink buffer from the buffer handler
         HProducerBufferPolicyCode sink_code = this->fSinkBufferHandler.ReserveBuffer(this->fSinkBufferPool, sink);
@@ -51,7 +51,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
         {
             std::lock_guard<std::mutex> sink_lock(sink->fMutex);
 
-            HConsumerBufferPolicyCode source_code = this->fSourceBufferHandler.ReserveBuffer(this->fSourceBufferPool, source);
+            HConsumerBufferPolicyCode source_code = this->fSourceBufferHandler.ReserveBuffer(this->fSourceBufferPool, source, this->GetConsumerID());
 
             if( (source_code & HConsumerBufferPolicyCode::success) && source !=nullptr)
             {
@@ -82,7 +82,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 process_vector_no_output(source->GetData(), sdata);
 
                 //release the buffers
-                this->fSourceBufferHandler.ReleaseBufferToProducer(this->fSourceBufferPool, source);
+                this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID());
                 this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
             }
             else

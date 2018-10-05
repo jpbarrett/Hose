@@ -40,6 +40,7 @@ class HConsumer: public HRegisteredConsumer, public HThreadPool
         {
             fBufferPool = buffer_pool;
             fBufferPool->RegisterConsumer(this);
+            std::cout<<"I am: "<<this<<" my consumer id = "<<this->GetConsumerID()<<std::endl;
         };
 
         HBufferPool<XBufferItemType>* GetBufferPool() {return fBufferPool;};

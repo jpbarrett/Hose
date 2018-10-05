@@ -40,8 +40,8 @@ extern "C"
 #else
     #define DIGITIZER_TYPE HPX14DigitizerSimulator
     #define N_DIGITIZER_THREADS 1
-    #define N_DIGITIZER_POOL_SIZE 2
-    #define N_SPECTROMETER_POOL_SIZE 2  
+    #define N_DIGITIZER_POOL_SIZE 8
+    #define N_SPECTROMETER_POOL_SIZE 4  
     #define N_SPECTROMETER_THREADS 1
 #endif
 
@@ -256,8 +256,11 @@ class HSpectrometerManager: public HApplicationBackend
 
                         fDumper = new HRawDataDumper< typename XDigitizerType::sample_type >();
                         fDumper->SetBufferPool(fDigitizerSourcePool);
-                        fDumper->SetBufferDumpFrequency(2);
+                        fDumper->SetBufferDumpFrequency(1);
                         fDumper->SetNThreads(1);
+
+                        fDigitizerSourcePool->Initialize();
+                        fSpectrometerSinkPool->Initialize();
 
                         #ifdef HOSE_USE_SPDLOG
 

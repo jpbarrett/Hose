@@ -60,6 +60,7 @@ HPX14DigitizerSimulator::InitializeImpl()
         //now we allocate the internal buffer pool (we use 32 X 2 MB buffers)
         fInternalBufferPool = new HBufferPool< uint16_t >( this->GetAllocator() );
         fInternalBufferPool->Allocate(fNInternalBuffers, fInternalBufferSize); //size and number not currently configurable]
+        fInternalBufferPool->Initialize();
 
         //generate gaussian white noise
         fPower1 = new HGaussianWhiteNoiseSignal();

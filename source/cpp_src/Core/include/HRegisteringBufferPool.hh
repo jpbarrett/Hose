@@ -24,6 +24,8 @@ class HRegisteredConsumer
         virtual ~HRegisteredConsumer(){};
 
         unsigned int GetConsumerID() const {return fID;};
+        
+        unsigned int GetNextConsumerID() const {return fID+1;};
 
     private:
         friend class HRegisteringBufferPool;

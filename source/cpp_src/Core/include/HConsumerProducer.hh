@@ -43,6 +43,7 @@ class HConsumerProducer: public HRegisteredConsumer, public HThreadPool
             fSourceBufferPool = buffer_pool;
             fSourceBufferPool->RegisterConsumer(this);
         };
+
         HBufferPool<XSourceBufferItemType>* GetSourceBufferPool() {return fSourceBufferPool;};
         const HBufferPool<XSourceBufferItemType>* GetSourceBufferPool() const {return fSourceBufferPool;};
 

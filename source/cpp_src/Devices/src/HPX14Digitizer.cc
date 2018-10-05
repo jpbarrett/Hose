@@ -149,6 +149,7 @@ HPX14Digitizer::InitializeImpl()
 
             fInternalBufferPool = new HBufferPool< px14_sample_t >( this->GetAllocator() );
             fInternalBufferPool->Allocate(fNInternalBuffers, fInternalBufferSize); //size and number not currently configurable
+            fInternalBufferPool->Initialize();
 
             fErrorCode = 0;
             fInitialized = true;

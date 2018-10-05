@@ -34,7 +34,7 @@ class HRawDataDumper: public HConsumer< XBufferItemType, HConsumerBufferHandler_
 {
 
     public:
-        HRawDataDumper():fBufferDumpFrequency(2),fOutputDirectory("./"){};  //spec size and averages are fixed at constuction time
+        HRawDataDumper():fBufferDumpFrequency(2),fOutputDirectory("./"){std::cout<<"dumper = "<<this<<std::endl;};  //spec size and averages are fixed at constuction time
         virtual ~HRawDataDumper(){};
 
         //frequency at which buffers are dumped to disk...1 is every buffer, 2 is every other, etc.
@@ -51,38 +51,40 @@ class HRawDataDumper: public HConsumer< XBufferItemType, HConsumerBufferHandler_
             //if so, then write buffer to raw output file in data directory
             //get a buffer from the buffer handler
             HLinearBuffer< XBufferItemType >* tail = nullptr;
-            if( this->fBufferPool->GetConsumerPoolSize() != 0 )
+            if( this->fBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) != 0 )
             {
                 //grab a buffer to process
-                HConsumerBufferPolicyCode buffer_code = this->fBufferHandler.ReserveBuffer(this->fBufferPool, tail);
+                HConsumerBufferPolicyCode buffer_code = this->fBufferHandler.ReserveBuffer(this->fBufferPool, tail, this->GetConsumerID() );
 
                 if(buffer_code == HConsumerBufferPolicyCode::success && tail != nullptr)
                 {
                     std::lock_guard<std::mutex> lock( tail->fMutex );
         
-                    uint64_t leading_sample_index = tail->GetMetaData()->GetLeadingSampleIndex();
+                    uint64_t most_recent_sample_index = tail->GetMetaData()->GetLeadingSampleIndex() + tail->GetArraySize();
 
-                    if(leading_sample_index > fMostRecentSampleIndex)
+                    if(most_recent_sample_index > fMostRecentSampleIndex)
                     {
                         //try to grab mutex
                         std::lock_guard<std::mutex> lock2(fMutex);
-                        if(leading_sample_index > fMostRecentSampleIndex) //double check to make sure the data didn't change on us
+                        if(most_recent_sample_index > fMostRecentSampleIndex) //double check to make sure the data didn't change on us
                         {
                             //update most recent sample index and the buffer count
-                            fMostRecentSampleIndex = leading_sample_index;
+                            fMostRecentSampleIndex = most_recent_sample_index;
                             fBufferCount += 1;
 
-                            std::cout<<"fBufferCount = "<<fBufferCount<<std::endl;
                             //if the buffer count has reached the appropriate height, trigger a data dump
                             if(fBufferCount >= fBufferDumpFrequency)
                             {
                                 std::stringstream ss;
                                 ss << fOutputDirectory;
                                 ss << "/";
-                                ss << leading_sample_index;
+                                ss <<  tail->GetMetaData()->GetAcquisitionStartSecond();
+                                ss << "_";
+                                ss <<  tail->GetMetaData()->GetLeadingSampleIndex();
+                                ss << "_";
+                                ss <<  tail->GetMetaData()->GetSidebandFlag();
+                                ss <<  tail->GetMetaData()->GetPolarizationFlag();
                                 ss << ".bin";
-
-                                std::cout<<"dumping data to = "<<ss.str()<<std::endl;
 
                                 std::ofstream out_file;
                                 out_file.open (ss.str().c_str(),  std::ios::out | std::ios::binary);
@@ -95,14 +97,14 @@ class HRawDataDumper: public HConsumer< XBufferItemType, HConsumerBufferHandler_
                         }
                     }
                     //free the tail for use by other consumer
-                    this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, tail);
+                    this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, tail, this->GetNextConsumerID() );
                 }
             }
         }
 
         virtual bool WorkPresent() override
         {
-            return ( this->fBufferPool->GetConsumerPoolSize() != 0 );
+            return ( this->fBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) != 0 );
         }
 
     private:
