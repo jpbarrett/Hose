@@ -20,8 +20,8 @@ class HRegisteringBufferPool;
 class HRegisteredConsumer
 {
     public:
-        HRegisteredConsumer():fConsumerID(0){};
-        virtual ~HRegisteredConsumer();
+        HRegisteredConsumer():fID(0){};
+        virtual ~HRegisteredConsumer(){};
 
         unsigned int GetConsumerID() const {return fID;};
 
@@ -29,7 +29,7 @@ class HRegisteredConsumer
         friend class HRegisteringBufferPool;
 
     protected:
-        unsigned int fConsumerID;
+        unsigned int fID;
 };
 
 
@@ -56,7 +56,7 @@ class HRegisteringBufferPool
             bool is_present = IsRegistered(consumer);
             if(!is_present)
             {
-                consumer->fConsumerID = fConsumerList.size();
+                consumer->fID = fConsumerList.size();
                 fConsumerList.push_back(consumer);
             }
             fNRegisteredConsumers = fConsumerList.size();
