@@ -256,7 +256,7 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrometer->SetSinkBufferPool(fSpectrometerSinkPool);
 
                         //create the noise power calculator
-                        double noise_diode_switching_freq = 80.0;
+                        double noise_diode_switching_freq = 1.0;
                         double noise_diode_blanking_period = 0.0;//11e-3;
                         fNoisePowerCalculator = new HSwitchedPowerCalculator< typename XDigitizerType::sample_type >();
                         fNoisePowerCalculator->SetSwitchingFrequency(noise_diode_switching_freq);
