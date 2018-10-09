@@ -51,6 +51,7 @@ class HBufferPool: public HRegisteringBufferPool
             fAllocated(false)
         {
             Allocate(fNChunks, fNItemsPerChunk);
+            fConsumerQueueVector.resize(1);
         };
 
         virtual ~HBufferPool()
@@ -116,7 +117,6 @@ class HBufferPool: public HRegisteringBufferPool
             //need to resize the consumer queue vector to match the number of registered consumers
             if(fNRegisteredConsumers >= 1)
             {
-                std::cout<<"resizing n reg consum = "<<fNRegisteredConsumers<<std::endl;
                 fConsumerQueueVector.resize( fNRegisteredConsumers );
             }
         }
@@ -124,7 +124,6 @@ class HBufferPool: public HRegisteringBufferPool
         size_t GetConsumerPoolSize(unsigned int id = 0) const
         {
             std::lock_guard<std::mutex> lock(fMutex);
-
             return fConsumerQueueVector[id].size();
         }
 
@@ -166,13 +165,10 @@ class HBufferPool: public HRegisteringBufferPool
             //lock the buffer pool, so more than one thread cannot grab the same buffer
             std::lock_guard<std::mutex> lock(fMutex);
             HLinearBuffer< XBufferItemType >* buff = nullptr;
-            if(id < fNRegisteredConsumers)
+            if(id < fConsumerQueueVector[id].size() )
             {
-                if(fConsumerQueueVector[id].size() != 0 )
-                {
-                    buff = fConsumerQueueVector[id].front();
-                    fConsumerQueueVector[id].pop();
-                }
+                buff = fConsumerQueueVector[id].front();
+                fConsumerQueueVector[id].pop();
             }
             return buff;
         }
@@ -183,7 +179,7 @@ class HBufferPool: public HRegisteringBufferPool
         {
             //lock the buffer pool, so more than one thread can't modify the queue
             std::lock_guard<std::mutex> lock(fMutex);
-            if(id < fNRegisteredConsumers)
+            if(id < fConsumerQueueVector.size())
             {
                 fConsumerQueueVector[id].push(buff);
             }

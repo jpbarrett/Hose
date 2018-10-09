@@ -53,9 +53,9 @@ class HProducerBufferReleaser
             return HProducerBufferPolicyCode::success;
         }
 
-        HProducerBufferPolicyCode ReleaseBufferToConsumer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>*& buffer)
+        HProducerBufferPolicyCode ReleaseBufferToConsumer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>*& buffer, unsigned int id=0)
         {
-            pool->PushConsumerBuffer(buffer);
+            pool->PushConsumerBuffer(buffer,id);
             return HProducerBufferPolicyCode::success;
         }
 };

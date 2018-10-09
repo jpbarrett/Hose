@@ -463,7 +463,7 @@ HPX14Digitizer::ExecuteThreadTask()
                 if( dest != nullptr &&  src != nullptr && sz != 0)
                 {
                     //do the memcpy
-                    memcpy(dest, src, sz);
+                    memcpy(dest, src, sz*sizeof(uint16_t));
                 }
                 fInternalConsumerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);
                 internal_buff = nullptr;

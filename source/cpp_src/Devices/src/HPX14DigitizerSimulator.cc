@@ -135,9 +135,6 @@ HPX14DigitizerSimulator::TransferImpl()
             {
 
                 SimulateDataTransfer(count, samples_in_buffer, internal_buff->GetData());
-                // int code = GetPciAcquisitionDataFastPX14(fBoard, samples_in_buffer, internal_buff->GetData(), PX14_TRUE);
-                // //wait for xfer to complete
-                // int code = WaitForTransferCompletePX14(fBoard);
 
                 internal_buff->GetMetaData()->SetValidLength(samples_in_buffer);
                 internal_buff->GetMetaData()->SetLeadingSampleIndex(n_samples_collect-samples_to_collect);
@@ -147,7 +144,6 @@ HPX14DigitizerSimulator::TransferImpl()
 
                 //update samples to collect
                 samples_to_collect -= samples_in_buffer;
-                if(internal_buff != nullptr){fInternalProducerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);};
             }
         }
     }
@@ -290,7 +286,7 @@ HPX14DigitizerSimulator::ExecuteThreadTask()
                 if( dest != nullptr &&  src != nullptr && sz != 0)
                 {
                     //do the memcpy
-                    memcpy(dest, src, sz);
+                    memcpy(dest, src, sz*sizeof(uint16_t));
                 }
                 fInternalConsumerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);
                 internal_buff = nullptr;
@@ -325,7 +321,6 @@ HPX14DigitizerSimulator::SimulateDataTransfer(uint64_t global_count, size_t n_sa
         retval = fSummedSignalGenerator->GetSample(time, sample); (void) retval;
         buffer[i] = fSimpleADC->Convert(sample);
     }
-
 }
 
 
