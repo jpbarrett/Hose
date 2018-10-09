@@ -48,7 +48,7 @@ if (HOSE_USE_ROOT)
     find_package(ROOT REQUIRED)
     include_directories(${ROOT_INCLUDE_DIRS})
     list(APPEND HOSE_MAIN_LIBS ${ROOT_LIBRARIES})
-    list(APPEND SOURCE_BASENAMES SpectrumPlot)
+    list(APPEND SOURCE_BASENAMES SpectrumPlot RawPlot)
 endif()
 
 foreach( BASENAME ${SOURCE_BASENAMES} )
