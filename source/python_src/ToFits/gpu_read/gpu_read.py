@@ -27,7 +27,7 @@ used for later conversion into SDFITS format files.
 """
 
 __author__="S. Levine"
-__date__="2018 Sep 23"
+__date__="2018 Oct 08"
 
 #------------------------------------------------------------------------
 # Imports
@@ -128,6 +128,16 @@ class GPUBase():
         return self.hdr.scan_name
 
     # -- Derived header values
+
+    def scan_number(self):
+        """ScanNumber (int ), derived from
+        ScanName (char *, 256) - Scan name.
+        If conversion of scan name to int fails, return 1"""
+        try:
+            sc_num = int(self.hdr.scan_name)
+        except:
+            sc_num = 1
+        return sc_num
 
     def obstime (self):
         """
