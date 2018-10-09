@@ -125,6 +125,23 @@ HPX14Digitizer::InitializeImpl()
             //TODO BREAK
         }
 
+        //enable the digitial I/O pin
+        code = SetDigitalIoEnablePX14(fBoard, 1)
+        if(code != SIG_SUCCESS)
+        {
+            DumpLibErrorPX14(code, "Failed to enable DIO pin: ", fBoard);
+            //TODO BREAK
+        }
+
+        //set mode to send a sync signal for the noise diode
+        code = SetDigitalIoModePX14(fBoard, PX14DIGIO_OUT_SYNC_TRIG)
+        if(code != SIG_SUCCESS)
+        {
+            DumpLibErrorPX14(code, "Failed to set DIO pin mode to PX14DIGIO_OUT_SYNC_TRIG: ", fBoard);
+            //TODO BREAK
+        }
+
+
         fCounter = 0;
 
         //build our allocator
