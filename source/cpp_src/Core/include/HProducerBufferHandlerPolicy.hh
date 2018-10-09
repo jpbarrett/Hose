@@ -124,19 +124,22 @@ class HProducerBufferHandler_Steal: public HProducerBufferReleaser< XBufferItemT
             }
             else
             {   
-                if(pool->GetConsumerPoolSize() != 0)
+                size_t consumer_pools = pool->GetNumberOfConsumerPools();
+                for(size_t n=0; n<consumer_pools; n++)
                 {
-                    buffer = pool->PopConsumerBuffer();
-                    std::cout<<"STOLEN "<<std::endl;
-                    return HProducerBufferPolicyCode::stolen;
+                    //steal a buffer from the first non-empty consumer pool
+                    if(pool->GetConsumerPoolSize(n) != 0)
+                    {
+                        buffer = pool->PopConsumerBuffer(n);
+                        std::cout<<"STOLEN "<<std::endl;
+                        return HProducerBufferPolicyCode::stolen;
 
-                }
-                else
-                {
-                    buffer = nullptr;
-                    return HProducerBufferPolicyCode::fail;
+                    }
                 }
             }
+            //FAILED TO GET A BUFFER
+            buffer = nullptr;
+            return HProducerBufferPolicyCode::fail;
         }
 
 };
@@ -162,14 +165,26 @@ class HProducerBufferHandler_Flush: public HProducerBufferReleaser< XBufferItemT
             else
             {   
                 //wait for the consumer buffer pool to become empty
-                while( pool->GetConsumerPoolSize() != 0 )
+                bool is_empty = false;
+                do
                 {
+                    size_t consumer_pools = pool->GetNumberOfConsumerPools();
+                    is_empty = true;
+                    for(size_t n=0; n<consumer_pools; n++)
+                    {
+                        if(pool->GetConsumerPoolSize(n) != 0)
+                        {
+                            is_empty = false;
+                        }
+                    }
                     //sleep for the specified duration if it is non-zero
                     if(fSleepDurationNanoSeconds != 0)
                     {
                         std::this_thread::sleep_for(std::chrono::nanoseconds(fSleepDurationNanoSeconds));
                     }
-                };
+                }
+                while(!is_empty );
+            
 
                 //producer pool should be full now, so grab buffer
                 if(pool->GetProducerPoolSize() != 0)
@@ -210,12 +225,16 @@ class HProducerBufferHandler_ForceFlush: public HProducerBufferReleaser< XBuffer
             {
                 //flush out all of the consumer buffers back into the producer pool w/o consuming them
                 int count = 0;
-                while( pool->GetConsumerPoolSize() != 0 )
+                size_t consumer_pools = pool->GetNumberOfConsumerPools();
+                for(size_t n=0; n<consumer_pools; n++)
                 {
-                    HLinearBuffer< XBufferItemType >* temp_buffer = pool->PopConsumerBuffer();
-                    pool->PushProducerBuffer(temp_buffer);
-                    count++;
-                };
+                    while( pool->GetConsumerPoolSize(n) != 0 )
+                    {
+                        HLinearBuffer< XBufferItemType >* temp_buffer = pool->PopConsumerBuffer(n);
+                        pool->PushProducerBuffer(temp_buffer);
+                        count++;
+                    };
+                }
 
                 std::cout<<"FLUSHED "<<count<<" buffers!!!!!!!!"<<std::endl;
 

@@ -121,6 +121,11 @@ class HBufferPool: public HRegisteringBufferPool
             }
         }
 
+        size_t GetNumberOfConsumerPools() const
+        {
+            return fConsumerQueueVector.size();
+        }
+
         size_t GetConsumerPoolSize(unsigned int id = 0) const
         {
             std::lock_guard<std::mutex> lock(fMutex);
