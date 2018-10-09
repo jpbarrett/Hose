@@ -82,7 +82,7 @@ __usage__="""\
  the FITS file name based on the basename returned.
 """
 __author__="S. Levine"
-__date__="2018 Oct 02"
+__date__="2018 Oct 08"
 
 #------------------------------------------------------------------------
 # import the FITS io routines for the I/O
@@ -175,7 +175,8 @@ def sdf_getobs_spec (spec_record, meta_info):
     obs_spec['object'].append(spec_record.source_name())
     obs_spec['obstime'].append(spec_record.obstime())
     obs_spec['experiment'].append(spec_record.experiment_name())
-    obs_spec['scan'].append(spec_record.scan_name())
+    # obs_spec['scan'].append(spec_record.scan_name())
+    obs_spec['scan'].append(spec_record.scan_number())
     obs_spec['navg'].append(spec_record.n_averages())
     obs_spec['spec_len'].append(spec_record.spectrum_length())
     obs_spec['spec_data_type'].append(spec_record.spectrum_data_type_size())
@@ -210,7 +211,8 @@ def sdf_getobs_nois (nois_record, meta_info):
     obs_nois['object'].append(nois_record.source_name())
     obs_nois['obstime'].append(nois_record.obstime())
     obs_nois['experiment'].append(nois_record.experiment_name())
-    obs_nois['scan'].append(nois_record.scan_name())
+    # obs_nois['scan'].append(nois_record.scan_name())
+    obs_nois['scan'].append(nois_record.scan_number())
 
     obs_nois['accum_len'].append(nois_record.accumulation_length())
     obs_nois['switch_freq'].append(nois_record.switching_frequency())
@@ -484,7 +486,8 @@ def sdf_bintab_hdr (obsrec, extname='MATRIX', obsmode=None):
     # freq & velocity default info
     hdr['FOFFSET']  = 0.0  # class hdr
     hdr['RESTFREQ'] = 1.0  # class hdr
-    hdr['VELO-LSR'] = 0.0  # class hdr
+    # hdr['VELO-LSR'] = 0.0  # class hdr
+    # hdr['VLSR']     = 0.0  # sdfits example hdr
     hdr['VELDEF']   = 'RADI-LSR'  # class hdr
     hdr['DELTAV']   = 0.0  # class hdr
 
@@ -527,9 +530,13 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     # set up null dictionary for local arrays
     a = {}
 
-    a, hdr = sdf_bintab_hdr (obs_spec, extname='MATRIX', obsmode=obsmode)
+    # a, hdr = sdf_bintab_hdr (obs_spec, extname='MATRIX', obsmode=obsmode)
+    a, hdr = sdf_bintab_hdr (obs_spec, extname='SINGLE DISH', obsmode=obsmode)
     
-    c['scan']     = fits.Column(name='SCAN',     format='256A',
+    #c['scan']     = fits.Column(name='SCAN',     format='256A',
+    #                            array=obs_spec['scan'])
+    
+    c['scan']     = fits.Column(name='SCAN',     format='1J',
                                 array=obs_spec['scan'])
 
     c['object']   = fits.Column(name='OBJECT',   format='12A', 
