@@ -224,6 +224,7 @@ HPX14DigitizerSimulator::ExecutePreWorkTasks()
         //     }
         //     std::cout<<"producer (for digi) pool size = "<<fBufferPool->GetProducerPoolSize()<<std::endl;
         // }
+
         //set the digitizer buffer if succesful
         if( buffer != nullptr && (fBufferCode & HProducerBufferPolicyCode::success))
         {
