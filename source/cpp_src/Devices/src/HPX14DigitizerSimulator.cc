@@ -212,6 +212,18 @@ HPX14DigitizerSimulator::ExecutePreWorkTasks()
         //get a buffer from the buffer handler
         HLinearBuffer< uint16_t >* buffer = nullptr;
         fBufferCode = this->fBufferHandler.ReserveBuffer(this->fBufferPool, buffer);
+
+        // if(fBufferCode == HProducerBufferPolicyCode::stolen)
+        // {
+        //     std::cout<<"sink code = "<<(unsigned int)fBufferCode<<std::endl;
+        //     std::cout<<"digitizer stealing buffer"<<std::endl;
+        //     size_t n_conpools = fBufferPool->GetNumberOfConsumerPools();
+        //     for(size_t n=0; n<n_conpools; n++)
+        //     {
+        //         std::cout<<"consumer: "<<n<<" (to spec) pool size = "<<fBufferPool->GetConsumerPoolSize(n)<<std::endl;
+        //     }
+        //     std::cout<<"producer (for digi) pool size = "<<fBufferPool->GetProducerPoolSize()<<std::endl;
+        // }
         //set the digitizer buffer if succesful
         if( buffer != nullptr && (fBufferCode & HProducerBufferPolicyCode::success))
         {
