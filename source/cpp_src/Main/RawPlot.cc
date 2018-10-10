@@ -293,24 +293,17 @@ int main(int argc, char** argv)
     //Draw the real part of the output
     c->cd(2);
     TH1 *hr = 0;
-    hr = TH1::TransformHisto(fft_own, hr, "RE");
-    hr->SetTitle("Real part of the 3rd (array) transform");
+    hr = TH1::TransformHisto(fft_own, hr, "MAG");
+    hr->SetTitle("Raw Spectrum");
     hr->Draw();
     hr->SetStats(kFALSE);
     hr->GetXaxis()->SetLabelSize(0.05);
     hr->GetYaxis()->SetLabelSize(0.05);
-    c->cd(3);
-    TH1 *him = 0;
-    him = TH1::TransformHisto(fft_own, him, "IM");
-    him->SetTitle("Im. part of the 3rd (array) transform");
-    him->Draw();
-    him->SetStats(kFALSE);
-    him->GetXaxis()->SetLabelSize(0.05);
-    him->GetYaxis()->SetLabelSize(0.05);
+    gPad->SetLogy();
 
     // //histogram the values of the on/off noise variance
     c->cd(3);
-    TH1D* histo = new TH1D("sample histogram", "sample histogram", 5000, data_min, data_max);
+    TH1D* histo = new TH1D("sample histogram", "sample histogram", 256, data_min, data_max);
     for(size_t i=0; i<raw_data.size(); i++)
     {
         histo->Fill(raw_data[i]);
