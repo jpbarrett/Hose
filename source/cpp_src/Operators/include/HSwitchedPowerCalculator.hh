@@ -39,7 +39,10 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
 {
     public:
 
-        HSwitchedPowerCalculator(){};
+        HSwitchedPowerCalculator()
+        {
+            std::cout<<"switched power calc = "<<this<<std::endl;
+        };
         virtual ~HSwitchedPowerCalculator(){};
 
         void SetSamplingFrequency(double samp_freq){fSamplingFrequency = samp_freq;};
