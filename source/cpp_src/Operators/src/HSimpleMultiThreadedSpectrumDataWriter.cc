@@ -6,7 +6,9 @@ namespace hose
 
 HSimpleMultiThreadedSpectrumDataWriter::HSimpleMultiThreadedSpectrumDataWriter():
     HDirectoryWriter()
-    {};
+    {
+            std::cout<<"simple spec writer = "<<this<<std::endl;
+    };
 
 HSimpleMultiThreadedSpectrumDataWriter::~HSimpleMultiThreadedSpectrumDataWriter(){};
 
@@ -17,10 +19,10 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
     //get a buffer from the buffer handler
     HLinearBuffer< spectrometer_data >* tail = nullptr;
     
-    if( this->fBufferPool->GetConsumerPoolSize() != 0 )
+    if( this->fBufferPool->GetConsumerPoolSize(this->GetConsumerID()) != 0 )
     {
         //grab a buffer to process
-        HConsumerBufferPolicyCode buffer_code = this->fBufferHandler.ReserveBuffer(this->fBufferPool, tail);
+        HConsumerBufferPolicyCode buffer_code = this->fBufferHandler.ReserveBuffer(this->fBufferPool, tail, this->GetConsumerID());
 
         if(buffer_code & HConsumerBufferPolicyCode::success && tail != nullptr)
         {
@@ -89,7 +91,8 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
         
         if(tail != nullptr)
         {
-            this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
+            std::cout<<"spec writer releasing buffer, consumer id = "<<this->GetConsumerID()<<std::endl;
+            this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, tail, this->GetNextConsumerID() );
         }
     }
 }

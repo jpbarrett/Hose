@@ -6,7 +6,9 @@ namespace hose
 HSpectrometerCUDA::HSpectrometerCUDA(size_t spectrum_length, size_t n_averages):
     fSpectrumLength(spectrum_length),
     fNAverages(n_averages)
-    {};
+    {
+        std::cout<<"spec = "<<this<<std::endl;
+    };
 
 
 HSpectrometerCUDA::~HSpectrometerCUDA(){};
@@ -64,6 +66,9 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 //call Juha's process_vector routine
                 process_vector_no_output(source->GetData(), sdata);
 
+                std::cout<<"spec finished a buffer"<<std::endl;
+                std::cout<<"muh consumer id = "<<this->GetConsumerID()<<std::endl;
+
                 //release the buffers
                 this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID());
                 this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
@@ -72,7 +77,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
             {
                 if(sink !=nullptr)
                 {
-                   this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
+                   this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
                 }
             }
         }

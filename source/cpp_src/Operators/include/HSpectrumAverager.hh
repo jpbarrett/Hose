@@ -16,7 +16,7 @@ namespace hose
 *Description: This operator must be single threaded!!!
 */
 
-class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HConsumerBufferHandler_WaitWithTimeout< spectrometer_data >, HProducerBufferHandler_Steal< float > >
+class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HConsumerBufferHandler_WaitWithTimeout< spectrometer_data >, HProducerBufferHandler_Immediate< float > >
 {
 
     public:

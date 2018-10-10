@@ -48,7 +48,10 @@ class HConsumerProducer: public HRegisteredConsumer, public HThreadPool
         const HBufferPool<XSourceBufferItemType>* GetSourceBufferPool() const {return fSourceBufferPool;};
 
         //sink is where the producer dumps results
-        void SetSinkBufferPool(HBufferPool<XSinkBufferItemType>* buffer_pool){fSinkBufferPool = buffer_pool;};
+        void SetSinkBufferPool(HBufferPool<XSinkBufferItemType>* buffer_pool)
+        {
+            fSinkBufferPool = buffer_pool;
+        };
         HBufferPool<XSinkBufferItemType>* GetSinkBufferPool() {return fSinkBufferPool;};
         const HBufferPool<XSinkBufferItemType>* GetSinkBufferPool() const {return fSinkBufferPool;};
 

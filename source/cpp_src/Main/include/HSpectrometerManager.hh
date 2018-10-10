@@ -61,7 +61,11 @@ extern "C"
 #include "HSwitchedPowerCalculator.hh"
 #include "HDataAccumulationWriter.hh"
 #include "HSimpleMultiThreadedSpectrumDataWriter.hh"
+#include "HAveragedMultiThreadedSpectrumDataWriter.hh"
 #include "HRawDataDumper.hh"
+
+#include "HSpectrumAverager.hh"
+#include "HAveragedMultiThreadedSpectrumDataWriter.hh"
 
 #include "HApplicationBackend.hh"
 #include "HServer.hh"
@@ -134,7 +138,11 @@ class HSpectrometerManager: public HApplicationBackend
             fDumper(nullptr),
             fDigitizerSourcePool(nullptr),
             fSpectrometerSinkPool(nullptr),
-            fNoisePowerPool(nullptr)
+            fNoisePowerPool(nullptr),
+            fSpectrumAveragingBufferAllocator(nullptr),
+            fSpectrumAveragingBufferPool(nullptr),
+            fSpectrumAverager(nullptr),
+            fAveragedSpectrumWriter(nullptr)
             #ifdef HOSE_USE_SPDLOG
             ,fSink(nullptr),
             fStatusLogger(nullptr),
@@ -159,6 +167,10 @@ class HSpectrometerManager: public HApplicationBackend
             delete fCUDABufferAllocator;
             delete fSpectrometerBufferAllocator;
             delete fNoisePowerContainerBufferAllocator;
+            delete fSpectrumAveragingBufferAllocator;
+            delete fSpectrumAveragingBufferPool;
+            delete fSpectrumAverager;
+            delete fAveragedSpectrumWriter;
         }
 
         void SetServerIP(std::string ip){fIP = ip;};
@@ -255,6 +267,20 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrometer->SetSourceBufferPool(fDigitizerSourcePool);
                         fSpectrometer->SetSinkBufferPool(fSpectrometerSinkPool);
 
+                        //create post-spectrometer data pool for averaging
+                        fSpectrumAveragingBufferAllocator = new HBufferAllocatorNew< float >();
+                        fSpectrumAveragingBufferPool = new HBufferPool< float >(fSpectrumAveragingBufferAllocator);
+                        fSpectrumAveragingBufferPool->Allocate(4, 1); //create a work space of 18 buffers
+
+                        fSpectrumAverager = new HSpectrumAverager(fFFTSize/2+1, 2); //we average over 12 buffers  
+                        fSpectrumAverager->SetNThreads(1); //ONE THREAD ONLY!
+                        fSpectrumAverager->SetSourceBufferPool(fSpectrometerSinkPool);
+                        fSpectrumAverager->SetSinkBufferPool(fSpectrumAveragingBufferPool);
+
+                        fAveragedSpectrumWriter = new HAveragedMultiThreadedSpectrumDataWriter();
+                        fAveragedSpectrumWriter->SetBufferPool(fSpectrumAveragingBufferPool);
+                        fAveragedSpectrumWriter->SetNThreads(1);
+
                         //create the noise power calculator
                         double noise_diode_switching_freq = 1.0;
                         double noise_diode_blanking_period = 0.0;//11e-3;
@@ -283,6 +309,7 @@ class HSpectrometerManager: public HApplicationBackend
 
                         fDigitizerSourcePool->Initialize();
                         fSpectrometerSinkPool->Initialize();
+                        fSpectrumAveragingBufferPool->Initialize();
                         fNoisePowerPool->Initialize();
 
                         #ifdef HOSE_USE_SPDLOG
@@ -353,8 +380,12 @@ class HSpectrometerManager: public HApplicationBackend
                 //start the command server thread
                 std::thread server_thread( &HServer::Run, fServer );
                 fWriter->StartConsumption();
+                //fAveragedSpectrumWriter->StartConsumption();
+
                 fDumper->StartConsumption();
                 fDataAccumulationWriter->StartConsumption();
+
+                fSpectrumAverager->StartConsumptionProduction();
 
                 fSpectrometer->StartConsumptionProduction();
                 for(size_t i=0; i<fNSpectrometerThreads; i++)
@@ -737,6 +768,11 @@ class HSpectrometerManager: public HApplicationBackend
             fDumper->SetSourceName(fSourceName);
             fDumper->SetScanName(fScanName);
             fDumper->InitializeOutputDirectory();
+
+            fAveragedSpectrumWriter->SetExperimentName(fExperimentName);
+            fAveragedSpectrumWriter->SetSourceName(fSourceName);
+            fAveragedSpectrumWriter->SetScanName(fScanName);
+            fAveragedSpectrumWriter->InitializeOutputDirectory();
         }
 
 
@@ -1041,6 +1077,12 @@ class HSpectrometerManager: public HApplicationBackend
         HBufferPool< typename XDigitizerType::sample_type >* fDigitizerSourcePool;
         HBufferPool< spectrometer_data >* fSpectrometerSinkPool;
         HBufferPool< HDataAccumulationContainer >* fNoisePowerPool;
+
+        HBufferAllocatorNew< float >* fSpectrumAveragingBufferAllocator;
+        HBufferPool< float >* fSpectrumAveragingBufferPool;
+        HSpectrumAverager* fSpectrumAverager;
+        HAveragedMultiThreadedSpectrumDataWriter* fAveragedSpectrumWriter;
+
         std::string fCannedStopCommand;
 
         //logger

@@ -6,7 +6,9 @@ namespace hose
 
 HAveragedMultiThreadedSpectrumDataWriter::HAveragedMultiThreadedSpectrumDataWriter():
     HDirectoryWriter()
-    {};
+{
+        std::cout<<"ave spec writer = "<<this<<std::endl;
+};
 
 HAveragedMultiThreadedSpectrumDataWriter::~HAveragedMultiThreadedSpectrumDataWriter(){};
 
@@ -17,10 +19,10 @@ HAveragedMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
     //get a buffer from the buffer handler
     HLinearBuffer< float >* tail = nullptr;
     
-    if( this->fBufferPool->GetConsumerPoolSize() != 0 )
+    if( this->fBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) != 0 )
     {
         //grab a buffer to process
-        HConsumerBufferPolicyCode buffer_code = this->fBufferHandler.ReserveBuffer(this->fBufferPool, tail);
+        HConsumerBufferPolicyCode buffer_code = this->fBufferHandler.ReserveBuffer(this->fBufferPool, tail, this->GetConsumerID() );
         if(buffer_code & HConsumerBufferPolicyCode::success && tail != nullptr)
         {
             std::lock_guard<std::mutex> lock(tail->fMutex);
@@ -40,7 +42,7 @@ HAveragedMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
 
             if(tail->GetMetaData()->GetLeadingSampleIndex() == 0)
             {
-                std::cout<<"got a new acquisition at sec: "<<tail->GetMetaData()->GetAcquisitionStartSecond()<<std::endl;
+                std::cout<<"ave spec writer got a new acquisition at sec: "<<tail->GetMetaData()->GetAcquisitionStartSecond()<<std::endl;
                 std::cout<<"writing to "<<ss.str()<<std::endl;
             }
 
@@ -78,10 +80,15 @@ HAveragedMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
 
         }
         
+        // if(tail != nullptr)
+        // {
+        //     this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
+        // }
         if(tail != nullptr)
         {
-            this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
+            this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, tail, this->GetNextConsumerID() );
         }
+
     }
 }
     
