@@ -380,7 +380,7 @@ class HSpectrometerManager: public HApplicationBackend
                 //start the command server thread
                 std::thread server_thread( &HServer::Run, fServer );
                 fWriter->StartConsumption();
-                //fAveragedSpectrumWriter->StartConsumption();
+                fAveragedSpectrumWriter->StartConsumption();
 
                 fDumper->StartConsumption();
                 fDataAccumulationWriter->StartConsumption();
