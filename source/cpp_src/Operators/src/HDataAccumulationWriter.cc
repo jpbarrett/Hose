@@ -6,7 +6,9 @@ namespace hose
 
 HDataAccumulationWriter::HDataAccumulationWriter():
     HDirectoryWriter()
-    {};
+{
+    std::cout<<"data accum writer = "<<this<<std::endl;
+};
     
 void HDataAccumulationWriter::ExecuteThreadTask()
 {

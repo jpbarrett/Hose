@@ -10,6 +10,7 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers):
         fAccumulatedSpectrum.resize(spectrum_length);
         fAccumulationBuffer = new HLinearBuffer<float>( &(fAccumulatedSpectrum[0]), spectrum_length);
         fNBuffersAccumulated = 0;
+        std::cout<<"spectrum averager = "<<this<<std::endl;
 };
 
 
