@@ -6,10 +6,12 @@ set (HOPERATORS_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HRawDataDumper.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSwitchedPowerCalculator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HDataAccumulationWriter.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HAveragedMultiThreadedSpectrumDataWriter.hh
 )
 
 set (HOPERATORS_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HDataAccumulationWriter.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/HAveragedMultiThreadedSpectrumDataWriter.cc
 )
 
 #declare header paths ##########################################################
@@ -42,10 +44,12 @@ if(HOSE_USE_CUDA)
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HCudaHostBufferAllocator.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HBufferAllocatorSpectrometerDataCUDA.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HSimpleMultiThreadedSpectrumDataWriter.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumAverager.hh
     )
 
     set(CUDAOPERATOR_SOURCEFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HSpectrometerCUDA.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/HSpectrumAverager.cc
         # ${CMAKE_CURRENT_SOURCE_DIR}/src/HSpectrometerCUDASigned.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HSimpleMultiThreadedSpectrumDataWriter.cc
     )

@@ -16,7 +16,8 @@ extern "C"
 *Author: J. Barrett
 *Email: barrettj@mit.edu
 *Date:
-*Description: place holder class for buffer meta data, should implement an 'extensible' struct 
+*Description: place holder class for buffer meta data, currently all the different various buffer types throw
+* their bits of meta data in here. To do this properly we should implement an 'extensible' struct.
 */
 
 class HBufferMetaData
@@ -31,7 +32,10 @@ class HBufferMetaData
             fSampleRate(0),
             fValidLength(0),
             fNoiseDiodeSwitchingFrequency(0.0),
-            fNoiseDiodeBlankingPeriod(0.0)
+            fNoiseDiodeBlankingPeriod(0.0),
+            fNTotalSamplesCollected(0),
+            fNTotalSpectrum(0),
+            fPowerSpectrumLength(0)
         {};
 
         virtual ~HBufferMetaData(){};
@@ -57,7 +61,6 @@ class HBufferMetaData
         uint64_t GetValidLength() const {return fValidLength;};
         void SetValidLength(const uint64_t& len){fValidLength = len;};
 
-
         //sampling rate of the digitizer
         uint64_t GetSampleRate() const {return fSampleRate;};
         void SetSampleRate(const uint64_t& rate) {fSampleRate = rate;};
@@ -71,6 +74,17 @@ class HBufferMetaData
         double GetNoiseDiodeBlankingPeriod() const {return fNoiseDiodeBlankingPeriod;};
         void SetNoiseDiodeBlankingPeriod(const double& blank){fNoiseDiodeBlankingPeriod = blank;};
 
+
+        //stuffing the spectral averaging meta data in here too 
+        uint64_t GetNTotalSamplesCollected() const {return fNTotalSamplesCollected;};
+        void SetNTotalSamplesCollected(const uint64_t& n_total_samples){fNTotalSamplesCollected = n_total_samples;};
+
+        uint64_t GetNTotalSpectrum() const {return fNTotalSpectrum;};
+        void SetNTotalSpectrum(const uint64_t& n_total_spectrum){fNTotalSpectrum = n_total_spectrum;};
+
+        uint64_t GetPowerSpectrumLength() const {return fPowerSpectrumLength;};
+        void SetPowerSpectrumLength( const uint64_t& power_spectrum_length){fPowerSpectrumLength = power_spectrum_length;};
+
         void ClearAccumulation(){fAccumulations.clear();};
         void AppendAccumulation( struct HDataAccumulationStruct accum){ fAccumulations.push_back(accum); };
         void ExtendAccumulation( const std::vector< struct HDataAccumulationStruct >* accum_vec)
@@ -79,7 +93,6 @@ class HBufferMetaData
             fAccumulations.insert( fAccumulations.end(), accum_vec->begin(), accum_vec->end() );
         };
         std::vector< struct HDataAccumulationStruct >* GetAccumulations() {return &fAccumulations;};
-
 
         HBufferMetaData& operator= (const HBufferMetaData& rhs)
         {
@@ -94,6 +107,9 @@ class HBufferMetaData
                 fNoiseDiodeSwitchingFrequency = rhs.fNoiseDiodeSwitchingFrequency;
                 fNoiseDiodeBlankingPeriod = rhs.fNoiseDiodeBlankingPeriod;
                 fAccumulations = rhs.fAccumulations;
+                fNTotalSamplesCollected = rhs.fNTotalSamplesCollected;
+                fNTotalSpectrum = rhs.fNTotalSpectrum;
+                fPowerSpectrumLength = rhs.fPowerSpectrumLength;
             }
             return *this;
         }
@@ -117,6 +133,11 @@ class HBufferMetaData
 
         double fNoiseDiodeSwitchingFrequency;
         double fNoiseDiodeBlankingPeriod;
+
+        uint64_t fNTotalSamplesCollected;
+        uint64_t fNTotalSpectrum;
+        uint64_t fPowerSpectrumLength;
+    
 
         //data statistics (for noise diode)
         std::vector< struct HDataAccumulationStruct > fAccumulations;
