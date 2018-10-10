@@ -32,8 +32,8 @@ HPX14DigitizerSimulator::HPX14DigitizerSimulator():
     this->fAllocator = nullptr;
     fSamplePeriod = 1.0/(fAcquisitionRateMHz*1e6);
     //TODO make the clipping/range thresholds user configurable
-    // fSimpleADC = new HSimpleAnalogToDigitalConverter<double, uint16_t, 14>(-10.0,10.0);
-    fSimpleADC = new HSimpleAnalogToDigitalConverter<double, uint16_t, 14>(0,RAND_MAX);
+    fSimpleADC = new HSimpleAnalogToDigitalConverter<double, uint16_t, 14>(-10.0,10.0);
+    //fSimpleADC = new HSimpleAnalogToDigitalConverter<double, uint16_t, 14>(0,RAND_MAX);
 }
 
 HPX14DigitizerSimulator::~HPX14DigitizerSimulator()
@@ -334,7 +334,7 @@ HPX14DigitizerSimulator::SimulateDataTransfer(uint64_t global_count, size_t n_sa
     for(size_t i=0; i<n_samples; i++)
     {
         time += fSamplePeriod;
-        sample = rand();//fSummedSignalGenerator->GetSample(time, sample); (void) retval;
+        retval = fSummedSignalGenerator->GetSample(time, sample); (void) retval;
         buffer[i] = fSimpleADC->Convert(sample);
     }
 }
