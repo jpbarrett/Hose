@@ -31,7 +31,7 @@ extern "C"
 
 #include "HPX14DigitizerSimulator.hh"
 
-#define DUMP_FREQ 120
+#define DUMP_FREQ 1
 
 #ifdef HOSE_USE_PX14
     #include "HPX14Digitizer.hh"

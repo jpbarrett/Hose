@@ -43,11 +43,7 @@ union raw_data_type
     char char_arr[sizeof(uint16_t)] ;
 };
 
-
-
-double eps = 1e-15;
-
-struct less_than_spec
+struct less_than_file
 {
     inline bool operator() (const std::pair< std::string, std::pair<uint64_t, uint64_t > >& file_int1, const std::pair< std::string, std::pair<uint64_t, uint64_t > >& file_int2)
     {
@@ -184,7 +180,7 @@ int main(int argc, char** argv)
     get_time_stamped_files(raw_ext, udelim, allFiles, rawFiles);
 
     //now sort the raw files by time stamp (filename)
-    std::sort( rawFiles.begin(), rawFiles.end() , less_than_spec() );
+    std::sort( rawFiles.begin(), rawFiles.end() , less_than_file() );
 
     if(rawFiles.size() < 1)
     {
@@ -199,6 +195,8 @@ int main(int argc, char** argv)
 
     std::cout<<"reading raw data"<<std::endl;
     size_t count=0;
+    double data_min=1e30;
+    double data_max=-1e30;
 
     do
     {
@@ -206,132 +204,13 @@ int main(int argc, char** argv)
         in_file.read(datum.char_arr, sizeof(uint16_t));
         count++;
         raw_data.push_back(datum.value);
+        if(datum.value < data_min){data_min = datum.value;}
+        if(datum.value > data_max){data_max = datum.value;}
         if(count % 100000 == 0){std::cout<<"on sample: "<<count<<" value = "<<datum.value<<std::endl;};
     }
     while(!in_file.eof() && count < 10000000);
 
     in_file.close();
-
-
-// ////////////////////////////////////////////////////////////////////////////////
-// //collect the raw accumulations
-//     
-//     double var_min = 1e100;
-//     double var_max = -1e100;
-//     
-//     double on_sumx = 0;
-//     double on_sumx2 = 0;
-//     double on_count = 0;
-//     double off_sumx = 0;
-//     double off_sumx2 = 0;
-//     double off_count = 0;
-// 
-//     for(size_t i = 0; i < powerFiles.size(); i++)
-//     {
-//         HNoisePowerFileStruct* npow = CreateNoisePowerFileStruct();
-//         int success = ReadNoisePowerFile(powerFiles[i].first.c_str(), npow);
-// 
-//         uint64_t n_accum = npow->fHeader.fAccumulationLength;
-//         for(uint64_t j=0; j<n_accum; j++)
-//         {
-//             HDataAccumulationStruct accum_dat = npow->fAccumulations[j];
-//             if(accum_dat.state_flag == H_NOISE_DIODE_ON)
-//             {
-//                 fOnAccumulations.push_back(accum_dat);
-//                 double x = accum_dat.sum_x;
-//                 double x2 = accum_dat.sum_x2;
-//                 double c = accum_dat.count;
-//                 double start = accum_dat.start_index;
-//                 on_sumx += x;
-//                 on_sumx2 += x2;
-//                 on_count += c;
-//                 double var = x2/c - (x/c)*(x/c);
-//                 fOnVarianceTimePairs.push_back(  std::pair<double,double>(var, start*sample_period) );
-//                 if( std::fabs(var) > 0.0)
-//                 {
-//                     if(var < var_min){var_min = var;};
-//                     if(var > var_max){var_max = var;};
-//                 }
-//             }
-//             else
-//             {
-//                 fOffAccumulations.push_back(accum_dat);
-//                 double x = accum_dat.sum_x;
-//                 double x2 = accum_dat.sum_x2;
-//                 double c = accum_dat.count;
-//                 double start = accum_dat.start_index;
-//                 off_sumx += x;
-//                 off_sumx2 += x2;
-//                 off_count += c;
-//                 double var = x2/c - (x/c)*(x/c);
-//                 fOffVarianceTimePairs.push_back(  std::pair<double,double>(var, start*sample_period) );
-//                 if( std::fabs(var) > 0.0)
-//                 {
-//                     if(var < var_min){var_min = var;};
-//                     if(var > var_max){var_max = var;};
-//                 }
-//             }
-//         }
-//         DestroyNoisePowerFileStruct(npow);
-//     }
-
-    // std::cout<<std::setprecision(15)<<std::endl;
-    // 
-    // std::cout<<"n accum on = "<<fOnAccumulations.size()<<std::endl;
-    // std::cout<<"n accum off = "<<fOnAccumulations.size()<<std::endl;
-    // 
-    // double on_var = on_sumx2/on_count - (on_sumx/on_count)*(on_sumx/on_count);
-    // double off_var = off_sumx2/off_count - (off_sumx/off_count)*(off_sumx/off_count);
-    // 
-    // std::cout<<"on_sumx = "<<on_sumx<<std::endl;
-    // std::cout<<"on_sumx2 = "<<on_sumx2<<std::endl;
-    // std::cout<<"on_count = "<<on_count<<std::endl;
-    // 
-    // std::cout<<"off_sumx = "<<off_sumx<<std::endl;
-    // std::cout<<"off_sumx2 = "<<off_sumx2<<std::endl;
-    // std::cout<<"off_count = "<<off_count<<std::endl;
-    // 
-    // std::cout<<"Average ON variance = "<<on_var<<std::endl;
-    // std::cout<<"Average OFF variance = "<<off_var<<std::endl;
-    // std::cout<<"Difference: ON-OFF = "<<on_var - off_var<<std::endl;
-    // std::cout<<"Relative Difference: (ON-OFF)/ON = "<< (on_var - off_var)/on_var <<std::endl;
-    // 
-    // double on_var_mean = 0;
-    // double on_var_sigma = 0;
-    // double off_var_mean = 0;
-    // double off_var_sigma = 0;
-    // 
-    // for(size_t j=0; j<fOnVarianceTimePairs.size(); j++)
-    // {
-    //     on_var_mean += fOnVarianceTimePairs[j].first;
-    // }
-    // on_var_mean /= (double)fOnVarianceTimePairs.size();
-    // 
-    // for(size_t j=0; j<fOffVarianceTimePairs.size(); j++)
-    // {
-    //     off_var_mean += fOffVarianceTimePairs[j].first;
-    // }
-    // off_var_mean /= (double)fOffVarianceTimePairs.size();
-    // 
-    // for(size_t j=0; j<fOnVarianceTimePairs.size(); j++)
-    // {
-    //     double delta = fOnVarianceTimePairs[j].first - on_var_mean;
-    //     on_var_sigma += delta*delta;
-    // }
-    // on_var_sigma /= (double)fOnVarianceTimePairs.size();
-    // on_var_sigma = std::sqrt(on_var_sigma);
-    // 
-    // for(size_t j=0; j<fOffVarianceTimePairs.size(); j++)
-    // {
-    //     double delta = fOffVarianceTimePairs[j].first - off_var_mean;
-    //     off_var_sigma += delta*delta;
-    // }
-    // off_var_sigma /= (double)fOffVarianceTimePairs.size();
-    // off_var_sigma = std::sqrt(off_var_sigma);
-
-////////////////////////////////////////////////////////////////////////////////
-
-    std::cout<<"starting root plotting"<<std::endl;
 
     //ROOT stuff for plots
     TApplication* App = new TApplication("TestRawPlot",&argc,argv);
@@ -392,7 +271,6 @@ int main(int argc, char** argv)
     //our transform is of size n+1, because the histogram has n+1 bins
     int sample_len = raw_data.size();
     double *in = new double[2*((sample_len+1)/2+1)];
-    double re_2,im_2;
     for(size_t i=0; i<=sample_len; i++)
     {
         in[i] = raw_data[i];
@@ -416,7 +294,7 @@ int main(int argc, char** argv)
     c->cd(2);
     TH1 *hr = 0;
     hr = TH1::TransformHisto(fft_own, hr, "RE");
-    hr->SetTitle("Real part of the 3rd (array) tranfsorm");
+    hr->SetTitle("Real part of the 3rd (array) transform");
     hr->Draw();
     hr->SetStats(kFALSE);
     hr->GetXaxis()->SetLabelSize(0.05);
@@ -430,26 +308,15 @@ int main(int argc, char** argv)
     him->GetXaxis()->SetLabelSize(0.05);
     him->GetYaxis()->SetLabelSize(0.05);
 
-    // 
     // //histogram the values of the on/off noise variance
-    // c->cd(2);
-    // TH1D* on_histo = new TH1D("on_noise_variance histogram", "on_noise_variance histogram", 5000, on_var_mean - 1.0*on_var_sigma, on_var_mean + 1.0*on_var_sigma);
-    // for(size_t i=0; i<fOnVarianceTimePairs.size(); i++)
-    // {
-    //     on_histo->Fill(fOnVarianceTimePairs[i].first);
-    // }
-    // on_histo->Draw("");
-    // c->Update();
-    // 
-    // //histogram the values
-    // c->cd(3);
-    // TH1D* off_histo = new TH1D("off_noise_variance histogram", "off_noise_variance histogram", 5000, off_var_mean - 1.0*off_var_sigma, off_var_mean + 1.0*off_var_sigma);
-    // for(size_t i=0; i<fOffVarianceTimePairs.size(); i++)
-    // {
-    //     off_histo->Fill(fOffVarianceTimePairs[i].first);
-    // }
-    // off_histo->Draw("");
-    // c->Update();
+    c->cd(3);
+    TH1D* histo = new TH1D("sample histogram", "sample histogram", 5000, data_min, data_max);
+    for(size_t i=0; i<raw_data.size(); i++)
+    {
+        histo->Fill(raw_data[i]);
+    }
+    histo->Draw("");
+    c->Update();
 
     App->Run();
 
