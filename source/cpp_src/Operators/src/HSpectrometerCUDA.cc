@@ -7,7 +7,7 @@ HSpectrometerCUDA::HSpectrometerCUDA(size_t spectrum_length, size_t n_averages):
     fSpectrumLength(spectrum_length),
     fNAverages(n_averages)
     {
-        std::cout<<"spec = "<<this<<std::endl;
+        std::cout<<"cuda spectrometer  = "<<this<<std::endl;
     };
 
 
