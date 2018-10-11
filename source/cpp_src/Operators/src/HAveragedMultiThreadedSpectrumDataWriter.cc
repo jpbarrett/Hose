@@ -38,7 +38,7 @@ HAveragedMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
             ss <<  tail->GetMetaData()->GetSidebandFlag();
             ss <<  tail->GetMetaData()->GetPolarizationFlag();
 
-            std::string spec_filename = ss.str() + ".ave_spec";
+            std::string spec_filename = ss.str() + ".spec";
 
             if(tail->GetMetaData()->GetLeadingSampleIndex() == 0)
             {

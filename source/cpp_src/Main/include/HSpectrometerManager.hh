@@ -314,10 +314,10 @@ class HSpectrometerManager: public HApplicationBackend
                         fDumper->SetBufferDumpFrequency(DUMP_FREQ);
                         fDumper->SetNThreads(1);
 
-                        //spectrum file writing consumer to drain the spectrum data buffers
-                        fWriter = new HSimpleMultiThreadedSpectrumDataWriter();
-                        fWriter->SetBufferPool(fSpectrometerSinkPool);
-                        fWriter->SetNThreads(1);
+                        // //spectrum file writing consumer to drain the spectrum data buffers
+                        // fWriter = new HSimpleMultiThreadedSpectrumDataWriter();
+                        // fWriter->SetBufferPool(fSpectrometerSinkPool);
+                        // fWriter->SetNThreads(1);
 
                         //noise power file writing consumer to drain the noise power calculator buffers
                         fDataAccumulationWriter = new HDataAccumulationWriter();
@@ -396,7 +396,7 @@ class HSpectrometerManager: public HApplicationBackend
             {
                 //start the command server thread
                 std::thread server_thread( &HServer::Run, fServer );
-                fWriter->StartConsumption();
+                // fWriter->StartConsumption();
                 fAveragedSpectrumWriter->StartConsumption();
 
                 fDumper->StartConsumption();
@@ -485,8 +485,8 @@ class HSpectrometerManager: public HApplicationBackend
                 sleep(1);
                 fSpectrometer->StopConsumptionProduction();
                 sleep(1);
-                fWriter->StopConsumption();
-                fWriter->StopConsumption();
+                // fWriter->StopConsumption();
+                fAveragedSpectrumWriter->StopConsumption();
 
                 CleanUp();
 
@@ -771,10 +771,10 @@ class HSpectrometerManager: public HApplicationBackend
                 fScanName = "ScnX";
             }
 
-            fWriter->SetExperimentName(fExperimentName);
-            fWriter->SetSourceName(fSourceName);
-            fWriter->SetScanName(fScanName);
-            fWriter->InitializeOutputDirectory();
+            // fWriter->SetExperimentName(fExperimentName);
+            // fWriter->SetSourceName(fSourceName);
+            // fWriter->SetScanName(fScanName);
+            // fWriter->InitializeOutputDirectory();
 
             fDataAccumulationWriter->SetExperimentName(fExperimentName);
             fDataAccumulationWriter->SetSourceName(fSourceName);
