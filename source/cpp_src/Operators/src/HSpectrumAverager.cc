@@ -149,7 +149,7 @@ HSpectrumAverager::CheckMetaData(char sideband_flag, char pol_flag, uint64_t sta
 void 
 HSpectrumAverager::Accumulate(float* array)
 {
-    /*
+/*
     float* accum = fAccumulationBuffer->GetData();
     for(size_t i=0; i<fPowerSpectrumLength; i++)
     {
@@ -166,7 +166,6 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
     if( (sink_code & HProducerBufferPolicyCode::success) && sink != nullptr)
     {
         std::lock_guard<std::mutex> sink_lock(sink->fMutex);
-/*
         //set the meta data values
         sink->GetMetaData()->SetSidebandFlag(fSidebandFlag);
         sink->GetMetaData()->SetPolarizationFlag(fPolarizationFlag);
@@ -180,13 +179,14 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
 
         //compute average and finish writing meta data
         float* accum = fAccumulationBuffer->GetData();
+        /*
         float* ave = sink->GetData();
         for(size_t i=0; i<fPowerSpectrumLength; i++)
         {
             ave[i] = accum[i]/(float)fNBuffersAccumulated;;
         }
+        */
 
-*/
         //release to consumer
         this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
         return true;
@@ -203,7 +203,6 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
 void HSpectrumAverager::Reset()
 {
     std::cout<<"reset"<<std::endl;
-/*
     //reset the internal accumulation buffer for re-use
     fSidebandFlag = '?';
     fPolarizationFlag = '?';
@@ -218,7 +217,6 @@ void HSpectrumAverager::Reset()
     {
         accum[i] = 0.0;
     }
-*/
 }
 
 

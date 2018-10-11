@@ -50,7 +50,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 std::string spec_filename = ss.str() + ".spec";
                 std::string noise_power_filename = ss.str() + ".npow";
 
-                //if(sdata->leading_sample_index == 0)
+                if(sdata->leading_sample_index == 0)
                 {
                     std::cout<<"simple spec writer got a new acquisition at sec: "<<sdata->acquistion_start_second<<std::endl;
                     std::cout<<"simple spec sample id: "<<sdata->leading_sample_index<<std::endl;
