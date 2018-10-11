@@ -1,88 +1,16 @@
 #include "HSimpleMultiThreadedSpectrumDataWriter.hh"
 
-#include <cstring>
-
-//needed for mkdir on *NIX
-#include <sys/types.h>
-#include <sys/stat.h>
-
 namespace hose
 {
 
 
 HSimpleMultiThreadedSpectrumDataWriter::HSimpleMultiThreadedSpectrumDataWriter():
-    fExperimentName("unknown"),
-    fSourceName("unknown"),
-    fScanName("unknown")
-{
-    //if unassigned use default data dir
-    fBaseOutputDirectory = std::string(STR2(DATA_INSTALL_DIR));
-    // fBufferHandler.SetNAttempts(100);
-    // fBufferHandler.SetSleepDurationNanoSeconds(0);
-};
+    HDirectoryWriter()
+    {
+            //std::cout<<"simple spec writer = "<<this<<std::endl;
+    };
 
 HSimpleMultiThreadedSpectrumDataWriter::~HSimpleMultiThreadedSpectrumDataWriter(){};
-
-void 
-HSimpleMultiThreadedSpectrumDataWriter::SetBaseOutputDirectory(std::string output_dir)
-{
-    fBaseOutputDirectory = output_dir;
-}
-
-void HSimpleMultiThreadedSpectrumDataWriter::InitializeOutputDirectory()
-{
-    //assume fBaseOutputDirectory and fScanName have been set
-    
-    //check for the existence of fBaseOutputDirectory
-    struct stat sb;
-    if( !(stat(fBaseOutputDirectory.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) ) )
-    {
-        std::cout<<"Error base output directory: "<<fBaseOutputDirectory<<" does not exist! Using: "<< STR2(DATA_INSTALL_DIR) <<std::endl;
-        std::stringstream dss;
-        dss << STR2(DATA_INSTALL_DIR);
-        fBaseOutputDirectory = dss.str();
-    }
-
-    //create data output directory
-    std::stringstream ss;
-    ss << fBaseOutputDirectory;
-    ss << "/";
-    ss << fExperimentName;
-
-    //now check if the directory we want to make already exists, if not, create it
-    struct stat sb2;
-    if(!( stat(ss.str().c_str(), &sb2) == 0 && S_ISDIR(sb2.st_mode) ))
-    {
-        int dirstatus = mkdir(ss.str().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-
-        if(dirstatus)
-        {
-            std::cout<<"Problem when attempting to create directory: "<< ss.str() << std::endl;
-        }
-    }
-
-
-    std::stringstream ss2;
-    ss2 << fBaseOutputDirectory;
-    ss2 << "/";
-    ss2 << fExperimentName;
-    ss2 << "/";
-    ss2 << fScanName;
-
-    //now check if the directory we want to make already exists, if not, create it
-    struct stat sb3;
-    if(!( stat(ss2.str().c_str(), &sb3) == 0 && S_ISDIR(sb3.st_mode) ))
-    {
-        int dirstatus = mkdir(ss2.str().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-
-        if(dirstatus)
-        {
-            std::cout<<"Problem when attempting to create directory: "<< ss2.str() << std::endl;
-        }
-    }
-
-}
-
 
 
 void 
@@ -91,10 +19,11 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
     //get a buffer from the buffer handler
     HLinearBuffer< spectrometer_data >* tail = nullptr;
     
-    if( this->fBufferPool->GetConsumerPoolSize() != 0 )
+    if( this->fBufferPool->GetConsumerPoolSize(this->GetConsumerID()) != 0 )
     {
         //grab a buffer to process
-        HConsumerBufferPolicyCode buffer_code = this->fBufferHandler.ReserveBuffer(this->fBufferPool, tail);
+        //std::cout<<"simple spec writer trying to grab a buffer with id: "<<this->GetConsumerID()<<" from buff pool:"<<this->fBufferPool<<std::endl;
+        HConsumerBufferPolicyCode buffer_code = this->fBufferHandler.ReserveBuffer(this->fBufferPool, tail, this->GetConsumerID());
 
         if(buffer_code & HConsumerBufferPolicyCode::success && tail != nullptr)
         {
@@ -109,11 +38,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
             {
                 //we rely on acquisitions start time, sample index, and sideband/pol flags to uniquely name/stamp a file
                 std::stringstream ss;
-                ss << fBaseOutputDirectory;
-                ss << "/";
-                ss << fExperimentName;
-                ss << "/";
-                ss << fScanName;
+                ss << fCurrentOutputDirectory;
                 ss << "/";
                 ss <<  sdata->acquistion_start_second;
                 ss << "_";
@@ -127,30 +52,10 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
 
                 if(sdata->leading_sample_index == 0)
                 {
-                    std::cout<<"got a new acquisition at sec: "<<sdata->acquistion_start_second<<std::endl;
-                    std::cout<<"writing to "<<ss.str()<<std::endl;
+                    std::cout<<"simple spec writer got a new acquisition at sec: "<<sdata->acquistion_start_second<<std::endl;
+                    //std::cout<<"simple spec sample id: "<<sdata->leading_sample_index<<std::endl;
+                    std::cout<<"simple writing to "<<ss.str()<<std::endl;
                 }
-
-                // HSpectrumObject< float > spec_data;
-                // spec_data.SetSidebandFlag(tail->GetMetaData()->GetSidebandFlag() );
-                // spec_data.SetPolarizationFlag(tail->GetMetaData()->GetPolarizationFlag() );
-                // spec_data.SetStartTime( sdata->acquistion_start_second );
-                // spec_data.SetSampleRate( sdata->sample_rate );
-                // spec_data.SetLeadingSampleIndex(  sdata->leading_sample_index );
-                // spec_data.SetExperimentName(fExperimentName);
-                // spec_data.SetSourceName(fSourceName);
-                // spec_data.SetScanName(fScanName);
-                // spec_data.SetSampleLength( (sdata->n_spectra)*(sdata->spectrum_length)  );
-                // spec_data.SetNAverages( sdata->n_spectra );
-                // spec_data.SetSpectrumLength((sdata->spectrum_length)/2+1); //Fix naming of this
-                // spec_data.SetSpectrumData(sdata->spectrum);
-                // spec_data.ExtendOnAccumulation( tail->GetMetaData()->GetOnAccumulations() );
-                // spec_data.ExtendOffAccumulation( tail->GetMetaData()->GetOffAccumulations() );
-                // 
-                // spec_data.WriteToFile(ss.str());
-                // spec_data.ReleaseSpectrumData();
-
-
 
                 struct HSpectrumFileStruct* spec_data = CreateSpectrumFileStruct();
                 if(spec_data != NULL)
@@ -183,40 +88,13 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                     InitializeSpectrumFileStruct(spec_data);
                     DestroySpectrumFileStruct(spec_data);
                 }
-
-                //write out the noise diode data
-                struct HNoisePowerFileStruct* power_data = CreateNoisePowerFileStruct();
-                if(power_data != NULL)
-                {
-                    memcpy( power_data->fHeader.fVersionFlag, NOISE_POWER_HEADER_VERSION, HVERSION_WIDTH);
-                    power_data->fHeader.fSidebandFlag[0] = tail->GetMetaData()->GetSidebandFlag() ;
-                    power_data->fHeader.fPolarizationFlag[0] = tail->GetMetaData()->GetPolarizationFlag();
-                    power_data->fHeader.fStartTime = sdata->acquistion_start_second;
-                    power_data->fHeader.fSampleRate = sdata->sample_rate;
-                    power_data->fHeader.fLeadingSampleIndex = sdata->leading_sample_index;
-                    power_data->fHeader.fSampleLength = (sdata->n_spectra)*(sdata->spectrum_length);
-                    power_data->fHeader.fAccumulationLength = tail->GetMetaData()->GetAccumulations()->size();
-                    power_data->fHeader.fSwitchingFrequency =  tail->GetMetaData()->GetNoiseDiodeSwitchingFrequency();
-                    power_data->fHeader.fBlankingPeriod = tail->GetMetaData()->GetNoiseDiodeBlankingPeriod();
-                    strcpy(power_data->fHeader.fExperimentName, fExperimentName.c_str() );
-                    strcpy(power_data->fHeader.fSourceName, fSourceName.c_str() );
-                    strcpy(power_data->fHeader.fScanName, fScanName.c_str() );
-        
-                    //now point the accumulation data to the right memory block
-                    power_data->fAccumulations = static_cast< struct HDataAccumulationStruct* >( &((*(tail->GetMetaData()->GetAccumulations()))[0] ) );
-
-                    int ret_val = WriteNoisePowerFile(noise_power_filename.c_str(), power_data);
-                    if(ret_val != HSUCCESS){std::cout<<"file error!"<<std::endl;}
-
-                    InitializeNoisePowerFileStruct(power_data);
-                    DestroyNoisePowerFileStruct(power_data);
-                }
             }
         }
         
         if(tail != nullptr)
         {
-            this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
+            //std::cout<<"spec writer releasing buffer, consumer id = "<<this->GetConsumerID()<<std::endl;
+            this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, tail, this->GetNextConsumerID() );
         }
     }
 }
@@ -224,7 +102,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
 bool 
 HSimpleMultiThreadedSpectrumDataWriter::WorkPresent() 
 {
-    if(this->fBufferPool->GetConsumerPoolSize() == 0)
+    if(this->fBufferPool->GetConsumerPoolSize(this->GetConsumerID()) == 0)
     {
         return false;
     }

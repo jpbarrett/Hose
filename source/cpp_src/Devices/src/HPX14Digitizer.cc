@@ -125,6 +125,23 @@ HPX14Digitizer::InitializeImpl()
             //TODO BREAK
         }
 
+        //enable the digitial I/O pin
+        code = SetDigitalIoEnablePX14(fBoard, 1);
+        if(code != SIG_SUCCESS)
+        {
+            DumpLibErrorPX14(code, "Failed to enable DIO pin: ", fBoard);
+            //TODO BREAK
+        }
+
+        //set mode to send a sync signal for the noise diode
+        code = SetDigitalIoModePX14(fBoard, PX14DIGIO_OUT_SYNC_TRIG);
+        if(code != SIG_SUCCESS)
+        {
+            DumpLibErrorPX14(code, "Failed to set DIO pin mode to PX14DIGIO_OUT_SYNC_TRIG: ", fBoard);
+            //TODO BREAK
+        }
+
+
         fCounter = 0;
 
         //build our allocator
@@ -149,6 +166,7 @@ HPX14Digitizer::InitializeImpl()
 
             fInternalBufferPool = new HBufferPool< px14_sample_t >( this->GetAllocator() );
             fInternalBufferPool->Allocate(fNInternalBuffers, fInternalBufferSize); //size and number not currently configurable
+            fInternalBufferPool->Initialize();
 
             fErrorCode = 0;
             fInitialized = true;
@@ -369,15 +387,6 @@ HPX14Digitizer::ExecutePreWorkTasks()
         HLinearBuffer< px14_sample_t >* buffer = nullptr;
         fBufferCode = this->fBufferHandler.ReserveBuffer(this->fBufferPool, buffer);
 
-        // 
-        // if(fBufferCode == HProducerBufferPolicyCode::stolen)
-        // {
-        //     std::cout<<"sink code = "<<(unsigned int)fBufferCode<<std::endl;
-        //     std::cout<<"digitizer stealing buffer"<<std::endl;
-        //     std::cout<<"consumer (to spec) pool size = "<<fBufferPool->GetConsumerPoolSize()<<std::endl;
-        //     std::cout<<"producer (for digi) pool size = "<<fBufferPool->GetProducerPoolSize()<<std::endl;
-        // }
-
         //set the digitizer buffer if succesful
         if( buffer != nullptr && (fBufferCode & HProducerBufferPolicyCode::success))
         {
@@ -462,7 +471,7 @@ HPX14Digitizer::ExecuteThreadTask()
                 if( dest != nullptr &&  src != nullptr && sz != 0)
                 {
                     //do the memcpy
-                    memcpy(dest, src, sz);
+                    memcpy(dest, src, sz*sizeof(uint16_t));
                 }
                 fInternalConsumerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);
                 internal_buff = nullptr;

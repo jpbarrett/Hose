@@ -1,5 +1,5 @@
-#ifndef HPeriodicPowerCalculator_HH__
-#define HPeriodicPowerCalculator_HH__
+#ifndef HSwitchedPowerCalculator_HH__
+#define HSwitchedPowerCalculator_HH__
 
 #include <iostream>
 #include <ostream>
@@ -19,12 +19,14 @@ extern "C"
     #include "HDataAccumulationStruct.h"
 }
 
+#include "HDataAccumulationContainer.hh"
+
 namespace hose
 {
 
 /*
-*File: HPeriodicPowerCalculator.hh
-*Class: HPeriodicPowerCalculator
+*File: HSwitchedPowerCalculator.hh
+*Class: HSwitchedPowerCalculator
 *Author: J. Barrett
 *Email: barrettj@mit.edu
 *Date:
@@ -33,46 +35,108 @@ namespace hose
 
 
 template< typename XBufferItemType > 
-class HPeriodicPowerCalculator
+class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDataAccumulationContainer, HConsumerBufferHandler_WaitWithTimeout< XBufferItemType >, HProducerBufferHandler_Steal< HDataAccumulationContainer > >
 {
     public:
 
-        HPeriodicPowerCalculator()
+        HSwitchedPowerCalculator()
         {
-            fBuffer = nullptr;
-        }
-        virtual ~HPeriodicPowerCalculator(){};
+            //std::cout<<"switched power calc = "<<this<<std::endl;
+        };
+        virtual ~HSwitchedPowerCalculator(){};
 
         void SetSamplingFrequency(double samp_freq){fSamplingFrequency = samp_freq;};
         void SetSwitchingFrequency(double switch_freq){fSwitchingFrequency = switch_freq;};
         void SetBlankingPeriod(double blank_period){fBlankingPeriod = blank_period;}
 
-        //buffer getter/setters
-        void SetBuffer(HLinearBuffer< XBufferItemType >* buffer)
+    private:
+
+        virtual void ExecuteThreadTask() override
         {
-            //assume this buffer already locked externally by the caller
-            fBuffer = buffer; 
+            //buffers
+            HLinearBuffer< HDataAccumulationContainer >* sink = nullptr;
+            HLinearBuffer< XBufferItemType >* source = nullptr;
+
+            if( this->fSourceBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) != 0 ) //only do work if there is stuff to process
+            {
+                //first get a sink buffer from the buffer handler
+                HProducerBufferPolicyCode sink_code = this->fSinkBufferHandler.ReserveBuffer(this->fSinkBufferPool, sink);
+
+                if( (sink_code & HProducerBufferPolicyCode::success) && sink != nullptr)
+                {
+                    std::lock_guard<std::mutex> sink_lock(sink->fMutex);
+
+                    HConsumerBufferPolicyCode source_code = this->fSourceBufferHandler.ReserveBuffer(this->fSourceBufferPool, source, this->GetConsumerID());
+
+                    if( (source_code & HConsumerBufferPolicyCode::success) && source !=nullptr)
+                    {
+
+                        std::lock_guard<std::mutex> source_lock(source->fMutex);
+                        
+                        //grab the pointer to the accumulation container
+                        auto accum_container = &( (sink->GetData())[0] ); //should have buffer size of 1
+
+                        //set appropriate meta data quantities for the accumulation container
+                        accum_container->SetSampleRate( source->GetMetaData()->GetSampleRate() );
+                        accum_container->SetAcquisitionStartSecond( source->GetMetaData()->GetAcquisitionStartSecond() );
+                        accum_container->SetLeadingSampleIndex( source->GetMetaData()->GetLeadingSampleIndex() );
+                        accum_container->SetSampleLength( source->GetArrayDimension(0) ); //also equal to fSpectrumLength*fNAverages;
+                        accum_container->SetNoiseDiodeSwitchingFrequency(fSwitchingFrequency);
+                        accum_container->SetNoiseDiodeBlankingPeriod(fBlankingPeriod);
+                        accum_container->SetSidebandFlag( source->GetMetaData()->GetSidebandFlag() );
+                        accum_container->SetPolarizationFlag( source->GetMetaData()->GetPolarizationFlag() );
+
+                        //calculate the accumulations for this buffer
+                        Calculate(fSamplingFrequency, fSwitchingFrequency, fBlankingPeriod, source, accum_container);
+
+                        //release the buffers
+                        this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID());
+                        this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
+                    }
+                    else
+                    {
+                        if(sink !=nullptr)
+                        {
+                           this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
+                        }
+                    }
+                }
+            }
         }
 
-        void Calculate()
-        {
-            if( fBuffer != nullptr )
-            {
-                uint64_t leading_sample_index = fBuffer->GetMetaData()->GetLeadingSampleIndex();
-                uint64_t buffer_size = fBuffer->GetArrayDimension(0);
-                XBufferItemType* raw_data = fBuffer->GetData();
+////////////////////////////////////////////////////////////////////////////////
 
-                fBuffer->GetMetaData()->SetNoiseDiodeSwitchingFrequency(fSwitchingFrequency);
-                fBuffer->GetMetaData()->SetNoiseDiodeBlankingPeriod(fBlankingPeriod);
+        virtual bool WorkPresent() override
+        {
+            return ( this->fSourceBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) != 0 );
+        }
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+        static void Calculate(double sampling_frequency, 
+                              double switching_frequency, 
+                              double blanking_period,
+                              HLinearBuffer< XBufferItemType >* source, 
+                              HDataAccumulationContainer* accum_container)
+        {
+            if( source != nullptr )
+            {
+                uint64_t leading_sample_index = accum_container->GetLeadingSampleIndex();
+                uint64_t buffer_size = source->GetArrayDimension(0);
+                XBufferItemType* raw_data = source->GetData();
+
+                accum_container->SetNoiseDiodeSwitchingFrequency(switching_frequency);
+                accum_container->SetNoiseDiodeBlankingPeriod(blanking_period);
 
                 //determine which buffer samples are in the on/of periods
                 //(this assumes the noise diode switching and acquisition triggering was synced with the 1pps signal)
                 std::vector< std::pair<uint64_t, uint64_t> > on_intervals;
                 std::vector< std::pair<uint64_t, uint64_t> > off_intervals;
 
-                GetOnOffIntervals(fSamplingFrequency, fSwitchingFrequency, fBlankingPeriod, leading_sample_index, buffer_size, on_intervals, off_intervals);
+                GetOnOffIntervals(sampling_frequency, switching_frequency, blanking_period, leading_sample_index, buffer_size, on_intervals, off_intervals);
 
-                fBuffer->GetMetaData()->ClearAccumulation();
+                accum_container->ClearAccumulation();
 
                 //loop over the on-intervals accumulating statistics
                 for(unsigned int i=0; i<on_intervals.size(); i++)
@@ -94,7 +158,7 @@ class HPeriodicPowerCalculator
                         stat.sum_x2 += val*val;
                         stat.count += 1.0;
                     }
-                    fBuffer->GetMetaData()->AppendAccumulation(stat);
+                    accum_container->AppendAccumulation(stat);
                 }
 
                 //loop over the off-intervals accumulating statistics
@@ -117,23 +181,23 @@ class HPeriodicPowerCalculator
                         stat.sum_x2 += val*val;
                         stat.count += 1.0;
                     }
-                    fBuffer->GetMetaData()->AppendAccumulation(stat);
+                    accum_container->AppendAccumulation(stat);
                 }
             }
         }   
 
-    private:
+        ////////////////////////////////////////////////////////////////////////////////
 
 
-        //returns intervals [x,y) of samples to be included in the ON/OFF sets, does not take the blanking period into account
+        //returns intervals [x,y) of samples to be included in the ON/OFF sets
         //assumes signal synced such that ON is the first state (at acquisition start, index=0)
-        void GetOnOffIntervals( double sampling_frequency, 
-                                double switching_frequency, 
-                                double blanking_period,
-                                uint64_t start, 
-                                uint64_t length, 
-                                std::vector< std::pair<uint64_t, uint64_t> >& on_intervals, 
-                                std::vector< std::pair<uint64_t, uint64_t> >& off_intervals)
+        static void GetOnOffIntervals(double sampling_frequency, 
+                                      double switching_frequency, 
+                                      double blanking_period,
+                                      uint64_t start, 
+                                      uint64_t length, 
+                                      std::vector< std::pair<uint64_t, uint64_t> >& on_intervals, 
+                                      std::vector< std::pair<uint64_t, uint64_t> >& off_intervals)
         {
             on_intervals.clear();
             off_intervals.clear();
@@ -258,17 +322,17 @@ class HPeriodicPowerCalculator
             }
         }
 
-        //data
+    private:
+
+
+        //data /////////////////////////////////////////////////////////////////
         double fSamplingFrequency;
         double fSwitchingFrequency; //frequency at which the noise diode is switched
         double fBlankingPeriod; // ignore samples within +/- half the blanking period about switching time 
-
-        //buffer of data
-        HLinearBuffer< XBufferItemType >* fBuffer;
 
 };
 
 
 }
 
-#endif /* end of include guard: HPeriodicPowerCalculator */
+#endif /* end of include guard: HSwitchedPowerCalculator */

@@ -3,6 +3,8 @@
 #define PX14_N_INTERNAL_BUFF 32
 #define PX14_INTERNAL_BUFF_SIZE 1048576
 
+#include <cstdlib>
+
 namespace hose
 {
 
@@ -31,6 +33,7 @@ HPX14DigitizerSimulator::HPX14DigitizerSimulator():
     fSamplePeriod = 1.0/(fAcquisitionRateMHz*1e6);
     //TODO make the clipping/range thresholds user configurable
     fSimpleADC = new HSimpleAnalogToDigitalConverter<double, uint16_t, 14>(-10.0,10.0);
+    //fSimpleADC = new HSimpleAnalogToDigitalConverter<double, uint16_t, 14>(0,RAND_MAX);
 }
 
 HPX14DigitizerSimulator::~HPX14DigitizerSimulator()
@@ -60,6 +63,7 @@ HPX14DigitizerSimulator::InitializeImpl()
         //now we allocate the internal buffer pool (we use 32 X 2 MB buffers)
         fInternalBufferPool = new HBufferPool< uint16_t >( this->GetAllocator() );
         fInternalBufferPool->Allocate(fNInternalBuffers, fInternalBufferSize); //size and number not currently configurable]
+        fInternalBufferPool->Initialize();
 
         //generate gaussian white noise
         fPower1 = new HGaussianWhiteNoiseSignal();
@@ -134,9 +138,6 @@ HPX14DigitizerSimulator::TransferImpl()
             {
 
                 SimulateDataTransfer(count, samples_in_buffer, internal_buff->GetData());
-                // int code = GetPciAcquisitionDataFastPX14(fBoard, samples_in_buffer, internal_buff->GetData(), PX14_TRUE);
-                // //wait for xfer to complete
-                // int code = WaitForTransferCompletePX14(fBoard);
 
                 internal_buff->GetMetaData()->SetValidLength(samples_in_buffer);
                 internal_buff->GetMetaData()->SetLeadingSampleIndex(n_samples_collect-samples_to_collect);
@@ -146,7 +147,6 @@ HPX14DigitizerSimulator::TransferImpl()
 
                 //update samples to collect
                 samples_to_collect -= samples_in_buffer;
-                if(internal_buff != nullptr){fInternalProducerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);};
             }
         }
     }
@@ -215,6 +215,19 @@ HPX14DigitizerSimulator::ExecutePreWorkTasks()
         //get a buffer from the buffer handler
         HLinearBuffer< uint16_t >* buffer = nullptr;
         fBufferCode = this->fBufferHandler.ReserveBuffer(this->fBufferPool, buffer);
+
+        // if(fBufferCode == HProducerBufferPolicyCode::stolen)
+        // {
+        //     std::cout<<"sink code = "<<(unsigned int)fBufferCode<<std::endl;
+        //     std::cout<<"digitizer stealing buffer"<<std::endl;
+        //     size_t n_conpools = fBufferPool->GetNumberOfConsumerPools();
+        //     for(size_t n=0; n<n_conpools; n++)
+        //     {
+        //         std::cout<<"consumer: "<<n<<" (to spec) pool size = "<<fBufferPool->GetConsumerPoolSize(n)<<std::endl;
+        //     }
+        //     std::cout<<"producer (for digi) pool size = "<<fBufferPool->GetProducerPoolSize()<<std::endl;
+        // }
+
         //set the digitizer buffer if succesful
         if( buffer != nullptr && (fBufferCode & HProducerBufferPolicyCode::success))
         {
@@ -246,6 +259,7 @@ HPX14DigitizerSimulator::ExecutePostWorkTasks()
         HDigitizerErrorCode finalize_code = this->Finalize(); 
         if(finalize_code == HDigitizerErrorCode::success)
         {
+            //std::cout<<"sim digi releasing a good buffer"<<std::endl;
             fBufferCode = this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, this->fBuffer);
             this->fBuffer = nullptr;
         }
@@ -289,7 +303,7 @@ HPX14DigitizerSimulator::ExecuteThreadTask()
                 if( dest != nullptr &&  src != nullptr && sz != 0)
                 {
                     //do the memcpy
-                    memcpy(dest, src, sz);
+                    memcpy(dest, src, sz*sizeof(uint16_t));
                 }
                 fInternalConsumerBufferHandler.ReleaseBufferToProducer(fInternalBufferPool, internal_buff);
                 internal_buff = nullptr;
@@ -324,7 +338,6 @@ HPX14DigitizerSimulator::SimulateDataTransfer(uint64_t global_count, size_t n_sa
         retval = fSummedSignalGenerator->GetSample(time, sample); (void) retval;
         buffer[i] = fSimpleADC->Convert(sample);
     }
-
 }
 
 

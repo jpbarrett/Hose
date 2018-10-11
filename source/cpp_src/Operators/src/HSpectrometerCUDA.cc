@@ -1,8 +1,4 @@
 #include "HSpectrometerCUDA.hh"
-#include "HSpectrumObject.hh"
-
-#include <fstream>
-#include <pthread.h>
 
 namespace hose
 {
@@ -11,7 +7,7 @@ HSpectrometerCUDA::HSpectrometerCUDA(size_t spectrum_length, size_t n_averages):
     fSpectrumLength(spectrum_length),
     fNAverages(n_averages)
     {
-
+        //std::cout<<"cuda spectrometer  = "<<this<<std::endl;
     };
 
 
@@ -21,7 +17,7 @@ HSpectrometerCUDA::~HSpectrometerCUDA(){};
 bool 
 HSpectrometerCUDA::WorkPresent()
 {
-    if( fSourceBufferPool->GetConsumerPoolSize() == 0)
+    if( fSourceBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) == 0)
     {
         return false;
     }
@@ -32,9 +28,6 @@ HSpectrometerCUDA::WorkPresent()
 void 
 HSpectrometerCUDA::ExecuteThreadTask()
 {
-    //have to assume that the data buffers are constructed with the correct sizes right now
-    //TODO: add a 'get allocator function to return an allocator for appropriately size spectrum_data objects'
-
     //initialize the thread workspace
     spectrometer_data* sdata = nullptr;
 
@@ -42,7 +35,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
     HLinearBuffer< spectrometer_data >* sink = nullptr;
     HLinearBuffer< uint16_t>* source = nullptr;
 
-    if( fSourceBufferPool->GetConsumerPoolSize() != 0 ) //only do work if there is stuff to process
+    if( fSourceBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) != 0 ) //only do work if there is stuff to process
     {
         //first get a sink buffer from the buffer handler
         HProducerBufferPolicyCode sink_code = this->fSinkBufferHandler.ReserveBuffer(this->fSinkBufferPool, sink);
@@ -51,21 +44,13 @@ HSpectrometerCUDA::ExecuteThreadTask()
         {
             std::lock_guard<std::mutex> sink_lock(sink->fMutex);
 
-            HConsumerBufferPolicyCode source_code = this->fSourceBufferHandler.ReserveBuffer(this->fSourceBufferPool, source);
+            HConsumerBufferPolicyCode source_code = this->fSourceBufferHandler.ReserveBuffer(this->fSourceBufferPool, source, this->GetConsumerID());
 
             if( (source_code & HConsumerBufferPolicyCode::success) && source !=nullptr)
             {
 
                 std::lock_guard<std::mutex> source_lock(source->fMutex);
                 
-                //calculate the noise rms (may eventually need to move this calculation to the GPU)
-                HPeriodicPowerCalculator< uint16_t > powerCalc;
-                powerCalc.SetSamplingFrequency(fSamplingFrequency);
-                powerCalc.SetSwitchingFrequency(fSwitchingFrequency);
-                powerCalc.SetBlankingPeriod(fBlankingPeriod);
-                powerCalc.SetBuffer(source);
-                powerCalc.Calculate();
-
                 //point the sdata to the buffer object (this is a horrible hack)
                 sdata = &( (sink->GetData())[0] ); //should have buffer size of 1
 
@@ -82,14 +67,14 @@ HSpectrometerCUDA::ExecuteThreadTask()
                 process_vector_no_output(source->GetData(), sdata);
 
                 //release the buffers
-                this->fSourceBufferHandler.ReleaseBufferToProducer(this->fSourceBufferPool, source);
+                this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID());
                 this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
             }
             else
             {
                 if(sink !=nullptr)
                 {
-                   this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
+                   this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
                 }
             }
         }

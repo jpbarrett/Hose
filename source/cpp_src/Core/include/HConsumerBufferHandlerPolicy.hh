@@ -48,9 +48,9 @@ class HConsumerBufferReleaser
             return HConsumerBufferPolicyCode::success;
         }
 
-        HConsumerBufferPolicyCode ReleaseBufferToConsumer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>*& buffer)
+        HConsumerBufferPolicyCode ReleaseBufferToConsumer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>*& buffer, unsigned int id=0)
         {
-            pool->PushConsumerBuffer(buffer);
+            pool->PushConsumerBuffer(buffer,id);
             return HConsumerBufferPolicyCode::success;
         }
 };
@@ -64,11 +64,11 @@ class HConsumerBufferHandler_Immediate: public HConsumerBufferReleaser< XBufferI
         HConsumerBufferHandler_Immediate(){;};
         virtual ~HConsumerBufferHandler_Immediate(){;};
 
-        HConsumerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>*& buffer)
+        HConsumerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>*& buffer, unsigned int id=0)
         {
-            if(pool->GetConsumerPoolSize() != 0)
+            if(pool->GetConsumerPoolSize(id) != 0)
             {
-                buffer = pool->PopConsumerBuffer();
+                buffer = pool->PopConsumerBuffer(id);
                 return HConsumerBufferPolicyCode::success;
             }
             else
@@ -91,13 +91,13 @@ class HConsumerBufferHandler_Wait: public HConsumerBufferReleaser< XBufferItemTy
         void SetSleepDurationNanoSeconds(unsigned int ns){fSleepDurationNanoSeconds = ns;};
         unsigned int GetSleepDurationNanoSeconds() const {return fSleepDurationNanoSeconds;};
 
-        HConsumerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>*& buffer)
+        HConsumerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>*& buffer, unsigned int id=0)
         {
             while(true)
             {
-                if(pool->GetConsumerPoolSize() != 0)
+                if(pool->GetConsumerPoolSize(id) != 0)
                 {
-                    buffer = pool->PopConsumerBuffer();
+                    buffer = pool->PopConsumerBuffer(id);
                     return HConsumerBufferPolicyCode::success;
                 }
                 else
@@ -133,18 +133,18 @@ class HConsumerBufferHandler_WaitWithTimeout: public HConsumerBufferReleaser< XB
         void SetSleepDurationNanoSeconds(unsigned int ns){fSleepDurationNanoSeconds = ns;};
         unsigned int GetSleepDurationNanoSeconds() const {return fSleepDurationNanoSeconds;};
 
-        HConsumerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>*& buffer)
+        HConsumerBufferPolicyCode ReserveBuffer(HBufferPool<XBufferItemType>* pool, HLinearBuffer<XBufferItemType>*& buffer, unsigned int id=0)
         {
-            if(pool->GetConsumerPoolSize() != 0)
+            if(pool->GetConsumerPoolSize(id) != 0)
             {
-                buffer = pool->PopConsumerBuffer();
+                buffer = pool->PopConsumerBuffer(id);
                 return HConsumerBufferPolicyCode::success;
             }
             else
             {   
                 //wait for the consumer buffer pool to become empty
                 unsigned int count = 0;
-                while( pool->GetConsumerPoolSize() != 0 && count < fNAttempts)
+                while( pool->GetConsumerPoolSize(id) != 0 && count < fNAttempts)
                 {
                     //sleep for the specified duration if it is non-zero
                     if(fSleepDurationNanoSeconds != 0)
@@ -152,17 +152,17 @@ class HConsumerBufferHandler_WaitWithTimeout: public HConsumerBufferReleaser< XB
                         std::this_thread::sleep_for(std::chrono::nanoseconds(fSleepDurationNanoSeconds));
                     }
 
-                    if(pool->GetConsumerPoolSize() != 0)
+                    if(pool->GetConsumerPoolSize(id) != 0)
                     {
-                        buffer = pool->PopConsumerBuffer();
+                        buffer = pool->PopConsumerBuffer(id);
                         return HConsumerBufferPolicyCode::success;
                     }
 
                     count++;
                 };
 
-                //Consumer pool should be full now, so grab buffer
-                if(pool->GetConsumerPoolSize() != 0)
+                //last attempt to grab buffer
+                if(pool->GetConsumerPoolSize(id) != 0)
                 {
                     buffer = pool->PopConsumerBuffer();
                     return HConsumerBufferPolicyCode::success;

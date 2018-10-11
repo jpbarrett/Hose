@@ -12,9 +12,7 @@ if(HOSE_USE_SPDLOG)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Logging/include)
 endif(HOSE_USE_SPDLOG)
 
-set(HOSE_MAIN_LIBS HCore HInterface HDevices)
-
-
+set(HOSE_MAIN_LIBS HCore HInterface HDevices HOperators)
 
 if(HOSE_USE_CUDA AND HOSE_USE_ZEROMQ)
     set(SOURCE_BASENAMES
@@ -50,7 +48,7 @@ if (HOSE_USE_ROOT)
     find_package(ROOT REQUIRED)
     include_directories(${ROOT_INCLUDE_DIRS})
     list(APPEND HOSE_MAIN_LIBS ${ROOT_LIBRARIES})
-    list(APPEND SOURCE_BASENAMES SpectrumPlot)
+    list(APPEND SOURCE_BASENAMES SpectrumPlot RawPlot)
 endif()
 
 foreach( BASENAME ${SOURCE_BASENAMES} )
