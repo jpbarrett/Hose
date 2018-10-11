@@ -60,7 +60,7 @@ class HRegisteringBufferPool
             {
                 consumer->fID = fConsumerList.size();
                 fConsumerList.push_back(consumer);
-                std::cout<<"registering consumer: "<<consumer<<" with id: "<<consumer->fID<<" for buffer pool: "<<this<<std::endl;
+                //std::cout<<"registering consumer: "<<consumer<<" with id: "<<consumer->fID<<" for buffer pool: "<<this<<std::endl;
             }
             fNRegisteredConsumers = fConsumerList.size();
         }

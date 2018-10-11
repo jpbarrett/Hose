@@ -119,7 +119,7 @@ class HBufferPool: public HRegisteringBufferPool
             {
                 fConsumerQueueVector.resize( fNRegisteredConsumers );
             }
-            std::cout<<"number of consumer = "<<fConsumerQueueVector.size()<<std::endl;
+            //std::cout<<"number of consumer = "<<fConsumerQueueVector.size()<<std::endl;
         }
 
         size_t GetNumberOfConsumerPools() const

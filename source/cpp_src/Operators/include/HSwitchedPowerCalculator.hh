@@ -41,7 +41,7 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
 
         HSwitchedPowerCalculator()
         {
-            std::cout<<"switched power calc = "<<this<<std::endl;
+            //std::cout<<"switched power calc = "<<this<<std::endl;
         };
         virtual ~HSwitchedPowerCalculator(){};
 

@@ -40,7 +40,7 @@ class HRawDataDumper: public HConsumer< XBufferItemType, HConsumerBufferHandler_
             HDirectoryWriter(),
             fBufferDumpFrequency(2)
         {
-            std::cout<<"raw data dumper = "<<this<<std::endl;
+            //std::cout<<"raw data dumper = "<<this<<std::endl;
         }; 
 
         virtual ~HRawDataDumper(){};

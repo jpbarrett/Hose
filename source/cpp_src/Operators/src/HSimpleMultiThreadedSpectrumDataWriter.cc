@@ -7,7 +7,7 @@ namespace hose
 HSimpleMultiThreadedSpectrumDataWriter::HSimpleMultiThreadedSpectrumDataWriter():
     HDirectoryWriter()
     {
-            std::cout<<"simple spec writer = "<<this<<std::endl;
+            //std::cout<<"simple spec writer = "<<this<<std::endl;
     };
 
 HSimpleMultiThreadedSpectrumDataWriter::~HSimpleMultiThreadedSpectrumDataWriter(){};
@@ -53,7 +53,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 if(sdata->leading_sample_index == 0)
                 {
                     std::cout<<"simple spec writer got a new acquisition at sec: "<<sdata->acquistion_start_second<<std::endl;
-                    std::cout<<"simple spec sample id: "<<sdata->leading_sample_index<<std::endl;
+                    //std::cout<<"simple spec sample id: "<<sdata->leading_sample_index<<std::endl;
                     std::cout<<"simple writing to "<<ss.str()<<std::endl;
                 }
 
@@ -93,7 +93,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
         
         if(tail != nullptr)
         {
-            std::cout<<"spec writer releasing buffer, consumer id = "<<this->GetConsumerID()<<std::endl;
+            //std::cout<<"spec writer releasing buffer, consumer id = "<<this->GetConsumerID()<<std::endl;
             this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, tail, this->GetNextConsumerID() );
         }
     }

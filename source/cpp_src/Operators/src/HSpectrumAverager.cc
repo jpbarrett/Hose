@@ -10,7 +10,7 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers):
         fAccumulatedSpectrum.resize(spectrum_length);
         fAccumulationBuffer = new HLinearBuffer<float>( &(fAccumulatedSpectrum[0]), spectrum_length);
         fNBuffersAccumulated = 0;
-        std::cout<<"spectrum averager = "<<this<<std::endl;
+        //std::cout<<"spectrum averager = "<<this<<std::endl;
 };
 
 
@@ -43,7 +43,7 @@ HSpectrumAverager::ExecuteThreadTask()
             std::lock_guard<std::mutex> source_lock(source->fMutex);
             sdata = &( (source->GetData())[0] ); //should have buffer size of 1
 
-            std::cout<<"got a buff"<<std::endl;
+            //std::cout<<"got a buff"<<std::endl;
 
             //first collect the meta-data information from this buffer
             char sideband_flag = source->GetMetaData()->GetSidebandFlag() ;
@@ -56,13 +56,10 @@ HSpectrumAverager::ExecuteThreadTask()
             uint64_t power_spectrum_length = ((sdata->spectrum_length)/2+1); //length of the power spectrum
             uint64_t n_total_samples = (sdata->n_spectra)*(sdata->spectrum_length); //total number of samples used to compute the averaged spectrum we get from this buffer
 
-            std::cout<<"buff power spec len = "<<power_spectrum_length<<std::endl;
-            std::cout<<"my power spec len = "<<fPowerSpectrumLength<<std::endl;
 
             //pass checks?
             if(fNBuffersAccumulated == 0 && power_spectrum_length == fPowerSpectrumLength)
             {
-                std::cout<<"first"<<std::endl;
                 //first buffer recieved since reset, so re-initialize the values
                 fNBuffersAccumulated++;
                 fSidebandFlag = sideband_flag;
@@ -75,7 +72,6 @@ HSpectrumAverager::ExecuteThreadTask()
             }
             else if( CheckMetaData(sideband_flag, pol_flag, start_second, sample_rate, leading_sample_index) ) //meta data matches, so accumulate another spectrum
             {
-                std::cout<<"accum"<<std::endl;
                 //accumulate statistics
                 //first buffer recieved since reset, so re-initialize the values
                 fNBuffersAccumulated++;
@@ -92,10 +88,6 @@ HSpectrumAverager::ExecuteThreadTask()
             }
             else
             {
-                std::cout<<"n = "<<fNBuffersAccumulated<<std::endl;
-                std::cout<<"lp = "<<power_spectrum_length<<std::endl;
-                std::cout<<"expected len = "<<fPowerSpectrumLength<<std::endl;
-                std::cout<<"bail"<<std::endl;
                 //bail out, something changed before we accumulated the required number of buffers,
                 //so write out what we have now and re-init
                 WriteAccumulatedSpectrumAverage();
@@ -121,15 +113,11 @@ HSpectrumAverager::ExecuteThreadTask()
                     Reset();
                 }
             }
-
-            std::cout<<"averager finished a buffer"<<std::endl;
-            std::cout<<"consumer id = "<<this->GetConsumerID()<<std::endl;
-
         }
 
         if(source != nullptr)
         {
-            std::cout<<"averager releasing spec source buffer to consumer #"<<this->GetNextConsumerID()<<" in pool: "<<this->fSourceBufferPool<<std::endl;
+            //std::cout<<"averager releasing spec source buffer to consumer #"<<this->GetNextConsumerID()<<" in pool: "<<this->fSourceBufferPool<<std::endl;
             //release source buffer
             this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID() );
         }
@@ -201,7 +189,7 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
 
 void HSpectrumAverager::Reset()
 {
-    std::cout<<"reset"<<std::endl;
+    //std::cout<<"reset"<<std::endl;
     //reset the internal accumulation buffer for re-use
     fSidebandFlag = '?';
     fPolarizationFlag = '?';
