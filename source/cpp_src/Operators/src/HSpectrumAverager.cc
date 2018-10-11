@@ -56,6 +56,9 @@ HSpectrumAverager::ExecuteThreadTask()
             uint64_t power_spectrum_length = ((sdata->spectrum_length)/2+1); //length of the power spectrum
             uint64_t n_total_samples = (sdata->n_spectra)*(sdata->spectrum_length); //total number of samples used to compute the averaged spectrum we get from this buffer
 
+            std::cout<<"buff power spec len = "<<power_spectrum_length<<std::endl;
+            std::cout<<"my power spec len = "<<fPowerSpectrumLength<<std::endl;
+
             //pass checks?
             if(fNBuffersAccumulated == 0 && power_spectrum_length == fPowerSpectrumLength)
             {
