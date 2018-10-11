@@ -31,25 +31,42 @@ extern "C"
 
 #include "HPX14DigitizerSimulator.hh"
 
-#define DUMP_FREQ 1
+
 
 #ifdef HOSE_USE_PX14
     #include "HPX14Digitizer.hh"
     #define DIGITIZER_TYPE HPX14Digitizer
+
     #define N_DIGITIZER_THREADS 2
     #define N_DIGITIZER_POOL_SIZE 32  
+
     #define N_SPECTROMETER_POOL_SIZE 16
     #define N_NOISE_POWER_POOL_SIZE 10
+
     #define N_SPECTROMETER_THREADS 3
     #define N_NOISE_POWER_THREADS 1
+
+    #define DUMP_FREQ 120
+    #define N_AVE_BUFFERS 12 //this is about once every second
+    #define SPEC_AVE_POOL_SIZE 12
 #else
+
+
     #define DIGITIZER_TYPE HPX14DigitizerSimulator
+
     #define N_DIGITIZER_THREADS 1
     #define N_DIGITIZER_POOL_SIZE 8
-    #define N_SPECTROMETER_POOL_SIZE 4  
-    #define N_NOISE_POWER_POOL_SIZE 10
+
+    #define N_SPECTROMETER_POOL_SIZE 4
     #define N_SPECTROMETER_THREADS 1
+  
+    #define N_NOISE_POWER_POOL_SIZE 10
     #define N_NOISE_POWER_THREADS 1
+
+    #define DUMP_FREQ 2
+    #define N_AVE_BUFFERS 2
+    #define SPEC_AVE_POOL_SIZE 4
+
 #endif
 
 #include "HBufferPool.hh"
@@ -270,9 +287,9 @@ class HSpectrometerManager: public HApplicationBackend
                         //create post-spectrometer data pool for averaging
                         fSpectrumAveragingBufferAllocator = new HBufferAllocatorNew< float >();
                         fSpectrumAveragingBufferPool = new HBufferPool< float >(fSpectrumAveragingBufferAllocator);
-                        fSpectrumAveragingBufferPool->Allocate(4, fFFTSize/2+1); //create a work space of 18 buffers
+                        fSpectrumAveragingBufferPool->Allocate(SPEC_AVE_POOL_SIZE, fFFTSize/2+1); //create a work space of 18 buffers
 
-                        fSpectrumAverager = new HSpectrumAverager(fFFTSize/2+1, 2); //we average over 12 buffers  
+                        fSpectrumAverager = new HSpectrumAverager(fFFTSize/2+1, N_AVE_BUFFERS); //we average over 12 buffers  
                         fSpectrumAverager->SetNThreads(1); //ONE THREAD ONLY!
                         fSpectrumAverager->SetSourceBufferPool(fSpectrometerSinkPool);
                         fSpectrumAverager->SetSinkBufferPool(fSpectrumAveragingBufferPool);
@@ -283,7 +300,7 @@ class HSpectrometerManager: public HApplicationBackend
 
                         //create the noise power calculator
                         double noise_diode_switching_freq = 1.0;
-                        double noise_diode_blanking_period = 0.0;//11e-3;
+                        double noise_diode_blanking_period = 1e-3;//11e-3;
                         fNoisePowerCalculator = new HSwitchedPowerCalculator< typename XDigitizerType::sample_type >();
                         fNoisePowerCalculator->SetSwitchingFrequency(noise_diode_switching_freq);
                         fNoisePowerCalculator->SetSamplingFrequency( fDigitizer->GetSamplingFrequency() );
