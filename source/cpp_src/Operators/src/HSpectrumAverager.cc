@@ -149,13 +149,11 @@ HSpectrumAverager::CheckMetaData(char sideband_flag, char pol_flag, uint64_t sta
 void 
 HSpectrumAverager::Accumulate(float* array)
 {
-/*
     float* accum = fAccumulationBuffer->GetData();
     for(size_t i=0; i<fPowerSpectrumLength; i++)
     {
         accum[i] += array[i];
     }
-*/
 }
 
 bool 
@@ -179,13 +177,11 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
 
         //compute average and finish writing meta data
         float* accum = fAccumulationBuffer->GetData();
-        /*
         float* ave = sink->GetData();
         for(size_t i=0; i<fPowerSpectrumLength; i++)
         {
             ave[i] = accum[i]/(float)fNBuffersAccumulated;;
         }
-        */
 
         //release to consumer
         this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
