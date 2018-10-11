@@ -7,7 +7,7 @@ namespace hose
 HAveragedMultiThreadedSpectrumDataWriter::HAveragedMultiThreadedSpectrumDataWriter():
     HDirectoryWriter()
 {
-        std::cout<<"ave spec writer = "<<this<<std::endl;
+        //std::cout<<"ave spec writer = "<<this<<std::endl;
 };
 
 HAveragedMultiThreadedSpectrumDataWriter::~HAveragedMultiThreadedSpectrumDataWriter(){};
