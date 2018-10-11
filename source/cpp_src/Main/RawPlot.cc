@@ -22,11 +22,22 @@ extern "C"
     #include "HNoisePowerFile.h"
 }
 
+#include "HArrayWrapper.hh"
+
+//TODO fix these headers
+#include "HPowerLawNoiseSignal.hh"
+#include "HGaussianWhiteNoiseSignal.hh"
+#include "HSwitchedSignal.hh"
+#include "HSummedSignal.hh"
+#include "HSimpleAnalogToDigitalConverter.hh"
+
 #include "HSpectrumFileStructWrapper.hh"
 using namespace hose;
 
-#include "TCanvas.h"
 
+
+
+#include "TCanvas.h"
 #include "TApplication.h"
 #include "TStyle.h"
 #include "TColor.h"
@@ -209,8 +220,9 @@ int main(int argc, char** argv)
         if(count % 100000 == 0){std::cout<<"on sample: "<<count<<" value = "<<datum.value<<std::endl;};
     }
     while(!in_file.eof() && count < 10000000);
-
     in_file.close();
+
+    double sample_frequency = 400e6;
 
     //ROOT stuff for plots
     TApplication* App = new TApplication("TestRawPlot",&argc,argv);
@@ -250,12 +262,20 @@ int main(int argc, char** argv)
     c->cd(1);
 
     TGraph* g = new TGraph();
+
+    std::vector< std::complex<double> > noise_xform_in;
+    std::vector< std::complex<double> > noise_xform_out;
+    size_t dim[1];
+    dim[0] = raw_data.size();
+
     for(unsigned int j=0; j<raw_data.size(); j++)
     {
-        g->SetPoint(j, j*(1.0/400e6), raw_data[j] );
+        g->SetPoint(j, j*(1.0/sample_frequency), raw_data[j] );
+        noise_xform_in.push_back(std::complex<double>( raw_data[j], 0.0) );
+        noise_xform_out.push_back(std::complex<double>( 0.0, 0.0) );
     }
-    g->Draw("ALP");
 
+    g->Draw("ALP");
     g->SetTitle("Samples");
     g->GetXaxis()->SetTitle("Time (s)");
     g->GetYaxis()->SetTitle("Sample Value");
@@ -263,43 +283,79 @@ int main(int argc, char** argv)
     g->GetXaxis()->CenterTitle();
     c->Update();
 
-    //now we want to do an FFT of the raw data sample and plot the output:
+    
+    //now we want to compute the spectral power density
+    //wrap the array (needed for FFT interface
+    HArrayWrapper< std::complex< double >, 1 > wrapperIn;
+    HArrayWrapper< std::complex< double >, 1 > wrapperOut;
+    wrapperIn.SetData(&(noise_xform_in[0]));
+    wrapperIn.SetArrayDimensions(dim);
+    wrapperOut.SetData(&(noise_xform_out[0]));
+    wrapperOut.SetArrayDimensions(dim);
 
-    //Allocate an array big enough to hold the transform output
-    //Transform output in 1d contains, for a transform of size N,
-    //N/2+1 complex numbers, i.e. 2*(N/2+1) real numbers
-    //our transform is of size n+1, because the histogram has n+1 bins
-    int sample_len = raw_data.size();
-    double *in = new double[2*((sample_len+1)/2+1)];
-    for(size_t i=0; i<=sample_len; i++)
+    //obtain time series by backward FFT
+    FFT_TYPE* fftCalculator = new FFT_TYPE();
+    fftCalculator->SetForward();
+    fftCalculator->SetInput(&wrapperIn);
+    fftCalculator->SetOutput(&wrapperOut);
+    fftCalculator->Initialize();
+    fftCalculator->ExecuteOperation();
+
+    //normalize
+    double norm = 1.0/std::sqrt((double)dim[0]);
+    TGraph* spectrum = new TGraph();
+
+    for(unsigned int i=1; i<dim[0]/2; i++)
     {
-        in[i] = raw_data[i];
+        double omega = i*(sample_frequency/dim[0]);
+        spectrum->SetPoint(spectrum->GetN(), std::log10(omega), 10.0*std::log10( norm*std::real( noise_xform_out[i]*std::conj(noise_xform_out[i]) ) ) );
     }
-    //Make our own TVirtualFFT object (using option "K")
-    //Third parameter (option) consists of 3 parts:
-    //- transform type:
-    // real input/complex output in our case
-    //- transform flag:
-    // the amount of time spent in planning
-    // the transform (see TVirtualFFT class description)
-    //- to create a new TVirtualFFT object (option "K") or use the global (default)
-    int n_size = sample_len+1;
-    TVirtualFFT *fft_own = TVirtualFFT::FFT(1, &n_size, "R2C ES K");
-    if (!fft_own) return 1;
-    fft_own->SetPoints(in);
-    fft_own->Transform();
-    //Copy all the output points:
-    fft_own->GetPoints(in);
-    //Draw the real part of the output
+    
     c->cd(2);
-    TH1 *hr = 0;
-    hr = TH1::TransformHisto(fft_own, hr, "MAG");
-    hr->SetTitle("Raw Spectrum");
-    hr->Draw();
-    hr->SetStats(kFALSE);
-    hr->GetXaxis()->SetLabelSize(0.05);
-    hr->GetYaxis()->SetLabelSize(0.05);
-    gPad->SetLogy();
+    spectrum->Draw("ALP");
+    c->Update();
+
+    // 
+    // 
+    // 
+    // 
+    // //now we want to do an FFT of the raw data sample and plot the output:
+    // 
+    // //Allocate an array big enough to hold the transform output
+    // //Transform output in 1d contains, for a transform of size N,
+    // //N/2+1 complex numbers, i.e. 2*(N/2+1) real numbers
+    // //our transform is of size n+1, because the histogram has n+1 bins
+    // int sample_len = raw_data.size();
+    // double *in = new double[2*((sample_len+1)/2+1)];
+    // for(size_t i=0; i<=sample_len; i++)
+    // {
+    //     in[i] = raw_data[i];
+    // }
+    // //Make our own TVirtualFFT object (using option "K")
+    // //Third parameter (option) consists of 3 parts:
+    // //- transform type:
+    // // real input/complex output in our case
+    // //- transform flag:
+    // // the amount of time spent in planning
+    // // the transform (see TVirtualFFT class description)
+    // //- to create a new TVirtualFFT object (option "K") or use the global (default)
+    // int n_size = sample_len+1;
+    // TVirtualFFT *fft_own = TVirtualFFT::FFT(1, &n_size, "R2C ES K");
+    // if (!fft_own) return 1;
+    // fft_own->SetPoints(in);
+    // fft_own->Transform();
+    // //Copy all the output points:
+    // fft_own->GetPoints(in);
+    // //Draw the real part of the output
+    // c->cd(2);
+    // TH1 *hr = 0;
+    // hr = TH1::TransformHisto(fft_own, hr, "MAG");
+    // hr->SetTitle("Raw Spectrum");
+    // hr->Draw();
+    // hr->SetStats(kFALSE);
+    // hr->GetXaxis()->SetLabelSize(0.05);
+    // hr->GetYaxis()->SetLabelSize(0.05);
+    // gPad->SetLogy();
 
     // //histogram the values of the on/off noise variance
     c->cd(3);

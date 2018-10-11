@@ -32,7 +32,6 @@ extern "C"
 #include "HPX14DigitizerSimulator.hh"
 
 
-
 #ifdef HOSE_USE_PX14
     #include "HPX14Digitizer.hh"
     #define DIGITIZER_TYPE HPX14Digitizer
@@ -299,8 +298,8 @@ class HSpectrometerManager: public HApplicationBackend
                         fAveragedSpectrumWriter->SetNThreads(1);
 
                         //create the noise power calculator
-                        double noise_diode_switching_freq = 1.0;
-                        double noise_diode_blanking_period = 1e-3;//11e-3;
+                        double noise_diode_switching_freq = NOISE_DIODE_SWITCHING_FREQ;
+                        double noise_diode_blanking_period = NOISE_DIODE_BLANK_PERIOD;
                         fNoisePowerCalculator = new HSwitchedPowerCalculator< typename XDigitizerType::sample_type >();
                         fNoisePowerCalculator->SetSwitchingFrequency(noise_diode_switching_freq);
                         fNoisePowerCalculator->SetSamplingFrequency( fDigitizer->GetSamplingFrequency() );

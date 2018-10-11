@@ -5,6 +5,11 @@
 
 #include <cstdlib>
 
+extern "C"
+{
+    #include "HBasicDefines.h"
+}
+
 namespace hose
 {
 
@@ -80,7 +85,7 @@ HPX14DigitizerSimulator::InitializeImpl()
 
         //80Hz noise diode signal
         HSwitchedSignal* fSwitchedPower = new HSwitchedSignal();
-        fSwitchedPower->SetSwitchingFrequency(80.0);
+        fSwitchedPower->SetSwitchingFrequency(NOISE_DIODE_SWITCHING_FREQ);
         fSwitchedPower->SetSignalGenerator(fPower2);
         fSwitchedPower->Initialize();
 
