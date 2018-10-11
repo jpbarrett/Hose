@@ -22,6 +22,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
     if( this->fBufferPool->GetConsumerPoolSize(this->GetConsumerID()) != 0 )
     {
         //grab a buffer to process
+        std::cout<<"simple spec writer trying to grab a buffer"<<std::endl;
         HConsumerBufferPolicyCode buffer_code = this->fBufferHandler.ReserveBuffer(this->fBufferPool, tail, this->GetConsumerID());
 
         if(buffer_code & HConsumerBufferPolicyCode::success && tail != nullptr)
@@ -49,10 +50,11 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 std::string spec_filename = ss.str() + ".spec";
                 std::string noise_power_filename = ss.str() + ".npow";
 
-                if(sdata->leading_sample_index == 0)
+                //if(sdata->leading_sample_index == 0)
                 {
-                    std::cout<<"got a new acquisition at sec: "<<sdata->acquistion_start_second<<std::endl;
-                    std::cout<<"writing to "<<ss.str()<<std::endl;
+                    std::cout<<"simple spec writer got a new acquisition at sec: "<<sdata->acquistion_start_second<<std::endl;
+                    std::cout<<"simple spec sample id: "<<sdata->leading_sample_index<<std::endl;
+                    std::cout<<"simple writing to "<<ss.str()<<std::endl;
                 }
 
                 struct HSpectrumFileStruct* spec_data = CreateSpectrumFileStruct();
