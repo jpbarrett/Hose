@@ -259,6 +259,7 @@ HPX14DigitizerSimulator::ExecutePostWorkTasks()
         HDigitizerErrorCode finalize_code = this->Finalize(); 
         if(finalize_code == HDigitizerErrorCode::success)
         {
+            std::cout<<"sim digi releasing a good buffer"<<std::endl;
             fBufferCode = this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, this->fBuffer);
             this->fBuffer = nullptr;
         }
