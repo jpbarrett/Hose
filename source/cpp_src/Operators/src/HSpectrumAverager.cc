@@ -90,7 +90,7 @@ HSpectrumAverager::ExecuteThreadTask()
             {
                 //bail out, something changed before we accumulated the required number of buffers,
                 //so write out what we have now and re-init
-                WriteAccumulatedSpectrumAverage();
+                //WriteAccumulatedSpectrumAverage();
                 Reset();
 
 
@@ -181,7 +181,7 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
     }
     if(sink != nullptr)
     {   
-        this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink );
+        this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
     }
     return false; //failed
 }
