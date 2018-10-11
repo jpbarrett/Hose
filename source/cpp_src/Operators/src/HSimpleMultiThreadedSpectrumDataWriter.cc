@@ -102,7 +102,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
 bool 
 HSimpleMultiThreadedSpectrumDataWriter::WorkPresent() 
 {
-    if(this->fBufferPool->GetConsumerPoolSize() == 0)
+    if(this->fBufferPool->GetConsumerPoolSize(this->GetConsumerID()) == 0)
     {
         return false;
     }
