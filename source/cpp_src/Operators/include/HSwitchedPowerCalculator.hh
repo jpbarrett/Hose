@@ -83,6 +83,8 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
                         accum_container->SetSampleLength( source->GetArrayDimension(0) ); //also equal to fSpectrumLength*fNAverages;
                         accum_container->SetNoiseDiodeSwitchingFrequency(fSwitchingFrequency);
                         accum_container->SetNoiseDiodeBlankingPeriod(fBlankingPeriod);
+                        accum_container->SetSidebandFlag( source->GetMetaData()->GetSidebandFlag() );
+                        accum_container->SetPolarizationFlag( source->GetMetaData()->GetPolarizationFlag() );
 
                         //calculate the accumulations for this buffer
                         Calculate(fSamplingFrequency, fSwitchingFrequency, fBlankingPeriod, source, accum_container);
