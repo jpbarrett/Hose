@@ -22,7 +22,7 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
     if( this->fBufferPool->GetConsumerPoolSize(this->GetConsumerID()) != 0 )
     {
         //grab a buffer to process
-        std::cout<<"simple spec writer trying to grab a buffer"<<std::endl;
+        std::cout<<"simple spec writer trying to grab a buffer with id: "<<this->GetConsumerID()<<" from buff pool:"<<this->fBufferPool<<std::endl;
         HConsumerBufferPolicyCode buffer_code = this->fBufferHandler.ReserveBuffer(this->fBufferPool, tail, this->GetConsumerID());
 
         if(buffer_code & HConsumerBufferPolicyCode::success && tail != nullptr)

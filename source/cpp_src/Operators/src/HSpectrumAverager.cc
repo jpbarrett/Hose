@@ -126,7 +126,7 @@ HSpectrumAverager::ExecuteThreadTask()
 
         if(source != nullptr)
         {
-            std::cout<<"averager releasing spec source buffer"<<std::endl;
+            std::cout<<"averager releasing spec source buffer to consumer #"<<this->GetNextConsumerID()<<" in pool: "<<this->fSourceBufferPool<<std::endl;
             //release source buffer
             this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID() );
         }
