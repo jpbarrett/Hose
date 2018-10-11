@@ -270,7 +270,7 @@ class HSpectrometerManager: public HApplicationBackend
                         //create post-spectrometer data pool for averaging
                         fSpectrumAveragingBufferAllocator = new HBufferAllocatorNew< float >();
                         fSpectrumAveragingBufferPool = new HBufferPool< float >(fSpectrumAveragingBufferAllocator);
-                        fSpectrumAveragingBufferPool->Allocate(4, 1); //create a work space of 18 buffers
+                        fSpectrumAveragingBufferPool->Allocate(4, fFFTSize/2+1); //create a work space of 18 buffers
 
                         fSpectrumAverager = new HSpectrumAverager(fFFTSize/2+1, 2); //we average over 12 buffers  
                         fSpectrumAverager->SetNThreads(1); //ONE THREAD ONLY!
