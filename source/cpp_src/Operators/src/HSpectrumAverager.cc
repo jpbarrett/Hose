@@ -119,15 +119,14 @@ HSpectrumAverager::ExecuteThreadTask()
                 }
             }
 
-            std::cout<<"ave finished a buffer"<<std::endl;
-            std::cout<<"muh consumer id = "<<this->GetConsumerID()<<std::endl;
+            std::cout<<"averager finished a buffer"<<std::endl;
+            std::cout<<"consumer id = "<<this->GetConsumerID()<<std::endl;
 
         }
 
         if(source != nullptr)
         {
-            std::cout<<"releasing spec source buffer"<<std::endl;
-            std::cout<<"my consumer id = "<<this->GetConsumerID()<<std::endl;
+            std::cout<<"averager releasing spec source buffer"<<std::endl;
             //release source buffer
             this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID() );
         }
