@@ -192,13 +192,13 @@ class hprompt(Cmd):
         sampling_frequency_Hz = 0.0
         if len(digi_config) >= 1:
             obj_list.append( json.dumps(digi_config[-1], indent=4, sort_keys=True) )
-            sampling_frequency_Hz = digi_config[-1]["fields"]["sampling_frequency_Hz"]
+            sampling_frequency_Hz = float(digi_config[-1]["fields"]["sampling_frequency_Hz"])
 
         spec_config = dbclient.get_most_recent_measurement("spectrometer_config", end_time_stamp)
         spectrometer_fftsize = 0
         if len(spec_config) >= 1:
             obj_list.append( json.dumps(spec_config[-1], indent=4, sort_keys=True) )
-            spectrometer_fftsize = spec_config[-1]["fields"]["fft_size"]
+            spectrometer_fftsize = int(spec_config[-1]["fields"]["fft_size"])
 
         noise_config = dbclient.get_most_recent_measurement("noise_diode_config", end_time_stamp)
         if len(noise_config) >= 1:
@@ -209,8 +209,8 @@ class hprompt(Cmd):
         udc_time_stamp = ""
         if len(udc_info) >= 1:
             obj_list.append( json.dumps(udc_info[-1], indent=4, sort_keys=True) )
-            udc_luff_freq = udc_info[-1]["fields"]["frequency_MHz"]
-            udc_time_stamp = udc_info[-1]["time"]
+            udc_luff_freq = float(udc_info[-1]["fields"]["frequency_MHz"])
+            udc_time_stamp = str(udc_info[-1]["time"])
 
         #now add the sky frequency information as well (this is hard-coded, not in the database)
         #for this calculation we disable the pre-digitizer filter (filter4), since the center band frequency is actually just above the cut-off
