@@ -231,7 +231,7 @@ class hprompt(Cmd):
         freq_map.set_reference_bin_center_sky_frequency(center_bin_sky_freq)
         freq_map.set_bin_delta(bin_delta)
         freq_map.set_frequency_delta(frequency_delta)
-        obj_list.append( json.dumps(freq_map, indent=4, sort_keys=True) )
+        obj_list.append( json.dumps(freq_map.as_dict(), indent=4, sort_keys=True) )
 
         source_info = self.dbclient.get_most_recent_measurement("source_status", self.end_time_stamp)
         for x in source_info:
