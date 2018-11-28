@@ -9,6 +9,7 @@ import subprocess
 
 from .hinfluxdb_module import *
 from .hspeclog_module import *
+from .hfrontend_module import *
 
 class hclient(object):
 
@@ -17,7 +18,7 @@ class hclient(object):
         self.socket = self.context.socket(zmq.REQ)
         self.socket.setsockopt(zmq.LINGER, 0)
         self.socket.connect("tcp://127.0.0.1:12345")
-    
+
     def SendRecieveMessage(self, msg_string):
         print("Sending message: ", msg_string)
         self.socket.send( msg_string )
@@ -96,7 +97,7 @@ class hprompt(Cmd):
     def do_shutdown(self, args):
         """Shutdown the recording daemon and quit the client."""
         print "Shutting down."
-        cmd_string = "shutdown" 
+        cmd_string = "shutdown"
         self.interface.SendRecieveMessage(cmd_string)
         time.sleep(1)
         for x in self.process_list:
@@ -106,7 +107,7 @@ class hprompt(Cmd):
 
     def parse_record_command(self, args):
         if( len(args) == 1 and args[0] == "?" ):
-            cmd_string = "record?" 
+            cmd_string = "record?"
             self.interface.SendRecieveMessage(cmd_string)
             return 0
         elif( len(args) >=3 and "=on" in args ):
@@ -125,7 +126,7 @@ class hprompt(Cmd):
             self.current_experiment_name = exp_name
             self.current_scan_name = scan_name
             self.current_source_name = src_name
-            cmd_string = "record=on" 
+            cmd_string = "record=on"
             #split on ':' tokens, and construct well formatted command
             arg_list = args.split(':')
             if( len(arg_list) == 1 and "=on" in arg_list[0]):
@@ -145,7 +146,7 @@ class hprompt(Cmd):
                     self.current_experiment_name = exp_name
                     self.current_scan_name = scan_name
                     self.current_source_name = src_name
-                    if( len(arg_list) == 6): 
+                    if( len(arg_list) == 6):
                         start_time = arg_list[4]
                         duration = arg_list[5]
                         if len(arg_list[4]) == 13 and arg_list[4].isdigit() and arg_list[5].isdigit():
@@ -187,21 +188,50 @@ class hprompt(Cmd):
         meta_data_filepath = os.path.join(self.data_install_dir, self.current_experiment_name, self.current_scan_name, meta_data_filename)
         obj_list = []
 
-        digi_config = self.dbclient.get_most_recent_measurement("digitizer_config", self.end_time_stamp)
-        for x in digi_config:
-            obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
+        digi_config = dbclient.get_most_recent_measurement("digitizer_config", end_time_stamp)
+        sampling_frequency_Hz = 0.0
+        if len(digi_config) >= 1:
+            obj_list.append( json.dumps(digi_config[-1], indent=4, sort_keys=True) )
+            sampling_frequency_Hz = digi_config[-1]["fields"]["sampling_frequency_Hz"]
 
-        spec_config = self.dbclient.get_most_recent_measurement("spectrometer_config", self.end_time_stamp)
-        for x in spec_config:
-            obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
+        spec_config = dbclient.get_most_recent_measurement("spectrometer_config", end_time_stamp)
+        spectrometer_fftsize = 0
+        if len(spec_config) >= 1:
+            obj_list.append( json.dumps(spec_config[-1], indent=4, sort_keys=True) )
+            spectrometer_fftsize = spec_config["fields"]["fft_size"]
 
-        noise_config = self.dbclient.get_most_recent_measurement("noise_diode_config", self.end_time_stamp)
-        for x in noise_config:
-            obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
+        noise_config = dbclient.get_most_recent_measurement("noise_diode_config", end_time_stamp)
+        if len(noise_config) >= 1:
+            obj_list.append( json.dumps(noise_config[-1], indent=4, sort_keys=True) )
 
-        udc_info = self.dbclient.get_most_recent_measurement("udc_status", self.end_time_stamp)
-        for x in udc_info:
-            obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
+        udc_info = dbclient.get_most_recent_measurement("udc_status", end_time_stamp)
+        udc_luff_freq = 0.0
+        udc_time_stamp = ""
+        if len(udc_info) >= 1:
+            obj_list.append( json.dumps(udc_info[-1], indent=4, sort_keys=True) )
+            udc_luff_freq = udc_info[-1]["fields"]["frequency_MHz"]
+            udc_time_stamp = udc_info[-1]["time"]
+
+        #now add the sky frequency information as well (this is hard-coded, not in the database)
+        #for this calculation we disable the pre-digitizer filter (filter4), since the center band frequency is actually just above the cut-off
+        wf_signal_chain = westford_signal_chain(udc_luff_freq, disable_filter4=True)
+        spectral_resolution_MHz = float(sampling_frequency_Hz/float(spectrometer_fftsize))/1e6
+        n_spec_bins = spectrometer_fftsize/2 + 1
+        center_bin = int(n_spec_bins/2)
+        center_bin_if_freq = (float(center_bin) + 0.5)*spectral_resolution_MHz
+        center_bin_sky_freq = wf_signal_chain.map_frequency_backward(center_bin_if_freq)
+        bin_delta = 1 #a bin increment of (bin_delta) corresponds to an incrment in frequecy space of (frequency_delta)
+        [if_low, if_high] = [0.0, bin_delta*spectral_resolution_MHz] #[lower edge of lowest bin, upper edge of lowest bin]
+        [sky_low, sky_high] = wf_signal_chain.map_frequency_pair_backward(if_low, if_high)
+        slope = ( (sky_high - sky_low)/(if_high - if_low) ) #slope had better be either +1 or -1
+        frequency_delta = slope*spectral_resolution_MHz
+        freq_map = frequency_map()
+        freq_map.set_time(udc_time_stamp) #frequency_map gets the same time stamp as the UDC LO-set time
+        freq_map.set_reference_bin_index(center_bin)
+        freq_map.set_reference_bin_center_sky_frequency(center_bin_sky_freq)
+        freq_map.set_bin_delta(bin_delta)
+        freq_map.set_frequency_delta(frequency_delta)
+        obj_list.append( json.dumps(freq_map, indent=4, sort_keys=True) )
 
         source_info = self.dbclient.get_most_recent_measurement("source_status", self.end_time_stamp)
         for x in source_info:
@@ -232,7 +262,7 @@ class hprompt(Cmd):
         fset = frozenset(temp_list)
         for z in fset:
             obj_list.append( z )
-    
+
         antenna_position_info = self.dbclient.get_measurement_from_time_range("antenna_position", self.start_time_stamp, self.end_time_stamp, 1)
         for x in antenna_position_info:
             obj_list.append( json.dumps(x, indent=4, sort_keys=True) )

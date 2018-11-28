@@ -20,21 +20,21 @@ class wf_influxdb(object):
     #digitizer_config
     #spectrometer_config
     #noise_diode_config
-    #recording_status 
+    #recording_status
     #udc_status
-    #source 
+    #source
     #data_validity
 
     def get_measurement_from_time_range(self, measurement_name, start_time, end_time, time_buffer_sec=0, as_dict=True):
         if self.client != None:
             # query must be in the form:
-            # SELECT * FROM data_validity WHERE time < '2018-03-01 18:26:08.400' AND time > '2018-03-01 18:16:00.500' 
+            # SELECT * FROM data_validity WHERE time < '2018-03-01 18:26:08.400' AND time > '2018-03-01 18:16:00.500'
             start_time_string = ( start_time - timedelta(seconds=time_buffer_sec) ).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
             end_time_string = ( end_time + timedelta(seconds=time_buffer_sec) ).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
             query = "SELECT * FROM " + measurement_name + " WHERE time < '" + end_time_string + "' AND time > '" + start_time_string + "' "
             result = self.client.query(query)
             points = list( result.get_points() )
-            
+
             #now we want to convert the points data to dict objects with the measurement_name attached
             if as_dict is True:
                 mod_points = []

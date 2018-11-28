@@ -12,6 +12,8 @@ import json
 
 from hose import hinfluxdb_module
 from hose import hinterface_module
+from hose import hfrontend_module
+from hose import hfslog_module
 
 def generate_meta_data_file(dbclient, path_to_scan_data, start_time_stamp, end_time_stamp):
 
@@ -20,20 +22,49 @@ def generate_meta_data_file(dbclient, path_to_scan_data, start_time_stamp, end_t
     obj_list = []
 
     digi_config = dbclient.get_most_recent_measurement("digitizer_config", end_time_stamp)
-    for x in digi_config:
-        obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
+    sampling_frequency_Hz = 0.0
+    if len(digi_config) >= 1:
+        obj_list.append( json.dumps(digi_config[-1], indent=4, sort_keys=True) )
+        sampling_frequency_Hz = digi_config[-1]["fields"]["sampling_frequency_Hz"]
 
     spec_config = dbclient.get_most_recent_measurement("spectrometer_config", end_time_stamp)
-    for x in spec_config:
-        obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
+    spectrometer_fftsize = 0
+    if len(spec_config) >= 1:
+        obj_list.append( json.dumps(spec_config[-1], indent=4, sort_keys=True) )
+        spectrometer_fftsize = spec_config["fields"]["fft_size"]
 
     noise_config = dbclient.get_most_recent_measurement("noise_diode_config", end_time_stamp)
-    for x in noise_config:
-        obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
+    if len(noise_config) >= 1:
+        obj_list.append( json.dumps(noise_config[-1], indent=4, sort_keys=True) )
 
     udc_info = dbclient.get_most_recent_measurement("udc_status", end_time_stamp)
-    for x in udc_info:
-        obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
+    udc_luff_freq = 0.0
+    udc_time_stamp = ""
+    if len(udc_info) >= 1:
+        obj_list.append( json.dumps(udc_info[-1], indent=4, sort_keys=True) )
+        udc_luff_freq = udc_info[-1]["fields"]["frequency_MHz"]
+        udc_time_stamp = udc_info[-1]["time"]
+
+    #now add the sky frequency information as well (this is hard-coded, not in the database)
+    #for this calculation we disable the pre-digitizer filter (filter4), since the center band frequency is actually just above the cut-off
+    wf_signal_chain = hfrontend_module.westford_signal_chain(udc_luff_freq, disable_filter4=True)
+    spectral_resolution_MHz = float(sampling_frequency_Hz/float(spectrometer_fftsize))/1e6
+    n_spec_bins = spectrometer_fftsize/2 + 1
+    center_bin = int(n_spec_bins/2)
+    center_bin_if_freq = (float(center_bin) + 0.5)*spectral_resolution_MHz
+    center_bin_sky_freq = wf_signal_chain.map_frequency_backward(center_bin_if_freq)
+    bin_delta = 1 #a bin increment of (bin_delta) corresponds to an incrment in frequecy space of (frequency_delta)
+    [if_low, if_high] = [0.0, bin_delta*spectral_resolution_MHz] #[lower edge of lowest bin, upper edge of lowest bin]
+    [sky_low, sky_high] = wf_signal_chain.map_frequency_pair_backward(if_low, if_high)
+    slope = ( (sky_high - sky_low)/(if_high - if_low) ) #slope had better be either +1 or -1
+    frequency_delta = slope*spectral_resolution_MHz
+    freq_map = hfrontend_module.frequency_map()
+    freq_map.set_time(udc_time_stamp) #frequency_map gets the same time stamp as the UDC LO-set time
+    freq_map.set_reference_bin_index(center_bin)
+    freq_map.set_reference_bin_center_sky_frequency(center_bin_sky_freq)
+    freq_map.set_bin_delta(bin_delta)
+    freq_map.set_frequency_delta(frequency_delta)
+    obj_list.append( json.dumps(freq_map, indent=4, sort_keys=True) )
 
     source_info = dbclient.get_most_recent_measurement("source_status", end_time_stamp)
     for x in source_info:
@@ -96,7 +127,7 @@ def main():
     tmp_spec = hinterface_module.open_spectrum_file(spec_file_list[0])
     sampling_freq = float(tmp_spec.header.sample_rate)
 
-    #format of spec names is: 1530805758_36607885312_UX.spec  
+    #format of spec names is: 1530805758_36607885312_UX.spec
     #now strip start/end second and sample index
     spec_times = []
     for spec in spec_file_list:
@@ -109,14 +140,14 @@ def main():
     #determine start and stop times
     start_time_sec = math.floor( min(spec_times) )
     stop_time_sec = math.ceil( max(spec_times) )
-    
+
 
     start_time_stamp = datetime.utcfromtimestamp(start_time_sec)
     end_time_stamp = datetime.utcfromtimestamp(stop_time_sec)
 
     print("start = ", start_time_stamp)
     print("end = ", end_time_stamp)
-    
+
     #create db interface and connect to (Westford) data base
     dbclient = hinfluxdb_module.wf_influxdb()
 
