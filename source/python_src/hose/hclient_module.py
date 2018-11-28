@@ -198,7 +198,7 @@ class hprompt(Cmd):
         spectrometer_fftsize = 0
         if len(spec_config) >= 1:
             obj_list.append( json.dumps(spec_config[-1], indent=4, sort_keys=True) )
-            spectrometer_fftsize = spec_config["fields"]["fft_size"]
+            spectrometer_fftsize = spec_config[-1]["fields"]["fft_size"]
 
         noise_config = dbclient.get_most_recent_measurement("noise_diode_config", end_time_stamp)
         if len(noise_config) >= 1:
