@@ -43,7 +43,7 @@ def generate_meta_data_file(dbclient, path_to_scan_data, start_time_stamp, end_t
     if len(udc_info) >= 1:
         obj_list.append( json.dumps(udc_info[-1], indent=4, sort_keys=True) )
         udc_luff_freq = float(udc_info[-1]["fields"]["frequency_MHz"])
-        udc_time_stamp = str(udc_info[-1]["time"])
+        udc_time_stamp = udc_info[-1]["time"]
 
     #now add the sky frequency information as well (this is hard-coded, not in the database)
     #for this calculation we disable the pre-digitizer filter (filter4), since the center band frequency is actually just above the cut-off
