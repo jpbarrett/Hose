@@ -130,7 +130,7 @@ class frequency_map(object):
         self.time_stamp_string = ""
 
     def set_time(self, time_stamp_string):
-        self.time_stamp_value = time_stamp_string
+        self.time_stamp_string = time_stamp_string
 
     def set_reference_bin_index(self, index):
         self.data_fields["reference_bin_index"] = index
