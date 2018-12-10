@@ -131,17 +131,17 @@ class fs_log_line(object):
 class udc_status(fs_log_line):
     def __init__(self):
         super(udc_status, self).__init__()
-        self.line_key = "udccc/updown"
+        self.line_key = "udccc/!udc_lo="
         self.name = "udc_status"
-        self.data_fields = {"frequency_MHz": 0, "attenuation_h": 0, "attenuation_v": 0, "udc": "c"}
-        self.token_map = {0: "frequency_MHz", 1: "attenuation_h", 2: "attenuation_v"}
-        self.primary_delim = "udccc/updown"
+        self.data_fields = {"frequency_MHz": 0, "udc": "c"}
+        self.token_map = {0: "frequency_MHz"}
+        self.primary_delim = "udccc/!udc_lo="
         self.secondary_delim = " "
 
     def init_hook(self):
         self.data_fields["frequency_MHz"] = float(self.data_fields["frequency_MHz"])
-        self.data_fields["attenuation_h"] = float(self.data_fields["attenuation_h"])
-        self.data_fields["attenuation_v"] = float(self.data_fields["attenuation_v"])
+        #self.data_fields["attenuation_h"] = float(self.data_fields["attenuation_h"])
+        #self.data_fields["attenuation_v"] = float(self.data_fields["attenuation_v"])
 
 #2018.166.18:44:41.29#flagr#flagr/antenna,acquired
 #2018.166.18:24:45.00#flagr#flagr/antenna,new-source
