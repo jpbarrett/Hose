@@ -188,23 +188,23 @@ class hprompt(Cmd):
         meta_data_filepath = os.path.join(self.data_install_dir, self.current_experiment_name, self.current_scan_name, meta_data_filename)
         obj_list = []
 
-        digi_config = dbclient.get_most_recent_measurement("digitizer_config", end_time_stamp)
+        digi_config = self.dbclient.get_most_recent_measurement("digitizer_config", self.end_time_stamp)
         sampling_frequency_Hz = 0.0
         if len(digi_config) >= 1:
             obj_list.append( json.dumps(digi_config[-1], indent=4, sort_keys=True) )
             sampling_frequency_Hz = float(digi_config[-1]["fields"]["sampling_frequency_Hz"])
 
-        spec_config = dbclient.get_most_recent_measurement("spectrometer_config", end_time_stamp)
+        spec_config = self.dbclient.get_most_recent_measurement("spectrometer_config", self.end_time_stamp)
         spectrometer_fftsize = 0
         if len(spec_config) >= 1:
             obj_list.append( json.dumps(spec_config[-1], indent=4, sort_keys=True) )
             spectrometer_fftsize = int(spec_config[-1]["fields"]["fft_size"])
 
-        noise_config = dbclient.get_most_recent_measurement("noise_diode_config", end_time_stamp)
+        noise_config = self.dbclient.get_most_recent_measurement("noise_diode_config", self.end_time_stamp)
         if len(noise_config) >= 1:
             obj_list.append( json.dumps(noise_config[-1], indent=4, sort_keys=True) )
 
-        udc_info = dbclient.get_most_recent_measurement("udc_status", end_time_stamp)
+        udc_info = self.dbclient.get_most_recent_measurement("udc_status", self.end_time_stamp)
         udc_luff_freq = 0.0
         udc_time_stamp = ""
         if len(udc_info) >= 1:
