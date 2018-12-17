@@ -82,7 +82,7 @@ __usage__="""\
  the FITS file name based on the basename returned.
 """
 __author__="S. Levine"
-__date__="2018 Oct 08"
+__date__="2018 Dec 16"
 
 #------------------------------------------------------------------------
 # import the FITS io routines for the I/O
@@ -123,6 +123,7 @@ wcs_meta   = {'maxis'  : None}
 obs_spec = {'datetime': [], 'date-obs': [], 'ut': [], 'object': [],
             'obstime': [], 'experiment': [], 'scan': [], 'navg': [],
             'spec_len': [], 'spec_data_type': [], 'spec': [],
+            'crval_freq': [], 'crpix_freq': [], 'cdelt_freq': [],
             'az': [], 'el':[]}
 
 # Noise dictionary
@@ -187,9 +188,17 @@ def sdf_getobs_spec (spec_record, meta_info):
         a = meta_info.antenna_pos_at_time(lut)
         obs_spec['az'].append(a['fields']['az'])
         obs_spec['el'].append(a['fields']['el'])
+        b = meta_info.frequency_map_at_time(lut)
+        obs_spec['crval_freq'].append(b['fields']['reference_bin_center_sky_frequency_MHz'])
+        obs_spec['crpix_freq'].append(b['fields']['reference_bin_index'])
+        obs_spec['cdelt_freq'].append(b['fields']['frequency_delta_MHz'])
+
     else:
         obs_spec['az'].append(-1.0)
         obs_spec['el'].append(-1.0)
+        obs_spec['crval_freq'].append(1.0)
+        obs_spec['crpix_freq'].append(1.0)
+        obs_spec['cdelt_freq'].append(1.0)
 
     #print ('{} {}'.format(obs_spec['date-obs'], obs_spec['ut']))
 
@@ -467,15 +476,23 @@ def sdf_bintab_hdr (obsrec, extname='MATRIX', obsmode=None):
         j = i + 1
         hdr['MAXIS{}'.format(j)] = wcs_meta['maxisN'][i]
         hdr['CTYPE{}'.format(j)] = wcs_meta['ctypeN'][i]
-        hdr['CDELT{}'.format(j)] = wcs_meta['cdeltN'][i]
-        hdr['CRPIX{}'.format(j)] = wcs_meta['crpixN'][i]
 
         if   (wcs_meta['ctypeN'][i] == 'RA'):
             hdr['CRVAL{}'.format(j)] = a['ra'][0]
+            hdr['CDELT{}'.format(j)] = wcs_meta['cdeltN'][i]
+            hdr['CRPIX{}'.format(j)] = wcs_meta['crpixN'][i]
         elif (wcs_meta['ctypeN'][i] == 'DEC'):
             hdr['CRVAL{}'.format(j)] = a['dec'][0]
+            hdr['CDELT{}'.format(j)] = wcs_meta['cdeltN'][i]
+            hdr['CRPIX{}'.format(j)] = wcs_meta['crpixN'][i]
+        elif (wcs_meta['ctypeN'][i] == 'FREQ'):
+            hdr['CRVAL{}'.format(j)] = obsrec['crval_freq'][0]
+            hdr['CRPIX{}'.format(j)] = obsrec['crpix_freq'][0]
+            hdr['CDELT{}'.format(j)] = obsrec['cdelt_freq'][0]
         else:
             hdr['CRVAL{}'.format(j)] = wcs_meta['crvalN'][i]
+            hdr['CDELT{}'.format(j)] = wcs_meta['cdeltN'][i]
+            hdr['CRPIX{}'.format(j)] = wcs_meta['crpixN'][i]
 
     # Site Metadata
     hdr['TELESCOP'] = site_meta['telescope']
@@ -542,6 +559,9 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     c['object']   = fits.Column(name='OBJECT',   format='12A', 
                                 array=obs_spec['object'])
 
+    # Check for Freq columns to pass into WCS cols in the bintable
+    # CRVAL, CRPIX, CDELT (check for CD11?)
+
     # Check for RA, Dec columns to pass into CRVALs in table
     for i in range(wcs_meta['maxis']):
         j = i + 1
@@ -554,6 +574,17 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
             c['dec']   = fits.Column(name='CRVAL{}'.format(j),
                                          format='1E', unit='degrees',
                                          array=a['dec'])
+
+        elif (wcs_meta['ctypeN'][i] == 'FREQ'):
+            c['freq_crval']   = fits.Column(name='CRVAL{}'.format(j),
+                                            format='1E', unit='MHz',
+                                            array=obs_spec['crval_freq'])
+            c['freq_crpix']   = fits.Column(name='CRPIX{}'.format(j),
+                                            format='1E', unit='pixel',
+                                            array=obs_spec['crpix_freq'])
+            c['freq_cdelt']   = fits.Column(name='CDELT{}'.format(j),
+                                            format='1E', unit='MHz/pixel',
+                                            array=obs_spec['cdelt_freq'])
 
     # a['tsys'] = ?
     c['tsys']       = fits.Column(name='TSYS',     format='1E', unit='K')
@@ -764,6 +795,8 @@ def loop_over_dirs (inputs):
             if ( (d[n] == '.') or (d[n] == './') or (d[n] == '../')):
                 froot = (os.path.basename(os.path.abspath(d[n])))
             else:
+                # sel-181216 - possible change to next line - not yet tried
+                # froot = (os.path.basename(os.path.abspath(d[n])))
                 froot = os.path.basename(d[n])
 
             ofile = '{}/{}.fits'.format(d[n],froot)
