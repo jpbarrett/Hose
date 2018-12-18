@@ -111,8 +111,8 @@ class westford_signal_chain(signal_chain):
         self.luff_multiplier = 4.0
         signal_chain.add_element(self, ideal_rf_filter("filter1", 4000.0, 14000.0) )
         signal_chain.add_element(self, ideal_rf_mixer("mixer1", udc_luff_freq*self.luff_multiplier) )
-        signal_chain.add_element(self, ideal_rf_filter("filter2", 20000.0, 22000.0) )
-        signal_chain.add_element(self, ideal_rf_mixer("mixer2", 22500.0) )
+        signal_chain.add_element(self, ideal_rf_filter("filter2", 19000.0, 21000.0) )
+        signal_chain.add_element(self, ideal_rf_mixer("mixer2", 21500.0) )
         signal_chain.add_element(self, ideal_rf_filter("filter3", 528.0, 1008.0) )
         signal_chain.add_element(self, ideal_rf_mixer("mixer3", 1008.0) )
         if disable_filter4 is False:
