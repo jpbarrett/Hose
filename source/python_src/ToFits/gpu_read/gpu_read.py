@@ -27,7 +27,7 @@ used for later conversion into SDFITS format files.
 """
 
 __author__="S. Levine"
-__date__="2018 Oct 08"
+__date__="2018 Dec 04"
 
 #------------------------------------------------------------------------
 # Imports
@@ -459,7 +459,8 @@ class GPUMeta():
         # If there are no entries, return None
         if (subset == []):
             retval['measurement'] = None
-            
+
+        # if there is only one, return that one
         elif (len(subset) == 1):
             retval['measurement'] = subset[0]['measurement']
             retval['fields']      = subset[0]['fields'].copy()
@@ -492,6 +493,10 @@ class GPUMeta():
                 c = (subset[j+1]['datetime'] - subset[j]['datetime'])
                             
                 if (rtype == 'interp'):
+                    # y = y0 + (t - t0)/(t1 - t0) * (y1 - y0)
+                    # c = (t1 - t0) 
+                    # a = (t - t0)
+
                     pass
                 
                 elif (rtype == 'prevval'):
@@ -610,6 +615,26 @@ class GPUMeta():
                                       rtype='prevval', echo=echo)
         
         return dcon
+
+    def frequency_map (self, echo=False):
+        """
+        Extract the frequency_map information.
+        fields: bin_delta, frequencey_delta_MHz, 
+        reference_bin_center_sky_frequency_MHz, reference_bin_index
+        """
+        fmcon = self.gpu_meta_parse (mtype='frequency_map',
+                                    echo=echo)
+        
+        return fmcon
+
+    def frequency_map_at_time (self, itime, echo=False):
+        """
+        Extract the frequency_map information at time.
+        """
+        fmcon = self.gpu_meta_at_time (itime, mtype='frequency_map',
+                                       rtype='prevval', echo=echo)
+        
+        return fmcon
 
     def noise (self, echo=False):
         """
