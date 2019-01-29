@@ -27,7 +27,7 @@ used for later conversion into SDFITS format files.
 """
 
 __author__="S. Levine"
-__date__="2018 Dec 04"
+__date__="2019 Jan 28"
 
 #------------------------------------------------------------------------
 # Imports
@@ -619,7 +619,7 @@ class GPUMeta():
     def frequency_map (self, echo=False):
         """
         Extract the frequency_map information.
-        fields: bin_delta, frequencey_delta_MHz, 
+        fields: bin_delta, frequency_delta_MHz, 
         reference_bin_center_sky_frequency_MHz, reference_bin_index
         """
         fmcon = self.gpu_meta_parse (mtype='frequency_map',
