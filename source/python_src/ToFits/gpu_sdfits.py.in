@@ -82,7 +82,7 @@ __usage__="""\
  the FITS file name based on the basename returned.
 """
 __author__="S. Levine"
-__date__="2018 Dec 16"
+__date__="2019 Jan 28"
 
 #------------------------------------------------------------------------
 # import the FITS io routines for the I/O
@@ -189,9 +189,11 @@ def sdf_getobs_spec (spec_record, meta_info):
         obs_spec['az'].append(a['fields']['az'])
         obs_spec['el'].append(a['fields']['el'])
         b = meta_info.frequency_map_at_time(lut)
-        obs_spec['crval_freq'].append(b['fields']['reference_bin_center_sky_frequency_MHz'])
+        obs_spec['crval_freq'].append(b['fields']['reference_bin_center_sky_frequency_MHz'] *
+                                      1000000.0)
         obs_spec['crpix_freq'].append(b['fields']['reference_bin_index'])
-        obs_spec['cdelt_freq'].append(b['fields']['frequency_delta_MHz'])
+        obs_spec['cdelt_freq'].append(b['fields']['frequency_delta_MHz'] /
+                                      b['fields']['bin_delta'] * 1000000.0)
 
     else:
         obs_spec['az'].append(-1.0)
@@ -330,9 +332,9 @@ def sdf_getwcs (maxis=None, maxisN=None, ctypeN=None, crvalN=None,
         wcs_meta['maxis']  = 4
         wcs_meta['maxisN'] = [1]*4
         wcs_meta['ctypeN'] = ['FREQ', 'RA', 'DEC', 'STOKES']
-        wcs_meta['crvalN'] = [0.0]*4
-        wcs_meta['crpixN'] = [0.0]*4
-        wcs_meta['cdeltN'] = [0.0]*4
+        wcs_meta['crvalN'] = [1.0]*4
+        wcs_meta['crpixN'] = [1.0]*4
+        wcs_meta['cdeltN'] = [1.0]*4
     else:
         wcs_meta['maxis']  = maxis
         wcs_meta['maxisN'] = maxisN
@@ -346,7 +348,7 @@ def sdf_getwcs (maxis=None, maxisN=None, ctypeN=None, crvalN=None,
 def altaz2radec (alt, az, obstime, site, wthr=None):
     """
     From Alt, Az, UT, Location compute
-    RA, Dec, galactic l,b and lst
+    RA, Dec, galactic l,b and lst and barycentric RV correction
     Accepts either single values, or lists (ie alt = [a1, a2, .., aN]
     and returns corresponding type.
     """
@@ -365,7 +367,11 @@ def altaz2radec (alt, az, obstime, site, wthr=None):
     eqc = azel.transform_to('icrs')
     glc = azel.transform_to('galactic')
 
-    return eqc, glc, lst
+    # compute barycentric radial velocity correction
+    baryctr_corr = azel.radial_velocity_correction('barycentric')
+    #                                           obstime=oti, location=osi)
+    
+    return eqc, glc, lst, baryctr_corr
 
 def sexig2decim (sxtim):
     """
@@ -434,8 +440,9 @@ def sdf_bintab_hdr (obsrec, extname='MATRIX', obsmode=None):
     # set up null dictionary for local arrays
     a = {}
 
-    # conversion of alt,az, date/time vectors to ra,dec & l,b & lst
-    aeq, agal, alst = altaz2radec (obsrec['el'], obsrec['az'], 
+    # conversion of alt,az, date/time vectors to ra,dec & l,b & lst &
+    # barycentric radial vel correction term
+    aeq, agal, alst, brvc = altaz2radec (obsrec['el'], obsrec['az'], 
                                    obsrec['date-obs'], 
                                    site_meta['site'])
     a['equinox'] = [2000.0] * 3
@@ -444,7 +451,8 @@ def sdf_bintab_hdr (obsrec, extname='MATRIX', obsmode=None):
     a['glon'] = agal.l.deg
     a['glat'] = agal.b.deg
     a['lst']  = alst
-
+    a['brvc'] = brvc
+    
     # Compute the offset in Xi, Eta from the first pointing
     #  Need to make sure the SkyCoord frames for all the Ra,Dec points
     #  are the same. This copy removes the obstime vector, which was
@@ -512,13 +520,13 @@ def sdf_bintab_hdr (obsrec, extname='MATRIX', obsmode=None):
     hdr['FORWEFF']  = site_meta['forweff']
     
     # Presume equinox/epoch of coordinates is J2000/2000
-    hdr['EPOCH'] = 2000.0
+    hdr['EQUINOX'] = 2000.0
 
     # Environmental Metadata
     hdr['DEWPOINT'] = wthr_meta['dewpoint']
     hdr['HUMIDITY'] = wthr_meta['humidity']
     hdr['PRESSURE'] = wthr_meta['pressure']
-    hdr['TAU-ATM']  = wthr_meta['tau-atm']
+    hdr['TAU_ATM']  = wthr_meta['tau-atm']
     hdr['TOUTSIDE'] = wthr_meta['toutside']
     hdr['WINDDIRE'] = wthr_meta['winddir']
     hdr['WINDSPEE'] = wthr_meta['windspeed']
@@ -567,23 +575,23 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
         j = i + 1
         if   (wcs_meta['ctypeN'][i] == 'RA'):
             c['ra']   = fits.Column(name='CRVAL{}'.format(j),
-                                         format='1E', unit='degrees',
+                                         format='1E', unit='DEGREES',
                                          array=a['ra'])
 
         elif (wcs_meta['ctypeN'][i] == 'DEC'):
             c['dec']   = fits.Column(name='CRVAL{}'.format(j),
-                                         format='1E', unit='degrees',
+                                         format='1E', unit='DEGREES',
                                          array=a['dec'])
 
         elif (wcs_meta['ctypeN'][i] == 'FREQ'):
             c['freq_crval']   = fits.Column(name='CRVAL{}'.format(j),
-                                            format='1E', unit='MHz',
+                                            format='1E', unit='HZ',
                                             array=obs_spec['crval_freq'])
             c['freq_crpix']   = fits.Column(name='CRPIX{}'.format(j),
-                                            format='1E', unit='pixel',
+                                            format='1E', unit='PIXEL',
                                             array=obs_spec['crpix_freq'])
             c['freq_cdelt']   = fits.Column(name='CDELT{}'.format(j),
-                                            format='1E', unit='MHz/pixel',
+                                            format='1E', unit='HZ/PIXEL',
                                             array=obs_spec['cdelt_freq'])
 
     # a['tsys'] = ?
@@ -591,11 +599,11 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     #                              array=a['tsys'])
 
     # a['imagfreq'] = ?
-    c['imagfreq']   = fits.Column(name='IMAGFREQ', format='1E', unit='Hz')
+    c['imagfreq']   = fits.Column(name='IMAGFREQ', format='1E', unit='HZ')
     #                              array=a['restfreq'])
 
     # a['tau-atm'] = ?
-    c['tau-atm']    = fits.Column(name='TAU-ATM', format='1E')
+    c['tau-atm']    = fits.Column(name='TAU_ATM', format='1E')
     #                              array=a['tau-atm'])
 
     # a['mh2o'] = ?
@@ -610,9 +618,9 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     c['tchop']      = fits.Column(name='TCHOP',    format='1E', unit='K')
     #                              array=a['tchop'])
 
-    c['el']        = fits.Column(name='ELEVATIO', format='1E', unit='degrees',
+    c['el']        = fits.Column(name='ELEVATIO', format='1E', unit='DEGREES',
                                  array=obs_spec['el'])
-    c['az']        = fits.Column(name='AZIMUTH',  format='1E', unit='degrees',
+    c['az']        = fits.Column(name='AZIMUTH',  format='1E', unit='DEGREES',
                                  array=obs_spec['az'])
 
     c['ut']        = fits.Column(name='UT',       format='1D', 
@@ -621,10 +629,13 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     c['lst']       = fits.Column(name='LST',      format='1D', 
                                  array=a['lst'])
 
-    c['obstime']   = fits.Column(name='OBSTIME', format='1E', unit='seconds',
+    c['obstime']   = fits.Column(name='OBSTIME', format='1E', unit='SECONDS',
                                  array=obs_spec['obstime'])
 
 
+    c['brvc']      = fits.Column(name='BARYCORR', format='1E', unit='KM/S',
+                                 array=a['brvc'].to(u.km/u.s) )
+    
     # Currently assumes that all spectra will be the same length
     #  and so uses the length of the first one to set the size
     if (max1 == 0):
@@ -633,7 +644,7 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     else:
         dsize = '{}E'.format(max1)
 
-    c['spec']     = fits.Column(name='SPECTRUM',  format=dsize, unit='power',
+    c['spec']     = fits.Column(name='SPECTRUM',  format=dsize, unit='POWER',
                                  array=obs_spec['spec'])
 
 
@@ -673,12 +684,12 @@ def sdf_noistable_hdu(obsmode=None, max1=0):
         j = i + 1
         if   (wcs_meta['ctypeN'][i] == 'RA'):
             c['ra']   = fits.Column(name='CRVAL{}'.format(j),
-                                         format='1E', unit='degrees',
+                                         format='1E', unit='DEGREES',
                                          array=a['ra'])
 
         elif (wcs_meta['ctypeN'][i] == 'DEC'):
             c['dec']   = fits.Column(name='CRVAL{}'.format(j),
-                                         format='1E', unit='degrees',
+                                         format='1E', unit='DEGREES',
                                          array=a['dec'])
 
     # a['tsys'] = ?
@@ -686,11 +697,11 @@ def sdf_noistable_hdu(obsmode=None, max1=0):
     #                              array=a['tsys'])
 
     # a['imagfreq'] = ?
-    c['imagfreq']   = fits.Column(name='IMAGFREQ', format='1E', unit='Hz')
+    c['imagfreq']   = fits.Column(name='IMAGFREQ', format='1E', unit='HZ')
     #                              array=a['restfreq'])
 
     # a['tau-atm'] = ?
-    c['tau-atm']    = fits.Column(name='TAU-ATM', format='1E')
+    c['tau-atm']    = fits.Column(name='TAU_ATM', format='1E')
     #                              array=a['tau-atm'])
 
     # a['mh2o'] = ?
@@ -705,9 +716,9 @@ def sdf_noistable_hdu(obsmode=None, max1=0):
     c['tchop']      = fits.Column(name='TCHOP',    format='1E', unit='K')
     #                              array=a['tchop'])
 
-    c['el']        = fits.Column(name='ELEVATIO', format='1E', unit='degrees',
+    c['el']        = fits.Column(name='ELEVATIO', format='1E', unit='DEGREES',
                                  array=obs_nois['el'])
-    c['az']        = fits.Column(name='AZIMUTH',  format='1E', unit='degrees',
+    c['az']        = fits.Column(name='AZIMUTH',  format='1E', unit='DEGREES',
                                  array=obs_nois['az'])
 
     c['ut']        = fits.Column(name='UT',       format='1D', 
@@ -716,7 +727,7 @@ def sdf_noistable_hdu(obsmode=None, max1=0):
     c['lst']       = fits.Column(name='LST',      format='1D', 
                                  array=a['lst'])
 
-    c['obstime']   = fits.Column(name='OBSTIME', format='1E', unit='seconds',
+    c['obstime']   = fits.Column(name='OBSTIME', format='1E', unit='SECONDS',
                                  array=obs_nois['obstime'])
 
 
@@ -730,7 +741,7 @@ def sdf_noistable_hdu(obsmode=None, max1=0):
 #    else:
 #        dsize = '{}E'.format(max1)
 #
-#    c['spec']     = fits.Column(name='SPECTRUM',  format=dsize, unit='power',
+#    c['spec']     = fits.Column(name='SPECTRUM',  format=dsize, unit='POWER',
 #                                 array=obs_spec['spec'])
 
 
@@ -748,8 +759,8 @@ def sdf_mkfits (ofile=None, max1=0):
 
     sdf_getsite()
     sdf_getwthr()
-    sdf_getwcs(maxis=4, maxisN=[2,1,1,1], ctypeN=['FREQ', 'RA', 'DEC', 'STOKES'], 
-               crvalN=[0]*4, crpixN=[2/2, 0, 0, 0], cdeltN=[1,0,0,0])
+    sdf_getwcs(maxis=4, maxisN=[1,1,1,1], ctypeN=['FREQ', 'RA', 'DEC', 'STOKES'], 
+               crvalN=[1]*4, crpixN=[1,1,1,1], cdeltN=[1,1,1,1])
     
     # Loading the obs_spec and obs_nois dictionaries is done outside
     #  this.
