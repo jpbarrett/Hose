@@ -82,7 +82,7 @@ __usage__="""\
  the FITS file name based on the basename returned.
 """
 __author__="S. Levine"
-__date__="2019 Jan 28"
+__date__="2019 Feb 03"
 
 #------------------------------------------------------------------------
 # import the FITS io routines for the I/O
@@ -121,14 +121,15 @@ wcs_meta   = {'maxis'  : None}
 # Spectrum dictionary - it is structured as a dictionary of lists for
 #  compatibility with the FITS binary table column construction.
 obs_spec = {'datetime': [], 'date-obs': [], 'ut': [], 'object': [],
-            'obstime': [], 'experiment': [], 'scan': [], 'navg': [],
+            'obstime': [], 'experiment': [], 'scan': [], 'scan_name': [],
+            'navg': [],
             'spec_len': [], 'spec_data_type': [], 'spec': [],
             'crval_freq': [], 'crpix_freq': [], 'cdelt_freq': [],
             'az': [], 'el':[]}
 
 # Noise dictionary
 obs_nois   = {'datetime': [], 'date-obs': [], 'ut': [], 'object': [],
-              'obstime': [], 'experiment': [], 'scan': [],
+              'obstime': [], 'experiment': [], 'scan': [], 'scan_name': [],
               'accum_len': [], 'switch_freq': [], 'blanking_per': [],
               'noise': [], 'az': [], 'el':[]}
 
@@ -176,7 +177,7 @@ def sdf_getobs_spec (spec_record, meta_info):
     obs_spec['object'].append(spec_record.source_name())
     obs_spec['obstime'].append(spec_record.obstime())
     obs_spec['experiment'].append(spec_record.experiment_name())
-    # obs_spec['scan'].append(spec_record.scan_name())
+    obs_spec['scan_name'].append(spec_record.scan_name())
     obs_spec['scan'].append(spec_record.scan_number())
     obs_spec['navg'].append(spec_record.n_averages())
     obs_spec['spec_len'].append(spec_record.spectrum_length())
@@ -192,8 +193,8 @@ def sdf_getobs_spec (spec_record, meta_info):
         obs_spec['crval_freq'].append(b['fields']['reference_bin_center_sky_frequency_MHz'] *
                                       1000000.0)
         obs_spec['crpix_freq'].append(b['fields']['reference_bin_index'])
-        obs_spec['cdelt_freq'].append(b['fields']['frequency_delta_MHz'] /
-                                      b['fields']['bin_delta'] * 1000000.0)
+        obs_spec['cdelt_freq'].append(b['fields']['frequency_delta_MHz']
+                                      * 1000000.0 / b['fields']['bin_delta'])
 
     else:
         obs_spec['az'].append(-1.0)
@@ -202,6 +203,7 @@ def sdf_getobs_spec (spec_record, meta_info):
         obs_spec['crpix_freq'].append(1.0)
         obs_spec['cdelt_freq'].append(1.0)
 
+    #print ('{} {}'.format(obs_spec['scan_name'], obs_spec['scan']))
     #print ('{} {}'.format(obs_spec['date-obs'], obs_spec['ut']))
 
     return
@@ -222,7 +224,7 @@ def sdf_getobs_nois (nois_record, meta_info):
     obs_nois['object'].append(nois_record.source_name())
     obs_nois['obstime'].append(nois_record.obstime())
     obs_nois['experiment'].append(nois_record.experiment_name())
-    # obs_nois['scan'].append(nois_record.scan_name())
+    obs_nois['scan_name'].append(nois_record.scan_name())
     obs_nois['scan'].append(nois_record.scan_number())
 
     obs_nois['accum_len'].append(nois_record.accumulation_length())
@@ -623,6 +625,9 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     c['az']        = fits.Column(name='AZIMUTH',  format='1E', unit='DEGREES',
                                  array=obs_spec['az'])
 
+    c['date-obs']  = fits.Column(name='DATE-OBS', format='26A', 
+                                 array=obs_spec['date-obs'])
+    
     c['ut']        = fits.Column(name='UT',       format='1D', 
                                  array=obs_spec['ut'])
     # a['lst'] = ?
@@ -721,6 +726,9 @@ def sdf_noistable_hdu(obsmode=None, max1=0):
     c['az']        = fits.Column(name='AZIMUTH',  format='1E', unit='DEGREES',
                                  array=obs_nois['az'])
 
+    c['date-obs']  = fits.Column(name='DATE-OBS', format='26A', 
+                                 array=obs_nois['date-obs'])
+    
     c['ut']        = fits.Column(name='UT',       format='1D', 
                                  array=obs_nois['ut'])
     # a['lst'] = ?
