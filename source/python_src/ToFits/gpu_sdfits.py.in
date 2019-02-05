@@ -82,7 +82,7 @@ __usage__="""\
  the FITS file name based on the basename returned.
 """
 __author__="S. Levine"
-__date__="2019 Feb 03"
+__date__="2019 Feb 05a"
 
 #------------------------------------------------------------------------
 # import the FITS io routines for the I/O
@@ -332,7 +332,7 @@ def sdf_getwcs (maxis=None, maxisN=None, ctypeN=None, crvalN=None,
     # defaults
     if (maxis == None):
         wcs_meta['maxis']  = 4
-        wcs_meta['maxisN'] = [1]*4
+        wcs_meta['maxisN'] = [2,1,1,1]
         wcs_meta['ctypeN'] = ['FREQ', 'RA', 'DEC', 'STOKES']
         wcs_meta['crvalN'] = [1.0]*4
         wcs_meta['crpixN'] = [1.0]*4
@@ -426,14 +426,15 @@ def sdf_primary_hdu (object=None, telescope=None, instrument=None):
 
     hdr['TELESCOP'] = site_meta['telescope']
     hdr['INSTRUME'] = site_meta['instrument']
-
+    hdr['FWVER']    = '{}'.format(__date__)
+    
     # How to put in a comment?
 
     primary_hdu = fits.PrimaryHDU(header=hdr)
 
     return primary_hdu
 
-def sdf_bintab_hdr (obsrec, extname='MATRIX', obsmode=None):
+def sdf_bintab_hdr (obsrec, extname='MATRIX', obsmode=None, speclen=0):
     """
     setup common binary table header information
     will return dictionary a, and fits header hdr.
@@ -496,6 +497,8 @@ def sdf_bintab_hdr (obsrec, extname='MATRIX', obsmode=None):
             hdr['CDELT{}'.format(j)] = wcs_meta['cdeltN'][i]
             hdr['CRPIX{}'.format(j)] = wcs_meta['crpixN'][i]
         elif (wcs_meta['ctypeN'][i] == 'FREQ'):
+            if (speclen != 0):
+                hdr['MAXIS{}'.format(j)] = speclen
             hdr['CRVAL{}'.format(j)] = obsrec['crval_freq'][0]
             hdr['CRPIX{}'.format(j)] = obsrec['crpix_freq'][0]
             hdr['CDELT{}'.format(j)] = obsrec['cdelt_freq'][0]
@@ -551,6 +554,16 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     Table HDU from the defined col set
     """
 
+    # default spectrum length
+    # Currently assumes that all spectra will be the same length
+    #  and so uses the length of the first one to set the size
+    if (max1 == 0):
+        # dsize = '{}E'.format(wcs_meta['maxisN'][0])
+        dsizeval = int(obs_spec['spec_len'][0])
+        dsize = '{}E'.format(dsizeval)
+    else:
+        dsize = '{}E'.format(max1)
+
     # set up null dictionary for columns
     c = {}
 
@@ -558,7 +571,8 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     a = {}
 
     # a, hdr = sdf_bintab_hdr (obs_spec, extname='MATRIX', obsmode=obsmode)
-    a, hdr = sdf_bintab_hdr (obs_spec, extname='SINGLE DISH', obsmode=obsmode)
+    a, hdr = sdf_bintab_hdr (obs_spec, extname='SINGLE DISH', obsmode=obsmode,
+                             speclen=dsizeval)
     
     #c['scan']     = fits.Column(name='SCAN',     format='256A',
     #                            array=obs_spec['scan'])
@@ -593,7 +607,7 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
                                             format='1E', unit='PIXEL',
                                             array=obs_spec['crpix_freq'])
             c['freq_cdelt']   = fits.Column(name='CDELT{}'.format(j),
-                                            format='1E', unit='HZ/PIXEL',
+                                            format='1E', unit='HZ',
                                             array=obs_spec['cdelt_freq'])
 
     # a['tsys'] = ?
@@ -641,14 +655,6 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     c['brvc']      = fits.Column(name='BARYCORR', format='1E', unit='KM/S',
                                  array=a['brvc'].to(u.km/u.s) )
     
-    # Currently assumes that all spectra will be the same length
-    #  and so uses the length of the first one to set the size
-    if (max1 == 0):
-        # dsize = '{}E'.format(wcs_meta['maxisN'][0])
-        dsize = '{}E'.format(int(obs_spec['spec_len'][0]))
-    else:
-        dsize = '{}E'.format(max1)
-
     c['spec']     = fits.Column(name='SPECTRUM',  format=dsize, unit='POWER',
                                  array=obs_spec['spec'])
 
@@ -760,22 +766,23 @@ def sdf_noistable_hdu(obsmode=None, max1=0):
 
     return hdu
 
-def sdf_mkfits (ofile=None, max1=0):
+def sdf_mkfits (ofile=None):
     """
     Construct full fits file
     """
 
     sdf_getsite()
     sdf_getwthr()
-    sdf_getwcs(maxis=4, maxisN=[1,1,1,1], ctypeN=['FREQ', 'RA', 'DEC', 'STOKES'], 
-               crvalN=[1]*4, crpixN=[1,1,1,1], cdeltN=[1,1,1,1])
+    sdf_getwcs(maxis=4, maxisN=[2,1,1,1],
+               ctypeN=['FREQ', 'RA', 'DEC', 'STOKES'], 
+               crvalN=[1]*4, crpixN=[1]*4, cdeltN=[1]*4)
     
     # Loading the obs_spec and obs_nois dictionaries is done outside
     #  this.
     # sdf_getobs_spec()
 
     phdu = sdf_primary_hdu (telescope='Westford')
-    shdu = sdf_spectable_hdu (obsmode='LINEPSSW', max1=max1)
+    shdu = sdf_spectable_hdu (obsmode='LINEPSSW')
     
     # include primary and table HDUs into one
     hdu1 = fits.HDUList([phdu, shdu])
