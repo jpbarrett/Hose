@@ -27,7 +27,7 @@ used for later conversion into SDFITS format files.
 """
 
 __author__="S. Levine"
-__date__="2019 Jan 28"
+__date__="2019 Feb 12"
 
 #------------------------------------------------------------------------
 # Imports
@@ -333,7 +333,7 @@ class GPUNoise(GPUBase):
 #           ifile defaults to 'meta_data.json'
 #           echo defaults to False
 #    Then the various subsets of the metadata can be accessed as:
-#      ap = x.antenna_position()
+#      ap = x.antenna_pos()
 #      spec = x.spectrometer()
 #
 # On init, this will
@@ -341,7 +341,7 @@ class GPUNoise(GPUBase):
 #
 # 2) Then each subset can be extracted using the specific parser
 #    e.g for the antenna position data:
-#      ap = x.antenna_position()
+#      ap = x.antenna_pos()
 #
 # 3) The specific parsers all call gpu_meta_parse(meta, mtype). If you
 #    have a previously undefined metadata type, you can extract that 
@@ -354,10 +354,7 @@ class GPUNoise(GPUBase):
 class GPUMeta():
     """
     Load up metadata for a GPU spectrometer run.  All the subset
-    methods return lists of dictionaries, except for antenna_pos(),
-    which returns a list of lists. The assumption is that that will be
-    used as an interpolation table for computing antenna Az, and El at
-    specific times.
+    methods return lists of dictionaries.
     """
 
     def __init__ (self, ifile='meta_data.json', echo=False):
@@ -488,15 +485,20 @@ class GPUMeta():
                         q = j
                         r = j+1
                         break
-                a = (itime - subset[j]['datetime'])
-                b = (subset[j+1]['datetime'] - itime)
-                c = (subset[j+1]['datetime'] - subset[j]['datetime'])
-                            
-                if (rtype == 'interp'):
-                    # y = y0 + (t - t0)/(t1 - t0) * (y1 - y0)
-                    # c = (t1 - t0) 
-                    # a = (t - t0)
+                a = (itime - subset[j]['datetime']).total_seconds()
+                b = (subset[j+1]['datetime'] - itime).total_seconds()
+                c = (subset[j+1]['datetime'] - subset[j]['datetime']).total_seconds()
+                d = a/c
 
+                if (rtype == 'interp'):
+                    # a = (t - t0)
+                    # b = (t1 - t)
+                    # c = (t1 - t0) 
+                    # y = y0 + (t - t0)/(t1 - t0) * (y1 - y0)
+                    # y = y0 + a / c * (y1 - y0)
+                    #   = a/c y1 + (1-a/c) * y0
+                    tdidx   = q
+                    tdidxp1 = r
                     pass
                 
                 elif (rtype == 'prevval'):
@@ -510,10 +512,22 @@ class GPUMeta():
                         tdidx = q
                     else:
                         tdidx = r
-                        
+
+            # make base copy - sufficient for all except interp, which
+            # will need an added part, if point is not outside extrema
             retval['measurement'] = subset[tdidx]['measurement']
             retval['fields']      = subset[tdidx]['fields'].copy()
             
+            if ((rtype == 'interp') and  (tdidx != 0) and (tdidx != -1)):
+                for irf in retval['fields']:
+                    retval['fields'][irf] += d * \
+                                             (subset[tdidxp1]['fields'][irf] \
+                                              - subset[tdidx]['fields'][irf])
+                    #print ('irf1 == {} {} {}'.
+                    #       format(subset[tdidx]['fields'][irf],
+                    #       subset[tdidxp1]['fields'][irf], d))
+                    #print ('irf2 == {}'.format(retval['fields'][irf]))
+                    
         return retval
 
     def dump_all (self, echo=False):
@@ -538,41 +552,44 @@ class GPUMeta():
 
     def antenna_pos (self, echo=False):
         """
-        Extract the antenna_position information into a simpler list of lists.
+        Extract the antenna_position information.
+        fields: az, el
+
+        echo can take 3 values: True, False or 'Short'
+
+        Earlier version changed this into a simpler list of lists.
         Each sub list has time, datetime, az, el.
         The expectation is that this will get used as input for an interpolator
         to construct telescope az, el at any specific time within the
-        range of the values.
-        echo can take 3 values: True, False or 'Short'
-        fields: az, el
+        range of the values.  That is not used. Now return in same
+        style as all other data.
         """
         apos = self.gpu_meta_parse (mtype='antenna_position',
                                     echo=echo)
 
-        k = []
-        for i in apos:
-            j    = i['fields']
-            ti   = i['time']
-            dtti = i['datetime']
-            az   = j['az']
-            el   = j['el']
-            k.append([ti,dtti, az,el])
+        # k = []
+        # for i in apos:
+        #     j    = i['fields']
+        #     ti   = i['time']
+        #     dtti = i['datetime']
+        #     az   = j['az']
+        #     el   = j['el']
+        #     k.append([ti,dtti, az,el])
 
         # option to display the list of lists
-        if ((echo == True) or (echo == 'Short')):
-            for m in k:
-                print (m)
+        # if ((echo == True) or (echo == 'Short')):
+        #     for m in k:
+        #         print (m)
 
-        return k
+        return apos
 
     def antenna_pos_at_time (self, itime, echo=False):
         """
         Extract the antenna_position information at time.
-        (Currently gets nearest value, but really should be interpolated 
-        value.) 
+        (Gets interpolated value.) 
         """
         apos = self.gpu_meta_at_time (itime, mtype='antenna_position',
-                                      rtype='nearest', echo=echo)
+                                      rtype='interp', echo=echo)
 
         return apos
 
