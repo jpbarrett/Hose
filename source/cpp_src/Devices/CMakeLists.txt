@@ -14,7 +14,7 @@ set( HDEVICES_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HPX14DigitizerSimulator.hh
 )
 
-set( HDEVICES_SOURCEFILES 
+set( HDEVICES_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HPX14DigitizerSimulator.cc
 )
 
@@ -43,6 +43,18 @@ if (HOSE_USE_ADQ7)
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HADQ7Digitizer.cc
     )
     list(APPEND HDEVICES_LIBS ${ADQSDK_LIBRARIES})
+endif()
+
+if (HOSE_USE_ATS)
+    find_package(ATSSDK REQUIRED)
+    include_directories(${ATSSDK_INCLUDE_DIRS})
+    # list(APPEND HDEVICES_HEADERFILES
+    #     ${CMAKE_CURRENT_SOURCE_DIR}/include/HADQ7Digitizer.hh
+    # )
+    # list(APPEND HDEVICES_SOURCEFILES
+    #     ${CMAKE_CURRENT_SOURCE_DIR}/src/HADQ7Digitizer.cc
+    # )
+    list(APPEND HDEVICES_LIBS ${ATSSDK_LIBRARIES})
 endif()
 
 ##################################################

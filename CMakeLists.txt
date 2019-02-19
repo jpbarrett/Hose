@@ -48,6 +48,7 @@ message(STATUS "Using compiler ${COMPILER_ID} ${COMPILER_VERSION}")
 #options for triggering additional dependencies
 option( HOSE_USE_PX14 "Build PX14400 device support" OFF )
 option( HOSE_USE_ADQ7 "Build ADQ7 device support" OFF )
+option( HOSE_USE_ATS "Build AlazarTech device support" OFF )
 option( HOSE_USE_CUDA "Build CUDA support." OFF)
 option( HOSE_USE_ROOT "Build ROOT based utilities." OFF)
 option( HOSE_USE_ZEROMQ "Build client-server library" OFF )
