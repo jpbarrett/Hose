@@ -48,12 +48,14 @@ endif()
 if (HOSE_USE_ATS)
     find_package(ATSSDK REQUIRED)
     include_directories(${ATSSDK_INCLUDE_DIRS})
-    # list(APPEND HDEVICES_HEADERFILES
-    #     ${CMAKE_CURRENT_SOURCE_DIR}/include/HADQ7Digitizer.hh
-    # )
-    # list(APPEND HDEVICES_SOURCEFILES
-    #     ${CMAKE_CURRENT_SOURCE_DIR}/src/HADQ7Digitizer.cc
-    # )
+    list(APPEND HDEVICES_HEADERFILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/HATS9371Digitizer.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/HATS9371BufferAllocator.hh
+    )
+    list(APPEND HDEVICES_SOURCEFILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/HATS9371Digitizer.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/HATS9371BufferAllocator.cc
+    )
     list(APPEND HDEVICES_LIBS ${ATSSDK_LIBRARIES})
 endif()
 

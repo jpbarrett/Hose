@@ -1,40 +1,40 @@
-#ifndef HPX14Digitizer_HH__
-#define HPX14Digitizer_HH__
+#ifndef HATS9371Digitizer_HH__
+#define HATS9371Digitizer_HH__
 
 #include <cstddef>
 #include <stdint.h>
 
-extern "C"
-{
-    #include "px14.h"
-}
+#include <stdio.h>
+#include <string.h>
+
+#include "AlazarError.h"
+#include "AlazarApi.h"
+#include "AlazarCmd.h"
 
 #include <mutex>
 
 #include "HDigitizer.hh"
 #include "HProducer.hh"
 #include "HConsumerBufferHandlerPolicy.hh"
-#include "HPX14BufferAllocator.hh"
+
+#include "HATS9371BufferAllocator.hh"
 
 namespace hose {
 
 /*
-*File: HPX14Digitizer.hh
-*Class: HPX14Digitizer
+*File: HATS9371Digitizer.hh
+*Class: HATS9371Digitizer
 *Author: J. Barrett
 *Email: barrettj@mit.edu
 *Date:
-*Description: Partially ported from original gpu-spec code by Juha Vierinen/Russ McWirther
 */
 
 
-
-
-class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  public HProducer< px14_sample_t, HProducerBufferHandler_Steal< px14_sample_t > >
+class HATS9371Digitizer: public HDigitizer< ats_sample_t, HATS9371Digitizer >,  public HProducer< ats_sample_t, HProducerBufferHandler_Steal< ats_sample_t > >
 {
     public:
-        HPX14Digitizer();
-        virtual ~HPX14Digitizer();
+        HATS9371Digitizer();
+        virtual ~HATS9371Digitizer();
 
         //methods to configure board
         void SetBoardNumber(unsigned int n){fBoardNumber = n;};
@@ -45,7 +45,7 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
 
         double GetSamplingFrequency() const {return fAcquisitionRateMHz*1e6;};
 
-        HPX14 GetBoard() {return fBoard;};
+        HANDLE GetBoard() {return fBoard;};
         bool IsInitialized() const {return fInitialized;};
         bool IsConnected() const {return fConnected;};
         bool IsArmed() const {return fArmed;};
@@ -54,7 +54,7 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
 
     protected:
 
-        friend class HDigitizer<px14_sample_t, HPX14Digitizer >;
+        friend class HDigitizer<ats_sample_t, HATS9371Digitizer >;
 
         //required by digitizer interface
         bool InitializeImpl();
@@ -78,7 +78,8 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
         char fSidebandFlag;
         char fPolarizationFlag;
 
-        HPX14 fBoard;
+        HANDLE fBoard;
+        unsigned int fSystemNumber; //system id
         unsigned int fBoardNumber; //board id
         double fAcquisitionRateMHz; //effective sampling frequency in MHz
         bool fConnected;
@@ -103,13 +104,13 @@ class HPX14Digitizer: public HDigitizer< px14_sample_t, HPX14Digitizer >,  publi
         //internal DMA buffer pool handling
         unsigned int fNInternalBuffers;
         unsigned int fInternalBufferSize;
-        HBufferPool< px14_sample_t >* fInternalBufferPool; //buffer pool of px14 allocated buffers (limited to 2MB max size)
-        HProducerBufferHandler_Immediate< px14_sample_t > fInternalProducerBufferHandler;
-        HConsumerBufferHandler_Immediate< px14_sample_t > fInternalConsumerBufferHandler;
+        HBufferPool< ats_sample_t >* fInternalBufferPool; //buffer pool of px14 allocated buffers (limited to 2MB max size)
+        HProducerBufferHandler_Immediate< ats_sample_t > fInternalProducerBufferHandler;
+        HConsumerBufferHandler_Immediate< ats_sample_t > fInternalConsumerBufferHandler;
 
 
 };
 
 }
 
-#endif /* end of include guard: HPX14Digitizer */
+#endif /* end of include guard: HATS9371Digitizer */
