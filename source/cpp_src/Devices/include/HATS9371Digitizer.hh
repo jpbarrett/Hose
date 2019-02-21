@@ -30,7 +30,7 @@ namespace hose {
 */
 
 
-class HATS9371Digitizer: public HDigitizer< ats_sample_t, HATS9371Digitizer >,  public HProducer< ats_sample_t, HProducerBufferHandler_Steal< ats_sample_t > >
+class HATS9371Digitizer: public HDigitizer< ats_sample_t, HATS9371Digitizer >,  public HProducer< ats_sample_t, HProducerBufferHandler_Immediate< ats_sample_t > >
 {
     public:
         HATS9371Digitizer();

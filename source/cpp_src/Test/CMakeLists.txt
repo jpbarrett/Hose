@@ -17,9 +17,9 @@ if (HOSE_ENABLE_TEST)
         # TestMultiThreadDummy
     )
 
-    if( HOSE_USE_PX14 OR HOSE_USE_ADQ7)
+    if( HOSE_USE_PX14 OR HOSE_USE_ADQ7 OR HOSE_USE_ATS)
         list(APPEND HOSE_TEST_LIBS HDevices)
-    endif(HOSE_USE_PX14 OR HOSE_USE_ADQ7)
+    endif(HOSE_USE_PX14 OR HOSE_USE_ADQ7 OR HOSE_USE_ATS)
 
     if(HOSE_USE_ZEROMQ)
         include(FindZeroMQ)
@@ -92,6 +92,13 @@ if (HOSE_ENABLE_TEST)
         # if(HOSE_USE_CUDA)
         #     list(APPEND SOURCE_BASENAMES TestMultiThreadPX14Spectrometer)
         # endif(HOSE_USE_CUDA)
+    endif()
+
+    if (HOSE_USE_ATS)
+        find_package(ATSSDK REQUIRED)
+        include_directories(${ATSSDK_INCLUDE_DIRS})
+        list(APPEND HOSE_TEST_LIBS ${ATSSDK_LIBRARIES})
+        list(APPEND SOURCE_BASENAMES TestATS9371DigitizerInterface TestMultiThreadATS9371)
     endif()
 
     foreach( BASENAME ${SOURCE_BASENAMES} )
