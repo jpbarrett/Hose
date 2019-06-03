@@ -12,7 +12,6 @@
 #include "HCudaHostBufferAllocator.hh"
 #include "HBufferAllocatorSpectrometerDataCUDA.hh"
 #include "HSimpleMultiThreadedSpectrumDataWriter.hh"
-#include "HPeriodicPowerCalculator.hh"
 
 using namespace hose;
 
