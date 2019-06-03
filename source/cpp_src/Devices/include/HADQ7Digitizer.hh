@@ -25,13 +25,10 @@
 #include <ctime>
 
 #include "HDigitizer.hh"
+#include "HProducer.hh"
 
+typedef int16_t adq_sample_t;
 
-//following defines are for debugging
-//#define TIMEOUT_WHEN_POLLING
-//#define DEBUG_TIMER
-
-namespace hose {
 
 /*
 *File: HADQ7Digitizer.hh
@@ -42,37 +39,35 @@ namespace hose {
 *Description:
 */
 
-//buffer sample type
-typedef signed short ADQ7_SAMPLE_TYPE;
+namespace hose
+{
 
-class HADQ7Digitizer: public HDigitizer< ADQ7_SAMPLE_TYPE, HADQ7Digitizer >
+
+class HADQ7Digitizer:  public HDigitizer< adq_sample_t, HADQ7Digitizer >,  public HProducer< adq_sample_t, HProducerBufferHandler_Steal< adq_sample_t > >
 {
     public:
         HADQ7Digitizer();
         virtual ~HADQ7Digitizer();
 
-        void EnableTestPattern(){fTestPattern = 2;};
-        void DisableTestPattern(){fTestPattern = 0;};
+        //methods to configure board
+        void SetDeviceNumber(unsigned int n){fADQDeviceNumber = n;};
+        unsigned int GetDeviceNumber() const {return fADQDeviceNumber;};
 
-        void EnableADX(){fADXMode = 0;};
-        void DisableADX(){fADXMode = 1;};
+        void SetSidebandFlag(const char& sflag){fSidebandFlag = sflag;};
+        void SetPolarizationFlag(const char& pflag){fPolarizationFlag = pflag;};
 
-        void SelectChannelA(){fEnableA = 1; fEnableB = 0;};
-        void SelectChannelB(){fEnableA = 0; fEnableB = 1;};
+        void SetSampleSkipFactor(unsigned int factor);
 
-        void SetDecimationFactor(unsigned int factor);
+        double GetSamplingFrequency() const {return fAcquisitionRateMHz*1e6;};
 
-        void SetNThreads(unsigned int n){fNThreads = n;};
+        bool IsInitialized() const {return fInitialized;};
+        bool IsArmed() const {return fArmed;};
 
-        //signal to the threads to terminate on completion of work
-        void SignalTerminateOnComplete();
-
-        //force the threads to abandon any remaining work, and terminate immediately
-        void ForceTermination();
+        void StopAfterNextBuffer(){fStopAfterNextBuffer = true;}
 
     protected:
 
-        friend class HDigitizer< ADQ7_SAMPLE_TYPE, HADQ7Digitizer >;
+        friend class HDigitizer<adq_sample_t, HADQ7Digitizer >;
 
         //required by digitizer interface
         bool InitializeImpl();
@@ -82,59 +77,53 @@ class HADQ7Digitizer: public HDigitizer< ADQ7_SAMPLE_TYPE, HADQ7Digitizer >
         void StopImpl();
         void TearDownImpl();
 
-        //set up ADQ board
-        bool InitializeBoardInterface();
+        //required by the producer interface
+        virtual void ExecutePreProductionTasks() override; //'initialize' the digitizer
+        virtual void ExecutePostProductionTasks() override; //teardown the digitizer
+        virtual void ExecutePreWorkTasks() override; //grab a buffer start acquire if we haven't already
+        virtual void DoWork() override; //execute a transfer into buffer
+        virtual void ExecutePostWorkTasks() override; //finalize the transfer, release the buffer
 
-        //thread management
-        void LaunchThreads();
-        void JoinThreads();
-        void ReadLoop();
-        void InsertIdleIndicator();
-        void SetIdleIndicatorFalse();
-        void SetIdleIndicatorTrue();
-        bool AllThreadsAreIdle();
+        //needed by the thread pool interface
+        virtual void ExecuteThreadTask() override; //do thread work assoicated with fill the buffer
+        virtual bool WorkPresent() override; //check if we have buffer filling work to do
 
-        //ADQ API related data
-        bool fBoardInterfaceInitialized;
+        void ConfigureBoardInterface();
+
+        char fSidebandFlag;
+        char fPolarizationFlag;
+        unsigned int fClockMode; //0 is internal 10MHz reference, 1 uses external 10MHz reference
+
+        //device data
         void* fADQControlUnit;
         unsigned int fADQDeviceNumber;
         std::string fSerialNumber;
-        int fADQAPIRevision;
-
-        //board data
-        unsigned int fDecimationFactor;
-        double fSampleRate; //sample rate is given in hertz
-        double fSampleRateMHz;
-        unsigned int fNChannels;
-
-        //aquisition configuration, and time stamp
-        unsigned int fNRecords;
-        unsigned int fNSamplesPerRecord;
-	    //global sample counter, zeroed at the start of an aquisition
-    	uint64_t fCounter;
-        std::time_t fAcquisitionStartTime;
         int fEnableA;
         int fEnableB;
-        unsigned int fTestPattern;
-        unsigned int fADXMode;
+        unsigned int fNChannels;
+        bool fUseSoftwareTrigger;
+        double fSampleRate; //raw sample rate
+        double fAcquisitionRateMHz; //effective sampling frequency in MHz
+        unsigned int fSampleSkipFactor; //number of samples to skip to reduce data rate
 
+        bool fInitialized;
+        volatile bool fArmed;
+        volatile bool fStopAfterNextBuffer;
 
-        //thread pool stuff for read-out
-        unsigned int fNThreads;
-        bool fSignalTerminate;
-        bool fForceTerminate;
-        unsigned int fSleepTime;
-        mutable std::mutex fQueueMutex;
-        std::queue< std::tuple<void*, void*, size_t> > fMemcpyArgQueue;
-        std::vector< std::thread > fThreads;
-        std::mutex fIdleMutex;
-        std::map< std::thread::id, bool > fThreadIdleMap;
-
+        //global sample counter
+        volatile uint64_t fCounter;
+        HProducerBufferPolicyCode fBufferCode;
+        volatile std::time_t fAcquisitionStartTime;
         //internal error code, cleared on stop/acquire, indicates board buffer overflow
         int fErrorCode;
 
+        //internal memory copy queue
+        mutable std::mutex fQueueMutex;
+        std::queue< std::tuple<void*, void*, size_t> > fMemcpyArgQueue;
+
 };
 
-}
+
+} //end of namespace
 
 #endif /* end of include guard: HADQ7Digitizer */

@@ -1,198 +1,141 @@
-#include <iostream>
-#include <unistd.h>
-#include <limits>
-#include <cstdlib>
-#include <cstring>
-#include <sstream>
-
-#include <time.h>
-#include <pthread.h>
-//needed for mkdir
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #include "HADQ7Digitizer.hh"
-#include "HBufferAllocatorMalloc.hh"
 
 #define CHECKADQ(f) if(!(f)){std::cout<<"Error in " #f ""<<std::endl; std::exit(1);}
+#define MIN_MACRO(a,b) ((a) > (b) ? (b) : (a))
 
-#define MIN(a,b) ((a) > (b) ? (b) : (a))
-#define MAX(a,b) ((a) > (b) ? (a) : (b))
-
-namespace hose {
+namespace hose
+{
 
 HADQ7Digitizer::HADQ7Digitizer():
-    HDigitizer< ADQ7_SAMPLE_TYPE, HADQ7Digitizer >(),
-    fBoardInterfaceInitialized(false),
+    fSidebandFlag('?'),
+    fPolarizationFlag('?'),
+    fClockMode(0), //0 is internal 10MHz reference, 1 uses external 10MHz reference
     fADQControlUnit(nullptr),
-    fADQDeviceNumber(0),
-    fSerialNumber(""),
-    fADQAPIRevision(0),
-    fDecimationFactor(8),
-    fSampleRate(0.0),
-    fSampleRateMHz(0.0),
-    fNChannels(0),
+    fADQDeviceNumber(1), //board id
+    fSerialNumber(),
     fEnableA(1),
     fEnableB(0),
-    fTestPattern(0),
-    fADXMode(1),
-    fNThreads(6),
-    fSignalTerminate(false),
-    fForceTerminate(true),
-    fSleepTime(1),
+    fNChannels(0),
+    fUseSoftwareTrigger(true),
+    fSampleRate(0),
+    fAcquisitionRateMHz(0), //effective sampling frequency in MHz
+    fSampleSkipFactor(8),
+    fInitialized(false),
+    fArmed(false),
+    fStopAfterNextBuffer(false),
+    fCounter(0),
+    fBufferCode(HProducerBufferPolicyCode::unset),
     fErrorCode(0)
 {
-    //TODO replace this with a host-pinned memory allocator (i.e. something using CudaMallocHost)
-    //better yet ma
-    this->fAllocator =  new HBufferAllocatorMalloc< HADQ7Digitizer::sample_type >();
+
 }
 
 HADQ7Digitizer::~HADQ7Digitizer()
 {
-    delete this->fAllocator;
-
-    if(fADQControlUnit)
-    {
-        DeleteADQControlUnit(fADQControlUnit);
-        fADQControlUnit = nullptr;
-    }
+    Stop();
+    TearDown();
 }
 
-void 
-HADQ7Digitizer::SetDecimationFactor(unsigned int factor)
+
+void
+HADQ7Digitizer::SetSampleSkipFactor(unsigned int factor)
 {
     if(factor == 1 || factor == 2 || factor == 4 || factor ==8)
     {
-        fDecimationFactor = factor;
+        fSampleSkipFactor = factor;
     }
     else
     {
-        std::cout<<"only 1, 2, 4 or 8 are supported decimation factors. Using 8."<<std::endl;
-        fDecimationFactor = 8;
+        std::cout<<"only 1, 2, 4 or 8 are supported decimation factors. Using a factor of 8."<<std::endl;
+        fSampleSkipFactor = 8;
     }
 }
 
-bool
-HADQ7Digitizer::InitializeImpl()
+bool HADQ7Digitizer::InitializeImpl()
 {
-    if(!fBoardInterfaceInitialized)
+    if(!fInitialized)
     {
-        fBoardInterfaceInitialized = InitializeBoardInterface();
+        //set up basic control unit for the ADQ7
+        ConfigureBoardInterface();
+
+        //get the raw board sample rate (base clock, assuming no decimation)
+        fSampleRate = 0.0;
+        ADQ_GetSampleRate(fADQControlUnit, fADQDeviceNumber, 0, &fSampleRate);
+
+        //determine effective rate depending on sample-skip
+        fAcquisitionRateMHz = (fSampleRate/fSampleSkipFactor)/1e6;
+        std::cout<<"Raw sample rate (MHz):"<<fSampleRate/1e6<<", Effective sample rate (MHz): "<<fAcquisitionRateMHz<<std::endl;
+
+        //Enable streaming
+        std::cout<<"\nSetting up streaming..."<<std::endl;
+        CHECKADQ(ADQ_SetSampleSkip(fADQControlUnit, fADQDeviceNumber, fSampleSkipFactor));
+        CHECKADQ(ADQ_SetStreamStatus(fADQControlUnit, fADQDeviceNumber, 1));
+        CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 2, 1)); //Sample streaming in 'raw' (no header) mode
+        CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 3, 1*fEnableA + 2*fEnableB)); //apply channel mask
+        if(fUseSoftwareTrigger)
+        {
+            std::cout<<"ADQ7 will use a software trigger."<<std::endl;
+            CHECKADQ(ADQ_SetTriggerMode(fADQControlUnit, fADQDeviceNumber,  ADQ_SW_TRIGGER_MODE));
+        }
+        else
+        {
+            std::cout<<"ADQ7 will use an external trigger."<<std::endl;
+            CHECKADQ(ADQ_SetTriggerMode(fADQControlUnit, fADQDeviceNumber, ADQ_EXT_TRIGGER_MODE));
+        }
+
+        //no data streaming until the card is armed for acquisition
+        CHECKADQ(ADQ_StopStreaming(fADQControlUnit, fADQDeviceNumber));
+
+        //wait for the card to catch up
+        sleep(1);
+        fInitialized = true;
     }
-
-    if(!fBoardInterfaceInitialized)
-    {
-        return false;
-    }
-
-
-
-    // //try to set things up to use channels A&B
-    // unsigned int enableAFE_AB = 0x000F;
-    // ADQ_SetAfeSwitch(fADQControlUnit, fADQDeviceNumber, enableAFE_AB);
-    //get the board sample rate (base clock, assuming no decimation)
-    fSampleRate = 0.0;
-    ADQ_GetSampleRate(fADQControlUnit, fADQDeviceNumber, 0, &fSampleRate);
-    
-    //correct for decimation
-    fSampleRate /= fDecimationFactor;
-    fSampleRateMHz = fSampleRate/1e6;
-    std::cout<<"sample rate (MHz) = "<<fSampleRateMHz<<std::endl;
-
-    //get number of channels
-    fNChannels = ADQ_GetNofChannels(fADQControlUnit, fADQDeviceNumber);
-
-    std::cout<<"n channels = "<<fNChannels<<std::endl;
-
-
-    unsigned int tlocal = ADQ_GetTemperature(fADQControlUnit, fADQDeviceNumber, 0)/256;
-    unsigned int tr1 = ADQ_GetTemperature(fADQControlUnit, fADQDeviceNumber, 1)/256;
-    unsigned int tr2 = ADQ_GetTemperature(fADQControlUnit, fADQDeviceNumber, 2)/256;
-    unsigned int tr3 = ADQ_GetTemperature(fADQControlUnit, fADQDeviceNumber, 3)/256;
-    unsigned int tr4 = ADQ_GetTemperature(fADQControlUnit, fADQDeviceNumber, 4)/256;
-    std::cout<<"Temperatures:\n\tLocal: "<<tlocal<<"\n\tADC0: "<<tr1<<"\n\tADC1: "<<tr2<<"\n\tFPGA: "<<tr3<<"\n\tPCB diode: "<<tr4<<"\n"<<std::endl;
-
-    //from the raw streaming example
-    unsigned int sample_skip = fDecimationFactor;
-
-
-
-    std::cout<<"\nSetting up streaming..."<<std::endl;
-
-    //Enable streaming
-    CHECKADQ(ADQ_SetSampleSkip(fADQControlUnit, fADQDeviceNumber, sample_skip));
-
-    std::cout<<"setting test pattern mode: "<<fTestPattern<<std::endl;
-
-
-    CHECKADQ(ADQ_SetTestPatternMode(fADQControlUnit,fADQDeviceNumber, fTestPattern));
-    CHECKADQ(ADQ_SetStreamStatus(fADQControlUnit, fADQDeviceNumber, 1));
-    CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 2, 1)); //RAW mode
-    CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 3, 1*fEnableA + 2*fEnableB)); //mask
-    //CHECKADQ(ADQ_SetTriggerMode(fADQControlUnit, fADQDeviceNumber,  ADQ_SW_TRIGGER_MODE));
-    CHECKADQ(ADQ_SetTriggerMode(fADQControlUnit, fADQDeviceNumber, ADQ_EXT_TRIGGER_MODE));
-    CHECKADQ(ADQ_StopStreaming(fADQControlUnit, fADQDeviceNumber));
-
-
-    //wait for the card to catch up
-    sleep(1);
-
-    fCounter = 0;
-
-    return true;
+    return fInitialized;
 }
 
 void
 HADQ7Digitizer::AcquireImpl()
 {
-    //Enable streaming
+    //Enable streaming, stop it if it was started already
     CHECKADQ(ADQ_SetStreamStatus(fADQControlUnit, fADQDeviceNumber, 1));
     CHECKADQ(ADQ_StopStreaming(fADQControlUnit, fADQDeviceNumber));
 
-
+    fArmed = false;
+    fStopAfterNextBuffer = false;
     fForceTerminate = false;
     fSignalTerminate = false;
     fErrorCode = 0;
     fCounter = 0;
-
-    if(fMemcpyArgQueue.size() != 0)
-    {
-        std::lock_guard< std::mutex > lock(fQueueMutex);
-        while(fMemcpyArgQueue.size() != 0)
-        {
-            fMemcpyArgQueue.pop();
-        }
-    }
-
-    std::cout<<"Collecting data, please wait..."<<std::endl;
-
-    //launch the aquisition threads
-    LaunchThreads();
 
     //time handling is quick and dirty, need to improve this (i.e if we are close to a second-roll over, etc)
     //Note: that the acquisition starts on the next second tick (with the trigger)
     //POSIX expectation is seconds since unix epoch (1970, but this is no guaranteed by the standard)
     fAcquisitionStartTime = std::time(nullptr);
 
-    //create data output directory, need to make this configurable and move it elsewhere
-    std::stringstream ss;
-    ss << DATA_INSTALL_DIR;
-    ss << "/";
-    ss << fAcquisitionStartTime;
-    int dirstatus;
-    dirstatus = mkdir(ss.str().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-
-    //arm card for external triggers
+    //arm card for triggers
     CHECKADQ(ADQ_StartStreaming(fADQControlUnit, fADQDeviceNumber));
-    //CHECKADQ(ADQ_SWTrig(fADQControlUnit, fADQDeviceNumber));
+
+    //issue a software trigger if this feature is in use
+    if(fUseSoftwareTrigger)
+    {
+        CHECKADQ(ADQ_SWTrig(fADQControlUnit, fADQDeviceNumber));
+    }
+
+    fArmed = true;
 }
 
 void
 HADQ7Digitizer::TransferImpl()
 {
-    //configure buffer information, cat time to uint64_t and set, then set the sample rate
+    //configure buffer information, cast time to uint64_t and set, then set the sample rate
+
+    this->fBuffer->GetMetaData()->SetSidebandFlag(fSidebandFlag);
+    this->fBuffer->GetMetaData()->SetPolarizationFlag(fPolarizationFlag);
     this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
-    this->fBuffer->GetMetaData()->SetSampleRate(fSampleRate); //check that double to uint64_t conversion is OK here
+    this->fBuffer->GetMetaData()->SetSampleRate(GetSamplingFrequency()); //check that double to uint64_t conversion is OK here
+    unsigned int count = fCounter;
+    this->fBuffer->GetMetaData()->SetLeadingSampleIndex(count);
+
 
     unsigned int n_samples_collect  = this->fBuffer->GetArrayDimension(0);
     int64_t samples_to_collect = this->fBuffer->GetArrayDimension(0);
@@ -238,7 +181,7 @@ HADQ7Digitizer::TransferImpl()
         while( (buffers_filled == 0) && (collect_result) && (!fErrorCode));
 
         collect_result = ADQ_CollectDataNextPage(fADQControlUnit, fADQDeviceNumber);
-        samples_in_buffer = MIN(ADQ_GetSamplesPerPage(fADQControlUnit, fADQDeviceNumber), samples_to_collect);
+        samples_in_buffer = MIN_MACRO(ADQ_GetSamplesPerPage(fADQControlUnit, fADQDeviceNumber), samples_to_collect);
 
         if(ADQ_GetStreamOverflow(fADQControlUnit, fADQDeviceNumber))
         {
@@ -270,7 +213,7 @@ HADQ7Digitizer::TransferImpl()
     #ifdef DEBUG_TIMER
         //stop timer and print
         clock_gettime(CLOCK_REALTIME, &end);
-        
+
         timespec temp;
         if( (end.tv_nsec-start.tv_nsec) < 0)
         {
@@ -287,7 +230,6 @@ HADQ7Digitizer::TransferImpl()
     #endif
 }
 
-
 HDigitizerErrorCode
 HADQ7Digitizer::FinalizeImpl()
 {
@@ -299,11 +241,10 @@ HADQ7Digitizer::FinalizeImpl()
     }
 
     //increment the sample counter
-    this->fBuffer->GetMetaData()->SetLeadingSampleIndex(fCounter);
     fCounter += this->fBuffer->GetArrayDimension(0);
 
     //return any error codes which might have arisen during streaming
-    //if were buffer overflows/page errors we need to stop and restart the acquisition 
+    //if were buffer overflows/page errors we need to stop and restart the acquisition
     if(!fErrorCode)
     {
         return HDigitizerErrorCode::success;
@@ -320,124 +261,107 @@ HADQ7Digitizer::FinalizeImpl()
 void
 HADQ7Digitizer::StopImpl()
 {
-    SignalTerminateOnComplete();
-    //join the read threads
-    JoinThreads();
-    //Disable XDAM testpattern if it was enabled
-    //CHECKADQ(ADQ_SetDMATest(fADQControlUnit, fADQDeviceNumber, 0x50, 0));
-    CHECKADQ(ADQ_StopStreaming(fADQControlUnit, fADQDeviceNumber));
+    if(fADQControlUnit != nullptr)
+    {
+        CHECKADQ(ADQ_StopStreaming(fADQControlUnit, fADQDeviceNumber));
+        fArmed = false;
+        fErrorCode = 0;
+    }
 }
 
 void
 HADQ7Digitizer::TearDownImpl()
 {
-    ForceTermination();
-    //join the read threads
-    JoinThreads();
-    CHECKADQ(ADQ_StopStreaming(fADQControlUnit, fADQDeviceNumber));
-    DeleteADQControlUnit(fADQControlUnit);
-    fADQControlUnit = nullptr;
+    if(fADQControlUnit != nullptr)
+    {
+        CHECKADQ(ADQ_StopStreaming(fADQControlUnit, fADQDeviceNumber));
+        DeleteADQControlUnit(fADQControlUnit);
+        fADQControlUnit = nullptr;
+    }
+    fInitialized = false;
 }
 
 
-
-
-//create and launch the threads doing the read routine
+//required by the producer interface
 void
-HADQ7Digitizer::LaunchThreads()
+HADQ7Digitizer::ExecutePreProductionTasks()
 {
-    fThreadIdleMap.clear();
-    unsigned int num_cpus = std::thread::hardware_concurrency();
-    std::cout<<"hardware concurrency = "<<num_cpus<<std::endl;
-    if(fThreads.size() == 0)
+    this->Initialize();
+}
+
+void
+HADQ7Digitizer::ExecutePostProductionTasks()
+{
+    this->Stop();
+    this->TearDown();
+    fErrorCode = 0;
+}
+
+void
+HADQ7Digitizer::ExecutePreWorkTasks()
+{
+    if(fArmed)
     {
-        fSignalTerminate = false;
-        fForceTerminate = false;
-        for(unsigned int i=0; i<fNThreads; i++)
+        //get a buffer from the buffer handler
+        HLinearBuffer< adq_sample_t >* buffer = nullptr;
+        fBufferCode = this->fBufferHandler.ReserveBuffer(this->fBufferPool, buffer);
+
+        //set the digitizer buffer if succesful
+        if( buffer != nullptr && (fBufferCode & HProducerBufferPolicyCode::success))
         {
-            cpu_set_t cpuset;
-            CPU_ZERO(&cpuset);
-            CPU_SET((i+2)%num_cpus, &cpuset);
-            std::cout<<"setting digitizer thread #"<<i<<" to cpu #"<<(i+2)%num_cpus<<std::endl;
-            fThreads.push_back( std::thread( &HADQ7Digitizer::ReadLoop, this ) );
-            int rc = pthread_setaffinity_np(fThreads.back().native_handle(), sizeof(cpu_set_t), &cpuset);
-            if(rc != 0)
-            {
-                std::cout<<"Error, couldnt set thread affinity"<<std::endl;
-            }
+            //successfully got a buffer, assigned it
+            this->SetBuffer(buffer);
         }
+
+    }
+}
+
+void
+HADQ7Digitizer::DoWork()
+{
+    //we have an active buffer, transfer the data
+    if( (fBufferCode & HProducerBufferPolicyCode::success) && fArmed)
+    {
+        this->Transfer();
     }
     else
     {
-        std::exit(1);
-        //error, threads already launched
+        Idle();
     }
 }
 
-//signal to the threads to terminate on completion of work
 void
-HADQ7Digitizer::SignalTerminateOnComplete(){fSignalTerminate = true;}
-
-//force the threads to abandon any remaining work, and terminate immediately
-void
-HADQ7Digitizer::ForceTermination(){fForceTerminate = true;}
-
-//join and destroy threads
-void
-HADQ7Digitizer::JoinThreads()
+HADQ7Digitizer::ExecutePostWorkTasks()
 {
-    std::cout<<"calling join"<<std::endl;
-    for(unsigned int i=0; i<fThreads.size(); i++)
+    if( (fBufferCode & HProducerBufferPolicyCode::success) && fArmed)
     {
-        fThreads[i].join();
-    }
-    fThreads.clear();
-    fThreadIdleMap.clear();
-}
-
-void
-HADQ7Digitizer::InsertIdleIndicator()
-{
-    std::lock_guard< std::mutex > lock(fIdleMutex);
-    fThreadIdleMap.insert( std::pair<std::thread::id, bool>( std::this_thread::get_id(), false) );
-}
-
-void
-HADQ7Digitizer::SetIdleIndicatorFalse()
-{
-    std::lock_guard< std::mutex > lock(fIdleMutex);
-    auto indicator = fThreadIdleMap.find( std::this_thread::get_id() );
-    indicator->second = false;
-}
-
-void
-HADQ7Digitizer::SetIdleIndicatorTrue()
-{
-    std::lock_guard< std::mutex > lock(fIdleMutex);
-    auto indicator = fThreadIdleMap.find( std::this_thread::get_id() );
-    indicator->second = true;
-}
-
-bool
-HADQ7Digitizer::AllThreadsAreIdle()
-{
-    std::lock_guard< std::mutex > lock(fIdleMutex);
-    for(auto it=fThreadIdleMap.begin(); it != fThreadIdleMap.end(); it++)
-    {
-        if(it->second == false)
+        HDigitizerErrorCode finalize_code = this->Finalize();
+        if(finalize_code == HDigitizerErrorCode::success)
         {
-            return false;
+            fBufferCode = this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, this->fBuffer);
+            this->fBuffer = nullptr;
+        }
+        else
+        {
+            //some error occurred, stop production so we can re-start
+            fBufferCode = this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, this->fBuffer);
+            this->fBuffer = nullptr;
+            this->Stop();
         }
     }
-    return true;
+
+    if(fStopAfterNextBuffer)
+    {
+        this->Stop();
+        fStopAfterNextBuffer = false;
+    }
 }
 
+//needed by the thread pool interface
 void
-HADQ7Digitizer::ReadLoop()
+HADQ7Digitizer::ExecuteThreadTask()
 {
-    InsertIdleIndicator();
-
-    while( !fForceTerminate && (!fSignalTerminate || fMemcpyArgQueue.size() != 0 ) )
+    if(fArmed && fBuffer != nullptr)
     {
         void* dest = nullptr;
         void* src = nullptr;
@@ -456,28 +380,32 @@ HADQ7Digitizer::ReadLoop()
                 src = std::get<1>(args);
                 sz = std::get<2>(args);
                 fMemcpyArgQueue.pop();
-                //std::cout<<"pop"<<std::endl;
             }
         }
 
-        if(  dest != nullptr &&  src != nullptr && sz != 0)
+        if(dest != nullptr &&  src != nullptr && sz != 0)
         {
             //do the memcpy
-            SetIdleIndicatorFalse();
             memcpy(dest, src, sz);
             // char v = 0X7F;
             // memset(dest,v,sz);
-            SetIdleIndicatorTrue();
         }
-
-        SetIdleIndicatorTrue();
     }
 }
 
+bool
+HADQ7Digitizer::WorkPresent()
+{
+    if( fMemcpyArgQueue.size() == 0)
+    {
+        return false;
+    }
+    return true;
+}
 
 
-
-bool HADQ7Digitizer::InitializeBoardInterface()
+void
+HADQ7Digitizer::ConfigureBoardInterface()
 {
     unsigned int n_of_devices = 0;
     int n_of_failed = 0;
@@ -487,27 +415,22 @@ bool HADQ7Digitizer::InitializeBoardInterface()
     unsigned int pID = 0;
     int n_of_ADQ = 0;
     int apirev = 0;
-    int exit = 0;
     char* product_name;
     void* adq_cu;
     struct ADQInfoListEntry* ADQlist;
     unsigned int err;
 
-
     apirev = ADQAPI_GetRevision();
-
-    std::cout<<"ADQAPI Example"<<std::endl;
     std::cout<<"API Revision: "<< apirev<<std::endl;
 
     adq_cu = CreateADQControlUnit();	//creates an ADQControlUnit
     if(!adq_cu)
     {
         std::cout<<"Failed to create adq_cu!"<<std::endl;
-        return 0;
+        std::exit(1);
     }
 
     ADQControlUnit_EnableErrorTrace(adq_cu, LOG_LEVEL_INFO, ".");
-
 
     if(!ADQControlUnit_ListDevices(adq_cu, &ADQlist, &n_of_devices))
     {
@@ -518,16 +441,15 @@ bool HADQ7Digitizer::InitializeBoardInterface()
         {
             std::cout<<"ERROR: The linked ADQAPI is not for the correct OS, please select correct x86/x64 platform when building."<<std::endl;
         }
-        return 0;
+        std::exit(1);
     }
 
     adq_num = 0xFFFFFFFF;
-
     if(n_of_devices == 0)
     {
         std::cout<<"No devices found!"<<std::endl;
         DeleteADQControlUnit(adq_cu);
-        return 0;
+        std::exit(1);
     }
 
     for(tmp_adq_num = 0; tmp_adq_num < n_of_devices; tmp_adq_num++)
@@ -535,7 +457,7 @@ bool HADQ7Digitizer::InitializeBoardInterface()
         std::cout<<"Entry #" << tmp_adq_num <<std::endl;
         if( ADQlist[tmp_adq_num].ProductID == PID_ADQ7 )
         {
-            std::cout<<"ADQ7"<<std::endl; 
+            std::cout<<"ADQ7"<<std::endl;
             adq_num = tmp_adq_num;
         }
         std::cout<< "[PID "<<ADQlist[tmp_adq_num].ProductID<<";";
@@ -545,10 +467,7 @@ bool HADQ7Digitizer::InitializeBoardInterface()
         std::cout<<" Setup "<<ADQlist[tmp_adq_num].DeviceSetupCompleted<<" ]"<<std::endl;
     }
 
-
-
     std::cout<<"Opening device..."<<std::endl;
-
     if(ADQControlUnit_OpenDeviceInterface(adq_cu, adq_num))
     {
         std::cout<<"success!"<<std::endl;
@@ -560,7 +479,6 @@ bool HADQ7Digitizer::InitializeBoardInterface()
     }
 
     std::cout<<"Setting up device... "<<std::endl;
-
     if(ADQControlUnit_SetupDevice(adq_cu, adq_num))
     {
         std::cout<<"success!"<<std::endl;
@@ -572,11 +490,8 @@ bool HADQ7Digitizer::InitializeBoardInterface()
     }
 
     n_of_ADQ = ADQControlUnit_NofADQ(adq_cu);
-
     std::cout<<"Total opened units: "<< n_of_ADQ <<std::endl;
-
     n_of_failed = ADQControlUnit_GetFailedDeviceCount(adq_cu);
-
     if (n_of_failed > 0)
     {
         std::cout<<"Found but failed to start "<<n_of_failed<<" ADQ devices."<<std::endl;
@@ -589,19 +504,17 @@ bool HADQ7Digitizer::InitializeBoardInterface()
         std::exit(1);
     }
 
-
     n_of_opened_devices = ADQControlUnit_NofADQ(adq_cu);
     std::cout<<"\nNumber of opened ADQ devices found: "<< n_of_opened_devices <<std::endl;
 
     for (adq_num = 1; adq_num <= (unsigned int) n_of_opened_devices; adq_num++)
     {
         product_name = ADQ_GetBoardProductName(adq_cu, adq_num);
-        std::cout<<"Produce name: "<<product_name<<" number: "<<adq_num<<std::endl;
+        std::cout<<"Product name: "<<product_name<<" number: "<<adq_num<<std::endl;
     }
 
-    //set number to 1
-    adq_num = 1;
-
+    //set number to device number
+    adq_num = fADQDeviceNumber;
     pID = ADQ_GetProductID(adq_cu, adq_num);
     if(pID != PID_ADQ7)
     {
@@ -611,49 +524,27 @@ bool HADQ7Digitizer::InitializeBoardInterface()
 
     //ADQ API related data
     fADQControlUnit = adq_cu;
-    fADQDeviceNumber = adq_num;
     fSerialNumber = std::string( ADQ_GetBoardSerialNumber(fADQControlUnit, fADQDeviceNumber) );
-    fADQAPIRevision = apirev;
-
     int nof_channels = ADQ_GetNofChannels(adq_cu, adq_num);
+    std::cout<<"Device number = "<<fADQDeviceNumber<<", Serial number = "<<fSerialNumber<<std::endl;
+    std::cout<<"Number of channels = "<<nof_channels<<std::endl;
 
+    //get number of channels
+    fNChannels = nof_channels;
 
-    std::cout<<"device num = "<<fADQDeviceNumber<<" serial num = "<<fSerialNumber<<" apirev = "<<fADQAPIRevision<<std::endl;
+    //report temperatures
+    unsigned int tlocal = ADQ_GetTemperature(fADQControlUnit, fADQDeviceNumber, 0)/256;
+    unsigned int tr1 = ADQ_GetTemperature(fADQControlUnit, fADQDeviceNumber, 1)/256;
+    unsigned int tr2 = ADQ_GetTemperature(fADQControlUnit, fADQDeviceNumber, 2)/256;
+    unsigned int tr3 = ADQ_GetTemperature(fADQControlUnit, fADQDeviceNumber, 3)/256;
+    unsigned int tr4 = ADQ_GetTemperature(fADQControlUnit, fADQDeviceNumber, 4)/256;
+    std::cout<<"Temperatures:\n\tLocal: "<<tlocal<<"\n\tADC0: "<<tr1<<"\n\tADC1: "<<tr2<<"\n\tFPGA: "<<tr3<<"\n\tPCB diode: "<<tr4<<"\n"<<std::endl;
 
-    std::cout<<"n of device channels = "<<nof_channels<<std::endl;
-
-
-
-    CHECKADQ( ADQ_SetClockSource( fADQControlUnit, fADQDeviceNumber, 1) );
-    // //set test pattermode 
-    // CHECKADQ(ADQ_SetTestPatternMode(adq_cu,adq_num, 2));
-
-    unsigned char addr  = '\0';
-    unsigned int retval = ADQ_SetInterleavingIPBypassMode(fADQControlUnit, fADQDeviceNumber, addr, fADXMode) ;
-    if(retval != 0)
-    {
-        std::cout<<"Setting ADX mode to: "<<fADXMode<<std::endl;
-        std::cout<<"ADX set retval = "<<retval<<std::endl;
-    }
-    else
-    {
-        std::cout<<"ADQ_SetInterleavingIPBypassMode failed"<<std::endl;
-    }
-
-    unsigned int adx_mode = 10;
-    retval = ADQ_GetInterleavingIPBypassMode(fADQControlUnit, fADQDeviceNumber, addr, &adx_mode) ;
-    if(retval != 0)
-    {
-        std::cout<<"ADX query retval = "<<retval<<std::endl;
-        std::cout<<"ADX mode is set to: "<<adx_mode<<std::endl;
-    }
-    else
-    {
-        std::cout<<"ADQ_GetInterleavingIPBypassMode failed, state unknown."<<std::endl;
-    }
-
-    return true;
+    //configure for internal/external clock
+    CHECKADQ( ADQ_SetClockSource( fADQControlUnit, fADQDeviceNumber, fClockMode) );
 }
 
 
-}
+
+
+}//end of namespace

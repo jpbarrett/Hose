@@ -39,7 +39,7 @@ HPX14Digitizer::~HPX14Digitizer()
     }
 }
 
-bool 
+bool
 HPX14Digitizer::InitializeImpl()
 {
     if(!fInitialized)
@@ -161,7 +161,7 @@ HPX14Digitizer::InitializeImpl()
             {
                 std::cout<<"Effective ADC sampling rate (MHz) = "<<fAcquisitionRateMHz<<std::endl;
             }
- 
+
             // //now we allocate the internal buffer pool (we use 32 X 2 MB buffers)
 
             fInternalBufferPool = new HBufferPool< px14_sample_t >( this->GetAllocator() );
@@ -182,7 +182,7 @@ HPX14Digitizer::InitializeImpl()
 
 }
 
-void 
+void
 HPX14Digitizer::AcquireImpl()
 {
     fArmed = false;
@@ -221,7 +221,7 @@ HPX14Digitizer::AcquireImpl()
     }
 }
 
-void 
+void
 HPX14Digitizer::TransferImpl()
 {
     if(fArmed && this->fBuffer != nullptr )
@@ -285,7 +285,7 @@ HPX14Digitizer::TransferImpl()
     }
 }
 
-HDigitizerErrorCode 
+HDigitizerErrorCode
 HPX14Digitizer::FinalizeImpl()
 {
     if(fArmed && this->fBuffer != nullptr)
@@ -365,20 +365,20 @@ HPX14Digitizer::TearDownImpl()
 }
 
 //required by the producer interface
-void 
+void
 HPX14Digitizer::ExecutePreProductionTasks()
 {
     Initialize();
 }
 
-void 
+void
 HPX14Digitizer::ExecutePostProductionTasks()
 {
     this->Stop();
     this->TearDown();
 }
 
-void 
+void
 HPX14Digitizer::ExecutePreWorkTasks()
 {
     if(fArmed)
@@ -398,7 +398,7 @@ HPX14Digitizer::ExecutePreWorkTasks()
 
 }
 
-void 
+void
 HPX14Digitizer::DoWork()
 {
     //we have an active buffer, transfer the data
@@ -412,12 +412,12 @@ HPX14Digitizer::DoWork()
     }
 }
 
-void 
+void
 HPX14Digitizer::ExecutePostWorkTasks()
 {
     if( (fBufferCode & HProducerBufferPolicyCode::success) && fArmed)
-    {   
-        HDigitizerErrorCode finalize_code = this->Finalize(); 
+    {
+        HDigitizerErrorCode finalize_code = this->Finalize();
         if(finalize_code == HDigitizerErrorCode::success)
         {
             fBufferCode = this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, this->fBuffer);
@@ -449,7 +449,7 @@ HPX14Digitizer::ExecutePostWorkTasks()
 }
 
 //needed by the thread pool interface
-void 
+void
 HPX14Digitizer::ExecuteThreadTask()
 {
     if(fArmed && fBuffer != nullptr)
@@ -481,7 +481,7 @@ HPX14Digitizer::ExecuteThreadTask()
     }
 }
 
-bool 
+bool
 HPX14Digitizer::WorkPresent()
 {
     if( fInternalBufferPool->GetConsumerPoolSize() == 0)
