@@ -1,26 +1,8 @@
 #ifndef HSpectrometerCUDASigned_HH__
 #define HSpectrometerCUDASigned_HH__
 
-#include <iostream>
-#include <ostream>
-#include <ios>
-#include <fstream>
-#include <sstream>
-#include <thread>
-#include <map>
-#include <utility>
-#include <stdint.h>
-
-#include "HLinearBuffer.hh"
-#include "HBufferPool.hh"
-
+#include "HConsumerProducer.hh"
 #include "spectrometer.h"
-
-extern "C" 
-{
-    #include "HBasicDefines.h"
-}
-
 
 namespace hose
 {
@@ -31,61 +13,23 @@ namespace hose
 *Author: J. Barrett
 *Email: barrettj@mit.edu
 *Date:
-*Description:
+*Description: signed short int version
 */
 
-class HSpectrometerCUDASigned
+class HSpectrometerCUDASigned: public HConsumerProducer< int16_t, spectrometer_data, HConsumerBufferHandler_WaitWithTimeout< int16_t >, HProducerBufferHandler_Steal< spectrometer_data > >
 {
 
     public:
-        HSpectrometerCUDASigned();
+        HSpectrometerCUDASigned(size_t spectrum_length, size_t n_averages);  //spec size and averages are fixed at constuction time
         virtual ~HSpectrometerCUDASigned();
 
-        //set the buffer pool we are working with
-        void SetBufferPool( HBufferPool< int16_t >* buffer_pool ){ fBufferPool = buffer_pool;};
+    protected:
 
-        void SetDataLength(size_t length){fDataLength = length;};
+        virtual void ExecuteThreadTask() override;
+        virtual bool WorkPresent() override;
 
-        void SetOutputDirectory(std::string dir){fOutputDirectory = dir;};
-
-        void SetNThreads(unsigned int n_threads){fNThreads = n_threads;};
-        unsigned int GetNThreads() const {return fNThreads;};
-
-        void SetSleepMicroSeconds(unsigned int usec){fSleepTime = usec;};
-
-        //create and launch the threads doing the processingroutine
-        void LaunchThreads();
-
-        //signal to the threads to terminate on completion of work
-        void SignalTerminateOnComplete(){fSignalTerminate = true;}
-
-        //force the threads to abandon any remaining work, and terminate immediately
-        void ForceTermination(){fForceTerminate = true;}
-
-        //join and destroy threads
-        void JoinThreads();
-
-    private:
-
-        //length of the data, needed for workspace allocation
-        size_t fDataLength;
-
-        //the data processing loop for each thread
-        void ProcessLoop();
-
-        //thread data
-        unsigned int fNThreads;
-        bool fSignalTerminate;
-        bool fForceTerminate;
-
-        unsigned int fSleepTime;
-
-        HBufferPool< int16_t >* fBufferPool;
-
-        std::vector< std::thread > fThreads;
-
-        //default output directory 
-        std::string fOutputDirectory;
+        size_t fSpectrumLength;
+        size_t fNAverages;
 
 };
 
