@@ -5,248 +5,129 @@
 #include <sstream>
 #include <thread>
 #include <unistd.h>
-#include <getopt.h>
 
 #include "HADQ7Digitizer.hh"
 #include "HBufferPool.hh"
 #include "HSpectrometerCUDASigned.hh"
 #include "HCudaHostBufferAllocator.hh"
+#include "HBufferAllocatorSpectrometerDataCUDA.hh"
+#include "HSimpleMultiThreadedSpectrumDataWriter.hh"
+#include "HPeriodicPowerCalculator.hh"
 
 using namespace hose;
 
-using PoolType = HBufferPool< HADQ7Digitizer::sample_type >;
-uint64_t nAcq = 200;
+#define FAKE_SPECTRUM_LENGTH 131072
 
-unsigned int nBuffersDropped = 0;
+using PoolType = HBufferPool< int16_t >;
 
-void RunAcquireThread(HADQ7Digitizer* dummy, PoolType* pool, HSpectrometerCUDASigned* spec)
+int main(int /*argc*/, char** /*argv*/)
 {
-    unsigned int count = 0;
-    bool buff_overflow = false;
-    while(count < nAcq)
-    {
-        if(pool->GetProducerPoolSize() != 0)
-        {
-            //resever buffer
-            HLinearBuffer< HADQ7Digitizer::sample_type >* buff = pool->PopProducerBuffer();
-            if(buff != nullptr)
-            {
-                //prework tasks
-                dummy->SetBuffer(buff);
-                if(count == 0 || buff_overflow)
-                {
-                    dummy->Acquire();
-                    buff_overflow = false;
-                };
+    size_t n_ave = 256;
+    size_t vector_length = FAKE_SPECTRUM_LENGTH*n_ave;
+    // size_t vector_length = 1024*n_ave;
+    size_t nAcq = 1;
+    unsigned int n_dropped = 0;
 
-                //generate work tasks
-                dummy->Transfer();
-                HDigitizerErrorCode err_code = dummy->Finalize();
-
-                //post work tasks
-                if(err_code != HDigitizerErrorCode::success)
-                {
-                    std::cout<<"Card buffer overflow error, temporarily stopping acquire."<<std::endl;
-                    dummy->Stop();
-                    buff_overflow = true;
-                    //put garbage buffer back
-                    pool->PushProducerBuffer(dummy->GetBuffer());
-                    //sleep for a while
-                    nBuffersDropped++;
-                    usleep(500000);
-                }
-                else 
-                {
-                    pool->PushConsumerBuffer(dummy->GetBuffer());
-                    count++;
-                    if(count % 100 == 0){std::cout<<"count = "<<count<<std::endl;}
-                }
-            }
-        }
-        else
-        {
-            std::cout<<"Ring buffer overflow error, temporarily stopping acquire."<<std::endl;
-            dummy->Stop();
-            buff_overflow = true;
-            //put garbage buffer back
-            pool->PushProducerBuffer(dummy->GetBuffer());
-            nBuffersDropped++;
-
-            //wait until buffer pool is replenished 
-            while(pool->GetConsumerPoolSize() != 0)
-            {
-                usleep(10);
-            }
-
-
-            /*
-            //steal a buffer from the consumer pool..however, this requires dropping
-            //a previous aquisition, so we don't increment the count
-            HLinearBuffer< HADQ7Digitizer::sample_type >* buff = pool->PopConsumerBuffer();
-            if(buff != nullptr)
-            {
-                nBuffersDropped++;
-                dummy->SetBuffer(buff);
-                dummy->Transfer();
-                dummy->Finalize();
-                pool->PushConsumerBuffer(dummy->GetBuffer());
-                count++;
-                if(count % 100 == 0)
-                {
-                    std::cout<<"stolen! count = "<<count<<std::endl;
-                }
-            }
-            */
-
-
-        }
-    }
-
-    dummy->Stop();
-
-    spec->SignalTerminateOnComplete();
-};
-
-
-
-int main(int argc, char** argv)
-{
-    std::string usage =
-    "\n"
-    "Usage: TestMultiThreadADQ7Spectrometer <options>\n"
-    "\n"
-    "Acquire data via the ADQ7 digitizer and computer average spectra.\n"
-    "\tAvailable options:\n"
-    "\t -h, --help               (shows this message and exits)\n"
-    "\t -s  --sample-skip        (set the decimation factor, reduces sample rate by this factor)\n"
-    "\t -n, --n-spectra          (number of spectra to acquire)\n"
-    "\t -m, --n-averages         (number of spectra to average together)\n"
-    "\t -c, --chunks             (number of pre-allocated buffers)\n"
-    "\t -a, --acquire-threads    (number of acquisition threads)\n"
-    "\t -p, --process-threads    (number of processing threads)\n"
-    "\t -i, --input-channel      (select channel 1 (A) or 2 (B), default=1)\n"
-    "\t -t, --test-pattern       (enable test pattern)\n"
-    "\t -x, --adx-enable         (enable ADX spur reduction)\n"
-    ;
-
-    //set defaults
-    unsigned int sample_skip = 8;
-    unsigned int n_spectra = 200;
-    unsigned int n_chunks = 80;
-    unsigned int n_averages = 1024;
-    unsigned int acq_threads = 4;
-    unsigned int proc_threads = 4;
-    unsigned int channel = 1;
-    bool enable_test = false;
-    bool enable_adx = false;
-    std::string o_dir =  DATA_INSTALL_DIR;
-
-    static struct option longOptions[] =
-    {
-        {"help", no_argument, 0, 'h'},
-        {"sample-skip", required_argument, 0, 's'},
-        {"n-spectra", required_argument, 0, 'n'},
-        {"n-averages", required_argument, 0, 'm'},
-        {"chunks", required_argument, 0, 'c'},
-        {"acquire-threads", required_argument, 0, 'a'},
-        {"process-threads", required_argument, 0, 'p'},
-        {"input-channel", required_argument, 0, 'i'},
-        {"test-pattern", required_argument, 0, 't'},
-        {"adx-enable", required_argument, 0, 'x'},
-    };
-
-    static const char *optString = "hs:n:m:c:a:p:i:tx";
-
-    while(1)
-    {
-        char optId = getopt_long(argc, argv,optString, longOptions, NULL);
-        if(optId == -1) break;
-        switch(optId)
-        {
-            case('h'): // help
-            std::cout<<usage<<std::endl;
-            return 0;
-            case('s'):
-            sample_skip = atoi(optarg);
-            break;
-            case('n'):
-            n_spectra = atoi(optarg);
-            break;
-            case('m'):
-            n_averages = atoi(optarg);
-            break;
-            case('c'):
-            n_chunks = atoi(optarg);
-            break;
-            case('a'):
-            acq_threads = atoi(optarg);
-            break;
-            case('p'):
-            proc_threads = atoi(optarg);
-            break;
-            case('i'):
-            channel = atoi(optarg);
-            break;
-            case('t'):
-            enable_test = true;
-            break;
-            case('x'):
-            enable_adx = true;
-            break;
-            default:
-                std::cout<<usage<<std::endl;
-            return 1;
-        }
-    }
-
-    nAcq = n_spectra;
-
-    //dummy digitizer
+    //digitizer
     HADQ7Digitizer dummy;
-
-    dummy.SetNThreads(acq_threads);
-
-    if(channel == 1 ){dummy.SelectChannelA();}
-    else{ dummy.SelectChannelB(); }
-
-    if(enable_test){dummy.EnableTestPattern();}
-    else{dummy.DisableTestPattern();}
-
-    if(enable_adx){dummy.EnableADX();}
-    else{dummy.DisableADX();};
-
-    dummy.SetDecimationFactor(sample_skip);
+    dummy.SetNThreads(2);
     bool initval = dummy.Initialize();
 
-    //create buffer pool
-    HCudaHostBufferAllocator< HADQ7Digitizer::sample_type >* balloc = new HCudaHostBufferAllocator<  HADQ7Digitizer::sample_type >();
-    PoolType* pool = new PoolType( balloc );
+    std::cout<<"initval = "<<initval<<std::endl;
+    std::cout<<"done card init"<<std::endl;
 
-    //allocate space
-    const size_t items_per_chunk = SPECTRUM_LENGTH_S*n_averages;
-    pool->Allocate(n_chunks, items_per_chunk);
+    std::cout<<"allocating cuda host buffs"<<std::endl;
+    //create source buffer pool
+    HCudaHostBufferAllocator< int16_t >* balloc = new HCudaHostBufferAllocator<  int16_t >();
+    HBufferPool< int16_t >* source_pool = new HBufferPool< int16_t >( balloc );
 
-    HSpectrometerCUDASigned m_spec;
-    m_spec.SetDataLength(items_per_chunk);
-    m_spec.SetOutputDirectory(o_dir);
-    m_spec.SetNThreads(proc_threads);
-    m_spec.SetBufferPool(pool);
-    m_spec.LaunchThreads();
+    const size_t source_n_chunks = 32;
+    const size_t source_items_per_chunk = vector_length;
+    source_pool->Allocate(source_n_chunks, source_items_per_chunk);
+    std::cout<<"done"<<std::endl;
 
-    //give some time to set up the gpu
-    sleep(5);
+    dummy.SetBufferPool(source_pool);
 
-    //launch aquire thread
-    std::thread acq(RunAcquireThread, &dummy, pool, &m_spec);
+    std::cout<<"allocating cuda dev buffs"<<std::endl;
+    //create sink buffer pool
+    HBufferAllocatorSpectrometerDataCUDA< spectrometer_data_s >* sdata_alloc = new HBufferAllocatorSpectrometerDataCUDA< spectrometer_data_s >();
+    sdata_alloc->SetSampleArrayLength(vector_length);
+    sdata_alloc->SetSpectrumLength(FAKE_SPECTRUM_LENGTH);
 
-    acq.join();
-    m_spec.JoinThreads();
-    dummy.TearDown();
+    HBufferPool< spectrometer_data_s >* sink_pool = new HBufferPool< spectrometer_data_s >( sdata_alloc );
+    const size_t sink_n_chunks = 16;
+    const size_t sink_items_per_chunk = 1; //THERE CAN BE ONLY ONE!!!
+    sink_pool->Allocate(sink_n_chunks, sink_items_per_chunk);
+    std::cout<<"done"<<std::endl;
 
-    std::cout<<"n buffers dropped = "<<nBuffersDropped<<std::endl;
+    HSpectrometerCUDASigned m_spec(FAKE_SPECTRUM_LENGTH, n_ave);
+    m_spec.SetNThreads(3);
+    m_spec.SetSourceBufferPool(source_pool);
+    m_spec.SetSinkBufferPool(sink_pool);
 
-    delete pool;
+    std::cout<<"sampling freq = "<<dummy.GetSamplingFrequency()<<std::endl;
+    // m_spec.SetSamplingFrequency( dummy.GetSamplingFrequency() );
+    // m_spec.SetSwitchingFrequency( 80.0 );
+    // m_spec.SetBlankingPeriod( 20.0*(1.0/dummy.GetSamplingFrequency()) );
+
+    //file writing consumer to drain the spectrum data buffers
+    HSimpleMultiThreadedSpectrumDataWriter spec_writer;
+    spec_writer.SetExperimentName("test");
+    spec_writer.SetSourceName("none");
+    spec_writer.SetScanName("test1");
+    spec_writer.InitializeOutputDirectory();
+    spec_writer.SetBufferPool(sink_pool);
+    spec_writer.SetNThreads(1);
+
+
+    std::cout<<"starting"<<std::endl;
+    spec_writer.StartConsumption();
+
+    for(unsigned int i=0; i<1; i++)
+    {
+        spec_writer.AssociateThreadWithSingleProcessor(i, i+6);
+    };
+
+    m_spec.StartConsumptionProduction();
+    for(unsigned int i=0; i<3; i++)
+    {
+        m_spec.AssociateThreadWithSingleProcessor(i, i+2);
+    };
+
+    dummy.StartProduction();
+    dummy.Acquire();
+
+
+    //repeatedly stop and start acquisition to mimic multiple recordings
+    for(unsigned int i=0; i<1000; i++)
+    {
+        //wait
+        sleep(i%2 +1);
+        std::cout<<"stopping acquire"<<std::endl;
+        dummy.StopAfterNextBuffer();
+        sleep(1);
+        std::cout<<"restarting acquire"<<std::endl;
+        dummy.Acquire();
+    }
+
+    sleep(1);
+    std::cout<<"stopping digitizer"<<std::endl;
+    dummy.StopProduction();
+
+    std::cout<<"stopping spec"<<std::endl;
+    m_spec.StopConsumptionProduction();
+
+    sleep(1);
+
+    std::cout<<"stopping writer"<<std::endl;
+    spec_writer.StopConsumption();
+
+    sleep(2);
+
+    delete source_pool;
+    delete sink_pool;
     delete balloc;
+    delete sdata_alloc;
 
     return 0;
 }
