@@ -11,7 +11,7 @@
 #include "HSpectrometerCUDASigned.hh"
 #include "HCudaHostBufferAllocator.hh"
 #include "HBufferAllocatorSpectrometerDataCUDA.hh"
-#include "HSimpleMultiThreadedSpectrumDataWriter.hh"
+#include "HSimpleMultiThreadedSpectrumDataWriterSigned.hh"
 
 using namespace hose;
 
@@ -70,7 +70,7 @@ int main(int /*argc*/, char** /*argv*/)
     // m_spec.SetBlankingPeriod( 20.0*(1.0/dummy.GetSamplingFrequency()) );
 
     //file writing consumer to drain the spectrum data buffers
-    HSimpleMultiThreadedSpectrumDataWriter spec_writer;
+    HSimpleMultiThreadedSpectrumDataWriterSigned spec_writer;
     spec_writer.SetExperimentName("test");
     spec_writer.SetSourceName("none");
     spec_writer.SetScanName("test1");
