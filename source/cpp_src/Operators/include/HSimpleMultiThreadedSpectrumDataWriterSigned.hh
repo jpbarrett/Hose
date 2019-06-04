@@ -33,7 +33,7 @@ namespace hose
 *Description:
 */
 
-class HSimpleMultiThreadedSpectrumDataWriterSigned: public HConsumer< spectrometer_data_s, HConsumerBufferHandler_Immediate< spectrometer_data_s > >, public HDirectoryWriter
+class HSimpleMultiThreadedSpectrumDataWriterSigned: public HConsumer< spectrometer_data_s, HConsumerBufferHandler_Wait< spectrometer_data_s > >, public HDirectoryWriter
 {
     public:
 

@@ -72,7 +72,7 @@ class HConsumerBufferHandler_Immediate: public HConsumerBufferReleaser< XBufferI
                 return HConsumerBufferPolicyCode::success;
             }
             else
-            {   
+            {
                 buffer = nullptr;
                 return HConsumerBufferPolicyCode::fail;
             }
@@ -110,7 +110,7 @@ class HConsumerBufferHandler_Wait: public HConsumerBufferReleaser< XBufferItemTy
                 }
             };
         }
-    
+
     protected:
 
         unsigned int fSleepDurationNanoSeconds;
@@ -123,7 +123,7 @@ template< typename XBufferItemType >
 class HConsumerBufferHandler_WaitWithTimeout: public HConsumerBufferReleaser< XBufferItemType >
 {
     public:
-        HConsumerBufferHandler_WaitWithTimeout():fNAttempts(100),fSleepDurationNanoSeconds(500){;};
+        HConsumerBufferHandler_WaitWithTimeout():fNAttempts(100),fSleepDurationNanoSeconds(100){;};
         virtual ~HConsumerBufferHandler_WaitWithTimeout(){;};
 
         //total time-out wait time will be fNAttempts*fSleepDurationNanoSeconds
@@ -141,7 +141,7 @@ class HConsumerBufferHandler_WaitWithTimeout: public HConsumerBufferReleaser< XB
                 return HConsumerBufferPolicyCode::success;
             }
             else
-            {   
+            {
                 //wait for the consumer buffer pool to become empty
                 unsigned int count = 0;
                 while( pool->GetConsumerPoolSize(id) != 0 && count < fNAttempts)
@@ -168,14 +168,14 @@ class HConsumerBufferHandler_WaitWithTimeout: public HConsumerBufferReleaser< XB
                     return HConsumerBufferPolicyCode::success;
                 }
                 else
-                {   
+                {
                     buffer = nullptr;
                     return HConsumerBufferPolicyCode::fail;
                 }
             }
         }
 
-    protected: 
+    protected:
 
         unsigned int fNAttempts;
         unsigned int fSleepDurationNanoSeconds;
