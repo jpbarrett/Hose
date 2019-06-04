@@ -66,6 +66,8 @@ HSpectrometerCUDASigned::ExecuteThreadTask()
                 //call Juha's process_vector routine
                 process_vector_no_output_s(source->GetData(), sdata);
 
+                sdata->validity_flag = 1;
+
                 //release the buffers
                 this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID());
                 this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);

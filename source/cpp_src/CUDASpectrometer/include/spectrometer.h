@@ -20,9 +20,9 @@
 #include <cuda.h>
 
 
-// GPU parallelization 
-#define N_BLOCKS 8      
-#define N_THREADS 1024  
+// GPU parallelization
+#define N_BLOCKS 8
+#define N_THREADS 1024
 // what is the number of files to  process
 //#define N_FILES 300
 // require files to be of this size
@@ -85,9 +85,10 @@ typedef struct spectrometer_data_str_s
   uint64_t acquistion_start_second;
   uint64_t leading_sample_index;
   double sample_rate;
+  int validity_flag;
 } spectrometer_data_s;
 
-typedef struct spectrometer_data_str 
+typedef struct spectrometer_data_str
 {
   float *d_in;
   uint16_t *ds_in;
@@ -103,6 +104,7 @@ typedef struct spectrometer_data_str
   uint64_t acquistion_start_second;
   uint64_t leading_sample_index;
   double sample_rate;
+  int validity_flag;
 } spectrometer_data;
 
 extern "C" void process_vector_no_output(uint16_t *d_in, spectrometer_data *d);
