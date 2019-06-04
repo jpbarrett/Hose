@@ -322,8 +322,8 @@ class HSpectrometerManager: public HApplicationBackend
                         fNoisePowerCalculator->SetSwitchingFrequency(noise_diode_switching_freq);
                         fNoisePowerCalculator->SetSamplingFrequency( fDigitizer->GetSamplingFrequency() );
                         fNoisePowerCalculator->SetBlankingPeriod(noise_diode_blanking_period); //11ms (from original GPU spec)
-                        fNoisePowerCalculator->SetSourceBufferPool(fDigitizerSourcePool);
-                        fNoisePowerCalculator->SetSinkBufferPool(fNoisePowerPool);
+                        // fNoisePowerCalculator->SetSourceBufferPool(fDigitizerSourcePool);
+                        // fNoisePowerCalculator->SetSinkBufferPool(fNoisePowerPool);
 
                         //create an itermittent raw data dumper
                         fDumper = new HRawDataDumper< typename XDigitizerType::sample_type >();
@@ -427,7 +427,7 @@ class HSpectrometerManager: public HApplicationBackend
                     fSpectrometer->AssociateThreadWithSingleProcessor(i, i+1);
                 };
 
-                fNoisePowerCalculator->StartConsumptionProduction();
+                //fNoisePowerCalculator->StartConsumptionProduction();
 
                 fDigitizer->StartProduction();
                 for(size_t i=0; i<fNDigitizerThreads; i++)
