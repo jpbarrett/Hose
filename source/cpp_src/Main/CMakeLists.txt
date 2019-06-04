@@ -43,6 +43,13 @@ if(HOSE_USE_PX14)
     hose_add_cxxflag(HOSE_USE_PX14)
 endif(HOSE_USE_PX14)
 
+if(HOSE_USE_ADQ7)
+    find_package(ADQSDK REQUIRED)
+    include_directories(${ADQSDK_INCLUDE_DIRS})
+    list(APPEND HOSE_MAIN_LIBS ${ADQSDK_LIBRARIES})
+    hose_add_cxxflag(HOSE_USE_ADQ7)
+endif(HOSE_USE_ADQ7)
+
 if (HOSE_USE_ROOT)
     include(FindROOT)
     find_package(ROOT REQUIRED)
