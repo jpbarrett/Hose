@@ -29,43 +29,50 @@ extern "C"
 
 #include "HTokenizer.hh"
 
-#include "HPX14DigitizerSimulator.hh"
 
 
 #ifdef HOSE_USE_PX14
     #include "HPX14Digitizer.hh"
     #define DIGITIZER_TYPE HPX14Digitizer
-
     #define N_DIGITIZER_THREADS 2
-    #define N_DIGITIZER_POOL_SIZE 32  
-
+    #define N_DIGITIZER_POOL_SIZE 32
     #define N_SPECTROMETER_POOL_SIZE 16
     #define N_NOISE_POWER_POOL_SIZE 10
-
     #define N_SPECTROMETER_THREADS 3
     #define N_NOISE_POWER_THREADS 1
-
     #define DUMP_FREQ 120
     #define N_AVE_BUFFERS 12 //this is about once every second
     #define SPEC_AVE_POOL_SIZE 12
-#else
+#endif
 
-
-    #define DIGITIZER_TYPE HPX14DigitizerSimulator
-
-    #define N_DIGITIZER_THREADS 1
-    #define N_DIGITIZER_POOL_SIZE 8
-
-    #define N_SPECTROMETER_POOL_SIZE 4
-    #define N_SPECTROMETER_THREADS 1
-  
+#ifdef HOSE_USE_ADQ7
+    #include "HADQ7Digitizer.hh"
+    #define DIGITIZER_TYPE HADQ7Digitizer
+    #define N_DIGITIZER_THREADS 2
+    #define N_DIGITIZER_POOL_SIZE 32
+    #define N_SPECTROMETER_POOL_SIZE 16
     #define N_NOISE_POWER_POOL_SIZE 10
+    #define N_SPECTROMETER_THREADS 3
     #define N_NOISE_POWER_THREADS 1
+    #define DUMP_FREQ 1000
+    #define N_AVE_BUFFERS 12 //this is about once every second
+    #define SPEC_AVE_POOL_SIZE 12
+#endif
 
-    #define DUMP_FREQ 2
-    #define N_AVE_BUFFERS 2
-    #define SPEC_AVE_POOL_SIZE 4
-
+#ifndef HOSE_USE_ADQ7
+    #ifndef HOSE_USE_PX14
+        #include "HPX14DigitizerSimulator.hh"
+        #define DIGITIZER_TYPE HPX14DigitizerSimulator
+        #define N_DIGITIZER_THREADS 1
+        #define N_DIGITIZER_POOL_SIZE 8
+        #define N_SPECTROMETER_POOL_SIZE 4
+        #define N_SPECTROMETER_THREADS 1
+        #define N_NOISE_POWER_POOL_SIZE 10
+        #define N_NOISE_POWER_THREADS 1
+        #define DUMP_FREQ 2
+        #define N_AVE_BUFFERS 2
+        #define SPEC_AVE_POOL_SIZE 4
+    #endif
 #endif
 
 #include "HBufferPool.hh"
@@ -288,7 +295,7 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrumAveragingBufferPool = new HBufferPool< float >(fSpectrumAveragingBufferAllocator);
                         fSpectrumAveragingBufferPool->Allocate(SPEC_AVE_POOL_SIZE, fFFTSize/2+1); //create a work space of 18 buffers
 
-                        fSpectrumAverager = new HSpectrumAverager(fFFTSize/2+1, N_AVE_BUFFERS); //we average over 12 buffers  
+                        fSpectrumAverager = new HSpectrumAverager(fFFTSize/2+1, N_AVE_BUFFERS); //we average over 12 buffers
                         fSpectrumAverager->SetNThreads(1); //ONE THREAD ONLY!
                         fSpectrumAverager->SetSourceBufferPool(fSpectrometerSinkPool);
                         fSpectrumAverager->SetSinkBufferPool(fSpectrumAveragingBufferPool);
@@ -779,7 +786,7 @@ class HSpectrometerManager: public HApplicationBackend
             fDataAccumulationWriter->SetSourceName(fSourceName);
             fDataAccumulationWriter->SetScanName(fScanName);
             fDataAccumulationWriter->InitializeOutputDirectory();
-            
+
             fDumper->SetExperimentName(fExperimentName);
             fDumper->SetSourceName(fSourceName);
             fDumper->SetScanName(fScanName);
