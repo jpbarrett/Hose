@@ -128,7 +128,7 @@ void
 HADQ7Digitizer::TransferImpl()
 {
     //configure buffer information, cast time to uint64_t and set, then set the sample rate
-    if(this->Buffer != nullptr)
+    if(this->fBuffer != nullptr)
     {
         this->fBuffer->GetMetaData()->SetSidebandFlag(fSidebandFlag);
         this->fBuffer->GetMetaData()->SetPolarizationFlag(fPolarizationFlag);
