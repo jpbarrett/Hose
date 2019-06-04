@@ -189,6 +189,7 @@ HADQ7Digitizer::TransferImpl()
                 std::cout<<"Warning: Card streaming overflow!"<<std::endl;
                 collect_result = 0;
                 samples_to_collect = 0;
+                fStopAfterNextBuffer = true;
             }
 
             if(collect_result)
@@ -207,6 +208,7 @@ HADQ7Digitizer::TransferImpl()
                 std::cout<<"Warning: Collect next data page failed!"<<std::endl;
                 fErrorCode = 2;
                 samples_to_collect = 0;
+                fStopAfterNextBuffer = true;
             }
         }
 
