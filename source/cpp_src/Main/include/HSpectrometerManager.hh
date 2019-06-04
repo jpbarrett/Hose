@@ -63,9 +63,9 @@ extern "C"
     #define N_SPECTROMETER_POOL_SIZE 16
     #define N_NOISE_POWER_POOL_SIZE 10
     #define N_SPECTROMETER_THREADS 3
-    #define N_NOISE_POWER_THREADS 1
+    #define N_NOISE_POWER_THREADS 2
     #define DUMP_FREQ 120
-    #define N_AVE_BUFFERS 40 //this is about once every second
+    #define N_AVE_BUFFERS 12 //this is about once every second
     #define SPEC_AVE_POOL_SIZE 20
 #endif
 

@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <stdint.h>
 #include <cmath>
+#include <mutex>
 
 #include "HLinearBuffer.hh"
 
@@ -41,6 +42,7 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
 
         HSwitchedPowerCalculator()
         {
+            fBuffersToSkip = 40; //hard coded to only do every 40 buffers
             //std::cout<<"switched power calc = "<<this<<std::endl;
         };
         virtual ~HSwitchedPowerCalculator(){};
@@ -71,27 +73,44 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
                     if( (source_code & HConsumerBufferPolicyCode::success) && source !=nullptr)
                     {
 
-                        std::lock_guard<std::mutex> source_lock(source->fMutex);
+                        if(fBufferCount % fBuffersToSkip == 0)
+                        {
+                            //only process this buffer if it is a multiple of the buffers-to-skip size
+                            std::lock_guard<std::mutex> source_lock(source->fMutex);
 
-                        //grab the pointer to the accumulation container
-                        auto accum_container = &( (sink->GetData())[0] ); //should have buffer size of 1
+                            //grab the pointer to the accumulation container
+                            auto accum_container = &( (sink->GetData())[0] ); //should have buffer size of 1
 
-                        //set appropriate meta data quantities for the accumulation container
-                        accum_container->SetSampleRate( source->GetMetaData()->GetSampleRate() );
-                        accum_container->SetAcquisitionStartSecond( source->GetMetaData()->GetAcquisitionStartSecond() );
-                        accum_container->SetLeadingSampleIndex( source->GetMetaData()->GetLeadingSampleIndex() );
-                        accum_container->SetSampleLength( source->GetArrayDimension(0) );
-                        accum_container->SetNoiseDiodeSwitchingFrequency(fSwitchingFrequency);
-                        accum_container->SetNoiseDiodeBlankingPeriod(fBlankingPeriod);
-                        accum_container->SetSidebandFlag( source->GetMetaData()->GetSidebandFlag() );
-                        accum_container->SetPolarizationFlag( source->GetMetaData()->GetPolarizationFlag() );
+                            //set appropriate meta data quantities for the accumulation container
+                            accum_container->SetSampleRate( source->GetMetaData()->GetSampleRate() );
+                            accum_container->SetAcquisitionStartSecond( source->GetMetaData()->GetAcquisitionStartSecond() );
+                            accum_container->SetLeadingSampleIndex( source->GetMetaData()->GetLeadingSampleIndex() );
+                            accum_container->SetSampleLength( source->GetArrayDimension(0) );
+                            accum_container->SetNoiseDiodeSwitchingFrequency(fSwitchingFrequency);
+                            accum_container->SetNoiseDiodeBlankingPeriod(fBlankingPeriod);
+                            accum_container->SetSidebandFlag( source->GetMetaData()->GetSidebandFlag() );
+                            accum_container->SetPolarizationFlag( source->GetMetaData()->GetPolarizationFlag() );
 
-                        //calculate the accumulations for this buffer
-                        Calculate(fSamplingFrequency, fSwitchingFrequency, fBlankingPeriod, source, accum_container);
+                            //calculate the accumulations for this buffer
+                            Calculate(fSamplingFrequency, fSwitchingFrequency, fBlankingPeriod, source, accum_container);
 
-                        //release the buffers
-                        this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID());
-                        this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
+                            //release the buffers
+                            this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID());
+                            this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
+
+                            //lock global buffer count mutex
+                            std::lock_guard<std::mutex> lock(fMutex);
+                            fBufferCount++;
+                        }
+                        else
+                        {
+                            //skipping this buffer, so return it to the pool
+                            this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID());
+                            this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
+                            //lock global buffer count mutex
+                            std::lock_guard<std::mutex> lock(fMutex);
+                            fBufferCount++;
+                        }
                     }
                     else
                     {
@@ -329,6 +348,11 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
         double fSamplingFrequency;
         double fSwitchingFrequency; //frequency at which the noise diode is switched
         double fBlankingPeriod; // ignore samples within +/- half the blanking period about switching time
+
+        //global count of buffers so we know which ones to skip
+        mutable std::mutex fMutex;
+        uint64_t fBufferCount;
+        uint64_t fBuffersToSkip;
 
 };
 
