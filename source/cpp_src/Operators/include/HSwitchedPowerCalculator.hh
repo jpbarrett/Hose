@@ -42,9 +42,9 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
 
         HSwitchedPowerCalculator()
         {
-            fBuffersToSkip = 40; //hard coded to only do every 40 buffers
-            //std::cout<<"switched power calc = "<<this<<std::endl;
+            fNBuffersToSkip = 40;
         };
+
         virtual ~HSwitchedPowerCalculator(){};
 
         void SetSamplingFrequency(double samp_freq){fSamplingFrequency = samp_freq;};
@@ -72,12 +72,11 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
 
                     if( (source_code & HConsumerBufferPolicyCode::success) && source !=nullptr)
                     {
-                        {
-                            std::lock_guard<std::mutex> lock(fMutex);
-                            fBufferCount++;
-                        }
+                        uint64_t buffer_leading_index = source->GetMetaData()->GetLeadingSampleIndex();
+                        uint64_t arr_dim = source->GetArrayDimension(0);
+                        uint64_t n_buffs = buffer_leading_index/arr_dim;
 
-                        if(fBufferCount % fBuffersToSkip == 0)
+                        if(n_buffs%fNBuffersToSkip  == 0)
                         {
                             //only process this buffer if it is a multiple of the buffers-to-skip size
                             std::lock_guard<std::mutex> source_lock(source->fMutex);
@@ -107,7 +106,6 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
                             //skipping this buffer, so return it to the pool
                             this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID());
                             this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
-                            //lock global buffer count mutex
                         }
                     }
                     else
@@ -347,10 +345,7 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
         double fSwitchingFrequency; //frequency at which the noise diode is switched
         double fBlankingPeriod; // ignore samples within +/- half the blanking period about switching time
 
-        //global count of buffers so we know which ones to skip
-        mutable std::mutex fMutex;
-        volatile uint64_t fBufferCount;
-        uint64_t fBuffersToSkip;
+        uint64_t fNBuffersToSkip;
 
 };
 
