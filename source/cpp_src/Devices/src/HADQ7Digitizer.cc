@@ -134,7 +134,7 @@ HADQ7Digitizer::TransferImpl()
         this->fBuffer->GetMetaData()->SetPolarizationFlag(fPolarizationFlag);
         this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
         this->fBuffer->GetMetaData()->SetSampleRate(GetSamplingFrequency()); //check that double to uint64_t conversion is OK here
-        unsigned int count = fCounter;
+        uint64_t count = fCounter;
         this->fBuffer->GetMetaData()->SetLeadingSampleIndex(count);
 
 
