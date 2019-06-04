@@ -50,8 +50,8 @@ using namespace hose;
 
 union raw_data_type
 {
-    uint16_t value;
-    char char_arr[sizeof(uint16_t)] ;
+    int16_t value;
+    char char_arr[sizeof(int16_t)] ;
 };
 
 struct less_than_file
@@ -212,7 +212,7 @@ int main(int argc, char** argv)
     do
     {
         raw_data_type datum;
-        in_file.read(datum.char_arr, sizeof(uint16_t));
+        in_file.read(datum.char_arr, sizeof(int16_t));
         count++;
         raw_data.push_back(datum.value);
         if(datum.value < data_min){data_min = datum.value;}
@@ -283,7 +283,7 @@ int main(int argc, char** argv)
     g->GetXaxis()->CenterTitle();
     c->Update();
 
-    
+
     //now we want to compute the spectral power density
     //wrap the array (needed for FFT interface
     HArrayWrapper< std::complex< double >, 1 > wrapperIn;
@@ -310,17 +310,17 @@ int main(int argc, char** argv)
         double omega = i*(sample_frequency/dim[0]);
         spectrum->SetPoint(spectrum->GetN(), std::log10(omega), 10.0*std::log10( norm*std::real( noise_xform_out[i]*std::conj(noise_xform_out[i]) ) ) );
     }
-    
+
     c->cd(2);
     spectrum->Draw("ALP");
     c->Update();
 
-    // 
-    // 
-    // 
-    // 
+    //
+    //
+    //
+    //
     // //now we want to do an FFT of the raw data sample and plot the output:
-    // 
+    //
     // //Allocate an array big enough to hold the transform output
     // //Transform output in 1d contains, for a transform of size N,
     // //N/2+1 complex numbers, i.e. 2*(N/2+1) real numbers
