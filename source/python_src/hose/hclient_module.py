@@ -189,13 +189,13 @@ class hprompt(Cmd):
         obj_list = []
 
         digi_config = self.dbclient.get_most_recent_measurement("digitizer_config", self.end_time_stamp)
-        sampling_frequency_Hz = 0.0
+        sampling_frequency_Hz = 1 #defaults to 1
         if len(digi_config) >= 1:
             obj_list.append( json.dumps(digi_config[-1], indent=4, sort_keys=True) )
             sampling_frequency_Hz = float(digi_config[-1]["fields"]["sampling_frequency_Hz"])
 
         spec_config = self.dbclient.get_most_recent_measurement("spectrometer_config", self.end_time_stamp)
-        spectrometer_fftsize = 0
+        spectrometer_fftsize = 1 #defaults to 1
         if len(spec_config) >= 1:
             obj_list.append( json.dumps(spec_config[-1], indent=4, sort_keys=True) )
             spectrometer_fftsize = int(spec_config[-1]["fields"]["fft_size"])
@@ -205,7 +205,7 @@ class hprompt(Cmd):
             obj_list.append( json.dumps(noise_config[-1], indent=4, sort_keys=True) )
 
         udc_info = self.dbclient.get_most_recent_measurement("udc_status", self.end_time_stamp)
-        udc_luff_freq = 0.0
+        udc_luff_freq = 1.0 #defaults to 1
         udc_time_stamp = ""
         if len(udc_info) >= 1:
             obj_list.append( json.dumps(udc_info[-1], indent=4, sort_keys=True) )
