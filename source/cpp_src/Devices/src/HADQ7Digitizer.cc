@@ -128,7 +128,7 @@ void
 HADQ7Digitizer::TransferImpl()
 {
     //configure buffer information, cast time to uint64_t and set, then set the sample rate
-    if(this->fBuffer != nullptr)
+    if(fArmed && this->fBuffer != nullptr)
     {
         this->fBuffer->GetMetaData()->SetSidebandFlag(fSidebandFlag);
         this->fBuffer->GetMetaData()->SetPolarizationFlag(fPolarizationFlag);
@@ -235,27 +235,31 @@ HADQ7Digitizer::TransferImpl()
 HDigitizerErrorCode
 HADQ7Digitizer::FinalizeImpl()
 {
-    bool threads_busy = true;
-    while(fMemcpyArgQueue.size() != 0 || threads_busy )
-    {
-        if( AllThreadsAreIdle() ){threads_busy = false;}
-        else{ threads_busy = true; }
-    }
 
-    //increment the sample counter
-    fCounter += this->fBuffer->GetArrayDimension(0);
-
-    //return any error codes which might have arisen during streaming
-    //if were buffer overflows/page errors we need to stop and restart the acquisition
-    if(!fErrorCode)
+    if(fArmed && this->fBuffer != nullptr)
     {
-        return HDigitizerErrorCode::success;
-    }
-    else
-    {
-        return HDigitizerErrorCode::card_buffer_overflow;
-    }
+        bool threads_busy = true;
+        while(fMemcpyArgQueue.size() != 0 || threads_busy )
+        {
+            if( AllThreadsAreIdle() ){threads_busy = false;}
+            else{ threads_busy = true; }
+        }
 
+        //increment the sample counter
+        fCounter += this->fBuffer->GetArrayDimension(0);
+
+        //return any error codes which might have arisen during streaming
+        //if were buffer overflows/page errors we need to stop and restart the acquisition
+        if(!fErrorCode)
+        {
+            return HDigitizerErrorCode::success;
+        }
+        else
+        {
+            return HDigitizerErrorCode::card_buffer_overflow;
+        }
+
+    }
     //have finished filling the buffer at this point, but the card is still streaming
     //better get back to work fast...
 }
