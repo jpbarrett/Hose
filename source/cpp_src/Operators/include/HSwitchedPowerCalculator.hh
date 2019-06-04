@@ -72,6 +72,10 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
 
                     if( (source_code & HConsumerBufferPolicyCode::success) && source !=nullptr)
                     {
+                        {
+                            std::lock_guard<std::mutex> lock(fMutex);
+                            fBufferCount++;
+                        }
 
                         if(fBufferCount % fBuffersToSkip == 0)
                         {
@@ -97,10 +101,6 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
                             //release the buffers
                             this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID());
                             this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
-
-                            //lock global buffer count mutex
-                            std::lock_guard<std::mutex> lock(fMutex);
-                            fBufferCount++;
                         }
                         else
                         {
@@ -108,8 +108,8 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
                             this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID());
                             this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
                             //lock global buffer count mutex
-                            std::lock_guard<std::mutex> lock(fMutex);
-                            fBufferCount++;
+
+
                         }
                     }
                     else
