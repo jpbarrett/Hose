@@ -77,7 +77,7 @@ class HProducerBufferHandler_Immediate: public HProducerBufferReleaser< XBufferI
                 return HProducerBufferPolicyCode::success;
             }
             else
-            {   
+            {
                 buffer = nullptr;
                 return HProducerBufferPolicyCode::fail;
             }
@@ -123,17 +123,16 @@ class HProducerBufferHandler_Steal: public HProducerBufferReleaser< XBufferItemT
                 return HProducerBufferPolicyCode::success;
             }
             else
-            {   
+            {
                 size_t consumer_pools = pool->GetNumberOfConsumerPools();
                 for(size_t n=0; n<consumer_pools; n++)
                 {
-                    //steal a buffer from the first non-empty consumer pool
-                    if(pool->GetConsumerPoolSize(n) != 0)
+                    //steal a buffer from the first non-empty consumer pool (working backwards from the end)
+                    if(pool->GetConsumerPoolSize( (consumer_pools-1)-n ) != 0)
                     {
-                        buffer = pool->PopConsumerBuffer(n);
+                        buffer = pool->PopConsumerBuffer( (consumer_pools-1)-n );
                         std::cout<<"STOLEN "<<std::endl;
                         return HProducerBufferPolicyCode::stolen;
-
                     }
                 }
             }
@@ -163,7 +162,7 @@ class HProducerBufferHandler_Flush: public HProducerBufferReleaser< XBufferItemT
                 return HProducerBufferPolicyCode::success;
             }
             else
-            {   
+            {
                 //wait for the consumer buffer pool to become empty
                 bool is_empty = false;
                 do
@@ -184,7 +183,7 @@ class HProducerBufferHandler_Flush: public HProducerBufferReleaser< XBufferItemT
                     }
                 }
                 while(!is_empty );
-            
+
 
                 //producer pool should be full now, so grab buffer
                 if(pool->GetProducerPoolSize() != 0)
@@ -193,14 +192,14 @@ class HProducerBufferHandler_Flush: public HProducerBufferReleaser< XBufferItemT
                     return HProducerBufferPolicyCode::flushed;
                 }
                 else
-                {   
+                {
                     buffer = nullptr;
                     return HProducerBufferPolicyCode::fail;
                 }
             }
         }
 
-    protected: 
+    protected:
 
         unsigned int fSleepDurationNanoSeconds;
 
@@ -245,7 +244,7 @@ class HProducerBufferHandler_ForceFlush: public HProducerBufferReleaser< XBuffer
                     return HProducerBufferPolicyCode::forced_flushed;
                 }
                 else
-                {   
+                {
                     buffer = nullptr;
                     return HProducerBufferPolicyCode::fail;
                 }
@@ -277,7 +276,7 @@ class HProducerBufferHandler_WaitWithTimeout: public HProducerBufferReleaser< XB
                 return HProducerBufferPolicyCode::success;
             }
             else
-            {   
+            {
                 //wait for the consumer buffer pool to become empty
                 unsigned int count = 0;
                 while( pool->GetProducerPoolSize() != 0 && count < fNAttempts)
@@ -304,14 +303,14 @@ class HProducerBufferHandler_WaitWithTimeout: public HProducerBufferReleaser< XB
                     return HProducerBufferPolicyCode::success;
                 }
                 else
-                {   
+                {
                     buffer = nullptr;
                     return HProducerBufferPolicyCode::fail;
                 }
             }
         }
 
-    protected: 
+    protected:
 
         unsigned int fNAttempts;
         unsigned int fSleepDurationNanoSeconds;

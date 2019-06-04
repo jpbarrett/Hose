@@ -34,7 +34,7 @@ namespace hose
 */
 
 
-template< typename XBufferItemType > 
+template< typename XBufferItemType >
 class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDataAccumulationContainer, HConsumerBufferHandler_WaitWithTimeout< XBufferItemType >, HProducerBufferHandler_Steal< HDataAccumulationContainer > >
 {
     public:
@@ -72,7 +72,7 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
                     {
 
                         std::lock_guard<std::mutex> source_lock(source->fMutex);
-                        
+
                         //grab the pointer to the accumulation container
                         auto accum_container = &( (sink->GetData())[0] ); //should have buffer size of 1
 
@@ -80,7 +80,7 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
                         accum_container->SetSampleRate( source->GetMetaData()->GetSampleRate() );
                         accum_container->SetAcquisitionStartSecond( source->GetMetaData()->GetAcquisitionStartSecond() );
                         accum_container->SetLeadingSampleIndex( source->GetMetaData()->GetLeadingSampleIndex() );
-                        accum_container->SetSampleLength( source->GetArrayDimension(0) ); //also equal to fSpectrumLength*fNAverages;
+                        accum_container->SetSampleLength( source->GetArrayDimension(0) );
                         accum_container->SetNoiseDiodeSwitchingFrequency(fSwitchingFrequency);
                         accum_container->SetNoiseDiodeBlankingPeriod(fBlankingPeriod);
                         accum_container->SetSidebandFlag( source->GetMetaData()->GetSidebandFlag() );
@@ -114,10 +114,10 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
 
 ////////////////////////////////////////////////////////////////////////////////
 
-        static void Calculate(double sampling_frequency, 
-                              double switching_frequency, 
+        static void Calculate(double sampling_frequency,
+                              double switching_frequency,
                               double blanking_period,
-                              HLinearBuffer< XBufferItemType >* source, 
+                              HLinearBuffer< XBufferItemType >* source,
                               HDataAccumulationContainer* accum_container)
         {
             if( source != nullptr )
@@ -184,24 +184,24 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
                     accum_container->AppendAccumulation(stat);
                 }
             }
-        }   
+        }
 
         ////////////////////////////////////////////////////////////////////////////////
 
 
         //returns intervals [x,y) of samples to be included in the ON/OFF sets
         //assumes signal synced such that ON is the first state (at acquisition start, index=0)
-        static void GetOnOffIntervals(double sampling_frequency, 
-                                      double switching_frequency, 
+        static void GetOnOffIntervals(double sampling_frequency,
+                                      double switching_frequency,
                                       double blanking_period,
-                                      uint64_t start, 
-                                      uint64_t length, 
-                                      std::vector< std::pair<uint64_t, uint64_t> >& on_intervals, 
+                                      uint64_t start,
+                                      uint64_t length,
+                                      std::vector< std::pair<uint64_t, uint64_t> >& on_intervals,
                                       std::vector< std::pair<uint64_t, uint64_t> >& off_intervals)
         {
             on_intervals.clear();
             off_intervals.clear();
-        
+
             double sampling_period = 1.0/sampling_frequency;
             double switching_period = 1.0/switching_frequency;
             double half_switching_period = switching_period/2.0;
@@ -287,9 +287,9 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
                 }
 
             }
-            
-            uint64_t blank = std::ceil( (blanking_period/2.0)*sampling_frequency ); 
-                
+
+            uint64_t blank = std::ceil( (blanking_period/2.0)*sampling_frequency );
+
             //now convert to sample indices, while removing any time ranges which have a size of zero
             for(unsigned int i=0; i<on_times.size(); i++)
             {
@@ -328,7 +328,7 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
         //data /////////////////////////////////////////////////////////////////
         double fSamplingFrequency;
         double fSwitchingFrequency; //frequency at which the noise diode is switched
-        double fBlankingPeriod; // ignore samples within +/- half the blanking period about switching time 
+        double fBlankingPeriod; // ignore samples within +/- half the blanking period about switching time
 
 };
 
