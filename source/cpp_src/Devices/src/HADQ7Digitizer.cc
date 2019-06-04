@@ -19,7 +19,7 @@ HADQ7Digitizer::HADQ7Digitizer():
     fUseSoftwareTrigger(true),
     fSampleRate(0),
     fAcquisitionRateMHz(0), //effective sampling frequency in MHz
-    fSampleSkipFactor(8),
+    fSampleSkipFactor(4),
     fInitialized(false),
     fArmed(false),
     fStopAfterNextBuffer(false),
@@ -136,7 +136,6 @@ HADQ7Digitizer::TransferImpl()
         this->fBuffer->GetMetaData()->SetSampleRate(GetSamplingFrequency()); //check that double to uint64_t conversion is OK here
         uint64_t count = fCounter;
         this->fBuffer->GetMetaData()->SetLeadingSampleIndex(count);
-
 
         unsigned int n_samples_collect  = this->fBuffer->GetArrayDimension(0);
         int64_t samples_to_collect = this->fBuffer->GetArrayDimension(0);

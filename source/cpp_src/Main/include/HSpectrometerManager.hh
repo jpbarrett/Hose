@@ -63,7 +63,7 @@ extern "C"
     #define N_SPECTROMETER_POOL_SIZE 16
     #define N_NOISE_POWER_POOL_SIZE 10
     #define N_SPECTROMETER_THREADS 3
-    #define N_NOISE_POWER_THREADS 1
+    #define N_NOISE_POWER_THREADS 2
     #define DUMP_FREQ 120
     #define N_AVE_BUFFERS 12 //this is about once every second
     #define SPEC_AVE_POOL_SIZE 20
@@ -327,9 +327,9 @@ class HSpectrometerManager: public HApplicationBackend
 
                         //create an itermittent raw data dumper
                         fDumper = new HRawDataDumper< typename XDigitizerType::sample_type >();
-                        // fDumper->SetBufferPool(fDigitizerSourcePool);
-                        // fDumper->SetBufferDumpFrequency(DUMP_FREQ);
-                        // fDumper->SetNThreads(1);
+                        fDumper->SetBufferPool(fDigitizerSourcePool);
+                        fDumper->SetBufferDumpFrequency(DUMP_FREQ);
+                        fDumper->SetNThreads(1);
 
                         // //spectrum file writing consumer to drain the spectrum data buffers
                         // fWriter = new HSimpleMultiThreadedSpectrumDataWriter();
@@ -416,7 +416,7 @@ class HSpectrometerManager: public HApplicationBackend
                 // fWriter->StartConsumption();
                 fAveragedSpectrumWriter->StartConsumption();
 
-                //fDumper->StartConsumption();
+                fDumper->StartConsumption();
                 fDataAccumulationWriter->StartConsumption();
 
                 fSpectrumAverager->StartConsumptionProduction();

@@ -76,8 +76,6 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
                         uint64_t arr_dim = source->GetArrayDimension(0);
                         uint64_t n_buffs = buffer_leading_index/arr_dim;
 
-                        std::cout<<"n_buffs = "<<n_buffs<<std::endl;
-
                         if(n_buffs%fNBuffersToSkip  == 0)
                         {
                             //only process this buffer if it is a multiple of the buffers-to-skip size
