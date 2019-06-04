@@ -128,106 +128,108 @@ void
 HADQ7Digitizer::TransferImpl()
 {
     //configure buffer information, cast time to uint64_t and set, then set the sample rate
-
-    this->fBuffer->GetMetaData()->SetSidebandFlag(fSidebandFlag);
-    this->fBuffer->GetMetaData()->SetPolarizationFlag(fPolarizationFlag);
-    this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
-    this->fBuffer->GetMetaData()->SetSampleRate(GetSamplingFrequency()); //check that double to uint64_t conversion is OK here
-    unsigned int count = fCounter;
-    this->fBuffer->GetMetaData()->SetLeadingSampleIndex(count);
-
-
-    unsigned int n_samples_collect  = this->fBuffer->GetArrayDimension(0);
-    int64_t samples_to_collect = this->fBuffer->GetArrayDimension(0);
-    unsigned int buffers_filled = 0;
-    int collect_result = 0;
-
-    #ifdef TIMEOUT_WHEN_POLLING
-        unsigned int timeout = 0;
-    #endif
-
-    //start timer
-    #ifdef DEBUG_TIMER
-        timespec start;
-        timespec end;
-    	clock_gettime(CLOCK_REALTIME, &start);
-    #endif
-
-    while (samples_to_collect > 0)
+    if(this->Buffer != nullptr)
     {
-        unsigned int samples_in_buffer;
+        this->fBuffer->GetMetaData()->SetSidebandFlag(fSidebandFlag);
+        this->fBuffer->GetMetaData()->SetPolarizationFlag(fPolarizationFlag);
+        this->fBuffer->GetMetaData()->SetAcquisitionStartSecond( (uint64_t) fAcquisitionStartTime );
+        this->fBuffer->GetMetaData()->SetSampleRate(GetSamplingFrequency()); //check that double to uint64_t conversion is OK here
+        unsigned int count = fCounter;
+        this->fBuffer->GetMetaData()->SetLeadingSampleIndex(count);
+
+
+        unsigned int n_samples_collect  = this->fBuffer->GetArrayDimension(0);
+        int64_t samples_to_collect = this->fBuffer->GetArrayDimension(0);
+        unsigned int buffers_filled = 0;
+        int collect_result = 0;
+
         #ifdef TIMEOUT_WHEN_POLLING
-        timeout = 0;
+            unsigned int timeout = 0;
         #endif
-        do
+
+        //start timer
+        #ifdef DEBUG_TIMER
+            timespec start;
+            timespec end;
+        	clock_gettime(CLOCK_REALTIME, &start);
+        #endif
+
+        while (samples_to_collect > 0)
         {
-            collect_result = ADQ_GetTransferBufferStatus(fADQControlUnit, fADQDeviceNumber, &buffers_filled);
+            unsigned int samples_in_buffer;
             #ifdef TIMEOUT_WHEN_POLLING
-                if( (buffers_filled == 0) && (collect_result) )
-                {
-                    timeout++;
-                    if(timeout > 1000000)
-                    {
-                        std::cout<<"Error: Time out during data aquisition!"<<std::endl;
-                        //stop the card aquisition and bail out
-                        fErrorCode = 1;
-                        samples_to_collect = 0;
-                        return;
-                    }
-                    usleep(1);
-                }
+            timeout = 0;
             #endif
-        }
-        while( (buffers_filled == 0) && (collect_result) && (!fErrorCode));
+            do
+            {
+                collect_result = ADQ_GetTransferBufferStatus(fADQControlUnit, fADQDeviceNumber, &buffers_filled);
+                #ifdef TIMEOUT_WHEN_POLLING
+                    if( (buffers_filled == 0) && (collect_result) )
+                    {
+                        timeout++;
+                        if(timeout > 1000000)
+                        {
+                            std::cout<<"Error: Time out during data aquisition!"<<std::endl;
+                            //stop the card aquisition and bail out
+                            fErrorCode = 1;
+                            samples_to_collect = 0;
+                            return;
+                        }
+                        usleep(1);
+                    }
+                #endif
+            }
+            while( (buffers_filled == 0) && (collect_result) && (!fErrorCode));
 
-        collect_result = ADQ_CollectDataNextPage(fADQControlUnit, fADQDeviceNumber);
-        samples_in_buffer = MIN_MACRO(ADQ_GetSamplesPerPage(fADQControlUnit, fADQDeviceNumber), samples_to_collect);
+            collect_result = ADQ_CollectDataNextPage(fADQControlUnit, fADQDeviceNumber);
+            samples_in_buffer = MIN_MACRO(ADQ_GetSamplesPerPage(fADQControlUnit, fADQDeviceNumber), samples_to_collect);
 
-        if(ADQ_GetStreamOverflow(fADQControlUnit, fADQDeviceNumber))
-        {
-            fErrorCode = 1;
-            std::cout<<"Warning: Card streaming overflow!"<<std::endl;
-            collect_result = 0;
-            samples_to_collect = 0;
+            if(ADQ_GetStreamOverflow(fADQControlUnit, fADQDeviceNumber))
+            {
+                fErrorCode = 1;
+                std::cout<<"Warning: Card streaming overflow!"<<std::endl;
+                collect_result = 0;
+                samples_to_collect = 0;
+            }
+
+            if(collect_result)
+            {
+                //push the mempy arguments to the thread pool queue
+                void* dest = (void*) &( (this->fBuffer->GetData())[n_samples_collect-samples_to_collect]);
+                void* src = ADQ_GetPtrStream(fADQControlUnit, fADQDeviceNumber);
+                size_t sz = samples_in_buffer*sizeof(signed short);
+                samples_to_collect -= samples_in_buffer;
+                std::lock_guard< std::mutex > lock(fQueueMutex);
+                fMemcpyArgQueue.push( std::make_tuple(dest, src, sz) );
+                //std::cout<<"push, sz = "<<sz<<std::endl;
+            }
+            else
+            {
+                std::cout<<"Warning: Collect next data page failed!"<<std::endl;
+                fErrorCode = 2;
+                samples_to_collect = 0;
+            }
         }
 
-        if(collect_result)
-        {
-            //push the mempy arguments to the thread pool queue
-            void* dest = (void*) &( (this->fBuffer->GetData())[n_samples_collect-samples_to_collect]);
-            void* src = ADQ_GetPtrStream(fADQControlUnit, fADQDeviceNumber);
-            size_t sz = samples_in_buffer*sizeof(signed short);
-            samples_to_collect -= samples_in_buffer;
-            std::lock_guard< std::mutex > lock(fQueueMutex);
-            fMemcpyArgQueue.push( std::make_tuple(dest, src, sz) );
-            //std::cout<<"push, sz = "<<sz<<std::endl;
-        }
-        else
-        {
-            std::cout<<"Warning: Collect next data page failed!"<<std::endl;
-            fErrorCode = 2;
-            samples_to_collect = 0;
-        }
+        #ifdef DEBUG_TIMER
+            //stop timer and print
+            clock_gettime(CLOCK_REALTIME, &end);
+
+            timespec temp;
+            if( (end.tv_nsec-start.tv_nsec) < 0)
+            {
+                temp.tv_sec = end.tv_sec-start.tv_sec-1;
+                temp.tv_nsec = (1000000000+end.tv_nsec)-start.tv_nsec;
+            }
+            else
+            {
+                temp.tv_sec = end.tv_sec-start.tv_sec;
+                temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+            }
+        	std::cout << temp.tv_sec << "." << temp.tv_nsec << " sec for xfer "<<std::endl;
+            std::cout<<"to collect: "<<this->fBuffer->GetArrayDimension(0)<<" samples."<<std::endl;
+        #endif
     }
-
-    #ifdef DEBUG_TIMER
-        //stop timer and print
-        clock_gettime(CLOCK_REALTIME, &end);
-
-        timespec temp;
-        if( (end.tv_nsec-start.tv_nsec) < 0)
-        {
-            temp.tv_sec = end.tv_sec-start.tv_sec-1;
-            temp.tv_nsec = (1000000000+end.tv_nsec)-start.tv_nsec;
-        }
-        else
-        {
-            temp.tv_sec = end.tv_sec-start.tv_sec;
-            temp.tv_nsec = end.tv_nsec-start.tv_nsec;
-        }
-    	std::cout << temp.tv_sec << "." << temp.tv_nsec << " sec for xfer "<<std::endl;
-        std::cout<<"to collect: "<<this->fBuffer->GetArrayDimension(0)<<" samples."<<std::endl;
-    #endif
 }
 
 HDigitizerErrorCode
