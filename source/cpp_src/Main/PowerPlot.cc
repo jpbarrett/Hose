@@ -194,7 +194,7 @@ int main(int argc, char** argv)
     // {
     //     std::cout<<"spec file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
     // }
-    // 
+    //
 //    for(auto it = powerFiles.begin(); it != powerFiles.end(); it++)
 //    {
 //        std::cout<<"npow file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
@@ -202,8 +202,8 @@ int main(int argc, char** argv)
 
 ////////////////////////////////////////////////////////////////////////////////
 //collect the raw accumulations
-    double sample_period = 1.0/400e6;
-    
+    double sample_period = 1.0/1250e6;
+
     std::vector< HDataAccumulationStruct > fOnAccumulations;
     std::vector< std::pair<double,double> > fOnVarianceTimePairs;
     std::vector< HDataAccumulationStruct > fOffAccumulations;
@@ -211,7 +211,7 @@ int main(int argc, char** argv)
 
     double var_min = 1e100;
     double var_max = -1e100;
-    
+
     double on_sumx = 0;
     double on_sumx2 = 0;
     double on_count = 0;
@@ -381,7 +381,7 @@ int main(int argc, char** argv)
     g_on->SetMarkerStyle(24);
     g_on->SetMarkerColor(2);
     g_on->SetLineColor(2);
-    
+
     g_off->SetMarkerStyle(25);
     g_off->SetLineColor(4);
     g_off->SetMarkerColor(4);

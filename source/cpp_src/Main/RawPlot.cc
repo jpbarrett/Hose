@@ -222,7 +222,7 @@ int main(int argc, char** argv)
     while(!in_file.eof() && count < 10000000);
     in_file.close();
 
-    double sample_frequency = 400e6;
+    double sample_frequency = 1250e6;
 
     //ROOT stuff for plots
     TApplication* App = new TApplication("TestRawPlot",&argc,argv);

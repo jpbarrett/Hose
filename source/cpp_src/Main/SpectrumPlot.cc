@@ -213,7 +213,7 @@ int main(int argc, char** argv)
     // {
     //     std::cout<<"spec file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
     // }
-    // 
+    //
     // for(auto it = powerFiles.begin(); it != powerFiles.end(); it++)
     // {
     //     std::cout<<"npow file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
@@ -238,7 +238,7 @@ int main(int argc, char** argv)
     for(size_t i = 0; i < specFiles.size(); i++)
     {
         HSpectrumFileStructWrapper<float> tempFile(specFiles[i].first);
-        
+
         if(i==0)
         {
             spec_length = tempFile.GetSpectrumLength();
@@ -274,7 +274,7 @@ int main(int argc, char** argv)
 
 ////////////////////////////////////////////////////////////////////////////////
 //collect the raw accumulations
-    
+
     std::vector< HDataAccumulationStruct > fOnAccumulations;
     std::vector< std::pair<double,double> > fOnVarianceTimePairs;
     std::vector< HDataAccumulationStruct > fOffAccumulations;
@@ -282,7 +282,7 @@ int main(int argc, char** argv)
 
     double var_min = 1e100;
     double var_max = -1e100;
-    
+
     double on_sumx = 0;
     double on_sumx2 = 0;
     double on_count = 0;
