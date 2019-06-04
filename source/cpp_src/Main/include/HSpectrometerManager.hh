@@ -28,6 +28,7 @@ extern "C"
 }
 
 #include "HTokenizer.hh"
+#include "HBufferAllocatorNew.hh"
 
 
 #ifdef HOSE_USE_PX14
