@@ -16,7 +16,7 @@ namespace hose
 *Description: signed short int version
 */
 
-class HSpectrometerCUDASigned: public HConsumerProducer< int16_t, spectrometer_data_s, HConsumerBufferHandler_WaitWithTimeout< int16_t >, HProducerBufferHandler_Steal< spectrometer_data_s > >
+class HSpectrometerCUDASigned: public HConsumerProducer< int16_t, spectrometer_data_s, HConsumerBufferHandler_Immediate< int16_t >, HProducerBufferHandler_Steal< spectrometer_data_s > >
 {
 
     public:
