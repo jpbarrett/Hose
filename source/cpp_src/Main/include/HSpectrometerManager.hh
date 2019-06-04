@@ -35,8 +35,8 @@ extern "C"
     #include "HSpectrometerCUDA.hh"
     #include "HSpectrumAverager.hh"
     #define DIGITIZER_TYPE HPX14Digitizer
-    #define SPECTRUM_TYPE spectrometer_data
     #define SPECTROMETER_TYPE HSpectrometerCUDA
+    #define SPECTRUM_TYPE spectrometer_data
     #define AVERAGER_TYPE HSpectrumAverager
     #define N_DIGITIZER_THREADS 2
     #define N_DIGITIZER_POOL_SIZE 32
@@ -51,11 +51,11 @@ extern "C"
 
 #ifdef HOSE_USE_ADQ7
     #include "HADQ7Digitizer.hh"
-    #define SPECTRUM_TYPE spectrometer_data_s
     #include "HSpectrometerCUDASigned.hh"
     #include "HSpectrumAveragerSigned.hh"
     #define DIGITIZER_TYPE HADQ7Digitizer
     #define SPECTROMETER_TYPE HSpectrometerCUDASigned
+    #define SPECTRUM_TYPE spectrometer_data_s
     #define AVERAGER_TYPE HSpectrumAveragerSigned
     #define N_DIGITIZER_THREADS 2
     #define N_DIGITIZER_POOL_SIZE 32
@@ -71,11 +71,11 @@ extern "C"
 #ifndef HOSE_USE_ADQ7
     #ifndef HOSE_USE_PX14
         #include "HPX14DigitizerSimulator.hh"
-        #define SPECTRUM_TYPE spectrometer_data
         #include "HSpectrometerCUDA.hh"
         #include "HSpectrumAverager.hh"
         #define DIGITIZER_TYPE HPX14DigitizerSimulator
         #define SPECTROMETER_TYPE HSpectrometerCUDA
+        #define SPECTRUM_TYPE spectrometer_data
         #define AVERAGER_TYPE HSpectrumAverager
         #define N_DIGITIZER_THREADS 1
         #define N_DIGITIZER_POOL_SIZE 8
