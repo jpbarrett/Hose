@@ -47,11 +47,13 @@ if(HOSE_USE_CUDA)
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HSimpleMultiThreadedSpectrumDataWriter.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HSimpleMultiThreadedSpectrumDataWriterSigned.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumAverager.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumAveragerSigned.hh
     )
 
     set(CUDAOPERATOR_SOURCEFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HSpectrometerCUDA.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HSpectrumAverager.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/HSpectrumAveragerSigned.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HSpectrometerCUDASigned.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HSimpleMultiThreadedSpectrumDataWriter.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HSimpleMultiThreadedSpectrumDataWriterSigned.cc

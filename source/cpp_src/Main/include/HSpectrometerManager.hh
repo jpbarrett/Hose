@@ -30,10 +30,14 @@ extern "C"
 #include "HTokenizer.hh"
 
 
-
 #ifdef HOSE_USE_PX14
     #include "HPX14Digitizer.hh"
+    #include "HSpectrometerCUDA.hh"
+    #include "HSpectrumAverager.hh"
     #define DIGITIZER_TYPE HPX14Digitizer
+    #define SPECTRUM_TYPE spectrometer_data
+    #define SPECTROMETER_TYPE HSpectrometerCUDA
+    #define AVERAGER_TYPE HSpectrumAverager
     #define N_DIGITIZER_THREADS 2
     #define N_DIGITIZER_POOL_SIZE 32
     #define N_SPECTROMETER_POOL_SIZE 16
@@ -47,7 +51,12 @@ extern "C"
 
 #ifdef HOSE_USE_ADQ7
     #include "HADQ7Digitizer.hh"
+    #define SPECTRUM_TYPE spectrometer_data_s
+    #include "HSpectrometerCUDASigned.hh"
+    #include "HSpectrumAveragerSigned.hh"
     #define DIGITIZER_TYPE HADQ7Digitizer
+    #define SPECTROMETER_TYPE HSpectrometerCUDASigned
+    #define AVERAGER_TYPE HSpectrumAveragerSigned
     #define N_DIGITIZER_THREADS 2
     #define N_DIGITIZER_POOL_SIZE 32
     #define N_SPECTROMETER_POOL_SIZE 16
@@ -62,7 +71,12 @@ extern "C"
 #ifndef HOSE_USE_ADQ7
     #ifndef HOSE_USE_PX14
         #include "HPX14DigitizerSimulator.hh"
+        #define SPECTRUM_TYPE spectrometer_data
+        #include "HSpectrometerCUDA.hh"
+        #include "HSpectrumAverager.hh"
         #define DIGITIZER_TYPE HPX14DigitizerSimulator
+        #define SPECTROMETER_TYPE HSpectrometerCUDA
+        #define AVERAGER_TYPE HSpectrumAverager
         #define N_DIGITIZER_THREADS 1
         #define N_DIGITIZER_POOL_SIZE 8
         #define N_SPECTROMETER_POOL_SIZE 4
@@ -77,18 +91,14 @@ extern "C"
 
 #include "HBufferPool.hh"
 
-#include "HSpectrometerCUDA.hh"
+
 #include "HCudaHostBufferAllocator.hh"
 #include "HBufferAllocatorSpectrometerDataCUDA.hh"
-
 #include "HSwitchedPowerCalculator.hh"
 #include "HDataAccumulationWriter.hh"
 #include "HSimpleMultiThreadedSpectrumDataWriter.hh"
 #include "HAveragedMultiThreadedSpectrumDataWriter.hh"
 #include "HRawDataDumper.hh"
-
-#include "HSpectrumAverager.hh"
-#include "HAveragedMultiThreadedSpectrumDataWriter.hh"
 
 #include "HApplicationBackend.hh"
 #include "HServer.hh"
@@ -273,10 +283,10 @@ class HSpectrometerManager: public HApplicationBackend
                         fDigitizer->SetPolarizationFlag('X');
 
                         //create spectrometer data pool
-                        fSpectrometerBufferAllocator = new HBufferAllocatorSpectrometerDataCUDA<spectrometer_data>();
+                        fSpectrometerBufferAllocator = new HBufferAllocatorSpectrometerDataCUDA<SPECTRUM_TYPE>();
                         fSpectrometerBufferAllocator->SetSampleArrayLength(fNSpectrumAverages*fFFTSize);
                         fSpectrometerBufferAllocator->SetSpectrumLength(fFFTSize);
-                        fSpectrometerSinkPool = new HBufferPool< spectrometer_data >( fSpectrometerBufferAllocator );
+                        fSpectrometerSinkPool = new HBufferPool< SPECTRUM_TYPE >( fSpectrometerBufferAllocator );
                         fSpectrometerSinkPool->Allocate(fSpectrometerPoolSize, 1);
 
                         //create a noise accumulation container data pool
@@ -285,7 +295,7 @@ class HSpectrometerManager: public HApplicationBackend
                         fNoisePowerPool->Allocate(fNoisePowerPoolSize, 1);
 
                         //create spectrometer
-                        fSpectrometer = new HSpectrometerCUDA(fFFTSize, fNSpectrumAverages);
+                        fSpectrometer = new SPECTROMETER_TYPE(fFFTSize, fNSpectrumAverages);
                         fSpectrometer->SetNThreads(fNSpectrometerThreads);
                         fSpectrometer->SetSourceBufferPool(fDigitizerSourcePool);
                         fSpectrometer->SetSinkBufferPool(fSpectrometerSinkPool);
@@ -295,7 +305,7 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrumAveragingBufferPool = new HBufferPool< float >(fSpectrumAveragingBufferAllocator);
                         fSpectrumAveragingBufferPool->Allocate(SPEC_AVE_POOL_SIZE, fFFTSize/2+1); //create a work space of 18 buffers
 
-                        fSpectrumAverager = new HSpectrumAverager(fFFTSize/2+1, N_AVE_BUFFERS); //we average over 12 buffers
+                        fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, N_AVE_BUFFERS); //we average over 12 buffers
                         fSpectrumAverager->SetNThreads(1); //ONE THREAD ONLY!
                         fSpectrumAverager->SetSourceBufferPool(fSpectrometerSinkPool);
                         fSpectrumAverager->SetSinkBufferPool(fSpectrumAveragingBufferPool);
@@ -1090,20 +1100,20 @@ class HSpectrometerManager: public HApplicationBackend
         HServer* fServer;
         XDigitizerType* fDigitizer;
         HCudaHostBufferAllocator< typename XDigitizerType::sample_type >* fCUDABufferAllocator;
-        HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >* fSpectrometerBufferAllocator;
+        HBufferAllocatorSpectrometerDataCUDA< SPECTRUM_TYPE >* fSpectrometerBufferAllocator;
         HBufferAllocatorNew< HDataAccumulationContainer >* fNoisePowerContainerBufferAllocator;
-        HSpectrometerCUDA* fSpectrometer;
+        SPECTROMETER_TYPE* fSpectrometer;
         HSimpleMultiThreadedSpectrumDataWriter* fWriter;
         HSwitchedPowerCalculator< typename XDigitizerType::sample_type >* fNoisePowerCalculator;
         HDataAccumulationWriter* fDataAccumulationWriter;
         HRawDataDumper< typename XDigitizerType::sample_type >* fDumper;
         HBufferPool< typename XDigitizerType::sample_type >* fDigitizerSourcePool;
-        HBufferPool< spectrometer_data >* fSpectrometerSinkPool;
+        HBufferPool< SPECTRUM_TYPE >* fSpectrometerSinkPool;
         HBufferPool< HDataAccumulationContainer >* fNoisePowerPool;
 
         HBufferAllocatorNew< float >* fSpectrumAveragingBufferAllocator;
         HBufferPool< float >* fSpectrumAveragingBufferPool;
-        HSpectrumAverager* fSpectrumAverager;
+        AVERAGER_TYPE* fSpectrumAverager;
         HAveragedMultiThreadedSpectrumDataWriter* fAveragedSpectrumWriter;
 
         std::string fCannedStopCommand;
