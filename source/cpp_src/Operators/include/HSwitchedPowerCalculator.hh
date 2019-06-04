@@ -108,8 +108,6 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
                             this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID());
                             this->fSinkBufferHandler.ReleaseBufferToProducer(this->fSinkBufferPool, sink);
                             //lock global buffer count mutex
-
-
                         }
                     }
                     else
@@ -351,7 +349,7 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
 
         //global count of buffers so we know which ones to skip
         mutable std::mutex fMutex;
-        uint64_t fBufferCount;
+        volatile uint64_t fBufferCount;
         uint64_t fBuffersToSkip;
 
 };
