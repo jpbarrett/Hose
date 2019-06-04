@@ -313,6 +313,11 @@ int main(int argc, char** argv)
 
     c->cd(2);
     spectrum->Draw("ALP");
+    spectrum->SetTitle("Power Spectrum");
+    spectrum->GetXaxis()->SetTitle("Log10(#omega)");
+    spectrum->GetYaxis()->SetTitle("Spectral power density dB/Hz");
+    spectrum->GetYaxis()->CenterTitle();
+    spectrum->GetXaxis()->CenterTitle();
     c->Update();
 
     //
