@@ -10,10 +10,18 @@ class wf_influxdb(object):
         self.dbuser = os.getenv('INFLUXDB_USER')
         self.dbpwd = os.getenv('INFLUXDB_PWD')
         self.dbname = os.getenv('INFLUXDB_DATABASE')
+        self.db_version = ""
+        self.valid = False
         if self.dbhostname != None and self.dbport != None and self.dbuser != None and self.dbpwd != None and self.dbname != None:
             self.client = InfluxDBClient(self.dbhostname, self.dbport, self.dbuser, self.dbpwd, self.dbname)
+            try:
+                self.db_version = self.client.ping()
+                self.valid = True
+            except:
+                self.valid = False
         else:
             self.client = None
+            self.valid = False
 
     #time arguments must be datetime objects
     #valid measurement names are:
@@ -26,7 +34,7 @@ class wf_influxdb(object):
     #data_validity
 
     def get_measurement_from_time_range(self, measurement_name, start_time, end_time, time_buffer_sec=0, as_dict=True):
-        if self.client != None:
+        if self.client != None and self.valid is True:
             # query must be in the form:
             # SELECT * FROM data_validity WHERE time < '2018-03-01 18:26:08.400' AND time > '2018-03-01 18:16:00.500'
             start_time_string = ( start_time - timedelta(seconds=time_buffer_sec) ).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
@@ -50,7 +58,7 @@ class wf_influxdb(object):
 
 
     def get_most_recent_measurement(self, measurement_name, current_time, as_dict=True):
-        if self.client != None:
+        if self.client != None and self.valid is True:
             # query must be in the form:
             #  SELECT * FROM <measurement_name> WHERE time < '2018-03-01 18:26:08.400' GROUP BY * ORDER BY DESC LIMIT 1
             time_string = current_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]

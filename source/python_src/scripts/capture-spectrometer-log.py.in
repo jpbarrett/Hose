@@ -22,6 +22,9 @@ def main():
     logfilename = os.path.join(log_install_dir, "status.log")
     dbinterface = hinfluxdb_module.wf_influxdb()
 
+    if dbinterface.valid is False:
+        print "Failed to connect to the InfluxDB database!"
+
     #set up ssh-tail command to grab field system log file lines
     #to change port edit ~/.ssh/config
     command = "tail -f " + logfilename
