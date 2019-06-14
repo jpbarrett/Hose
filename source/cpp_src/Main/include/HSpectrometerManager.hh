@@ -327,9 +327,9 @@ class HSpectrometerManager: public HApplicationBackend
 
                         //create an itermittent raw data dumper
                         fDumper = new HRawDataDumper< typename XDigitizerType::sample_type >();
-                        // fDumper->SetBufferPool(fDigitizerSourcePool);
-                        // fDumper->SetBufferDumpFrequency(DUMP_FREQ);
-                        // fDumper->SetNThreads(1);
+                        fDumper->SetBufferPool(fDigitizerSourcePool);
+                        fDumper->SetBufferDumpFrequency(DUMP_FREQ);
+                        fDumper->SetNThreads(1);
 
                         // //spectrum file writing consumer to drain the spectrum data buffers
                         // fWriter = new HSimpleMultiThreadedSpectrumDataWriter();
@@ -416,7 +416,7 @@ class HSpectrometerManager: public HApplicationBackend
                 // fWriter->StartConsumption();
                 fAveragedSpectrumWriter->StartConsumption();
 
-                //fDumper->StartConsumption();
+                fDumper->StartConsumption();
                 fDataAccumulationWriter->StartConsumption();
 
                 fSpectrumAverager->StartConsumptionProduction();
@@ -798,10 +798,10 @@ class HSpectrometerManager: public HApplicationBackend
             fDataAccumulationWriter->SetScanName(fScanName);
             fDataAccumulationWriter->InitializeOutputDirectory();
 
-            // fDumper->SetExperimentName(fExperimentName);
-            // fDumper->SetSourceName(fSourceName);
-            // fDumper->SetScanName(fScanName);
-            // fDumper->InitializeOutputDirectory();
+            fDumper->SetExperimentName(fExperimentName);
+            fDumper->SetSourceName(fSourceName);
+            fDumper->SetScanName(fScanName);
+            fDumper->InitializeOutputDirectory();
 
             fAveragedSpectrumWriter->SetExperimentName(fExperimentName);
             fAveragedSpectrumWriter->SetSourceName(fSourceName);
