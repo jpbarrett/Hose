@@ -78,6 +78,8 @@ HSpectrumAveragerSigned::ExecuteThreadTask()
                 fNTotalSpectrum += n_spectra;
                 fNTotalSamplesAccumulated += n_total_samples;
                 Accumulate(sdata->spectrum);
+                this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID() );
+                source = nullptr;
 
                 //check if we have reached the desired number of buffers,
                 if(fNBuffersAccumulated == fNBuffersToAccumulate)
@@ -105,6 +107,8 @@ HSpectrumAveragerSigned::ExecuteThreadTask()
                 fNTotalSamplesAccumulated = n_total_samples;
 
                 Accumulate(sdata->spectrum);
+                this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID() );
+                source = nullptr;
 
                 //check if we have reached the desired number of buffers, (unlikely here, can only happen if fNBuffersAccumulated is 1)
                 if(fNBuffersAccumulated == fNBuffersToAccumulate)
