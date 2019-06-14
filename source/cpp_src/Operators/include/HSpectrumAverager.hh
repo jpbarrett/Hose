@@ -20,7 +20,7 @@ class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HCo
 {
 
     public:
-        HSpectrumAverager(size_t spectrum_length, size_t n_buffers);  //spec size and averages are fixed at constuction time
+        HSpectrumAverager(size_t spectrum_length, size_t n_buffers);  //spec size and n buffers to average are fixed at constuction time
         virtual ~HSpectrumAverager();
 
     protected:

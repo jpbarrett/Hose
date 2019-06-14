@@ -17,7 +17,7 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers):
 HSpectrumAverager::~HSpectrumAverager(){};
 
 
-bool 
+bool
 HSpectrumAverager::WorkPresent()
 {
     if( fSourceBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) == 0)
@@ -28,7 +28,7 @@ HSpectrumAverager::WorkPresent()
 }
 
 
-void 
+void
 HSpectrumAverager::ExecuteThreadTask()
 {
     HLinearBuffer< spectrometer_data >* source = nullptr;
@@ -78,8 +78,10 @@ HSpectrumAverager::ExecuteThreadTask()
                 fNTotalSpectrum += n_spectra;
                 fNTotalSamplesAccumulated += n_total_samples;
                 Accumulate(sdata->spectrum);
+                this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID() );
+                source = nullptr;
 
-                //check if we have reached the desired number of buffers, 
+                //check if we have reached the desired number of buffers,
                 if(fNBuffersAccumulated == fNBuffersToAccumulate)
                 {
                     WriteAccumulatedSpectrumAverage();
@@ -105,6 +107,8 @@ HSpectrumAverager::ExecuteThreadTask()
                 fNTotalSamplesAccumulated = n_total_samples;
 
                 Accumulate(sdata->spectrum);
+                this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID() );
+                source = nullptr;
 
                 //check if we have reached the desired number of buffers, (unlikely here, can only happen if fNBuffersAccumulated is 1)
                 if(fNBuffersAccumulated == fNBuffersToAccumulate)
@@ -126,7 +130,7 @@ HSpectrumAverager::ExecuteThreadTask()
 }
 
 
-bool 
+bool
 HSpectrumAverager::CheckMetaData(char sideband_flag, char pol_flag, uint64_t start_second, uint64_t sample_rate, uint64_t leading_sample_index) const
 {
     if(fSidebandFlag != sideband_flag){return false;}
@@ -137,7 +141,7 @@ HSpectrumAverager::CheckMetaData(char sideband_flag, char pol_flag, uint64_t sta
     return true;
 }
 
-void 
+void
 HSpectrumAverager::Accumulate(float* array)
 {
     float* accum = fAccumulationBuffer->GetData();
@@ -147,7 +151,7 @@ HSpectrumAverager::Accumulate(float* array)
     }
 }
 
-bool 
+bool
 HSpectrumAverager::WriteAccumulatedSpectrumAverage()
 {
     HLinearBuffer< float >* sink = nullptr;
@@ -177,10 +181,10 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
         //release to consumer
         this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
         return true;
-        
+
     }
     if(sink != nullptr)
-    {   
+    {
         this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
     }
     return false; //failed
