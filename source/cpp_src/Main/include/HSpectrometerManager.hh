@@ -39,7 +39,7 @@ extern "C"
     #define SPECTROMETER_TYPE HSpectrometerCUDA
     #define SPECTRUM_TYPE spectrometer_data
     #define AVERAGER_TYPE HSpectrumAverager
-    #define N_DIGITIZER_THREADS 2
+    #define N_DIGITIZER_THREADS 16
     #define N_DIGITIZER_POOL_SIZE 32
     #define N_SPECTROMETER_POOL_SIZE 16
     #define N_NOISE_POWER_POOL_SIZE 10
