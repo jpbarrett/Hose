@@ -58,7 +58,7 @@ gpu_sdfits - conversion of GPU spectrograph spectra and metadata into
     binary table HDU.
 """
 __usage__="""\
- Usage: ./gpu_sdfits.py Directory
+ Usage: ./gpu_sdfits.py Directory [optional: NumberRawSpecToAverage]
 
  If directory contains wildcards, then you should quote it to avoid
  expansion by the shell. So, for example:
@@ -67,12 +67,27 @@ __usage__="""\
     sh> ./gpu_sdfits.py '../Data/scan[12]'
  will do ../Data/scan1 and ../Data/scan2
 
- This will check each directory to see if there is already a FITS file.
- If ANY FITS files are found in the directory, this will skip the directory
- to avoid possibly overwriting data.
+ This takes an optional second argument NumberRawSpecToAverage, which
+ is the number of raw spectra to average together into a single mean
+ spectrum when converting to FITS. E.g. If there are 2400 raw spectra,
+ and NumberRawSpecToAverage is 12, then 200 average spectra will get
+ written to the FITS file. No rebinning or frequency shifting is done.
+ The spectra are assumed to be temporally close enough to skip that.
+ This also computes all the associated data/metadata for the averaged
+ spectrum.
 
- The FITS file will be named based on the basename of the directory. So,
- for the directory Data/scan6/, the FITS file will be Data/scan6/scan6.fits.
+ [NB, for the moment, all the spectra are assumed to be of the same
+ object and observing setup - ie, for now, all are assumed of the same
+ polarization etc. Refinements to split multiple observation
+ characteristics apart will be added later.]
+
+ This will check each directory to see if there is already a FITS
+ file.  If ANY FITS files are found in the directory, this will skip
+ the directory to avoid possibly overwriting data.
+
+ The FITS file will be named based on the basename of the
+ directory. So, for the directory Data/scan6/, the FITS file will be
+ Data/scan6/scan6.fits.
 
  If the program is run as:
    gpu_sdfits.py '.'
@@ -82,14 +97,14 @@ __usage__="""\
  the FITS file name based on the basename returned.
 """
 __author__="S. Levine"
-__date__="2019 Feb 05a"
+__date__="2019 Jun 15"
 
 #------------------------------------------------------------------------
 # import the FITS io routines for the I/O
 from astropy.io import fits
 
 # import astropy coordinates routines
-from astropy.coordinates import EarthLocation, SkyCoord, AltAz, ICRS, Galactic
+from astropy.coordinates import EarthLocation, SkyCoord, AltAz, ICRS, Galactic, Galactocentric
 from astropy.time        import Time
 import astropy.units     as u
 
@@ -112,6 +127,22 @@ import gpu_read as r
 # random was used for some testing. can be removed.
 import random
 
+#------------------------------------------------------------------------
+# Various Solar Motion constants wrt the LSR.
+# - the one in use is uvw_klb as the Standard Solar Motion
+# - See longer notes in the function altaz2radec()
+
+# Kerr & Lynden-Bell, 1986, MNRAS, 221, 1023
+# Nominal "Standard Solar Motion"
+uvw_klb = [10.0, 15.4, 7.8] * u.kilometer / u.second
+
+# Dehnen & Binney 1998, based on Hipparcos
+uvw_db98 = [10.0, 5.2, 7.2] * u.kilometer / u.second
+
+# Schonrich et al, 2010, MNRAS, 403, 1829
+uvw_sbd10 = [11.1, 12.24, 7.25] * u.kilometer / u.second
+#------------------------------------------------------------------------
+
 # data structure for global metadata
 site_meta  = {'origin' : None}
 wthr_meta  = {'temp'   : None}
@@ -120,18 +151,35 @@ wcs_meta   = {'maxis'  : None}
 
 # Spectrum dictionary - it is structured as a dictionary of lists for
 #  compatibility with the FITS binary table column construction.
-obs_spec = {'datetime': [], 'date-obs': [], 'ut': [], 'object': [],
+obs_spec = {'spec_idx':[],
+            'datetime': [], 'date-obs': [], 'ut': [], 'object': [],
             'obstime': [], 'experiment': [], 'scan': [], 'scan_name': [],
             'navg': [],
             'spec_len': [], 'spec_data_type': [], 'spec': [],
+            'az': [], 'el':[],
             'crval_freq': [], 'crpix_freq': [], 'cdelt_freq': [],
-            'az': [], 'el':[]}
+            'src_id': [], 'src_ra': [], 'src_dec':[],
+            'samp_len':[], 'samp_rate':[],
+            'tsys':[]}
+
+# combined n-to-1 spectral records
+cmb_spec = {'spec_idx':[],
+            'datetime': [], 'date-obs': [], 'ut': [], 'object': [],
+            'obstime': [], 'experiment': [], 'scan': [], 'scan_name': [],
+            'navg': [],
+            'spec_len': [], 'spec_data_type': [], 'spec': [],
+            'az': [], 'el':[],
+            'crval_freq': [], 'crpix_freq': [], 'cdelt_freq': [],
+            'src_id': [], 'src_ra': [], 'src_dec':[],
+            'samp_len':[], 'samp_rate':[],
+            'tsys':[]}
 
 # Noise dictionary
 obs_nois   = {'datetime': [], 'date-obs': [], 'ut': [], 'object': [],
               'obstime': [], 'experiment': [], 'scan': [], 'scan_name': [],
               'accum_len': [], 'switch_freq': [], 'blanking_per': [],
-              'noise': [], 'az': [], 'el':[]}
+              'noise': [], 'mean_power_on': [], 'mean_power_off': [], 
+              'az': [], 'el':[]}
 
 #------------------------------------------------------------------------
 # Functions
@@ -161,6 +209,139 @@ def sort_dict_of_lists (input_dict, srtkey):
 
     return ret_dict
 
+def find_index (input_list, match_value, rtype='nearest'):
+    """\
+    Find the index value of the record in a pre-sorted list
+    that is closest to match_value based on the rtype method, where
+        rtype - return type method 
+              = interp == interpolation
+                prevval == previous value before requested index
+                nexttval == next value after requested index
+                nearest == nearest value in index
+    """
+    il_len = len(input_list)
+    retval = -1
+
+    if (il_len < 1):
+        # no elements in list
+        retval = -1
+
+    elif (il_len == 1):
+        # single element list
+        retval = 0
+
+    else:
+        if (match_value <= input_list[0]):
+            # before the list
+            retval = 0
+
+        elif ( match_value > input_list[-1]):
+            # after end of the list
+            retval = -1
+
+        else:
+            for j in range(il_len - 1):
+                if ((match_value >  input_list[j]) and
+                    (match_value <= input_list[j+1])):
+                    q = j
+                    r = j+1
+                    break
+            a = (match_value - input_list[j])
+            b = (input_list[j+1] - match_value)
+
+            if (rtype == 'prevval'):
+                retval = q
+                            
+            elif (rtype == 'nextval'):
+                retval = r
+                            
+            elif (rtype == 'nearest'):
+                if (a < b):
+                    retval = q
+                else:
+                    retval = r
+
+    return retval
+
+def simple_combine_spec (num_to_avg):
+    """\
+    Bin together raw spectral records. Take num_to_avg raw records
+    and combine into a single higher s/n spectral record.
+    Some columns get averaged, others summed, some just take extrema.
+    This assumes that obs_spec is pre-sorted in time.
+    If the number of raw spectra is not divisible by num_to_avg, the 
+    remainder raw spectra are simply dropped. This way, all the combined
+    spectra have the same characteristics.
+    """
+
+    global obs_spec
+    global cmb_spec
+
+    # number of raw spectral records
+    os_len = len(obs_spec['spec_idx'])
+
+    # Figure out number of records less than or equal to os_len that
+    # num_to_avg divides (to avoid walking of the end of the array by
+    # stepping beyond the last few spectral records).
+    cmb_len = os_len - (os_len % num_to_avg)
+
+    print ('os_len, cmb_len = {}, {}'.format(os_len, cmb_len))
+
+    k = 0
+    for i in range (0, cmb_len, num_to_avg):
+        # Those items which are set once per combined spectral record
+        # Typically based on the beginning of the duration (like the
+        # start of the integration time in UT).
+
+        # cmb_spec['spec_idx'].append(k)
+        cmb_spec['spec_idx'].append(obs_spec['spec_idx'][i])
+
+        cmb_spec['datetime'].append(obs_spec['datetime'][i])
+        cmb_spec['date-obs'].append(obs_spec['date-obs'][i])
+        cmb_spec['ut'].append(obs_spec['ut'][i])
+        cmb_spec['object'].append(obs_spec['object'][i])
+        cmb_spec['experiment'].append(obs_spec['experiment'][i])
+        cmb_spec['scan'].append(obs_spec['scan'][i])
+        cmb_spec['scan_name'].append(obs_spec['scan_name'][i])
+
+        # Is it correct to multiply together navg and num_to_avg?
+        cmb_spec['navg'].append(obs_spec['navg'][i] * num_to_avg)
+
+        cmb_spec['spec_len'].append(obs_spec['spec_len'][i])
+        cmb_spec['spec_data_type'].append(obs_spec['spec_data_type'][i])
+
+        cmb_spec['crval_freq'].append(obs_spec['crval_freq'][i])
+        cmb_spec['crpix_freq'].append(obs_spec['crpix_freq'][i])
+        cmb_spec['cdelt_freq'].append(obs_spec['cdelt_freq'][i])
+        
+        cmb_spec['src_id'].append(obs_spec['src_id'][i])
+        cmb_spec['src_ra'].append(obs_spec['src_ra'][i])
+        cmb_spec['src_dec'].append(obs_spec['src_dec'][i])
+        
+        cmb_spec['samp_len'].append(obs_spec['samp_len'][i])
+        cmb_spec['samp_rate'].append(obs_spec['samp_rate'][i])
+        
+        # Sum the observation time duration
+        cmb_spec['obstime'].append(np.sum(obs_spec['obstime'][i:i+num_to_avg]))
+        
+        # Add test that i+num_to_avg < os_len
+
+        # Compute mean az and el
+        cmb_spec['az'].append(np.mean(obs_spec['az'][i:i+num_to_avg]))
+        cmb_spec['el'].append(np.mean(obs_spec['el'][i:i+num_to_avg]))
+        
+        # mean tsys
+        cmb_spec['tsys'].append(np.mean(obs_spec['tsys'][i:i+num_to_avg]))
+
+        # Average together the raw spectra
+        cmb_spec['spec'].append(np.mean(obs_spec['spec'][i:i+num_to_avg], axis=0))
+
+        k = k + 1
+
+    num_avg_spec = k
+
+    return num_avg_spec
+
 def sdf_getobs_spec (spec_record, meta_info):
     """
     Populate observation specific meta-data and spectrum for input record.
@@ -170,6 +351,8 @@ def sdf_getobs_spec (spec_record, meta_info):
 
     # start with UT date/time as date-obs in isoformat
     lut = spec_record.start_ut()
+
+    obs_spec['spec_idx'].append(0)
     obs_spec['datetime'].append(lut)
     obs_spec['date-obs'].append(lut.isoformat())
     obs_spec['ut'].append(sexig2decim (lut.time()))
@@ -185,23 +368,65 @@ def sdf_getobs_spec (spec_record, meta_info):
     
     obs_spec['spec'].append(spec_record.spectrum())
 
+    obs_spec['samp_len'].append(spec_record.sample_length())
+    obs_spec['samp_rate'].append(spec_record.sample_rate())
+
+    # Compute Tsys for this spectrum based on the noise data
+    #  as tsys = tnoise * p0/(p1-p0), p0=diode off, p1=diode on
+    # TEMPORARY arbitrary assignment of value for tnoise
+    tnoise = 100.0
+    d = find_index (obs_nois['datetime'], lut, rtype='nearest')
+    # print ('SpecTime: {}, NoiseTime: {}, d: {}'.
+    #        format(obs_spec['date-obs'][-1],
+    #               obs_nois['date-obs'][d],
+    #               d))
+    tsys = tnoise * obs_nois['mean_power_off'][d] /  \
+        (obs_nois['mean_power_on'][d] - obs_nois['mean_power_off'][d])
+    obs_spec['tsys'].append(tsys)
+
     if (meta_info != None):
         a = meta_info.antenna_pos_at_time(lut)
-        obs_spec['az'].append(a['fields']['az'])
-        obs_spec['el'].append(a['fields']['el'])
+        if (a['measurement'] == None):
+            obs_spec['az'].append(-1.0)
+            obs_spec['el'].append(-1.0)
+        else:
+            obs_spec['az'].append(a['fields']['az'])
+            obs_spec['el'].append(a['fields']['el'])
+
         b = meta_info.frequency_map_at_time(lut)
-        obs_spec['crval_freq'].append(b['fields']['reference_bin_center_sky_frequency_MHz'] *
-                                      1000000.0)
-        obs_spec['crpix_freq'].append(b['fields']['reference_bin_index'])
-        obs_spec['cdelt_freq'].append(b['fields']['frequency_delta_MHz']
-                                      * 1000000.0 / b['fields']['bin_delta'])
+        if (b['measurement'] == None):
+            obs_spec['crval_freq'].append(1.0)
+            obs_spec['crpix_freq'].append(1.0)
+            obs_spec['cdelt_freq'].append(1.0)
+        else:
+            obs_spec['crval_freq'].append(b['fields']['reference_bin_center_sky_frequency_MHz'] *
+                                          1000000.0)
+            obs_spec['crpix_freq'].append(b['fields']['reference_bin_index'])
+            obs_spec['cdelt_freq'].append(b['fields']['frequency_delta_MHz']
+                                          * 1000000.0 / b['fields']['bin_delta'])
+
+        c = meta_info.source_at_time(lut)
+        if (c['measurement'] == None):
+            obs_spec['src_id'].append('SourceID')
+            obs_spec['src_ra'].append('000000.00')
+            obs_spec['src_dec'].append('+000000.0')
+        else:
+            obs_spec['src_id'].append(c['fields']['source'])
+            obs_spec['src_ra'].append(c['fields']['ra'])
+            obs_spec['src_dec'].append(c['fields']['dec'])
+
 
     else:
         obs_spec['az'].append(-1.0)
         obs_spec['el'].append(-1.0)
+
         obs_spec['crval_freq'].append(1.0)
         obs_spec['crpix_freq'].append(1.0)
         obs_spec['cdelt_freq'].append(1.0)
+
+        obs_spec['src_id'].append('SourceID')
+        obs_spec['src_ra'].append('000000.00')
+        obs_spec['src_dec'].append('+000000.0')
 
     #print ('{} {}'.format(obs_spec['scan_name'], obs_spec['scan']))
     #print ('{} {}'.format(obs_spec['date-obs'], obs_spec['ut']))
@@ -232,6 +457,8 @@ def sdf_getobs_nois (nois_record, meta_info):
     obs_nois['blanking_per'].append(nois_record.blanking_period())
 
     obs_nois['noise'].append(nois_record.noise())
+    obs_nois['mean_power_on'].append(nois_record.mean_power(state='on'))
+    obs_nois['mean_power_off'].append(nois_record.mean_power(state='off'))
     
     if (meta_info != None):
         a = meta_info.antenna_pos_at_time(lut)
@@ -361,7 +588,8 @@ def altaz2radec (alt, az, obstime, site, wthr=None):
 
     oti = Time(obstime, scale='utc', location=osi)
 
-    lst = oti.sidereal_time('mean').to_string(sep='')
+    # lst = oti.sidereal_time('mean').to_string(sep='')
+    lst = oti.sidereal_time('mean').value * 3600.0 * u.second
 
     azel = SkyCoord(alt=alt*u.deg, az=az*u.deg, frame='altaz', obstime=oti,
                     location=osi, pressure=0)
@@ -373,7 +601,105 @@ def altaz2radec (alt, az, obstime, site, wthr=None):
     baryctr_corr = azel.radial_velocity_correction('barycentric')
     #                                           obstime=oti, location=osi)
     
-    return eqc, glc, lst, baryctr_corr
+##    # compute the radial component of the LSR velocity along the line
+##    # of site to the object ra, dec
+
+##    # start with cartesian form of galactic coords of direction to object
+##    cart_dat = glc.data.to_cartesian()
+##    cart_unit = cart_dat / cart_dat.norm()
+
+##    # Get solar velocity in cartesian galactocentric coordinates.
+
+##    v_sun = Galactocentric.galcen_v_sun.to_cartesian()
+
+##    # Now project the solar velocity wrt the LSR along the light of sight
+##    lsr_corr = v_sun.dot(cart_unit)
+
+    # temporary - the astropy.coordinates for python2 does not include
+    # the transformations for quick computation of the projection of the LSR
+    # velocity
+
+    # Computing the solar velocity relative to the LSR along the line
+    #  of site to the observed object(s).
+
+    # Refs:
+    # - Delhaye, J., 1965, Galactic Structure, Stars and Stellar
+    #   Systems, Vol. 5, p. 61, Chicago University Press,
+    #   (see esp section 2)
+    # - Kerr, F., & Lynden-Bell, D. 1986, MNRAS, 221, 1023.
+    # - Reid, N., et al. 2009, ApJ, 700, 137-148.
+    #   (see esp Table 2 and the Appendix)
+    # - Schonrich, R., et al, 2010, MNRAS, 403, 1829.
+
+    # compute unit vector in the direction of the object from galactic coords
+    # and dot that with the (U,V,W) components of the solar motion.
+
+    # - the nominal values used are supposed to be from Schonrich et
+    #   al (2010), with (U,V,W) = (11.1, 12.24, 7.25) km/s
+    # - if we decide to use a different convention, it should be
+    #   straightforward to modify
+    # B&T - pg14 - solar motion relative to LSR is 
+    #  16.5 km/s in dir l=+53deg, b=+25deg
+    # This comes from Kerr & Lynden-Bell
+
+    # Kerr, F. & Lynden-Bell, D. 1986, MNRAS, 221, 1023
+    # Footnote to section 1.4:
+    # *In galactic Cartesian components X=r cosl cosb, etc. 
+    #  Xdot = U=10.0,  Ydot = V=15.4, Zdot = W=7.8 km/s
+    # (nb - right handed coordinate system, w/ X pointing from Sun to GC.)
+
+    # Delhaye, J., 1965. Galactic Structure, Stars and Stellar
+    #  Systems, Vol. 5, p. 61, Chicago University Press,
+
+    # Delhaye, 1965 - peculiar motion given in Pi, Theta, Z, lefthanded
+    #   coordinate system. Convert by flipping sign on Pi to get U. V=Theta,
+    #   W = Z.
+
+    #  section 2, Solar Motion:
+    #  subsec 2.1  wrt circ vel.
+    #  weighted mean of measures wrt populations in table 2:
+    #    (U,V,W) = (+9, +12, +7) km/s, in right handed form (pg 73)
+    #  equals 16.5 km/s in dir l,b = 53, 25deg
+
+    #  subsect 2.2 std sol motion: wrt A-G MS stars, giants and supergiants
+    #    (U,V,W) = (+10.4, +14.8, +7.3) km/s, in right handed form (pg 73)
+    #  equals 19.5 km/s in dir l,b = 56, 23deg
+
+    #  subsect 2.3: basic sol motion: wrt most freq occuring in local neighborhood
+    #    (U,V,W) = (+9, +11, +6) km/s, in right handed form (pg 74)
+    #  equals 15.4 km/s in dir l,b = 51, 23deg
+
+    # Dehnen & Binney 1998 -
+    #  U,V,W = (10.0, 5.2, 7.2) km/s Right handed, based on Hipparcos
+
+
+    # "standard values" listed in Reid, et al 2009, table 5 - from ?
+    #  pretty close to Kerr & Lynden-Bell, also Delhaye std sol motion
+    #  looking at K&L-B, the text is almost identical to the text in K&L-B
+    #  But where does F&L-B get it?
+    #  U,V,W = (10.3, 15.3, 7.7) km/s Right handed, based on Hipparcos
+
+    # check Mihalas & Routley, when get a copy
+
+    cgl = np.cos(glc.l.rad)
+    sgl = np.sin(glc.l.rad)
+    cgb = np.cos(glc.b.rad)
+    sgb = np.sin(glc.b.rad)
+
+    # -> Kerr & Lynden-Bell, 1986 - possible "Standard Solar Motion"
+    # uvw_klb = [10.0, 15.4, 7.8] * u.kilometer / u.second
+
+    # Dehnen & Binney 1998, based on Hipparcos
+    # uvw_db98 = [10.0, 5.2, 7.2] * u.kilometer / u.second
+
+    # Schonrich et al, 2010:
+    # uvw_sbd10 = [11.1, 12.24, 7.25] * u.kilometer / u.second
+
+    uvw_sun = uvw_klb
+
+    lsr_corr = cgb*cgl*uvw_sun[0] + cgb*sgl*uvw_sun[1] + sgb * uvw_sun[2]
+
+    return eqc, glc, lst, baryctr_corr, lsr_corr
 
 def sexig2decim (sxtim):
     """
@@ -445,16 +771,17 @@ def sdf_bintab_hdr (obsrec, extname='MATRIX', obsmode=None, speclen=0):
 
     # conversion of alt,az, date/time vectors to ra,dec & l,b & lst &
     # barycentric radial vel correction term
-    aeq, agal, alst, brvc = altaz2radec (obsrec['el'], obsrec['az'], 
-                                   obsrec['date-obs'], 
-                                   site_meta['site'])
+    aeq, agal, alst, brvc, lsrvc = altaz2radec (obsrec['el'], obsrec['az'], 
+                                                obsrec['date-obs'], 
+                                                site_meta['site'])
     a['equinox'] = [2000.0] * 3
-    a['ra']   = aeq.ra.deg
-    a['dec']  = aeq.dec.deg
-    a['glon'] = agal.l.deg
-    a['glat'] = agal.b.deg
-    a['lst']  = alst
-    a['brvc'] = brvc
+    a['ra']      = aeq.ra.deg
+    a['dec']     = aeq.dec.deg
+    a['glon']    = agal.l.deg
+    a['glat']    = agal.b.deg
+    a['lst']     = alst
+    a['brvc']    = brvc
+    a['lsrvc']   = lsrvc
     
     # Compute the offset in Xi, Eta from the first pointing
     #  Need to make sure the SkyCoord frames for all the Ra,Dec points
@@ -509,6 +836,7 @@ def sdf_bintab_hdr (obsrec, extname='MATRIX', obsmode=None, speclen=0):
 
     # Site Metadata
     hdr['TELESCOP'] = site_meta['telescope']
+    hdr['INSTRUME'] = site_meta['instrument']
     hdr['SITELONG'] = site_meta['site']['lon']
     hdr['SITELAT']  = site_meta['site']['lat']
     hdr['SITEELEV'] = site_meta['site']['elev']
@@ -580,8 +908,16 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     c['scan']     = fits.Column(name='SCAN',     format='1J',
                                 array=obs_spec['scan'])
 
+    # spectrum number w/in scan - running integer starting w/ 1
+
+    # polarization information
+
     c['object']   = fits.Column(name='OBJECT',   format='12A', 
                                 array=obs_spec['object'])
+
+    # The RA,Dec here are based on the telescope pointing from the
+    # encoders, not to be confused with source RA, and Dec, from the
+    # input object catalogue
 
     # Check for Freq columns to pass into WCS cols in the bintable
     # CRVAL, CRPIX, CDELT (check for CD11?)
@@ -610,9 +946,23 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
                                             format='1E', unit='HZ',
                                             array=obs_spec['cdelt_freq'])
 
-    # a['tsys'] = ?
-    c['tsys']       = fits.Column(name='TSYS',     format='1E', unit='K')
-    #                              array=a['tsys'])
+    # Source catalogue ID, RA and Dec in string sexigesimal form
+    c['src_id']   = fits.Column(name='SRCID',   format='12A', 
+                                array=obs_spec['src_id'])
+
+    c['src_ra']   = fits.Column(name='SRCRA',   format='9A', 
+                                array=obs_spec['src_ra'])
+
+    c['src_dec']  = fits.Column(name='SRCDEC',   format='9A', 
+                                array=obs_spec['src_dec'])
+
+    # Spectrum running index in the FITS file
+    c['spec_idx'] = fits.Column(name='SPECIDX',  format='1J', 
+                                array=obs_spec['spec_idx'])
+
+    # compute this from the noise power
+    c['tsys']       = fits.Column(name='TSYS',     format='1E', unit='K',
+                                  array=obs_spec['tsys'])
 
     # a['imagfreq'] = ?
     c['imagfreq']   = fits.Column(name='IMAGFREQ', format='1E', unit='HZ')
@@ -634,10 +984,19 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     c['tchop']      = fits.Column(name='TCHOP',    format='1E', unit='K')
     #                              array=a['tchop'])
 
+    # Az,El from the metadata
     c['el']        = fits.Column(name='ELEVATIO', format='1E', unit='DEGREES',
                                  array=obs_spec['el'])
     c['az']        = fits.Column(name='AZIMUTH',  format='1E', unit='DEGREES',
                                  array=obs_spec['az'])
+
+    # Galactic longitude and latitude computed from az,el,telescope site,
+    # ut. Added for debuging.
+    c['glon']      = fits.Column(name='GLON', format='1E', unit='DEGREES',
+                                 array=a['glon'])
+
+    c['glat']      = fits.Column(name='GLAT',  format='1E', unit='DEGREES',
+                                 array=a['glat'])
 
     c['date-obs']  = fits.Column(name='DATE-OBS', format='26A', 
                                  array=obs_spec['date-obs'])
@@ -655,9 +1014,18 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     c['brvc']      = fits.Column(name='BARYCORR', format='1E', unit='KM/S',
                                  array=a['brvc'].to(u.km/u.s) )
     
+    c['lsrvc']     = fits.Column(name='VLSRCORR', format='1E', unit='KM/S',
+                                 array=a['lsrvc'].to(u.km/u.s) )
+    
     c['spec']     = fits.Column(name='SPECTRUM',  format=dsize, unit='POWER',
                                  array=obs_spec['spec'])
 
+
+    # temporary
+    #c['samp_len'] = fits.Column(name='SAMPLEN', format='1E', unit='Number',
+    #                             array=obs_spec['samp_len'])
+    #c['samp_rate']= fits.Column(name='SAMPRATE', format='1E', unit='HZ',
+    #                             array=obs_spec['samp_rate'])
 
     cols = fits.ColDefs([c[i] for i in sorted(c.keys())])
     hdu  = fits.BinTableHDU.from_columns(cols, header=hdr)
@@ -795,7 +1163,7 @@ def sdf_mkfits (ofile=None):
 
 #------------------------------------------------------------------------
 # Upper level driver routines - handle directory listing/searching etc.
-def loop_over_dirs (inputs):
+def loop_over_dirs (inputs, num_to_avg=1):
     """
     Overall driver to load in spectra and noise data in all 
     directories in the list.
@@ -803,7 +1171,10 @@ def loop_over_dirs (inputs):
       maxperfits == max number of spectra per fits file. If < 0, do all.
     ]
     """
-    
+
+    global obs_spec
+    global cmb_spec
+
     # Expect argument to be directory with scans or scan directories
     # argone = sys.argv[1]
     argone = inputs
@@ -826,6 +1197,14 @@ def loop_over_dirs (inputs):
                 froot = os.path.basename(d[n])
 
             ofile = '{}/{}.fits'.format(d[n],froot)
+
+            # insert raw spectral record simple combination here
+            if (num_to_avg > 1):
+                simple_combine_spec (num_to_avg)
+                for j in cmb_spec:
+                    obs_spec[j] = cmb_spec[j]
+                print (obs_spec['spec_idx'])
+
             sdf_mkfits(ofile=ofile)
         
     # print ('{}'.format(obs_spec['ut']))
@@ -873,8 +1252,12 @@ def load_spectra(idnum, d, fs, fm, ff):
     # loop and load spectrum files
     ct = 0
     for ifs in fs:
-        
-        sp = r.GPUSpec(ifs)
+
+        if (ct  == 0):
+            sp = r.GPUSpec(ifs, echo=True)
+        else:
+            sp = r.GPUSpec(ifs)
+
         lut = sp.start_ut()
         # print ('{} {}'.format(lut, lut.isoformat()))
         sdf_getobs_spec (sp, md)
@@ -893,15 +1276,12 @@ def load_spectra(idnum, d, fs, fm, ff):
     # sort and then copy back into obs_spec.
 
     obs_spec = sort_dict_of_lists (obs_spec, 'datetime')
+
+    # Now, put monotonic index into spec_idx in the sorted obs_spec
+    # This should also be the order that the spectra wind up in the FITS file
     
-    #j = sorted (obs_spec.keys())
-    #tmp_sort_arr = obs_spec['datetime']
-    #tmpspec = zip(tmp_sort_arr, *(obs_spec[k] for k in j))
-    #srtspec = map(list, zip(*sorted(tmpspec)))
-    #sidx = 1
-    #for k in j:
-    #    obs_spec[k] = srtspec[sidx]
-    #    sidx += 1
+    for sct in range(len(obs_spec['spec_idx'])):
+        obs_spec['spec_idx'][sct] = sct + 1
 
     print ('End {}'.format(dt.datetime.now().ctime()))
     print ('')
@@ -947,7 +1327,11 @@ def load_noise(idnum, d, fn, fm, ff):
     ct = 0
     for ifn in fn:
         
-        npw = r.GPUNoise(ifn)
+        if (ct == 0):
+            npw = r.GPUNoise(ifn, echo=True)
+        else:
+            npw = r.GPUNoise(ifn)
+
         lut = npw.start_ut()
         # print ('{} {}'.format(lut, lut.isoformat()))
         sdf_getobs_nois (npw, md)
@@ -986,5 +1370,8 @@ if __name__ == '__main__':
     if (argc < 2):
         print ('{}'.format(__usage__))
     else:
-        a = loop_over_dirs(argv[1])
+        if (argc == 3):
+            a = loop_over_dirs(argv[1], num_to_avg=int(argv[2]))
+        else:
+            a = loop_over_dirs(argv[1])
 
