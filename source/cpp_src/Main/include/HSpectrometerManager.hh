@@ -343,7 +343,7 @@ class HSpectrometerManager: public HApplicationBackend
 
                         fDigitizerSourcePool->Initialize();
                         fSpectrometerSinkPool->Initialize();
-                        fSpectrumAveragingBufferPool->Initialize();
+                        //fSpectrumAveragingBufferPool->Initialize();
                         // fNoisePowerPool->Initialize();
 
                         #ifdef HOSE_USE_SPDLOG
