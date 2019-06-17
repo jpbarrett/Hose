@@ -97,7 +97,7 @@ extern "C"
 #include "HBufferAllocatorSpectrometerDataCUDA.hh"
 #include "HSwitchedPowerCalculator.hh"
 #include "HDataAccumulationWriter.hh"
-#include "HSimpleMultiThreadedSpectrumDataWriter.hh"
+#include "HSimpleMultiThreadedSpectrumDataWriterSigned.hh"
 #include "HAveragedMultiThreadedSpectrumDataWriter.hh"
 #include "HRawDataDumper.hh"
 
@@ -316,8 +316,8 @@ class HSpectrometerManager: public HApplicationBackend
                         // fAveragedSpectrumWriter->SetNThreads(1);
 
                         //create the noise power calculator
-                        // double noise_diode_switching_freq = NOISE_DIODE_SWITCHING_FREQ;
-                        // double noise_diode_blanking_period = NOISE_DIODE_BLANK_PERIOD;
+                        double noise_diode_switching_freq = NOISE_DIODE_SWITCHING_FREQ;
+                        double noise_diode_blanking_period = NOISE_DIODE_BLANK_PERIOD;
                         // fNoisePowerCalculator = new HSwitchedPowerCalculator< typename XDigitizerType::sample_type >();
                         // fNoisePowerCalculator->SetSwitchingFrequency(noise_diode_switching_freq);
                         // fNoisePowerCalculator->SetSamplingFrequency( fDigitizer->GetSamplingFrequency() );
@@ -332,7 +332,7 @@ class HSpectrometerManager: public HApplicationBackend
                         // fDumper->SetNThreads(1);
 
                         //spectrum file writing consumer to drain the spectrum data buffers
-                        fWriter = new HSimpleMultiThreadedSpectrumDataWriter();
+                        fWriter = new HSimpleMultiThreadedSpectrumDataWriterSigned();
                         fWriter->SetBufferPool(fSpectrometerSinkPool);
                         fWriter->SetNThreads(1);
 
@@ -1103,7 +1103,7 @@ class HSpectrometerManager: public HApplicationBackend
         HBufferAllocatorSpectrometerDataCUDA< SPECTRUM_TYPE >* fSpectrometerBufferAllocator;
         HBufferAllocatorNew< HDataAccumulationContainer >* fNoisePowerContainerBufferAllocator;
         SPECTROMETER_TYPE* fSpectrometer;
-        HSimpleMultiThreadedSpectrumDataWriter* fWriter;
+        HSimpleMultiThreadedSpectrumDataWriterSigned* fWriter;
         HSwitchedPowerCalculator< typename XDigitizerType::sample_type >* fNoisePowerCalculator;
         HDataAccumulationWriter* fDataAccumulationWriter;
         HRawDataDumper< typename XDigitizerType::sample_type >* fDumper;
