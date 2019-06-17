@@ -291,9 +291,9 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrometerSinkPool->Allocate(fSpectrometerPoolSize, 1);
 
                         //create a noise accumulation container data pool
-                        fNoisePowerContainerBufferAllocator = new HBufferAllocatorNew< HDataAccumulationContainer >();
-                        fNoisePowerPool = new HBufferPool< HDataAccumulationContainer >(fNoisePowerContainerBufferAllocator);
-                        fNoisePowerPool->Allocate(fNoisePowerPoolSize, 1);
+                        //fNoisePowerContainerBufferAllocator = new HBufferAllocatorNew< HDataAccumulationContainer >();
+                        //fNoisePowerPool = new HBufferPool< HDataAccumulationContainer >(fNoisePowerContainerBufferAllocator);
+                        //fNoisePowerPool->Allocate(fNoisePowerPoolSize, 1);
 
                         //create spectrometer
                         fSpectrometer = new SPECTROMETER_TYPE(fFFTSize, fNSpectrumAverages);
@@ -302,49 +302,49 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrometer->SetSinkBufferPool(fSpectrometerSinkPool);
 
                         //create post-spectrometer data pool for averaging
-                        fSpectrumAveragingBufferAllocator = new HBufferAllocatorNew< float >();
-                        fSpectrumAveragingBufferPool = new HBufferPool< float >(fSpectrumAveragingBufferAllocator);
-                        fSpectrumAveragingBufferPool->Allocate(SPEC_AVE_POOL_SIZE, fFFTSize/2+1); //create a work space of buffers
+                        // fSpectrumAveragingBufferAllocator = new HBufferAllocatorNew< float >();
+                        // fSpectrumAveragingBufferPool = new HBufferPool< float >(fSpectrumAveragingBufferAllocator);
+                        // fSpectrumAveragingBufferPool->Allocate(SPEC_AVE_POOL_SIZE, fFFTSize/2+1); //create a work space of buffers
 
-                        fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, N_AVE_BUFFERS); //we average over 12 buffers
-                        fSpectrumAverager->SetNThreads(1); //ONE THREAD ONLY!
-                        fSpectrumAverager->SetSourceBufferPool(fSpectrometerSinkPool);
-                        fSpectrumAverager->SetSinkBufferPool(fSpectrumAveragingBufferPool);
+                        // fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, N_AVE_BUFFERS); //we average over 12 buffers
+                        // fSpectrumAverager->SetNThreads(1); //ONE THREAD ONLY!
+                        // fSpectrumAverager->SetSourceBufferPool(fSpectrometerSinkPool);
+                        // fSpectrumAverager->SetSinkBufferPool(fSpectrumAveragingBufferPool);
 
-                        fAveragedSpectrumWriter = new HAveragedMultiThreadedSpectrumDataWriter();
-                        fAveragedSpectrumWriter->SetBufferPool(fSpectrumAveragingBufferPool);
-                        fAveragedSpectrumWriter->SetNThreads(1);
+                        // fAveragedSpectrumWriter = new HAveragedMultiThreadedSpectrumDataWriter();
+                        // fAveragedSpectrumWriter->SetBufferPool(fSpectrumAveragingBufferPool);
+                        // fAveragedSpectrumWriter->SetNThreads(1);
 
                         //create the noise power calculator
-                        double noise_diode_switching_freq = NOISE_DIODE_SWITCHING_FREQ;
-                        double noise_diode_blanking_period = NOISE_DIODE_BLANK_PERIOD;
-                        fNoisePowerCalculator = new HSwitchedPowerCalculator< typename XDigitizerType::sample_type >();
-                        fNoisePowerCalculator->SetSwitchingFrequency(noise_diode_switching_freq);
-                        fNoisePowerCalculator->SetSamplingFrequency( fDigitizer->GetSamplingFrequency() );
-                        fNoisePowerCalculator->SetBlankingPeriod(noise_diode_blanking_period); //11ms (from original GPU spec)
-                        fNoisePowerCalculator->SetSourceBufferPool(fDigitizerSourcePool);
-                        fNoisePowerCalculator->SetSinkBufferPool(fNoisePowerPool);
+                        // double noise_diode_switching_freq = NOISE_DIODE_SWITCHING_FREQ;
+                        // double noise_diode_blanking_period = NOISE_DIODE_BLANK_PERIOD;
+                        // fNoisePowerCalculator = new HSwitchedPowerCalculator< typename XDigitizerType::sample_type >();
+                        // fNoisePowerCalculator->SetSwitchingFrequency(noise_diode_switching_freq);
+                        // fNoisePowerCalculator->SetSamplingFrequency( fDigitizer->GetSamplingFrequency() );
+                        // fNoisePowerCalculator->SetBlankingPeriod(noise_diode_blanking_period); //11ms (from original GPU spec)
+                        // fNoisePowerCalculator->SetSourceBufferPool(fDigitizerSourcePool);
+                        //fNoisePowerCalculator->SetSinkBufferPool(fNoisePowerPool);
 
                         //create an itermittent raw data dumper
-                        fDumper = new HRawDataDumper< typename XDigitizerType::sample_type >();
-                        fDumper->SetBufferPool(fDigitizerSourcePool);
-                        fDumper->SetBufferDumpFrequency(DUMP_FREQ);
-                        fDumper->SetNThreads(1);
+                        // fDumper = new HRawDataDumper< typename XDigitizerType::sample_type >();
+                        // fDumper->SetBufferPool(fDigitizerSourcePool);
+                        // fDumper->SetBufferDumpFrequency(DUMP_FREQ);
+                        // fDumper->SetNThreads(1);
 
-                        // //spectrum file writing consumer to drain the spectrum data buffers
-                        // fWriter = new HSimpleMultiThreadedSpectrumDataWriter();
-                        // fWriter->SetBufferPool(fSpectrometerSinkPool);
-                        // fWriter->SetNThreads(1);
+                        //spectrum file writing consumer to drain the spectrum data buffers
+                        fWriter = new HSimpleMultiThreadedSpectrumDataWriter();
+                        fWriter->SetBufferPool(fSpectrometerSinkPool);
+                        fWriter->SetNThreads(1);
 
                         //noise power file writing consumer to drain the noise power calculator buffers
-                        fDataAccumulationWriter = new HDataAccumulationWriter();
-                        fDataAccumulationWriter->SetBufferPool(fNoisePowerPool);
-                        fDataAccumulationWriter->SetNThreads(1);
+                        // fDataAccumulationWriter = new HDataAccumulationWriter();
+                        // fDataAccumulationWriter->SetBufferPool(fNoisePowerPool);
+                        // fDataAccumulationWriter->SetNThreads(1);
 
                         fDigitizerSourcePool->Initialize();
                         fSpectrometerSinkPool->Initialize();
                         fSpectrumAveragingBufferPool->Initialize();
-                        fNoisePowerPool->Initialize();
+                        // fNoisePowerPool->Initialize();
 
                         #ifdef HOSE_USE_SPDLOG
 
@@ -413,13 +413,12 @@ class HSpectrometerManager: public HApplicationBackend
             {
                 //start the command server thread
                 std::thread server_thread( &HServer::Run, fServer );
-                // fWriter->StartConsumption();
-                fAveragedSpectrumWriter->StartConsumption();
+                fWriter->StartConsumption();
+                //fAveragedSpectrumWriter->StartConsumption();
 
-                fDumper->StartConsumption();
-                fDataAccumulationWriter->StartConsumption();
-
-                fSpectrumAverager->StartConsumptionProduction();
+                // fDumper->StartConsumption();
+                // fDataAccumulationWriter->StartConsumption();
+                //fSpectrumAverager->StartConsumptionProduction();
 
                 fSpectrometer->StartConsumptionProduction();
                 for(size_t i=0; i<fNSpectrometerThreads; i++)
@@ -427,7 +426,7 @@ class HSpectrometerManager: public HApplicationBackend
                     fSpectrometer->AssociateThreadWithSingleProcessor(i, i+1);
                 };
 
-                fNoisePowerCalculator->StartConsumptionProduction();
+                //fNoisePowerCalculator->StartConsumptionProduction();
 
                 fDigitizer->StartProduction();
                 for(size_t i=0; i<fNDigitizerThreads; i++)
@@ -502,8 +501,8 @@ class HSpectrometerManager: public HApplicationBackend
                 sleep(1);
                 fSpectrometer->StopConsumptionProduction();
                 sleep(1);
-                // fWriter->StopConsumption();
-                fAveragedSpectrumWriter->StopConsumption();
+                fWriter->StopConsumption();
+                //fAveragedSpectrumWriter->StopConsumption();
 
                 CleanUp();
 
@@ -788,25 +787,25 @@ class HSpectrometerManager: public HApplicationBackend
                 fScanName = "ScnX";
             }
 
-            // fWriter->SetExperimentName(fExperimentName);
-            // fWriter->SetSourceName(fSourceName);
-            // fWriter->SetScanName(fScanName);
-            // fWriter->InitializeOutputDirectory();
+            fWriter->SetExperimentName(fExperimentName);
+            fWriter->SetSourceName(fSourceName);
+            fWriter->SetScanName(fScanName);
+            fWriter->InitializeOutputDirectory();
 
-            fDataAccumulationWriter->SetExperimentName(fExperimentName);
-            fDataAccumulationWriter->SetSourceName(fSourceName);
-            fDataAccumulationWriter->SetScanName(fScanName);
-            fDataAccumulationWriter->InitializeOutputDirectory();
+            // fDataAccumulationWriter->SetExperimentName(fExperimentName);
+            // fDataAccumulationWriter->SetSourceName(fSourceName);
+            // fDataAccumulationWriter->SetScanName(fScanName);
+            // fDataAccumulationWriter->InitializeOutputDirectory();
 
-            fDumper->SetExperimentName(fExperimentName);
-            fDumper->SetSourceName(fSourceName);
-            fDumper->SetScanName(fScanName);
-            fDumper->InitializeOutputDirectory();
+            // fDumper->SetExperimentName(fExperimentName);
+            // fDumper->SetSourceName(fSourceName);
+            // fDumper->SetScanName(fScanName);
+            // fDumper->InitializeOutputDirectory();
 
-            fAveragedSpectrumWriter->SetExperimentName(fExperimentName);
-            fAveragedSpectrumWriter->SetSourceName(fSourceName);
-            fAveragedSpectrumWriter->SetScanName(fScanName);
-            fAveragedSpectrumWriter->InitializeOutputDirectory();
+            // fAveragedSpectrumWriter->SetExperimentName(fExperimentName);
+            // fAveragedSpectrumWriter->SetSourceName(fSourceName);
+            // fAveragedSpectrumWriter->SetScanName(fScanName);
+            // fAveragedSpectrumWriter->InitializeOutputDirectory();
         }
 
 
