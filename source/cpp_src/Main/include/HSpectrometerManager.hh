@@ -416,28 +416,29 @@ class HSpectrometerManager: public HApplicationBackend
                 //fWriter->StartConsumption();
                 fAveragedSpectrumWriter->StartConsumption();
 
+                unsigned int core_id = 0;
                 for(unsigned int i=0; i<1; i++)
                 {
-                    fAveragedSpectrumWriter->AssociateThreadWithSingleProcessor(i, i+1+fNSpectrometerThreads+fNDigitizerThreads);
+                    fAveragedSpectrumWriter->AssociateThreadWithSingleProcessor(i, core_id++);
                 };
 
                 // fDumper->StartConsumption();
                 fDataAccumulationWriter->StartConsumption();
                 for(unsigned int i=0; i<1; i++)
                 {
-                    fDataAccumulationWriter->AssociateThreadWithSingleProcessor(i, i+3+fNSpectrometerThreads+fNDigitizerThreads);
+                    fDataAccumulationWriter->AssociateThreadWithSingleProcessor(i, core_id++);
                 };
 
                 fSpectrumAverager->StartConsumptionProduction();
                 for(unsigned int i=0; i<1; i++)
                 {
-                    fSpectrumAverager->AssociateThreadWithSingleProcessor(i, i+2+fNSpectrometerThreads+fNDigitizerThreads);
+                    fSpectrumAverager->AssociateThreadWithSingleProcessor(i, core_id++);
                 };
 
                 fSpectrometer->StartConsumptionProduction();
                 for(size_t i=0; i<fNSpectrometerThreads; i++)
                 {
-                    fSpectrometer->AssociateThreadWithSingleProcessor(i, i+1);
+                    fSpectrometer->AssociateThreadWithSingleProcessor(i, core_id++);
                 };
 
                 fNoisePowerCalculator->StartConsumptionProduction();
@@ -445,7 +446,7 @@ class HSpectrometerManager: public HApplicationBackend
                 fDigitizer->StartProduction();
                 for(size_t i=0; i<fNDigitizerThreads; i++)
                 {
-                    fDigitizer->AssociateThreadWithSingleProcessor(i, i+fNSpectrometerThreads+1);
+                    fDigitizer->AssociateThreadWithSingleProcessor(i, core_id++);
                 };
 
                 fRecordingState = IDLE;

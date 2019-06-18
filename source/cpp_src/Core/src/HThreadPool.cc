@@ -22,7 +22,7 @@ HThreadPool::~HThreadPool()
 
 }
 
-void 
+void
 HThreadPool::Launch()
 {
     if(fThreads.size() == 0 || fHasLaunched)
@@ -42,19 +42,19 @@ HThreadPool::Launch()
     }
 }
 
-void 
+void
 HThreadPool::SignalTerminateOnComplete()
 {
     fSignalTerminate = true;
 }
 
-void 
+void
 HThreadPool::ForceTermination()
 {
     fForceTerminate = true;
 }
 
-void 
+void
 HThreadPool::Join()
 {
     unsigned int n_threads = fThreads.size();
@@ -97,8 +97,8 @@ void HThreadPool::SetNThreads(unsigned int n)
     else
     {
         //issue warning, cannot change the number of threads after we have launched them
-    
-        //TODO...could relax this restriction with some changes, adding more threads is no problem but reducing 
+
+        //TODO...could relax this restriction with some changes, adding more threads is no problem but reducing
         //requires individual kill flags for each thread, so we can signal it to die when idle
 
         std::cout<<"HThreadPool::SetNThreads: Error, cannot change the number of threads after launch."<<std::endl;
@@ -106,7 +106,7 @@ void HThreadPool::SetNThreads(unsigned int n)
 }
 
 //allow the kernel to schedule a particular thread on any cpu (this is the default behavior)
-void 
+void
 HThreadPool::AssociateThreadWithAllProcessors(unsigned int local_thread_id)
 {
     if(fHasLaunched)
@@ -125,7 +125,7 @@ HThreadPool::AssociateThreadWithAllProcessors(unsigned int local_thread_id)
 }
 
 //set cpu affinities for a particular thread
-void 
+void
 HThreadPool::AssociateThreadWithProcessorSet(unsigned int local_thread_id, const std::set< unsigned int >& cpu_id_set)
 {
     if(fHasLaunched)
@@ -163,7 +163,7 @@ HThreadPool::AssociateThreadWithProcessorSet(unsigned int local_thread_id, const
 }
 
 
-void 
+void
 HThreadPool::AssociateThreadWithSingleProcessor(unsigned int local_thread_id, unsigned int cpu_id)
 {
     if(fHasLaunched)
@@ -185,6 +185,10 @@ HThreadPool::AssociateThreadWithSingleProcessor(unsigned int local_thread_id, un
             {
                 std::cout<<"HThreadPool::AssociateThreadWithSingleProcessor: Error, could not set thread affinity."<<std::endl;
             }
+            else
+            {
+                std::cout<<"HThreadPool::AssociateThreadWithSingleProcessor: successfully set thread: "<<local_thread_id<<" affinity to core: "<<cpu_id<<"."<<std::endl;
+            }
         }
     }
     else
@@ -194,14 +198,14 @@ HThreadPool::AssociateThreadWithSingleProcessor(unsigned int local_thread_id, un
 }
 
 
-void 
+void
 HThreadPool::InsertIdleIndicator()
 {
     std::lock_guard< std::mutex > lock(fIdleMutex);
     fThreadIdleMap.insert( std::pair<std::thread::id, bool>( std::this_thread::get_id(), false) );
 }
 
-void 
+void
 HThreadPool::SetIdleIndicatorFalse()
 {
     std::lock_guard< std::mutex > lock(fIdleMutex);
@@ -209,7 +213,7 @@ HThreadPool::SetIdleIndicatorFalse()
     indicator->second = false;
 }
 
-void 
+void
 HThreadPool::SetIdleIndicatorTrue()
 {
     std::lock_guard< std::mutex > lock(fIdleMutex);
@@ -217,7 +221,7 @@ HThreadPool::SetIdleIndicatorTrue()
     indicator->second = true;
 }
 
-bool 
+bool
 HThreadPool::AllThreadsAreIdle()
 {
     std::lock_guard< std::mutex > lock(fIdleMutex);
@@ -231,7 +235,7 @@ HThreadPool::AllThreadsAreIdle()
     return true;
 }
 
-void 
+void
 HThreadPool::ProcessLoop()
 {
     //basic processing loop...we assume the derived class has put all actual work
