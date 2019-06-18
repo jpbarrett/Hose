@@ -416,6 +416,11 @@ class HSpectrometerManager: public HApplicationBackend
                 fWriter->StartConsumption();
                 //fAveragedSpectrumWriter->StartConsumption();
 
+                for(unsigned int i=0; i<1; i++)
+                {
+                    fWriter.AssociateThreadWithSingleProcessor(i, i+1+fNSpectrometerThreads+fNDigitizerThreads);
+                };
+
                 // fDumper->StartConsumption();
                 // fDataAccumulationWriter->StartConsumption();
                 //fSpectrumAverager->StartConsumptionProduction();
