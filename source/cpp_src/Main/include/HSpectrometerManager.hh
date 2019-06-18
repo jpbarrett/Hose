@@ -59,10 +59,10 @@ extern "C"
     #define SPECTRUM_TYPE spectrometer_data_s
     #define AVERAGER_TYPE HSpectrumAveragerSigned
     #define N_DIGITIZER_THREADS 2
-    #define N_DIGITIZER_POOL_SIZE 32
-    #define N_SPECTROMETER_POOL_SIZE 16
+    #define N_DIGITIZER_POOL_SIZE 64
+    #define N_SPECTROMETER_POOL_SIZE 24
     #define N_NOISE_POWER_POOL_SIZE 10
-    #define N_SPECTROMETER_THREADS 3
+    #define N_SPECTROMETER_THREADS 2
     #define N_NOISE_POWER_THREADS 2
     #define DUMP_FREQ 120
     #define N_AVE_BUFFERS 12 //this is about once every second
