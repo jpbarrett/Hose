@@ -291,9 +291,9 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrometerSinkPool->Allocate(fSpectrometerPoolSize, 1);
 
                         //create a noise accumulation container data pool
-                        //fNoisePowerContainerBufferAllocator = new HBufferAllocatorNew< HDataAccumulationContainer >();
-                        //fNoisePowerPool = new HBufferPool< HDataAccumulationContainer >(fNoisePowerContainerBufferAllocator);
-                        //fNoisePowerPool->Allocate(fNoisePowerPoolSize, 1);
+                        fNoisePowerContainerBufferAllocator = new HBufferAllocatorNew< HDataAccumulationContainer >();
+                        fNoisePowerPool = new HBufferPool< HDataAccumulationContainer >(fNoisePowerContainerBufferAllocator);
+                        fNoisePowerPool->Allocate(fNoisePowerPoolSize, 1);
 
                         //create spectrometer
                         fSpectrometer = new SPECTROMETER_TYPE(fFFTSize, fNSpectrumAverages);
@@ -318,12 +318,12 @@ class HSpectrometerManager: public HApplicationBackend
                         //create the noise power calculator
                         double noise_diode_switching_freq = NOISE_DIODE_SWITCHING_FREQ;
                         double noise_diode_blanking_period = NOISE_DIODE_BLANK_PERIOD;
-                        // fNoisePowerCalculator = new HSwitchedPowerCalculator< typename XDigitizerType::sample_type >();
-                        // fNoisePowerCalculator->SetSwitchingFrequency(noise_diode_switching_freq);
-                        // fNoisePowerCalculator->SetSamplingFrequency( fDigitizer->GetSamplingFrequency() );
-                        // fNoisePowerCalculator->SetBlankingPeriod(noise_diode_blanking_period); //11ms (from original GPU spec)
-                        // fNoisePowerCalculator->SetSourceBufferPool(fDigitizerSourcePool);
-                        //fNoisePowerCalculator->SetSinkBufferPool(fNoisePowerPool);
+                        fNoisePowerCalculator = new HSwitchedPowerCalculator< typename XDigitizerType::sample_type >();
+                        fNoisePowerCalculator->SetSwitchingFrequency(noise_diode_switching_freq);
+                        fNoisePowerCalculator->SetSamplingFrequency( fDigitizer->GetSamplingFrequency() );
+                        fNoisePowerCalculator->SetBlankingPeriod(noise_diode_blanking_period); //11ms (from original GPU spec)
+                        fNoisePowerCalculator->SetSourceBufferPool(fDigitizerSourcePool);
+                        fNoisePowerCalculator->SetSinkBufferPool(fNoisePowerPool);
 
                         //create an itermittent raw data dumper
                         // fDumper = new HRawDataDumper< typename XDigitizerType::sample_type >();
@@ -337,14 +337,14 @@ class HSpectrometerManager: public HApplicationBackend
                         fWriter->SetNThreads(1);
 
                         //noise power file writing consumer to drain the noise power calculator buffers
-                        // fDataAccumulationWriter = new HDataAccumulationWriter();
-                        // fDataAccumulationWriter->SetBufferPool(fNoisePowerPool);
-                        // fDataAccumulationWriter->SetNThreads(1);
+                        fDataAccumulationWriter = new HDataAccumulationWriter();
+                        fDataAccumulationWriter->SetBufferPool(fNoisePowerPool);
+                        fDataAccumulationWriter->SetNThreads(1);
 
                         fDigitizerSourcePool->Initialize();
                         fSpectrometerSinkPool->Initialize();
                         //fSpectrumAveragingBufferPool->Initialize();
-                        // fNoisePowerPool->Initialize();
+                        fNoisePowerPool->Initialize();
 
                         #ifdef HOSE_USE_SPDLOG
 
@@ -422,7 +422,7 @@ class HSpectrometerManager: public HApplicationBackend
                 };
 
                 // fDumper->StartConsumption();
-                // fDataAccumulationWriter->StartConsumption();
+                fDataAccumulationWriter->StartConsumption();
                 //fSpectrumAverager->StartConsumptionProduction();
 
                 fSpectrometer->StartConsumptionProduction();
@@ -431,7 +431,7 @@ class HSpectrometerManager: public HApplicationBackend
                     fSpectrometer->AssociateThreadWithSingleProcessor(i, i+1);
                 };
 
-                //fNoisePowerCalculator->StartConsumptionProduction();
+                fNoisePowerCalculator->StartConsumptionProduction();
 
                 fDigitizer->StartProduction();
                 for(size_t i=0; i<fNDigitizerThreads; i++)
@@ -797,10 +797,10 @@ class HSpectrometerManager: public HApplicationBackend
             fWriter->SetScanName(fScanName);
             fWriter->InitializeOutputDirectory();
 
-            // fDataAccumulationWriter->SetExperimentName(fExperimentName);
-            // fDataAccumulationWriter->SetSourceName(fSourceName);
-            // fDataAccumulationWriter->SetScanName(fScanName);
-            // fDataAccumulationWriter->InitializeOutputDirectory();
+            fDataAccumulationWriter->SetExperimentName(fExperimentName);
+            fDataAccumulationWriter->SetSourceName(fSourceName);
+            fDataAccumulationWriter->SetScanName(fScanName);
+            fDataAccumulationWriter->InitializeOutputDirectory();
 
             // fDumper->SetExperimentName(fExperimentName);
             // fDumper->SetSourceName(fSourceName);

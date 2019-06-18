@@ -42,7 +42,7 @@ class HSwitchedPowerCalculator:  public HConsumerProducer< XBufferItemType, HDat
 
         HSwitchedPowerCalculator()
         {
-            fNBuffersToSkip = 40;
+            fNBuffersToSkip = 80;
         };
 
         virtual ~HSwitchedPowerCalculator(){};
