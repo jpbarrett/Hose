@@ -60,7 +60,7 @@ extern "C"
     #define AVERAGER_TYPE HSpectrumAveragerSigned
     #define N_DIGITIZER_THREADS 2
     #define N_DIGITIZER_POOL_SIZE 64
-    #define N_SPECTROMETER_POOL_SIZE 24
+    #define N_SPECTROMETER_POOL_SIZE 16
     #define N_NOISE_POWER_POOL_SIZE 10
     #define N_SPECTROMETER_THREADS 2
     #define N_NOISE_POWER_THREADS 2
