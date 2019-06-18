@@ -302,18 +302,18 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrometer->SetSinkBufferPool(fSpectrometerSinkPool);
 
                         //create post-spectrometer data pool for averaging
-                        // fSpectrumAveragingBufferAllocator = new HBufferAllocatorNew< float >();
-                        // fSpectrumAveragingBufferPool = new HBufferPool< float >(fSpectrumAveragingBufferAllocator);
-                        // fSpectrumAveragingBufferPool->Allocate(SPEC_AVE_POOL_SIZE, fFFTSize/2+1); //create a work space of buffers
+                        fSpectrumAveragingBufferAllocator = new HBufferAllocatorNew< float >();
+                        fSpectrumAveragingBufferPool = new HBufferPool< float >(fSpectrumAveragingBufferAllocator);
+                        fSpectrumAveragingBufferPool->Allocate(SPEC_AVE_POOL_SIZE, fFFTSize/2+1); //create a work space of buffers
 
-                        // fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, N_AVE_BUFFERS); //we average over 12 buffers
-                        // fSpectrumAverager->SetNThreads(1); //ONE THREAD ONLY!
-                        // fSpectrumAverager->SetSourceBufferPool(fSpectrometerSinkPool);
-                        // fSpectrumAverager->SetSinkBufferPool(fSpectrumAveragingBufferPool);
+                        fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, N_AVE_BUFFERS); //we average over 12 buffers
+                        fSpectrumAverager->SetNThreads(1); //ONE THREAD ONLY!
+                        fSpectrumAverager->SetSourceBufferPool(fSpectrometerSinkPool);
+                        fSpectrumAverager->SetSinkBufferPool(fSpectrumAveragingBufferPool);
 
-                        // fAveragedSpectrumWriter = new HAveragedMultiThreadedSpectrumDataWriter();
-                        // fAveragedSpectrumWriter->SetBufferPool(fSpectrumAveragingBufferPool);
-                        // fAveragedSpectrumWriter->SetNThreads(1);
+                        fAveragedSpectrumWriter = new HAveragedMultiThreadedSpectrumDataWriter();
+                        fAveragedSpectrumWriter->SetBufferPool(fSpectrumAveragingBufferPool);
+                        fAveragedSpectrumWriter->SetNThreads(1);
 
                         //create the noise power calculator
                         double noise_diode_switching_freq = NOISE_DIODE_SWITCHING_FREQ;
@@ -332,9 +332,9 @@ class HSpectrometerManager: public HApplicationBackend
                         // fDumper->SetNThreads(1);
 
                         //spectrum file writing consumer to drain the spectrum data buffers
-                        fWriter = new HSimpleMultiThreadedSpectrumDataWriterSigned();
-                        fWriter->SetBufferPool(fSpectrometerSinkPool);
-                        fWriter->SetNThreads(1);
+                        // fWriter = new HSimpleMultiThreadedSpectrumDataWriterSigned();
+                        // fWriter->SetBufferPool(fSpectrometerSinkPool);
+                        // fWriter->SetNThreads(1);
 
                         //noise power file writing consumer to drain the noise power calculator buffers
                         fDataAccumulationWriter = new HDataAccumulationWriter();
@@ -343,7 +343,7 @@ class HSpectrometerManager: public HApplicationBackend
 
                         fDigitizerSourcePool->Initialize();
                         fSpectrometerSinkPool->Initialize();
-                        //fSpectrumAveragingBufferPool->Initialize();
+                        fSpectrumAveragingBufferPool->Initialize();
                         fNoisePowerPool->Initialize();
 
                         #ifdef HOSE_USE_SPDLOG
@@ -413,17 +413,26 @@ class HSpectrometerManager: public HApplicationBackend
             {
                 //start the command server thread
                 std::thread server_thread( &HServer::Run, fServer );
-                fWriter->StartConsumption();
-                //fAveragedSpectrumWriter->StartConsumption();
+                //fWriter->StartConsumption();
+                fAveragedSpectrumWriter->StartConsumption();
 
                 for(unsigned int i=0; i<1; i++)
                 {
-                    fWriter->AssociateThreadWithSingleProcessor(i, i+1+fNSpectrometerThreads+fNDigitizerThreads);
+                    fAveragedSpectrumWriter->AssociateThreadWithSingleProcessor(i, i+1+fNSpectrometerThreads+fNDigitizerThreads);
                 };
 
                 // fDumper->StartConsumption();
                 fDataAccumulationWriter->StartConsumption();
-                //fSpectrumAverager->StartConsumptionProduction();
+                for(unsigned int i=0; i<1; i++)
+                {
+                    fDataAccumulationWriter->AssociateThreadWithSingleProcessor(i, i+3+fNSpectrometerThreads+fNDigitizerThreads);
+                };
+
+                fSpectrumAverager->StartConsumptionProduction();
+                for(unsigned int i=0; i<1; i++)
+                {
+                    fSpectrumAverager->AssociateThreadWithSingleProcessor(i, i+2+fNSpectrometerThreads+fNDigitizerThreads);
+                };
 
                 fSpectrometer->StartConsumptionProduction();
                 for(size_t i=0; i<fNSpectrometerThreads; i++)
@@ -506,8 +515,8 @@ class HSpectrometerManager: public HApplicationBackend
                 sleep(1);
                 fSpectrometer->StopConsumptionProduction();
                 sleep(1);
-                fWriter->StopConsumption();
-                //fAveragedSpectrumWriter->StopConsumption();
+                //fWriter->StopConsumption();
+                fAveragedSpectrumWriter->StopConsumption();
 
                 CleanUp();
 
@@ -792,10 +801,10 @@ class HSpectrometerManager: public HApplicationBackend
                 fScanName = "ScnX";
             }
 
-            fWriter->SetExperimentName(fExperimentName);
-            fWriter->SetSourceName(fSourceName);
-            fWriter->SetScanName(fScanName);
-            fWriter->InitializeOutputDirectory();
+            // fWriter->SetExperimentName(fExperimentName);
+            // fWriter->SetSourceName(fSourceName);
+            // fWriter->SetScanName(fScanName);
+            // fWriter->InitializeOutputDirectory();
 
             fDataAccumulationWriter->SetExperimentName(fExperimentName);
             fDataAccumulationWriter->SetSourceName(fSourceName);
@@ -807,10 +816,10 @@ class HSpectrometerManager: public HApplicationBackend
             // fDumper->SetScanName(fScanName);
             // fDumper->InitializeOutputDirectory();
 
-            // fAveragedSpectrumWriter->SetExperimentName(fExperimentName);
-            // fAveragedSpectrumWriter->SetSourceName(fSourceName);
-            // fAveragedSpectrumWriter->SetScanName(fScanName);
-            // fAveragedSpectrumWriter->InitializeOutputDirectory();
+            fAveragedSpectrumWriter->SetExperimentName(fExperimentName);
+            fAveragedSpectrumWriter->SetSourceName(fSourceName);
+            fAveragedSpectrumWriter->SetScanName(fScanName);
+            fAveragedSpectrumWriter->InitializeOutputDirectory();
         }
 
 
