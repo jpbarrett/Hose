@@ -59,7 +59,7 @@ extern "C"
     #define SPECTRUM_TYPE spectrometer_data_s
     #define AVERAGER_TYPE HSpectrumAveragerSigned
     #define N_DIGITIZER_THREADS 2
-    #define N_DIGITIZER_POOL_SIZE 64
+    #define N_DIGITIZER_POOL_SIZE 64 //need 64 buffers in pool when running ADQ7 at 2.5GSPS (this configuration works)
     #define N_SPECTROMETER_POOL_SIZE 16
     #define N_NOISE_POWER_POOL_SIZE 10
     #define N_SPECTROMETER_THREADS 2
