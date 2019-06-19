@@ -58,10 +58,10 @@ extern "C"
     #define SPECTROMETER_TYPE HSpectrometerCUDASigned
     #define SPECTRUM_TYPE spectrometer_data_s
     #define AVERAGER_TYPE HSpectrumAveragerSigned
-    #define N_DIGITIZER_THREADS 3
+    #define N_DIGITIZER_THREADS 2
     #define N_DIGITIZER_POOL_SIZE 128 //need 128 buffers in pool when running ADQ7 at 2.5GSPS (this configuration works)
     #define N_SPECTROMETER_POOL_SIZE 16
-    #define N_NOISE_POWER_POOL_SIZE 10
+    #define N_NOISE_POWER_POOL_SIZE 32
     #define N_SPECTROMETER_THREADS 2
     #define N_NOISE_POWER_THREADS 2
     #define DUMP_FREQ 120
@@ -419,7 +419,7 @@ class HSpectrometerManager: public HApplicationBackend
                 // NUMA node0 CPU(s):     0-7,16-23
                 // NUMA node1 CPU(s):     8-15,24-31
 
-                unsigned int core_id = 1;
+                unsigned int core_id = 8;
                 for(unsigned int i=0; i<1; i++)
                 {
                     fAveragedSpectrumWriter->AssociateThreadWithSingleProcessor(i, core_id++);
@@ -439,7 +439,7 @@ class HSpectrometerManager: public HApplicationBackend
                 };
 
                 fSpectrometer->StartConsumptionProduction();
-                core_id = 16;
+                core_id = 24;
                 for(size_t i=0; i<fNSpectrometerThreads; i++)
                 {
                     fSpectrometer->AssociateThreadWithSingleProcessor(i, core_id++);
