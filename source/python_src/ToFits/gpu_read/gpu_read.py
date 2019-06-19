@@ -27,7 +27,7 @@ used for later conversion into SDFITS format files.
 """
 
 __author__="S. Levine"
-__date__="2019 Feb 12"
+__date__="2019 May 07"
 
 #------------------------------------------------------------------------
 # Imports
@@ -300,7 +300,12 @@ class GPUNoise(GPUBase):
             for i in range(self.hdr.accumulation_length):
                 print ('Acc. {}:'.format(i))
                 self.pwr[i].printsummary()
-            
+                print (' Mean value: {}'.format(self.pwr[i].get_mean()))
+                print (' RMS: {}'.format(self.pwr[i].get_rms()))
+                print (' StdDev: {}'.format(self.pwr[i].get_stddev()))
+                print (' Variance: {}'.format(self.pwr[i].get_variance()))
+                print (' DiodeOn? {}'.format(self.pwr[i].is_noise_diode_on()))
+           
         return
 
     def accumulation_length (self):
@@ -319,10 +324,48 @@ class GPUNoise(GPUBase):
         return self.hdr.blanking_period
 
     def noise (self):
-        """Power accumulations segment - array of structs"""
+        """Power accumulations segment - array of accumulation_struct
+        structures.
+
+        The accumulations have the following methods:
+          get_mean(self) - #the 'DC' component
+          get_rms(self)
+          get_rms_squared(self)
+          get_stddev(self)
+          get_variance(self) - proportional to AC power
+          is_noise_diode_on()
+ 
+        and the structure data descriptors are:
+          count - # of samples accumulated
+          start_index - index of first sample in the acc. period
+          state_flag - diode state 0=off, 1=on
+          stop_index - index of the last sample in the acc. period
+          sum - sum of each ADC sample during the acc. period
+          sum_squared - sum of each sample squared during the acc. period
+        """
         return self.pwr
     
+    def mean_power (self, state='on'):
+        """
+        Return the mean power value of the first accumulation structure
+        for which the noise diode flag is ON or OFF (depending on state).
+        """
+
+        # set default state and return value
+        diode_state = False
+        mean_pwr = 0.0
+
+        # check if state is on
+        if (state == 'on'):
+            diode_state = True
+
+        for i in range(self.hdr.accumulation_length):
+            if (self.pwr[i].is_noise_diode_on() == diode_state):
+                mean_pwr = self.pwr[i].get_mean()
+                break
     
+        return mean_pwr
+        
 #------------------------------------------------------------------------
 # Routines to import and parse a metadata file for a GPU spectrometer
 #  experiment.
@@ -412,6 +455,10 @@ class GPUMeta():
         """
         Extract a particular metadata type of measurement from the overall
         metadata packet. This defaults to antenna_position for convenience.
+
+        Each packet should contain a dictionary with elements:
+         fields(dictionary), measurement(string), time(datetime)
+        The fields dictionary will have type specific contents
         """
         k = []
         for i in self.sdmdata:
@@ -596,7 +643,8 @@ class GPUMeta():
     def antenna_target (self, echo=False):
         """
         Extract the antenna_target_status information.
-        fields: acquired, status
+        fields: acquired (yes, no), 
+                status (acquired, re-acquired, off-source)
         """
         atstat = self.gpu_meta_parse (mtype='antenna_target_status', 
                                       echo=echo)
@@ -616,8 +664,10 @@ class GPUMeta():
     def digitizer (self, echo=False):
         """
         Extract the digitizer_config information. Digitizer configuration.
-        fields: n_digitizer_threads, polarization,
-        sampling_frequency_Hz, sideband
+        fields: n_digitizer_threads (integer), 
+                polarization (X, ?),
+                sampling_frequency_Hz (float), 
+                sideband (U, ?)
         """
         dcon = self.gpu_meta_parse (mtype='digitizer_config', 
                                     echo=echo)
@@ -636,8 +686,10 @@ class GPUMeta():
     def frequency_map (self, echo=False):
         """
         Extract the frequency_map information.
-        fields: bin_delta, frequency_delta_MHz, 
-        reference_bin_center_sky_frequency_MHz, reference_bin_index
+        fields: bin_delta (int), 
+                frequency_delta_MHz (float), 
+                reference_bin_center_sky_frequency_MHz (float), 
+                reference_bin_index (int)
         """
         fmcon = self.gpu_meta_parse (mtype='frequency_map',
                                     echo=echo)
@@ -675,7 +727,10 @@ class GPUMeta():
     def recording (self, echo=False):
         """
         Extract the recording_status information.
-        fields: experiment_name, recording, scan_name, source_name
+        fields: experiment_name (string), 
+                recording (on, off), 
+                scan_name (string), 
+                source_name (string)
         Map to FITS: 
          RECEXPER = experiment name
          RECORD = recording on/off
@@ -701,7 +756,10 @@ class GPUMeta():
         Extract the source_status information. This is the requested
         target's catalogue information. This came from the observing
         scheduler, NOT from the telescope/antenna encoders etc.
-        fields: dec, epoch, ra, source
+        fields: dec (SDDMMSS.S - sexigesimal string), 
+                epoch (float), 
+                ra (HHMMSS.SS - sexigesimal string),  
+                source (string)
         Map to FITS:
          SRCID = source
          SRCRA = ra
@@ -724,7 +782,10 @@ class GPUMeta():
     def spectrometer (self, echo=False):
         """
         Extract the  GPU Spectrometer configuration.
-        fields: fft_size, n_averages, n_spectrometer_threads, n_writer_threads
+        fields: fft_size, 
+                n_averages, 
+                n_spectrometer_threads, 
+                n_writer_threads
         Map to FITS: 
          SPECFFT = fft_size
          SPECNAVG = n_averages
@@ -745,7 +806,10 @@ class GPUMeta():
     def udc (self, echo=False):
         """
         Extract the udc_status information. Up/Down converter information.
-        fields: attenuation_h, attenuation_v, frequency_MHz, udc
+        fields: attenuation_h (int? in dB), 
+                attenuation_v (int? in dB), 
+                frequency_MHz (float), 
+                udc (string - c, ?)
         Map to FITS: 
          UDCATTEH = attenuation_h
          UDCATTEV = attenuation_v
@@ -768,7 +832,7 @@ class GPUMeta():
     def valid (self, echo=False):
         """
         Extract the data_validity information.
-        fields: status
+        fields: status (on, off, ?)
         Map to FITS: 
          DVALID = status
         """
