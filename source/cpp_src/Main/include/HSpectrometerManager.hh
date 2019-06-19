@@ -416,7 +416,7 @@ class HSpectrometerManager: public HApplicationBackend
                 //fWriter->StartConsumption();
                 fAveragedSpectrumWriter->StartConsumption();
 
-                unsigned int core_id = 0;
+                unsigned int core_id = 1;
                 for(unsigned int i=0; i<1; i++)
                 {
                     fAveragedSpectrumWriter->AssociateThreadWithSingleProcessor(i, core_id++);
