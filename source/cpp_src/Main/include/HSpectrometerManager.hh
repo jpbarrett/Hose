@@ -416,6 +416,9 @@ class HSpectrometerManager: public HApplicationBackend
                 //fWriter->StartConsumption();
                 fAveragedSpectrumWriter->StartConsumption();
 
+                // NUMA node0 CPU(s):     0-7,16-23
+                // NUMA node1 CPU(s):     8-15,24-31
+
                 unsigned int core_id = 1;
                 for(unsigned int i=0; i<1; i++)
                 {
@@ -436,12 +439,17 @@ class HSpectrometerManager: public HApplicationBackend
                 };
 
                 fSpectrometer->StartConsumptionProduction();
+                core_id = 16;
                 for(size_t i=0; i<fNSpectrometerThreads; i++)
                 {
                     fSpectrometer->AssociateThreadWithSingleProcessor(i, core_id++);
                 };
 
                 fNoisePowerCalculator->StartConsumptionProduction();
+                for(size_t i=0; i<N_NOISE_POWER_THREADS; i++)
+                {
+                    fNoisePowerCalculator->AssociateThreadWithSingleProcessor(i, core_id++);
+                };
 
                 fDigitizer->StartProduction();
                 for(size_t i=0; i<fNDigitizerThreads; i++)
