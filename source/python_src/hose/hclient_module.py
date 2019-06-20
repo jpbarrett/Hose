@@ -116,6 +116,7 @@ class hprompt(Cmd):
             #a default scan name based on the start time (now)
             tnow = datetime.utcnow()
             self.start_time_stamp = tnow
+            year = str(tnow.year)
             day_of_year = str(tnow.timetuple().tm_yday).zfill(3)
             hour = str(tnow.hour).zfill(2)
             minute = str(tnow.minute).zfill(2)
@@ -131,6 +132,15 @@ class hprompt(Cmd):
             arg_list = args.split(':')
             if( len(arg_list) == 1 and "=on" in arg_list[0]):
                 cmd_string += ":" + exp_name + ":" + src_name + ":" + scan_name
+                self.interface.SendRecieveMessage(cmd_string)
+                self.is_recording = True
+                return 0
+            elif ( len(arg_list) == 2 and "=on" in arg_list[0]):
+                cmd_string += ":" + exp_name + ":" + src_name + ":" + scan_name
+                #start time is tnow, duration is second argument (in seconds)
+                duration = arg_list[1]
+                start_time = year + day_of_year + hour + minute + sec
+                cmd_string += ":" + start_time + ":" + duration
                 self.interface.SendRecieveMessage(cmd_string)
                 self.is_recording = True
                 return 0
