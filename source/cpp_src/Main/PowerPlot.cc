@@ -107,20 +107,23 @@ int main(int argc, char** argv)
     "\tOptions:\n"
     "\t -h, --help               (shows this message and exits)\n"
     "\t -d, --data-dir           (path to the directory containing scan data, mandatory)\n"
+    "\t -s, --sampling-rate           (specify sampling rate in MHz, optional (default = 1250MHz))\n"
     ;
 
     //set defaults
     bool have_data = false;
     std::string data_dir = STR2(DATA_INSTALL_DIR);
     std::string o_dir = STR2(DATA_INSTALL_DIR);
+    double sampling_rate = 1250*1e6;
 
     static struct option longOptions[] =
     {
         {"help", no_argument, 0, 'h'},
         {"data_dir", required_argument, 0, 'd'},
+        {"sampling_rate", optional_argument, 0, 's'},
     };
 
-    static const char *optString = "hd:";
+    static const char *optString = "hd:s:";
 
     while(1)
     {
@@ -134,6 +137,8 @@ int main(int argc, char** argv)
             case('d'):
             data_dir = std::string(optarg);
             have_data = true;
+            case('s'):
+            sampling_rate = atoi(optarg)*1e6;
             break;
             default:
                 std::cout<<usage<<std::endl;
@@ -202,7 +207,7 @@ int main(int argc, char** argv)
 
 ////////////////////////////////////////////////////////////////////////////////
 //collect the raw accumulations
-    double sample_period = 1.0/1250e6;
+    double sample_period = 1.0/sampling_rate;
 
     std::vector< HDataAccumulationStruct > fOnAccumulations;
     std::vector< std::pair<double,double> > fOnVarianceTimePairs;
