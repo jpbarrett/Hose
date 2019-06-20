@@ -135,10 +135,11 @@ int main(int argc, char** argv)
             std::cout<<usage<<std::endl;
             return 0;
             case('d'):
-            data_dir = std::string(optarg);
-            have_data = true;
+                data_dir = std::string(optarg);
+                have_data = true;
+            break;
             case('s'):
-            sampling_rate = atof(optarg)*1e6;
+                sampling_rate = atof(optarg)*1e6;
             break;
             default:
                 std::cout<<usage<<std::endl;
