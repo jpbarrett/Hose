@@ -107,7 +107,7 @@ int main(int argc, char** argv)
     "\tOptions:\n"
     "\t -h, --help               (shows this message and exits)\n"
     "\t -d, --data-dir           (path to the directory containing scan data, mandatory)\n"
-    "\t -s, --sampling-rate           (specify sampling rate in MHz, optional (default = 1250MHz))\n"
+    "\t -s, --sampling-rate      (specify sampling rate in MHz, optional (default = 1250MHz))\n"
     ;
 
     //set defaults
@@ -138,7 +138,7 @@ int main(int argc, char** argv)
             data_dir = std::string(optarg);
             have_data = true;
             case('s'):
-            sampling_rate = atoi(optarg)*1e6;
+            sampling_rate = atof(optarg)*1e6;
             break;
             default:
                 std::cout<<usage<<std::endl;
@@ -153,6 +153,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    std::cout<<"sampling rate is: "<<sampling_rate<<std::endl;
 
     std::string npow_ext = ".npow";
     std::string meta_data_name = "meta_data.json";
