@@ -58,7 +58,7 @@ def main():
     print "slope = ", slope
     print "offset = ", offset
 
-    #computer the maser ac signal x-form:
+    #compute the maser ac signal x-form:
     if_ml_freq = 49.882
     ml_freq = offset + slope*(if_ml_freq - if_dc_freq)
     print "assumed maser line IF freq :", if_ml_freq
@@ -99,19 +99,24 @@ def main():
     print("Done.")
 
     #add the sky frequency information as well
-    udc_luff_freq = 7052.6
-    sampling_frequency_Hz = 400e6
+    udc_luff_freq = 7100.1 #MHz
+    sampling_frequency_Hz = 2500e6 #Hz
     spectrometer_fftsize = 131072
-    wf_signal_chain = hfrontend_module.westford_signal_chain(udc_luff_freq, disable_filter4=True)
+    wf_signal_chain = hfrontend_module.westford_signal_chain(udc_luff_freq)
     spectral_resolution_MHz = float(sampling_frequency_Hz/float(spectrometer_fftsize))/1e6
     n_spec_bins = spectrometer_fftsize/2 + 1
     center_bin = int(n_spec_bins/2)
     center_bin_if_freq = (float(center_bin) + 0.5)*spectral_resolution_MHz
     center_bin_sky_freq = wf_signal_chain.map_frequency_backward(center_bin_if_freq)
     bin_delta = 1 #a bin increment of (bin_delta) corresponds to an incrment in frequecy space of (frequency_delta)
-    [if_low, if_high] = [0.0, bin_delta*spectral_resolution_MHz] #[lower edge of lowest bin, upper edge of lowest bin]
+    #[if_low, if_high] = [528.0, 528.0 + spectral_resolution_MHz ]#
+    print("spectral resolution MHz = ",  spectral_resolution_MHz)
+    [if_low, if_high] = [528.0, 528.0+bin_delta*spectral_resolution_MHz] #[lower edge of lowest bin, upper edge of lowest bin]
     [sky_low, sky_high] = wf_signal_chain.map_frequency_pair_backward(if_low, if_high)
     slope = ( (sky_high - sky_low)/(if_high - if_low) ) #slope had better be either +1 or -1
+    print("if_low, if_high = ", if_low, ", ", if_high)
+    print("sky_low, sky_high = ", sky_low, ", ", sky_high)
+    print("slope = ", slope)
     frequency_delta = slope*spectral_resolution_MHz
     freq_map = hfrontend_module.frequency_map()
     freq_map.set_time("") #frequency_map gets the same time stamp as the UDC LO-set time
