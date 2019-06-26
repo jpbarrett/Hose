@@ -201,11 +201,13 @@ int main(int argc, char** argv)
     // {
     //     std::cout<<"spec file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
     // }
+
     //
 //    for(auto it = powerFiles.begin(); it != powerFiles.end(); it++)
 //    {
 //        std::cout<<"npow file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
 //    }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //collect the raw accumulations
@@ -231,7 +233,7 @@ int main(int argc, char** argv)
         HNoisePowerFileStruct* npow = CreateNoisePowerFileStruct();
         int success = ReadNoisePowerFile(powerFiles[i].first.c_str(), npow);
 
-  //      std::cout<<"success = "<<success<<std::endl;
+        std::cout<<"success = "<<success<<std::endl;
 
         uint64_t n_accum = npow->fHeader.fAccumulationLength;
         for(uint64_t j=0; j<n_accum; j++)
