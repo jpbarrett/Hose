@@ -18,7 +18,8 @@ HADQ7Digitizer::HADQ7Digitizer():
     fNChannels(0),
     fSampleRate(0),
     fAcquisitionRateMHz(0), //effective sampling frequency in MHz
-    fSampleSkipFactor(2),
+    fSampleSkipFactor(4),
+    // fSampleSkipFactor(2),
     fInitialized(false),
     fArmed(false),
     fStopAfterNextBuffer(false),
