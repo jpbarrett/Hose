@@ -65,7 +65,8 @@ extern "C"
     #define N_SPECTROMETER_THREADS 2
     #define N_NOISE_POWER_THREADS 2
     #define DUMP_FREQ 120
-    #define N_AVE_BUFFERS 12 //this is about once every second
+    #define N_AVE_BUFFERS 32
+    // #define N_AVE_BUFFERS 12
     #define SPEC_AVE_POOL_SIZE 20
 #endif
 
@@ -152,8 +153,8 @@ class HSpectrometerManager: public HApplicationBackend
             fStop(false),
             fIP("127.0.0.1"),
             fPort("12345"),
-            fNSpectrumAverages(64),
-            fFFTSize(524288),
+            fNSpectrumAverages(32),
+            fFFTSize(1048576),
             // fNSpectrumAverages(256),
             // fFFTSize(131072),
             fDigitizerPoolSize(N_DIGITIZER_POOL_SIZE),
