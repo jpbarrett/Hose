@@ -209,10 +209,10 @@ int main(int argc, char** argv)
     // }
 
 
-    for(auto it = specFiles.begin(); it != specFiles.end(); it++)
-    {
-        std::cout<<"spec file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
-    }
+    // for(auto it = specFiles.begin(); it != specFiles.end(); it++)
+    // {
+    //     std::cout<<"spec file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
+    // }
     //
     // for(auto it = powerFiles.begin(); it != powerFiles.end(); it++)
     // {
@@ -242,6 +242,10 @@ int main(int argc, char** argv)
     std::cout<<"starting time stamp = "<<begin_time_stamp.first<<", "<<begin_time_stamp.second<<std::endl;
     std::cout<<"ending time stamp = "<<end_time_stamp.first<<", "<<end_time_stamp.second<<std::endl;
 
+
+    double sec_diff = end_time_stamp.first - begin_time_stamp.first;
+    double sample_diff = end_time_stamp.second - begin_time_stamp.second;
+
     //now open up all the spectrum files one by one and sum them
     for(size_t i = 0; i < specFiles.size(); i++)
     {
@@ -263,6 +267,8 @@ int main(int argc, char** argv)
             std::cout<<"n samples per spec = "<<n_samples_per_spec<<std::endl;
             std::cout<<"spec_res= "<<spec_res<<std::endl;
             std::cout<<"spectrum length = "<<spec_length<<std::endl;
+            double time_diff = sec_diff + (sample_diff + n_samples)*sample_period;
+            std::cout<<"recording length (sec) = "<<time_diff<<std::endl;
             raw_accumulated_spec.resize(spec_length, 0);
         }
 
