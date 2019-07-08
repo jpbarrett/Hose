@@ -234,6 +234,14 @@ int main(int argc, char** argv)
     double sample_period = 0;
     //now open up all the spec data one by one and accumulate
 
+    std::cout<<"number of spec files = "<<specFiles.size()<<std::endl;
+
+    std::pair<uint64_t, uint64_t >  begin_time_stamp = specFiles.begin()->second;
+    std::pair<uint64_t, uint64_t >  end_time_stamp = specFiles.rbegin()->second;
+
+    std::cout<<"starting time stamp = "<<begin_time_stamp.first<<", "<<begin_time_stamp.second<<std::endl;
+    std::cout<<"ending time stamp = "<<end_time_stamp.first<<", "<<end_time_stamp.second<<std::endl;
+
     //now open up all the spectrum files one by one and sum them
     for(size_t i = 0; i < specFiles.size(); i++)
     {
