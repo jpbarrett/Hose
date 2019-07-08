@@ -209,10 +209,10 @@ int main(int argc, char** argv)
     // }
 
 
-    // for(auto it = specFiles.begin(); it != specFiles.end(); it++)
-    // {
-    //     std::cout<<"spec file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
-    // }
+    for(auto it = specFiles.begin(); it != specFiles.end(); it++)
+    {
+        std::cout<<"spec file: "<< it->first << " @ " << it->second.first <<", "<< it->second.second<<std::endl;
+    }
     //
     // for(auto it = powerFiles.begin(); it != powerFiles.end(); it++)
     // {
