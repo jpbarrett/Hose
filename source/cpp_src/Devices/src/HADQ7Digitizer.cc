@@ -16,7 +16,6 @@ HADQ7Digitizer::HADQ7Digitizer():
     fEnableA(1),
     fEnableB(0),
     fNChannels(0),
-    fUseSoftwareTrigger(false),
     fSampleRate(0),
     fAcquisitionRateMHz(0), //effective sampling frequency in MHz
     fSampleSkipFactor(2),
@@ -72,16 +71,14 @@ bool HADQ7Digitizer::InitializeImpl()
         CHECKADQ(ADQ_SetStreamStatus(fADQControlUnit, fADQDeviceNumber, 1));
         CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 2, 1)); //Sample streaming in 'raw' (no header) mode
         CHECKADQ(ADQ_SetStreamConfig(fADQControlUnit, fADQDeviceNumber, 3, 1*fEnableA + 2*fEnableB)); //apply channel mask
-        if(fUseSoftwareTrigger)
-        {
+
+        #ifdef HOSE_ADQ7_USE_SOFTWARE_TRIGGER
             std::cout<<"ADQ7 will use a software trigger."<<std::endl;
             CHECKADQ(ADQ_SetTriggerMode(fADQControlUnit, fADQDeviceNumber,  ADQ_SW_TRIGGER_MODE));
-        }
-        else
-        {
+        #else
             std::cout<<"ADQ7 will use an external trigger."<<std::endl;
             CHECKADQ(ADQ_SetTriggerMode(fADQControlUnit, fADQDeviceNumber, ADQ_EXT_TRIGGER_MODE));
-        }
+        #endif
 
         //no data streaming until the card is armed for acquisition
         CHECKADQ(ADQ_StopStreaming(fADQControlUnit, fADQDeviceNumber));
@@ -116,10 +113,9 @@ HADQ7Digitizer::AcquireImpl()
     CHECKADQ(ADQ_StartStreaming(fADQControlUnit, fADQDeviceNumber));
 
     //issue a software trigger if this feature is in use
-    if(fUseSoftwareTrigger)
-    {
+    #ifdef HOSE_ADQ7_USE_SOFTWARE_TRIGGER
         CHECKADQ(ADQ_SWTrig(fADQControlUnit, fADQDeviceNumber));
-    }
+    #endif
 
     fArmed = true;
 }
@@ -263,6 +259,7 @@ HADQ7Digitizer::FinalizeImpl()
     }
     //have finished filling the buffer at this point, but the card is still streaming
     //better get back to work fast...
+    return HDigitizerErrorCode::success;
 }
 
 void

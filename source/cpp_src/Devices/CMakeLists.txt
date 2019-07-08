@@ -34,6 +34,7 @@ if (HOSE_USE_PX14)
 endif()
 
 if (HOSE_USE_ADQ7)
+
     find_package(ADQSDK REQUIRED)
     include_directories(${ADQSDK_INCLUDE_DIRS})
     list(APPEND HDEVICES_HEADERFILES
@@ -43,6 +44,14 @@ if (HOSE_USE_ADQ7)
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HADQ7Digitizer.cc
     )
     list(APPEND HDEVICES_LIBS ${ADQSDK_LIBRARIES})
+
+
+    CMAKE_DEPENDENT_OPTION(HOSE_ADQ7_SOFTWARE_TRIGGER "Enable software trigger for ADQ7" OFF "HOSE_USE_ADQ7" OFF)
+
+    if(HOSE_ADQ7_SOFTWARE_TRIGGER)
+        hose_add_cxxflag(HOSE_ADQ7_USE_SOFTWARE_TRIGGER)
+    endif(HOSE_ADQ7_SOFTWARE_TRIGGER)
+
 endif()
 
 if (HOSE_USE_ATS)

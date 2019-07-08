@@ -101,7 +101,6 @@ class HADQ7Digitizer:  public HDigitizer< adq_sample_t, HADQ7Digitizer >,  publi
         int fEnableA;
         int fEnableB;
         unsigned int fNChannels;
-        bool fUseSoftwareTrigger;
         double fSampleRate; //raw sample rate
         double fAcquisitionRateMHz; //effective sampling frequency in MHz
         unsigned int fSampleSkipFactor; //number of samples to skip to reduce data rate
