@@ -143,6 +143,8 @@ class hprompt(Cmd):
                 cmd_string += ":" + start_time + ":" + duration
                 self.interface.SendRecieveMessage(cmd_string)
                 self.is_recording = True
+                time.sleep(duration+1)
+                self.create_meta_data_file()
                 return 0
             else:
                 if( len(arg_list) >= 4 ):
@@ -159,6 +161,7 @@ class hprompt(Cmd):
                     if( len(arg_list) == 4): #start now, for indefinite amount of time
                         self.interface.SendRecieveMessage(cmd_string)
                         self.is_recording = True
+                        return 0
                     if( len(arg_list) == 5): #start now, using just the duration
                         duration = arg_list[4]
                         if arg_list[4].isdigit():
@@ -166,6 +169,9 @@ class hprompt(Cmd):
                             cmd_string += ":" + start_time + ":" + duration
                             self.interface.SendRecieveMessage(cmd_string)
                             self.is_recording = True
+                            time.sleep(duration+1)
+                            self.create_meta_data_file()
+                            return 0
                     if( len(arg_list) == 6): #start at a particular time, and run for a certain duration
                         start_time = arg_list[4]
                         duration = arg_list[5]
@@ -179,6 +185,7 @@ class hprompt(Cmd):
                                 cmd_string += ":" + start_time + ":" + duration
                                 self.interface.SendRecieveMessage(cmd_string)
                                 self.is_recording = True
+                                return 0
                     return 0
                 else:
                     return 1 #error parsing record command
@@ -234,7 +241,8 @@ class hprompt(Cmd):
 
         #now add the sky frequency information as well (this is hard-coded, not in the database)
         #for this calculation we disable the pre-digitizer filter (filter4), since the center band frequency is actually just above the cut-off
-        wf_signal_chain = westford_signal_chain() #udc_luff_freq)
+        udc_luff_freq = 7054.0 #TODO FIXME HARDCODED VALUE FOR MANUAL MODE ONLY
+        wf_signal_chain = westford_signal_chain(udc_luff_freq)
         spectral_resolution_MHz = float(sampling_frequency_Hz/float(spectrometer_fftsize))/1e6
         n_spec_bins = spectrometer_fftsize/2 + 1
         center_bin = int(n_spec_bins/2)
