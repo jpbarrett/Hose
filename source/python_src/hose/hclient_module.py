@@ -156,6 +156,9 @@ class hprompt(Cmd):
                     self.current_experiment_name = exp_name
                     self.current_scan_name = scan_name
                     self.current_source_name = src_name
+                    if( len(arg_list) == 4): #start now, for indefinite amount of time
+                        self.interface.SendRecieveMessage(cmd_string)
+                        self.is_recording = True
                     if( len(arg_list) == 5): #start now, using just the duration
                         duration = arg_list[4]
                         if arg_list[4].isdigit():
