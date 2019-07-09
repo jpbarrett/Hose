@@ -149,6 +149,7 @@ class signal_chain(object):
 
     def map_frequency_pair_backward(self, low_freq_MHz, high_freq_MHz):
         print("calling map pair backward")
+        print("values are ", val1, val2)
         val1 = self.map_frequency_backward(low_freq_MHz)
         val2 = self.map_frequency_backward(high_freq_MHz)
         print("values are ", val1, val2)

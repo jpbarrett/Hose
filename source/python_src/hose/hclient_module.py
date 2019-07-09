@@ -231,7 +231,7 @@ class hprompt(Cmd):
         center_bin_if_freq = (float(center_bin) + 0.5)*spectral_resolution_MHz
         center_bin_sky_freq = wf_signal_chain.map_frequency_backward(center_bin_if_freq)
         bin_delta = 1 #a bin increment of (bin_delta) corresponds to an incrment in frequecy space of (frequency_delta)
-        [if_low, if_high] = [0.0, bin_delta*spectral_resolution_MHz] #[lower edge of lowest bin, upper edge of lowest bin]
+        [if_low, if_high] = [1e-100, bin_delta*spectral_resolution_MHz] #[lower edge of lowest bin, upper edge of lowest bin]
         [sky_low, sky_high] = wf_signal_chain.map_frequency_pair_backward(if_low, if_high)
         slope = ( (sky_high - sky_low)/(if_high - if_low) ) #slope had better be either +1 or -1
         frequency_delta = slope*spectral_resolution_MHz
