@@ -125,7 +125,7 @@ def main():
     bin_delta = 1 #a bin increment of (bin_delta) corresponds to an incrment in frequecy space of (frequency_delta)
     #[if_low, if_high] = [528.0, 528.0 + spectral_resolution_MHz ]#
     print("spectral resolution MHz = ",  spectral_resolution_MHz)
-    [if_low, if_high] = [1, 1+ bin_delta*spectral_resolution_MHz] #[lower edge of lowest bin, upper edge of lowest bin]
+    [if_low, if_high] = [0.0, bin_delta*spectral_resolution_MHz] #[lower edge of lowest bin, upper edge of lowest bin]
     [sky_low, sky_high] = wf_signal_chain.map_frequency_pair_backward(if_low, if_high)
     slope = ( (sky_high - sky_low)/(if_high - if_low) ) #slope had better be either +1 or -1
     print("if_low, if_high = ", if_low, ", ", if_high)
