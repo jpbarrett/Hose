@@ -90,11 +90,9 @@ class aliasing_sampler(object):
         for amp,freq in signal_obj.amplitude_frequency_pair_list:
             if self.is_freq_in_first_nyquist_zone(freq) is True:
                 if self.nyquist_zone != 1:
-                    print("upconverting signal from: ", freq)
                     #convert the input frequency to the proper nyquist_zone
                     converted_freq = map_aliased_counterpart_to_zone_frequency(freq, self.sampling_frequency_MHz, self.nyquist_zone)
                     tmp_af_pair.append( (amp, converted_freq) )
-                    print(" to: ", converted_freq)
                 else:
                     # pass this frequncy untouched
                     tmp_af_pair.append( (amp, freq) )
@@ -136,7 +134,6 @@ class signal_chain(object):
         tmp_signal = signal()
         tmp_signal.add_amp_freq(1, frequency_MHz)
         self.convert_signal_backward(tmp_signal)
-        print(" n tones = ", tmp_signal.get_n_tones()  )
         if tmp_signal.get_n_tones() == 1:
             return tmp_signal.amplitude_frequency_pair_list[0][1]
         else:
@@ -148,11 +145,8 @@ class signal_chain(object):
         return [ val1, val2 ]
 
     def map_frequency_pair_backward(self, low_freq_MHz, high_freq_MHz):
-        print("calling map pair backward")
-        print("values are ", low_freq_MHz, high_freq_MHz)
         val1 = self.map_frequency_backward(low_freq_MHz)
         val2 = self.map_frequency_backward(high_freq_MHz)
-        print("values are ", val1, val2)
         return [ val1, val2 ]
 
 
