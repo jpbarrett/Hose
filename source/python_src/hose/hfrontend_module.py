@@ -110,7 +110,7 @@ class signal_chain(object):
 class westford_signal_chain(signal_chain):
     """ class representing the fixed (except for UDC-C luff freq) signal chain at Westford """
 
-    def __init__(self, udc_luff_freq_MHz=7100.1, apply_last_filter=True):
+    def __init__(self, udc_luff_freq_MHz=7054.6, apply_last_filter=True):
         signal_chain.__init__(self, "westford_signal_chain")
         self.udc_luff_freq_MHz = udc_luff_freq_MHz
         self.luff_multiplier = 4.0
@@ -120,7 +120,7 @@ class westford_signal_chain(signal_chain):
         signal_chain.add_element(self, ideal_rf_filter("filter2", 20000.0, 22000.0) )
         signal_chain.add_element(self, ideal_rf_mixer("mixer2", 22500.0) )
         if apply_last_filter is True:
-            signal_chain.add_element(self, ideal_rf_filter("filter3", 528.0, 1008.0) )
+            signal_chain.add_element(self, ideal_rf_filter("filter3", 700.0, 1200.0) )
 
 class frequency_map(object):
     """ define the linear frequency map to be specified in meta data output """

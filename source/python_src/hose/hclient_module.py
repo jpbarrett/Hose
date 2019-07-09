@@ -224,7 +224,7 @@ class hprompt(Cmd):
 
         #now add the sky frequency information as well (this is hard-coded, not in the database)
         #for this calculation we disable the pre-digitizer filter (filter4), since the center band frequency is actually just above the cut-off
-        wf_signal_chain = westford_signal_chain(udc_luff_freq, disable_filter4=True)
+        wf_signal_chain = westford_signal_chain(udc_luff_freq, apply_last_filter=False)
         spectral_resolution_MHz = float(sampling_frequency_Hz/float(spectrometer_fftsize))/1e6
         n_spec_bins = spectrometer_fftsize/2 + 1
         center_bin = int(n_spec_bins/2)
