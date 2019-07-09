@@ -78,7 +78,7 @@ class aliasing_sampler(object):
         self.nyquist_zone = nyquist_zone #this is needed to map the mapping 1-to-1
 
     def is_freq_in_first_nyquist_zone(self, freq):
-        if 0.0 < freq and freq < self.sampling_frequency_MHz/2.0:
+        if 0.0 <= freq and freq < self.sampling_frequency_MHz/2.0:
             return True
         else:
             return False
@@ -149,7 +149,7 @@ class signal_chain(object):
 
     def map_frequency_pair_backward(self, low_freq_MHz, high_freq_MHz):
         print("calling map pair backward")
-        print("values are ", val1, val2)
+        print("values are ", low_freq_MHz, high_freq_MHz)
         val1 = self.map_frequency_backward(low_freq_MHz)
         val2 = self.map_frequency_backward(high_freq_MHz)
         print("values are ", val1, val2)
