@@ -143,7 +143,7 @@ class hprompt(Cmd):
                 cmd_string += ":" + start_time + ":" + duration
                 self.interface.SendRecieveMessage(cmd_string)
                 self.is_recording = True
-                time.sleep(duration+1)
+                time.sleep(int(duration)+1)
                 self.create_meta_data_file()
                 return 0
             else:
@@ -169,7 +169,7 @@ class hprompt(Cmd):
                             cmd_string += ":" + start_time + ":" + duration
                             self.interface.SendRecieveMessage(cmd_string)
                             self.is_recording = True
-                            time.sleep(duration+1)
+                            time.sleep(int(duration)+1)
                             self.create_meta_data_file()
                             return 0
                     if( len(arg_list) == 6): #start at a particular time, and run for a certain duration
