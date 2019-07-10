@@ -144,6 +144,7 @@ class hprompt(Cmd):
                 self.interface.SendRecieveMessage(cmd_string)
                 self.is_recording = True
                 time.sleep(int(duration)+1)
+		self.end_time_stamp = datetime.utcnow()
                 self.create_meta_data_file()
                 return 0
             else:
@@ -170,6 +171,7 @@ class hprompt(Cmd):
                             self.interface.SendRecieveMessage(cmd_string)
                             self.is_recording = True
                             time.sleep(int(duration)+1)
+                            self.end_time_stamp = datetime.utcnow()
                             self.create_meta_data_file()
                             return 0
                     if( len(arg_list) == 6): #start at a particular time, and run for a certain duration
@@ -292,6 +294,9 @@ class hprompt(Cmd):
             obj_list.append( z )
 
         antenna_position_info = self.dbclient.get_measurement_from_time_range("antenna_position", self.start_time_stamp, self.end_time_stamp, 1)
+        #print("start time", self.start_time_stamp)
+	#print("end time", self.end_time_stamp)
+        #print("len antenna info:",len(antenna_position_info))
         for x in antenna_position_info:
             obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
         dump_dict_list_to_json_file(obj_list, meta_data_filepath)
