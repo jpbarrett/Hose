@@ -185,16 +185,16 @@ int main(int argc, char** argv)
     //now sort the spec and npow files by time stamp (filename)
     std::sort( powerFiles.begin(), powerFiles.end() , less_than_spec() );
 
-    // if(have_meta_data)
-    // {
-    //     std::cout<<"meta data file = "<< metaDataFile<<std::endl;
-    //     std::ifstream metadata(metaDataFile.c_str());
-    //     json j;
-    //     metadata >> j;
-    //     for (json::iterator it = j.begin(); it != j.end(); ++it) {
-    //       std::cout << (*it)["measurement"] << '\n';
-    //     }
-    // }
+    if(have_meta_data)
+    {
+        std::cout<<"meta data file = "<< metaDataFile<<std::endl;
+        std::ifstream metadata(metaDataFile.c_str());
+        json j;
+        metadata >> j;
+        for (json::iterator it = j.begin(); it != j.end(); ++it) {
+          std::cout << (*it)["measurement"] << '\n';
+        }
+    }
 
 
     // for(auto it = specFiles.begin(); it != specFiles.end(); it++)
@@ -299,6 +299,7 @@ int main(int argc, char** argv)
     std::cout<<"Average OFF variance = "<<off_var<<std::endl;
     std::cout<<"Difference: ON-OFF = "<<on_var - off_var<<std::endl;
     std::cout<<"Relative Difference: (ON-OFF)/ON = "<< (on_var - off_var)/on_var <<std::endl;
+    std::cout<<"Average Proportionality constant k = (T/T_diode) =  OFF/(ON-OFF): "<< off_var/(on_var - off_var)<<std::endl;
 
     double on_var_mean = 0;
     double on_var_sigma = 0;
@@ -338,7 +339,7 @@ int main(int argc, char** argv)
     std::cout<<"starting root plotting"<<std::endl;
 
     //ROOT stuff for plots
-    TApplication* App = new TApplication("TestSpectrumPlot",&argc,argv);
+    TApplication* App = new TApplication("PowerPlot",&argc,argv);
     TStyle* myStyle = new TStyle("Plain", "Plain");
     myStyle->SetCanvasBorderMode(0);
     myStyle->SetPadBorderMode(0);
