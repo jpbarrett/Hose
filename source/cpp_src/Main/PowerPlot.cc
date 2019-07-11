@@ -153,8 +153,6 @@ int main(int argc, char** argv)
         }
     }
 
-    togggle_on_off = true;
-
     if(!have_data)
     {
         std::cout<<"Data directory argument is mandatory."<<std::endl;
@@ -268,7 +266,7 @@ int main(int argc, char** argv)
             }
 
 
-            if(accum_dat.state_flag == H_NOISE_DIODE_ON)
+            if(diode_state_is_on)
             {
                 fOnAccumulations.push_back(accum_dat);
                 double x = accum_dat.sum_x;
