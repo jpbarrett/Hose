@@ -326,7 +326,7 @@ int main(int argc, char** argv)
     std::cout<<"Average OFF variance = "<<off_var<<std::endl;
     std::cout<<"Difference: ON-OFF = "<<on_var - off_var<<std::endl;
     std::cout<<"Relative Difference: (ON-OFF)/ON = "<< (on_var - off_var)/on_var <<std::endl;
-    std::cout<<"Average Proportionality constant k = (T/T_diode) =  OFF/(ON-OFF): "<< off_var/(on_var - off_var)<<std::endl;
+
 
     double on_var_mean = 0;
     double on_var_sigma = 0;
@@ -360,6 +360,8 @@ int main(int argc, char** argv)
     }
     off_var_sigma /= (double)fOffVarianceTimePairs.size();
     off_var_sigma = std::sqrt(off_var_sigma);
+
+    std::cout<<"Average Proportionality constant k = (T/T_diode) =  OFF/(ON-OFF): "<< off_var_mean/(on_var_mean - off_var_mean)<<std::endl;
 
 ////////////////////////////////////////////////////////////////////////////////
 
