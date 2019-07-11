@@ -197,16 +197,47 @@ int main(int argc, char** argv)
     std::sort( specFiles.begin(), specFiles.end() , less_than_spec() );
     std::sort( powerFiles.begin(), powerFiles.end() , less_than_spec() );
 
-    // if(have_meta_data)
     // {
-    //     std::cout<<"meta data file = "<< metaDataFile<<std::endl;
-    //     std::ifstream metadata(metaDataFile.c_str());
-    //     json j;
-    //     metadata >> j;
-    //     for (json::iterator it = j.begin(); it != j.end(); ++it) {
-    //       std::cout << (*it)["measurement"] << '\n';
-    //     }
-    // }
+    //     "fields": {
+    //         "bin_delta": 1,
+    //         "frequency_delta_MHz": -0.0005960464477539062,
+    //         "reference_bin_center_sky_frequency_MHz": 6653.499701976776,
+    //         "reference_bin_index": 524288
+    //     },
+    //     "measurement": "frequency_map",
+    //     "time": "2018-12-18T19:13:09.34Z"
+    // },
+
+
+
+    if(have_meta_data)
+    {
+        std::cout<<"meta data file = "<< metaDataFile<<std::endl;
+        std::ifstream metadata(metaDataFile.c_str());
+        json j;
+        metadata >> j;
+
+        for (json::iterator it = j.begin(); it != j.end(); ++it)
+        {
+            auto js = (*it)["measurement"];
+            std::cout<<"measurement = "<<js.get<std::string>()<<std::endl;
+            if( js.get<std::string>() == std::string("frequency_map") )
+            {
+                auto js2 = (*it)["fields"];
+                for(json::iterator it2 = js2.begin(); it !=js2.end(); ++it2 )
+                {
+                    std::cout<<*it2<<std::endl;
+                }
+            }
+
+        //         std::cout << "bin_delta = " << (*it)["fields"]["bin_delta"].get<std::string>() << std::endl;
+        //         std::cout << "frequency delta (MHZ) = "<< (*it)["fields"]["frequency_delta_MHz"].get<std::string>() << std::endl;
+        //         std::cout << "reference_bin_center_sky_frequency (MHz)" << (*it)["fields"]["reference_bin_center_sky_frequency_MHz"].get<std::string>() << std::endl;
+        //         std::cout << "reference_bin_index =  " <<(*it)["fields"]["reference_bin_index"].get<std::string>() << std::endl;
+        //     }
+        //
+        }
+    }
 
 
     // for(auto it = specFiles.begin(); it != specFiles.end(); it++)
