@@ -361,6 +361,11 @@ int main(int argc, char** argv)
         raw_accumulated_spec[j] /= spec_count;
     }
 
+    //zero-out the first and last bins
+    raw_accumulated_spec[0] = 0.0;
+    raw_accumulated_spec[spec_length-1] = 0.0;
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //collect the raw accumulations
 
@@ -548,15 +553,7 @@ int main(int argc, char** argv)
             double index = j;
             double ref_index = referenceBinIndex;
             double freq = (index - referenceBinIndex)*freqDeltaMHz + referenceBinCenterSkyFreqMHz;
-            if(freqDeltaMHz < 0.0)
-            {
-               g->SetPoint(j, freq, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
-            }
-            else
-            {
-                g->SetPoint(j, freq, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
-            }
-
+            g->SetPoint(j, freq, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
         }
     }
 

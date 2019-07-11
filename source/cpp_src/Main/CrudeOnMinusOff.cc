@@ -328,6 +328,10 @@ bool ReadDataDirectory(std::string data_dir, bool toggle_diode,  MetaDataContain
         average_spectrum[j] /= meta_data.fDuration;
     }
 
+    //zero-out the first and last bins
+    average_spectrum[0] = 0.0;
+    average_spectrum[spec_length-1] = 0.0;
+
 
     freq_axis.resize(spec_length);
     for(unsigned int j=0; j<spec_length; j++)
