@@ -32,7 +32,7 @@ using namespace hose;
 #include "TGraph.h"
 #include "TGraph2D.h"
 #include "TH2D.h"
-
+#include "TPaveText.h"
 
 
 double eps = 1e-15;
@@ -209,6 +209,23 @@ int main(int argc, char** argv)
     // },
 
 
+    bool map_to_sky_frequency = false;
+    int binDelta = 1;
+    double freqDeltaMHz = 0.0;
+    int referenceBinIndex = 0;
+    double referenceBinCenterSkyFreqMHz = 0.0;
+
+    bool source_info = false;
+    std::string source_name = "";
+    std::string ra = "";
+    std::string dec = "";
+    std::string epoch = "";
+
+    bool recording_status_info = false;
+    std::string experiment_name = "";
+    std::string scan_name = "";
+    std::string start_time = "";
+    std::string duration;
 
     if(have_meta_data)
     {
@@ -219,23 +236,46 @@ int main(int argc, char** argv)
 
         for (json::iterator it = j.begin(); it != j.end(); ++it)
         {
-            auto js = (*it)["measurement"];
-            std::cout<<"measurement = "<<js.get<std::string>()<<std::endl;
-            if( js.get<std::string>() == std::string("frequency_map") )
+            std::string measurement_name = (*it)["measurement"].get<std::string>();
+            std::cout<<"measurement name = "<<measurement_name<<std::endl;
+            if( measurement_name == std::string("frequency_map") )
             {
                 auto js2 = (*it)["fields"];
-                for(json::iterator it2 = js2.begin(); it !=js2.end(); ++it2 )
-                {
-                    std::cout<<*it2<<std::endl;
-                }
+                binDelta = js2["bin_delta"].get<int>();
+                freqDeltaMHz = js2["frequency_delta_MHz"].get<double>();
+                referenceBinCenterSkyFreqMHz = js2["reference_bin_center_sky_frequency_MHz"].get<double>();
+                referenceBinIndex = js2["reference_bin_index"].get<int>();
+
+                std::cout << "bin_delta = " << binDelta << std::endl;
+                std::cout << "frequency delta (MHZ) = "<< freqDeltaMHz << std::endl;
+                std::cout << "reference_bin_center_sky_frequency (MHz) " << referenceBinCenterSkyFreqMHz << std::endl;
+                std::cout << "reference_bin_index =  " << referenceBinIndex << std::endl;
+                map_to_sky_frequency = true;
             }
 
-        //         std::cout << "bin_delta = " << (*it)["fields"]["bin_delta"].get<std::string>() << std::endl;
-        //         std::cout << "frequency delta (MHZ) = "<< (*it)["fields"]["frequency_delta_MHz"].get<std::string>() << std::endl;
-        //         std::cout << "reference_bin_center_sky_frequency (MHz)" << (*it)["fields"]["reference_bin_center_sky_frequency_MHz"].get<std::string>() << std::endl;
-        //         std::cout << "reference_bin_index =  " <<(*it)["fields"]["reference_bin_index"].get<std::string>() << std::endl;
-        //     }
-        //
+            if( measurement_name == std::string("source_status") )
+            {
+                auto js2 = (*it)["fields"];
+                source_name = js2["source"].get<std::string>();
+                ra = js2["ra"].get<std::string>();
+                dec = js2["dec"].get<std::string>();
+                epoch = js2["epoch"].get<std::string>();
+                source_info = true;
+            }
+
+            if( measurement_name == std::string("recording_status") )
+            {
+                auto js2 = (*it)["fields"];
+                std::string recording_state = js2["recording"].get<std::string>();
+                if(recording_state == std::string("on"))
+                {
+                    experiment_name = js2["experiment_name"].get<std::string>();
+                    scan_name = js2["scan_name"].get<std::string>();
+                    std::string tmptime = (*it)["time"].get<std::string>();
+                    start_time = tmptime.substr(0, tmptime.find("."));
+                    recording_status_info = true;
+                }
+            }
         }
     }
 
@@ -299,6 +339,10 @@ int main(int argc, char** argv)
             std::cout<<"spec_res= "<<spec_res<<std::endl;
             std::cout<<"spectrum length = "<<spec_length<<std::endl;
             double time_diff = sec_diff + (sample_diff + n_samples)*sample_period;
+            std::stringstream tempss;
+            tempss << time_diff;
+            tempss >> duration;
+
             std::cout<<"recording length (sec) = "<<time_diff<<std::endl;
             raw_accumulated_spec.resize(spec_length, 0);
         }
@@ -473,45 +517,82 @@ int main(int argc, char** argv)
     std::vector< TGraph2D* > graph2d;
 
     std::string name("spec");
-    TCanvas* c = new TCanvas(name.c_str(),name.c_str(), 50, 50, 950, 850);
+    TCanvas* c = new TCanvas(name.c_str(),name.c_str(), 50, 50, 1450, 850);
     c->SetFillColor(0);
-    c->SetRightMargin(0.2);
-    c->Divide(1,3);
-    c->cd(1);
+    c->SetRightMargin(0.05);
+    // c->Divide(1,3);
+    // c->cd(1);
 
     TGraph* g = new TGraph();
+
+    TPaveText *pt = new TPaveText(.14,.72,.29,.88,"blNDC");
+    pt->SetBorderSize(1);
+    pt->SetFillColor(0);
+    pt->AddText( std::string( std::string( "Experiment: ") + experiment_name).c_str() );
+    pt->AddText( std::string( std::string( "Scan: ") + scan_name).c_str() );
+    pt->AddText( std::string( std::string( "Source: ") + source_name ).c_str() );
+    pt->AddText( std::string( std::string( "RA: ") + ra).c_str() );
+    pt->AddText( std::string( std::string( "DEC: ") + dec).c_str() );
+    pt->AddText( std::string( std::string( "Epoch: ") + epoch).c_str() );
+    pt->AddText( std::string( std::string( "Start Time: ") + start_time).c_str() );
+    pt->AddText( std::string( std::string( "Duration: ") + duration).c_str() );
+
     for(unsigned int j=0; j<spec_length; j++)
     {
-        g->SetPoint(j, j*spec_res/1e6, 10.0*std::log10( raw_accumulated_spec[j] + eps ) );
-    }
-    g->Draw("ALP");
+        if(!map_to_sky_frequency)
+        {
+            g->SetPoint(j, j*spec_res/1e6, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
+        }
+        else
+        {
+            double index = j;
+            double ref_index = referenceBinIndex;
+            double freq = (index - referenceBinIndex)*freqDeltaMHz + referenceBinCenterSkyFreqMHz;
+            if(freqDeltaMHz < 0.0)
+            {
+               g->SetPoint(j, freq, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
+            }
+            else
+            {
+                g->SetPoint(j, freq, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
+            }
 
-    g->SetTitle("Average Spectrum");
+        }
+    }
+
+    g->Draw("ALP");
+    g->SetMarkerStyle(7);
+    g->SetTitle("Average Spectrum" );
     g->GetXaxis()->SetTitle("Frequency (MHz)");
     g->GetYaxis()->SetTitle("Relative Power (dB)");
+    g->GetHistogram()->SetMaximum(100.0);
+    g->GetHistogram()->SetMinimum(0.0);
     g->GetYaxis()->CenterTitle();
     g->GetXaxis()->CenterTitle();
+
+    pt->Draw();
+
     c->Update();
 
-    //histogram the values of the on/off noise variance
-    c->cd(2);
-    TH1D* on_histo = new TH1D("on_noise_variance histogram", "on_noise_variance histogram", 5000, on_var_mean - 1.0*on_var_sigma, on_var_mean + 1.0*on_var_sigma);
-    for(size_t i=0; i<fOnVarianceTimePairs.size(); i++)
-    {
-        on_histo->Fill(fOnVarianceTimePairs[i].first);
-    }
-    on_histo->Draw("");
-    c->Update();
-
-    //histogram the values
-    c->cd(3);
-    TH1D* off_histo = new TH1D("off_noise_variance histogram", "off_noise_variance histogram", 5000, off_var_mean - 1.0*off_var_sigma, off_var_mean + 1.0*off_var_sigma);
-    for(size_t i=0; i<fOffVarianceTimePairs.size(); i++)
-    {
-        off_histo->Fill(fOffVarianceTimePairs[i].first);
-    }
-    off_histo->Draw("");
-    c->Update();
+    // //histogram the values of the on/off noise variance
+    // c->cd(2);
+    // TH1D* on_histo = new TH1D("on_noise_variance histogram", "on_noise_variance histogram", 5000, on_var_mean - 1.0*on_var_sigma, on_var_mean + 1.0*on_var_sigma);
+    // for(size_t i=0; i<fOnVarianceTimePairs.size(); i++)
+    // {
+    //     on_histo->Fill(fOnVarianceTimePairs[i].first);
+    // }
+    // on_histo->Draw("");
+    // c->Update();
+    //
+    // //histogram the values
+    // c->cd(3);
+    // TH1D* off_histo = new TH1D("off_noise_variance histogram", "off_noise_variance histogram", 5000, off_var_mean - 1.0*off_var_sigma, off_var_mean + 1.0*off_var_sigma);
+    // for(size_t i=0; i<fOffVarianceTimePairs.size(); i++)
+    // {
+    //     off_histo->Fill(fOffVarianceTimePairs[i].first);
+    // }
+    // off_histo->Draw("");
+    // c->Update();
 
     App->Run();
 
