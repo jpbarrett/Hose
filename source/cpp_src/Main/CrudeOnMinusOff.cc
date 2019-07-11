@@ -675,7 +675,6 @@ int main(int argc, char** argv)
     for(unsigned int j=0; j<on_source_spectrum.size(); j++)
     {
         double index = j;
-        double ref_index = referenceBinIndex;
         double freq = on_source_freq[j];
         double on_source_val = on_source_spectrum[j];
         double off_source_val = off_source_spectrum[j];
