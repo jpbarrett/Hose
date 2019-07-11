@@ -362,7 +362,7 @@ int main(int argc, char** argv)
     }
 
     //zero-out the first and last 100 bins
-    for(size_t k=0; k<20; k++)
+    for(size_t k=0; k<100; k++)
     {
         raw_accumulated_spec[k] = 0.0;
         raw_accumulated_spec[spec_length-1-k] = 0.0;
