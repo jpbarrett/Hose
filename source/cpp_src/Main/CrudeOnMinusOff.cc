@@ -222,10 +222,10 @@ bool ReadDataDirectory(std::string data_dir, bool toggle_diode,  MetaDataContain
                 meta_data.fReferenceBinCenterSkyFrequencyMHz = js2["reference_bin_center_sky_frequency_MHz"].get<double>();
                 meta_data.fReferenceBinIndex = js2["reference_bin_index"].get<int>();
 
-                std::cout << "bin_delta = " << binDelta << std::endl;
-                std::cout << "frequency delta (MHZ) = "<< freqDeltaMHz << std::endl;
-                std::cout << "reference_bin_center_sky_frequency (MHz) " << referenceBinCenterSkyFreqMHz << std::endl;
-                std::cout << "reference_bin_index =  " << referenceBinIndex << std::endl;
+                std::cout << "bin_delta = " << meta_data.fBinDelta << std::endl;
+                std::cout << "frequency delta (MHZ) = "<< meta_data.fFrequencyDeltaMHz << std::endl;
+                std::cout << "reference_bin_center_sky_frequency (MHz) " << meta_data.fReferenceBinCenterSkyFrequencyMHz  << std::endl;
+                std::cout << "reference_bin_index =  " << meta_data.fReferenceBinIndex << std::endl;
                 map_to_sky_frequency = true;
             }
 
@@ -337,8 +337,8 @@ bool ReadDataDirectory(std::string data_dir, bool toggle_diode,  MetaDataContain
     for(unsigned int j=0; j<spec_length; j++)
     {
         double index = j;
-        double ref_index = referenceBinIndex;
-        double freq = (index - referenceBinIndex)*freqDeltaMHz + referenceBinCenterSkyFreqMHz;
+        double ref_index = meta_data.fReferenceBinIndex;
+        double freq = (index - meta_data.fReferenceBinIndex)*meta_data.fFrequencyDeltaMHz + meta_data.fReferenceBinCenterSkyFrequencyMHz;
         freq_axis[j] = freq;
     }
 
