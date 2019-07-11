@@ -32,6 +32,7 @@ using namespace hose;
 #include "TGraph.h"
 #include "TGraph2D.h"
 #include "TH2D.h"
+#include "TMath.h"
 #include "TMultiGraph.h"
 
 
@@ -366,8 +367,8 @@ int main(int argc, char** argv)
     off_var_sigma /= (double)fOffVarianceTimePairs.size();
     off_var_sigma = std::sqrt(off_var_sigma);
 
-    double on_var_media = TMath::Median(on_var_vec.size(), &(on_var_vec[0]))
-    double off_var_media = TMath::Median(off_var_vec.size(), &(off_var_vec[0]))
+    double on_var_media = TMath::Median(on_var_vec.size(), &(on_var_vec[0]));
+    double off_var_media = TMath::Median(off_var_vec.size(), &(off_var_vec[0]));
 
 
     std::cout<<"Average Proportionality constant k = (T/T_diode) =  OFF/(ON-OFF): "<< off_var_median/(on_var_median - off_var_median)<<std::endl;
