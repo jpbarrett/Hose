@@ -361,10 +361,12 @@ int main(int argc, char** argv)
         raw_accumulated_spec[j] /= spec_count;
     }
 
-    //zero-out the first and last bins
-    raw_accumulated_spec[0] = 0.0;
-    raw_accumulated_spec[spec_length-1] = 0.0;
-
+    //zero-out the first and last 50 bins
+    for(size_t k=0; k<50; k++)
+    {
+        raw_accumulated_spec[k] = 0.0;
+        raw_accumulated_spec[spec_length-1-k] = 0.0;
+    }
 
 ////////////////////////////////////////////////////////////////////////////////
 //collect the raw accumulations
