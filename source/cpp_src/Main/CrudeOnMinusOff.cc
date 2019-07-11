@@ -310,9 +310,6 @@ bool ReadDataDirectory(std::string data_dir, bool toggle_diode,  MetaDataContain
             std::cout<<"spec_res= "<<spec_res<<std::endl;
             std::cout<<"spectrum length = "<<spec_length<<std::endl;
             double time_diff = sec_diff + (sample_diff + n_samples)*sample_period;
-            std::stringstream tempss;
-            tempss << time_diff;
-            tempss >> duration;
             std::cout<<"recording length (sec) = "<<time_diff<<std::endl;
             meta_data.fDuration = time_diff;
             average_spectrum.resize(spec_length, 0);
@@ -329,7 +326,7 @@ bool ReadDataDirectory(std::string data_dir, bool toggle_diode,  MetaDataContain
     //compute time-average
     for(size_t j=0; j<spec_length; j++)
     {
-        average_spectrum[j] /= fDuration;
+        average_spectrum[j] /= time_diff;
     }
 
 
@@ -337,7 +334,6 @@ bool ReadDataDirectory(std::string data_dir, bool toggle_diode,  MetaDataContain
     for(unsigned int j=0; j<spec_length; j++)
     {
         double index = j;
-        double ref_index = meta_data.fReferenceBinIndex;
         double freq = (index - meta_data.fReferenceBinIndex)*meta_data.fFrequencyDeltaMHz + meta_data.fReferenceBinCenterSkyFrequencyMHz;
         freq_axis[j] = freq;
     }
@@ -378,7 +374,7 @@ bool ReadDataDirectory(std::string data_dir, bool toggle_diode,  MetaDataContain
             if(accum_dat.state_flag == H_NOISE_DIODE_ON)
             {
                 diode_state_is_on = true;
-                if(togggle_on_off)
+                if(toggle_diode)
                 {
                     diode_state_is_on = false;
                 }
@@ -387,7 +383,7 @@ bool ReadDataDirectory(std::string data_dir, bool toggle_diode,  MetaDataContain
             else
             {
                 diode_state_is_on = false;
-                if(togggle_on_off)
+                if(toggle_diode)
                 {
                     diode_state_is_on = true;
                 }
