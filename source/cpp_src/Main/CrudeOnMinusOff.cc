@@ -213,7 +213,6 @@ bool ReadDataDirectory(std::string data_dir, bool toggle_diode,  MetaDataContain
         for (json::iterator it = j.begin(); it != j.end(); ++it)
         {
             std::string measurement_name = (*it)["measurement"].get<std::string>();
-            std::cout<<"measurement name = "<<measurement_name<<std::endl;
             if( measurement_name == std::string("frequency_map") )
             {
                 auto js2 = (*it)["fields"];
