@@ -663,16 +663,16 @@ int main(int argc, char** argv)
     TPaveText *pt = new TPaveText(.14,.72,.29,.88,"blNDC");
     pt->SetBorderSize(1);
     pt->SetFillColor(0);
-    pt->AddText( std::string( std::string( "Experiment: ") + experiment_name).c_str() );
-    pt->AddText( std::string( std::string( "Scan: ") + scan_name).c_str() );
-    pt->AddText( std::string( std::string( "Source: ") + source_name ).c_str() );
-    pt->AddText( std::string( std::string( "RA: ") + ra).c_str() );
-    pt->AddText( std::string( std::string( "DEC: ") + dec).c_str() );
-    pt->AddText( std::string( std::string( "Epoch: ") + epoch).c_str() );
-    pt->AddText( std::string( std::string( "Start Time: ") + start_time).c_str() );
-    pt->AddText( std::string( std::string( "Duration: ") + duration).c_str() );
+    pt->AddText( std::string( std::string( "Experiment: ") + on_source_meta.fExperimentName).c_str() );
+    pt->AddText( std::string( std::string( "Scan: ") + on_source_meta.fScanName).c_str() );
+    pt->AddText( std::string( std::string( "Source: ") + on_source_meta.fSourceName ).c_str() );
+    pt->AddText( std::string( std::string( "RA: ") + on_source_meta.fRA).c_str() );
+    pt->AddText( std::string( std::string( "DEC: ") + on_source_meta.fDEC).c_str() );
+    pt->AddText( std::string( std::string( "Epoch: ") + on_source_meta.fEpoch).c_str() );
+    pt->AddText( std::string( std::string( "Start Time: ") + on_source_meta.fStartTime).c_str() );
+    pt->AddText( std::string( std::string( "Duration: ") ).c_str() );
 
-    for(unsigned int j=0; j<spec_length; j++)
+    for(unsigned int j=0; j<on_source_spectrum.size(); j++)
     {
         double index = j;
         double ref_index = referenceBinIndex;
