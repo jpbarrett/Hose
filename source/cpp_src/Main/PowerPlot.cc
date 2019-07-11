@@ -333,15 +333,20 @@ int main(int argc, char** argv)
     double off_var_mean = 0;
     double off_var_sigma = 0;
 
+    std::vector<double> on_var_vec;
+    std::vector<double> off_var_vec;
+
     for(size_t j=0; j<fOnVarianceTimePairs.size(); j++)
     {
         on_var_mean += fOnVarianceTimePairs[j].first;
+        on_var_vec.push_back(fOnVarianceTimePairs[j].first);
     }
     on_var_mean /= (double)fOnVarianceTimePairs.size();
 
     for(size_t j=0; j<fOffVarianceTimePairs.size(); j++)
     {
         off_var_mean += fOffVarianceTimePairs[j].first;
+        off_var_vec.push_back(fOffVarianceTimePairs[j].first);
     }
     off_var_mean /= (double)fOffVarianceTimePairs.size();
 
@@ -361,7 +366,11 @@ int main(int argc, char** argv)
     off_var_sigma /= (double)fOffVarianceTimePairs.size();
     off_var_sigma = std::sqrt(off_var_sigma);
 
-    std::cout<<"Average Proportionality constant k = (T/T_diode) =  OFF/(ON-OFF): "<< off_var_mean/(on_var_mean - off_var_mean)<<std::endl;
+    double on_var_media = TMath::Median(on_var_vec.size(), &(on_var_vec[0]))
+    double off_var_media = TMath::Median(off_var_vec.size(), &(off_var_vec[0]))
+
+
+    std::cout<<"Average Proportionality constant k = (T/T_diode) =  OFF/(ON-OFF): "<< off_var_median/(on_var_median - off_var_median)<<std::endl;
 
 ////////////////////////////////////////////////////////////////////////////////
 
