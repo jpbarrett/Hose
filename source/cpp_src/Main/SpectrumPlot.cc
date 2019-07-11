@@ -544,7 +544,7 @@ int main(int argc, char** argv)
     pt->AddText( std::string( std::string( "Start Time: ") + start_time).c_str() );
     pt->AddText( std::string( std::string( "Duration: ") + duration).c_str() );
 
-    for(unsigned int j=0; j<spec_length; j++)
+    for(unsigned int j=50; j<spec_length-51; j++)
     {
         if(!map_to_sky_frequency)
         {
