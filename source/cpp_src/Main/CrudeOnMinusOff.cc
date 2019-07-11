@@ -677,7 +677,8 @@ int main(int argc, char** argv)
         double freq = on_source_freq[j];
         double on_source_val = on_source_spectrum[j];
         double off_source_val = off_source_spectrum[j];
-        g->SetPoint(j, freq, on_source_val - off_source_val );
+        double point = std::max(0.0, (on_source_val - off_source_val) );
+        g->SetPoint(j, freq, point  );
     }
 
     g->Draw("ALP");
