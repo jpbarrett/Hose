@@ -674,7 +674,9 @@ int main(int argc, char** argv)
 
     //make a crude calculation to scale the y-axis
     double t_diode = 3.0;
-    double t_src = (on_source_meta.fKFactor - off_source_val.fKFactor)*t_diode;
+    double t_src = (on_source_meta.fKFactor - off_source_meta.fKFactor)*t_diode;
+
+    std::cout<<"t_src = "<<t_src<<std::endl;
 
 
     double integral = 0.0;
