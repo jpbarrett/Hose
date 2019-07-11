@@ -361,8 +361,8 @@ int main(int argc, char** argv)
         raw_accumulated_spec[j] /= spec_count;
     }
 
-    //zero-out the first and last 50 bins
-    for(size_t k=0; k<50; k++)
+    //zero-out the first and last 100 bins
+    for(size_t k=0; k<20; k++)
     {
         raw_accumulated_spec[k] = 0.0;
         raw_accumulated_spec[spec_length-1-k] = 0.0;
@@ -544,7 +544,7 @@ int main(int argc, char** argv)
     pt->AddText( std::string( std::string( "Start Time: ") + start_time).c_str() );
     pt->AddText( std::string( std::string( "Duration: ") + duration).c_str() );
 
-    for(unsigned int j=100000; j<spec_length-100000; j++)
+    for(unsigned int j=0; j<spec_length; j++)
     {
         if(!map_to_sky_frequency)
         {
@@ -555,7 +555,7 @@ int main(int argc, char** argv)
             double index = j;
             double ref_index = referenceBinIndex;
             double freq = (index - referenceBinIndex)*freqDeltaMHz + referenceBinCenterSkyFreqMHz;
-            g->SetPoint(j-100000, freq, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
+            g->SetPoint(j, freq, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
         }
     }
 
