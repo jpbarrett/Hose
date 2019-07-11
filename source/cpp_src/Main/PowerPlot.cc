@@ -125,7 +125,7 @@ int main(int argc, char** argv)
         {"togggle-on-off", no_argument, 0, 't'}
     };
 
-    static const char *optString = "hd:s:t";
+    static const char *optString = "htd:s:";
 
     bool togggle_on_off = false;
     while(1)
@@ -152,6 +152,8 @@ int main(int argc, char** argv)
             return 1;
         }
     }
+
+    togggle_on_off = true;
 
     if(!have_data)
     {
