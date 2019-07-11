@@ -689,7 +689,7 @@ int main(int argc, char** argv)
         double point = std::max(0.0, (on_source_val - off_source_val) );
         if(freq < 6670.0 && 6668.0 < freq)
         {
-            integral += on_source_meta.fFrequencyDeltaMHz*1e6*point;
+            integral += TMath::Abs(on_source_meta.fFrequencyDeltaMHz)*1e6*point;
         }
     }
 
