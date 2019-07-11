@@ -536,7 +536,6 @@ int main(int argc, char** argv)
     "\t -t, --togggle-on-off     (swap the diode state labels on <-> off)\n"
     "\t -o, --on-source-data-dir (path to the directory containing on-source scan data, mandatory)\n"
     "\t -f, --off-data-dir       (path to the directory containing off-source scan data, mandatory)\n"
-    "\t -n, --n-averages         (number of spectra files (.spec) to average together, optional)\n"
     ;
 
     //set defaults
@@ -686,8 +685,8 @@ int main(int argc, char** argv)
     g->SetTitle("Average ON-OFF Spectrum" );
     g->GetXaxis()->SetTitle("Frequency (MHz)");
     g->GetYaxis()->SetTitle("A.U.");
-    g->GetHistogram()->SetMaximum(100.0);
-    g->GetHistogram()->SetMinimum(0.0);
+    // g->GetHistogram()->SetMaximum(100.0);
+    // g->GetHistogram()->SetMinimum(0.0);
     g->GetYaxis()->CenterTitle();
     g->GetXaxis()->CenterTitle();
 
