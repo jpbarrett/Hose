@@ -335,8 +335,6 @@ bool ReadDataDirectory(std::string data_dir, bool toggle_diode,  MetaDataContain
         average_spectrum[spec_length-1-k] = 0.0;
     }
 
-
-
     freq_axis.resize(spec_length);
     for(unsigned int j=0; j<spec_length; j++)
     {
@@ -616,6 +614,112 @@ int main(int argc, char** argv)
 
 
     std::cout<<"read the data"<<std::endl;
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+    std::cout<<"starting root plotting"<<std::endl;
+
+    //ROOT stuff for plots
+    TApplication* App = new TApplication("CrudeOnMinusOff",&argc,argv);
+    TStyle* myStyle = new TStyle("Plain", "Plain");
+    myStyle->SetCanvasBorderMode(0);
+    myStyle->SetPadBorderMode(0);
+    myStyle->SetPadColor(0);
+    myStyle->SetCanvasColor(0);
+    myStyle->SetTitleColor(1);
+    myStyle->SetPalette(1,0);   // nice color scale for z-axis
+    myStyle->SetCanvasBorderMode(0); // gets rid of the stupid raised edge around the canvas
+    myStyle->SetTitleFillColor(0); //turns the default dove-grey background to white
+    myStyle->SetCanvasColor(0);
+    myStyle->SetPadColor(0);
+    myStyle->SetTitleFillColor(0);
+    myStyle->SetStatColor(0); //this one may not work
+    const int NRGBs = 5;
+    const int NCont = 48;
+    double stops[NRGBs] = { 0.00, 0.34, 0.61, 0.84, 1.00 };
+    double red[NRGBs]   = { 0.00, 0.00, 0.87, 1.00, 0.51 };
+    double green[NRGBs] = { 0.00, 0.81, 1.00, 0.20, 0.00 };
+    double blue[NRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00 };
+    TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
+    myStyle->SetNumberContours(NCont);
+    myStyle->cd();
+
+    //plotting objects
+    std::vector< TCanvas* > canvas;
+    std::vector< TGraph* > graph;
+    std::vector< TGraph2D* > graph2d;
+
+    std::string name("spec");
+    TCanvas* c = new TCanvas(name.c_str(),name.c_str(), 50, 50, 1450, 850);
+    c->SetFillColor(0);
+    c->SetRightMargin(0.05);
+    // c->Divide(1,3);
+    // c->cd(1);
+
+    TGraph* g = new TGraph();
+
+    TPaveText *pt = new TPaveText(.14,.72,.29,.88,"blNDC");
+    pt->SetBorderSize(1);
+    pt->SetFillColor(0);
+    pt->AddText( std::string( std::string( "Experiment: ") + experiment_name).c_str() );
+    pt->AddText( std::string( std::string( "Scan: ") + scan_name).c_str() );
+    pt->AddText( std::string( std::string( "Source: ") + source_name ).c_str() );
+    pt->AddText( std::string( std::string( "RA: ") + ra).c_str() );
+    pt->AddText( std::string( std::string( "DEC: ") + dec).c_str() );
+    pt->AddText( std::string( std::string( "Epoch: ") + epoch).c_str() );
+    pt->AddText( std::string( std::string( "Start Time: ") + start_time).c_str() );
+    pt->AddText( std::string( std::string( "Duration: ") + duration).c_str() );
+
+    for(unsigned int j=0; j<spec_length; j++)
+    {
+        double index = j;
+        double ref_index = referenceBinIndex;
+        double freq = on_source_freq[j];
+        double on_source_val = on_source_spectrum[j];
+        double off_source_val = off_source_spectrum[j];
+        g->SetPoint(j, freq, on_source_val - off_source_val );
+    }
+
+    g->Draw("ALP");
+    g->SetMarkerStyle(7);
+    g->SetTitle("Average ON-OFF Spectrum" );
+    g->GetXaxis()->SetTitle("Frequency (MHz)");
+    g->GetYaxis()->SetTitle("A.U.");
+    g->GetHistogram()->SetMaximum(100.0);
+    g->GetHistogram()->SetMinimum(0.0);
+    g->GetYaxis()->CenterTitle();
+    g->GetXaxis()->CenterTitle();
+
+    pt->Draw();
+
+    c->Update();
+
+    // //histogram the values of the on/off noise variance
+    // c->cd(2);
+    // TH1D* on_histo = new TH1D("on_noise_variance histogram", "on_noise_variance histogram", 5000, on_var_mean - 1.0*on_var_sigma, on_var_mean + 1.0*on_var_sigma);
+    // for(size_t i=0; i<fOnVarianceTimePairs.size(); i++)
+    // {
+    //     on_histo->Fill(fOnVarianceTimePairs[i].first);
+    // }
+    // on_histo->Draw("");
+    // c->Update();
+    //
+    // //histogram the values
+    // c->cd(3);
+    // TH1D* off_histo = new TH1D("off_noise_variance histogram", "off_noise_variance histogram", 5000, off_var_mean - 1.0*off_var_sigma, off_var_mean + 1.0*off_var_sigma);
+    // for(size_t i=0; i<fOffVarianceTimePairs.size(); i++)
+    // {
+    //     off_histo->Fill(fOffVarianceTimePairs[i].first);
+    // }
+    // off_histo->Draw("");
+    // c->Update();
+
+    App->Run();
+
+
+
 
     return 0;
 }
