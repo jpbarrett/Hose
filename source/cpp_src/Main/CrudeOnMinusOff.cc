@@ -687,8 +687,28 @@ int main(int argc, char** argv)
         double on_source_val = on_source_spectrum[j];
         double off_source_val = off_source_spectrum[j];
         double point = std::max(0.0, (on_source_val - off_source_val) );
-        integral += on_source_meta.fFrequencyDeltaMHz*1e6*point;
-        g->SetPoint(j, freq, point  );
+        if(freq < 6670.0 && 6668.0 < freq)
+        {
+            integral += on_source_meta.fFrequencyDeltaMHz*1e6*point;
+        }
+    }
+
+    for(unsigned int j=0; j<on_source_spectrum.size(); j++)
+    {
+        double index = j;
+        double freq = on_source_freq[j];
+        double on_source_val = on_source_spectrum[j];
+        double off_source_val = off_source_spectrum[j];
+        double point = std::max(0.0, (on_source_val - off_source_val) );
+        point *= t_src/integral;
+        if(freq < 6670.0 && 6668.0 < freq)
+        {
+            g->SetPoint(j, freq, point  );
+        }
+        else
+        {
+            g->SetPoint(j, freq, 0.0  );
+        }
     }
 
     std::cout<<"integral = "<<integral<<std::endl;
