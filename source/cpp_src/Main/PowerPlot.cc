@@ -108,6 +108,7 @@ int main(int argc, char** argv)
     "\t -h, --help               (shows this message and exits)\n"
     "\t -d, --data-dir           (path to the directory containing scan data, mandatory)\n"
     "\t -s, --sampling-rate      (specify sampling rate in MHz, optional (default = 1250MHz))\n"
+    "\t -t, --togggle-on-off     (swap the diode state labels on <-> off)\n"
     ;
 
     //set defaults
@@ -119,12 +120,14 @@ int main(int argc, char** argv)
     static struct option longOptions[] =
     {
         {"help", no_argument, 0, 'h'},
-        {"data_dir", required_argument, 0, 'd'},
-        {"sampling_rate", optional_argument, 0, 's'},
+        {"data-dir", required_argument, 0, 'd'},
+        {"sampling-rate", optional_argument, 0, 's'},
+        {"togggle-on-off", no_argument, 0, 't'}
     };
 
-    static const char *optString = "hd:s:";
+    static const char *optString = "hd:s:t";
 
+    bool togggle_on_off = false;
     while(1)
     {
         char optId = getopt_long(argc, argv, optString, longOptions, NULL);
@@ -140,6 +143,9 @@ int main(int argc, char** argv)
             break;
             case('s'):
                 sampling_rate = atof(optarg)*1e6;
+            break;
+            case('t'):
+                togggle_on_off = true;
             break;
             default:
                 std::cout<<usage<<std::endl;
@@ -239,6 +245,27 @@ int main(int argc, char** argv)
         for(uint64_t j=0; j<n_accum; j++)
         {
             HDataAccumulationStruct accum_dat = npow->fAccumulations[j];
+
+            bool diode_state_is_on = false;
+            if(accum_dat.state_flag == H_NOISE_DIODE_ON)
+            {
+                diode_state_is_on = true;
+                if(togggle_on_off)
+                {
+                    diode_state_is_on = false;
+                }
+
+            }
+            else
+            {
+                diode_state_is_on = false;
+                if(togggle_on_off)
+                {
+                    diode_state_is_on = true;
+                }
+            }
+
+
             if(accum_dat.state_flag == H_NOISE_DIODE_ON)
             {
                 fOnAccumulations.push_back(accum_dat);
