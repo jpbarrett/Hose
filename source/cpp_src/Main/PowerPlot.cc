@@ -240,8 +240,6 @@ int main(int argc, char** argv)
         HNoisePowerFileStruct* npow = CreateNoisePowerFileStruct();
         int success = ReadNoisePowerFile(powerFiles[i].first.c_str(), npow);
 
-        std::cout<<"success = "<<success<<std::endl;
-
         uint64_t n_accum = npow->fHeader.fAccumulationLength;
         for(uint64_t j=0; j<n_accum; j++)
         {
