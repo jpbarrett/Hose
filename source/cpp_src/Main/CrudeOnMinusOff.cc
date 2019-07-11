@@ -326,7 +326,7 @@ bool ReadDataDirectory(std::string data_dir, bool toggle_diode,  MetaDataContain
     //compute time-average
     for(size_t j=0; j<spec_length; j++)
     {
-        average_spectrum[j] /= time_diff;
+        average_spectrum[j] /= meta_data.fDuration;
     }
 
 
@@ -498,7 +498,7 @@ bool ReadDataDirectory(std::string data_dir, bool toggle_diode,  MetaDataContain
 
     meta_data.fMedianOnVariance = on_var_median;
     meta_data.fMedianOffVariance = off_var_median;
-    meta_data.fMeanOnVariance = on_var_mean
+    meta_data.fMeanOnVariance = on_var_mean;
     meta_data.fMeanOffVariance = off_var_mean;
 
     meta_data.fKFactor = off_var_median/(on_var_median - off_var_median);
@@ -562,10 +562,6 @@ int main(int argc, char** argv)
             case('h'): // help
             std::cout<<usage<<std::endl;
             return 0;
-            case('o'):
-                on_source_data_dir = std::string(optarg);
-                have_data = true;
-            break;
             case('o'):
                 on_source_data_dir = std::string(optarg);
                 have_on_data = true;
