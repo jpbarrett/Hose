@@ -671,6 +671,13 @@ int main(int argc, char** argv)
     pt->AddText( std::string( std::string( "Start Time: ") + on_source_meta.fStartTime).c_str() );
     pt->AddText( std::string( std::string( "Duration: ") ).c_str() );
 
+
+    //make a crude calculation to scale the y-axis
+    double t_diode = 3.0;
+    double t_src = (on_source_meta.fKFactor - off_source_val.fKFactor)*t_diode;
+
+
+    double integral = 0.0;
     for(unsigned int j=0; j<on_source_spectrum.size(); j++)
     {
         double index = j;
@@ -678,8 +685,11 @@ int main(int argc, char** argv)
         double on_source_val = on_source_spectrum[j];
         double off_source_val = off_source_spectrum[j];
         double point = std::max(0.0, (on_source_val - off_source_val) );
+        integral += on_source_meta.fFrequencyDeltaMHz*1e6*point;
         g->SetPoint(j, freq, point  );
     }
+
+    std::cout<<"integral = "<<integral<<std::endl;
 
     g->Draw("ALP");
     g->SetMarkerStyle(7);
