@@ -700,15 +700,9 @@ int main(int argc, char** argv)
         double on_source_val = on_source_spectrum[j];
         double off_source_val = off_source_spectrum[j];
         double point = std::max(0.0, (on_source_val - off_source_val) );
-        point *= t_src/integral*(625/0.2);
+        //point *= t_src/integral*(625/0.2);
         //if(freq < 6670.0 && 6669.8 < freq)
-        {
-            g->SetPoint(j, freq, point  );
-        }
-        // else
-        // {
-        //     g->SetPoint(j, freq, 0.0  );
-        // }
+        g->SetPoint(j, freq, point  );
     }
 
     std::cout<<"integral = "<<integral<<std::endl;
