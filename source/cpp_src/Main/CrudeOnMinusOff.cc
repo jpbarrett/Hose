@@ -711,7 +711,7 @@ int main(int argc, char** argv)
     g->SetMarkerStyle(7);
     g->SetTitle("Average ON-OFF Spectrum" );
     g->GetXaxis()->SetTitle("Frequency (MHz)");
-    g->GetYaxis()->SetTitle("A.U.");
+    g->GetYaxis()->SetTitle("Arb. Units.");
     // g->GetHistogram()->SetMaximum(100.0);
     // g->GetHistogram()->SetMinimum(0.0);
     g->GetYaxis()->CenterTitle();
