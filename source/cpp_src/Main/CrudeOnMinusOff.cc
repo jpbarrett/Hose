@@ -56,6 +56,7 @@ class MetaDataContainer
         double fReferenceBinIndex;
         double fReferenceBinCenterSkyFrequencyMHz;
         double fDuration;
+        double fSamplePeriod;
 
         double fMedianOnVariance;
         double fMedianOffVariance;
@@ -343,6 +344,7 @@ bool ReadDataDirectory(std::string data_dir, bool toggle_diode,  MetaDataContain
         freq_axis[j] = freq;
     }
 
+    meta_data.fSamplePeriod = sample_period;
 
 ////////////////////////////////////////////////////////////////////////////////
 //collect the noise diode data
@@ -677,6 +679,7 @@ int main(int argc, char** argv)
     double t_src = (on_source_meta.fKFactor - off_source_meta.fKFactor)*t_diode;
 
     std::cout<<"t_src = "<<t_src<<std::endl;
+    double period = on_source_meta.fSamplePeriod;
 
 
     double integral = 0.0;
@@ -700,7 +703,7 @@ int main(int argc, char** argv)
         double on_source_val = on_source_spectrum[j];
         double off_source_val = off_source_spectrum[j];
         double diff = (on_source_val - off_source_val);
-        double scaled_point = (diff*sample_period)/50.0;
+        double scaled_point = (diff*period)/50.0; //50 ohm input
         double point = std::max(0.0, scaled_point );
         g->SetPoint(j, freq, point );
     }
