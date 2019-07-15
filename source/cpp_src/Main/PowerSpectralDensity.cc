@@ -573,9 +573,6 @@ bool ReadDataDirectory(std::string data_dir, bool toggle_diode,  MetaDataContain
 
     meta_data.fKFactor = off_var_median/(on_var_median - off_var_median);
 
-
-
-
     return true;
 
 }
@@ -636,29 +633,28 @@ int main(int argc, char** argv)
     "\tOptions:\n"
     "\t -h, --help               (shows this message and exits)\n"
     "\t -t, --togggle-on-off     (swap the diode state labels on <-> off)\n"
-    "\t -o, --on-source-data-dir (path to the directory containing on-source scan data, mandatory)\n"
-    "\t -f, --off-data-dir       (path to the directory containing off-source scan data, mandatory)\n"
+    "\t -s, --scale              (Plot as W/Hz instead of dBm/Hz)\n"
+    "\t -d, --data-dir           (path to the directory containing scan data, mandatory)\n"
     ;
 
     //set defaults
     unsigned int n_averages = 0; //default behavior is to average all spectra together
-    bool have_on_data = false;
-    bool have_off_data = false;
-    std::string on_source_data_dir = STR2(DATA_INSTALL_DIR);
-    std::string off_source_data_dir = STR2(DATA_INSTALL_DIR);
+    bool have_data = false;
+    std::string data_dir = STR2(DATA_INSTALL_DIR);
     std::string o_dir = STR2(DATA_INSTALL_DIR);
 
     static struct option longOptions[] =
     {
         {"help", no_argument, 0, 'h'},
-        {"on-source-data-dir", required_argument, 0, 'o'},
-        {"off-source-data-dir", required_argument, 0, 'f'},
-        {"togggle-on-off", no_argument, 0, 't'}
+        {"data-dir", required_argument, 0, 'd'},
+        {"togggle-on-off", no_argument, 0, 't'},
+        {"scale", no_argument, 0, 's'}
     };
 
-    static const char *optString = "hto:f:";
+    static const char *optString = "htsd:";
 
     bool togggle_on_off = false;
+    bool use_linear_scale = false;
     while(1)
     {
         char optId = getopt_long(argc, argv, optString, longOptions, NULL);
@@ -668,16 +664,15 @@ int main(int argc, char** argv)
             case('h'): // help
             std::cout<<usage<<std::endl;
             return 0;
-            case('o'):
-                on_source_data_dir = std::string(optarg);
-                have_on_data = true;
-            break;
-            case('f'):
-                off_source_data_dir = std::string(optarg);
-                have_off_data = true;
+            case('d'):
+                data_dir = std::string(optarg);
+                have_data = true;
             break;
             case('t'):
                 togggle_on_off = true;
+            break;
+            case('s'):
+                use_linear_scale = true;
             break;
             default:
                 std::cout<<usage<<std::endl;
@@ -686,7 +681,7 @@ int main(int argc, char** argv)
     }
 
 
-    if(!have_on_data || !have_off_data)
+    if(!have_data)
     {
         std::cout<<"On/Off data directory arguments is mandatory."<<std::endl;
         std::cout<<usage<<std::endl;
@@ -694,20 +689,13 @@ int main(int argc, char** argv)
     }
 
 
-    MetaDataContainer on_source_meta;
-    std::vector<double> on_source_freq;
-    std::vector<double> on_source_spectrum;
+    MetaDataContainer meta;
+    std::vector<double> freq;
+    std::vector<double> spectrum;
 
-    bool have_on_source_data =  ReadDataDirectory(on_source_data_dir, togggle_on_off, on_source_meta, on_source_freq, on_source_spectrum);
+    have_data =  ReadDataDirectory(data_dir, togggle_on_off, meta, freq, spectrum);
 
-    MetaDataContainer off_source_meta;
-    std::vector<double> off_source_freq;
-    std::vector<double> off_source_spectrum;
-
-    bool have_off_source_data =  ReadDataDirectory(off_source_data_dir, togggle_on_off, off_source_meta, off_source_freq, off_source_spectrum);
-
-
-    if(!have_on_source_data || !have_off_source_data)
+    if(!have_data)
     {
         std::cout<<"Missing data!"<<std::endl;
         return 0;
@@ -715,9 +703,6 @@ int main(int argc, char** argv)
 
 
     std::cout<<"read the data"<<std::endl;
-
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -763,102 +748,93 @@ int main(int argc, char** argv)
     TPaveText *pt = new TPaveText(.14,.72,.29,.88,"blNDC");
     pt->SetBorderSize(1);
     pt->SetFillColor(0);
-    pt->AddText( std::string( std::string( "Experiment: ") + on_source_meta.fExperimentName).c_str() );
-    pt->AddText( std::string( std::string( "Scan: ") + on_source_meta.fScanName).c_str() );
-    pt->AddText( std::string( std::string( "Source: ") + on_source_meta.fSourceName ).c_str() );
-    pt->AddText( std::string( std::string( "RA: ") + on_source_meta.fRA).c_str() );
-    pt->AddText( std::string( std::string( "DEC: ") + on_source_meta.fDEC).c_str() );
-    pt->AddText( std::string( std::string( "Epoch: ") + on_source_meta.fEpoch).c_str() );
-    pt->AddText( std::string( std::string( "Start Time: ") + on_source_meta.fStartTime).c_str() );
+    pt->AddText( std::string( std::string( "Experiment: ") + meta.fExperimentName).c_str() );
+    pt->AddText( std::string( std::string( "Scan: ") + meta.fScanName).c_str() );
+    pt->AddText( std::string( std::string( "Source: ") + meta.fSourceName ).c_str() );
+    pt->AddText( std::string( std::string( "RA: ") + meta.fRA).c_str() );
+    pt->AddText( std::string( std::string( "DEC: ") + meta.fDEC).c_str() );
+    pt->AddText( std::string( std::string( "Epoch: ") + meta.fEpoch).c_str() );
+    pt->AddText( std::string( std::string( "Start Time: ") + meta.fStartTime).c_str() );
+    std::stringstream ss;
+    ss << meta.fDuration;
+    pt->AddText( std::string( std::string( "Duration: " ) + ss.str() ).c_str() );
 
     //make a crude calculation to scale the y-axis
     double t_diode = 3.0;
     double SEFD = 2250; //assumed SEFD for band C in Jansky's (Jy)
-    double t_sys_on = on_source_meta.fKFactor*t_diode;
-    double t_sys_off = off_source_meta.fKFactor*t_diode;
-
-    std::cout<<"t_sys_on = "<<t_sys_on<<std::endl;
-    std::cout<<"t_sys_off = "<<t_sys_off<<std::endl;
-
+    double t_sys_on = meta.fKFactor*t_diode;
+    std::cout<<"t_sys = "<<t_sys_on<<std::endl;
     double gain_on = t_sys_on/SEFD;
-    double gain_off = t_sys_off/SEFD;
 
     double MHz_to_Hz = 1e6;
     double on_integral = 0.0;
-    double off_integral = 0.0;
-
     double input_ohms = 50.0;
 
-    for(unsigned int j=0; j<on_source_spectrum.size(); j++)
+    for(unsigned int j=0; j<spectrum.size(); j++)
     {
         double index = j;
-        double freq = on_source_freq[j];
-        double on_source_val = on_source_spectrum[j];
-        double off_source_val = off_source_spectrum[j];
-        on_integral += TMath::Abs(on_source_meta.fFrequencyDeltaMHz)*MHz_to_Hz*on_source_val;
-        off_integral += TMath::Abs(off_source_meta.fFrequencyDeltaMHz)*MHz_to_Hz*off_source_val;
+        double val = spectrum[j];
+        on_integral += TMath::Abs(meta.fFrequencyDeltaMHz)*MHz_to_Hz*val;
     }
 
-    std::cout<<"on_integral = "<<on_integral<<std::endl;
-    std::cout<<"off_integral = "<<off_integral<<std::endl;
+    std::cout<<"integral = "<<on_integral<<std::endl;
 
-    double on_src_power_per_Hz = on_integral*( 1.0/(on_source_meta.fSampleRate/2.0) );
-    double off_src_power_per_Hz = off_integral*( 1.0/(off_source_meta.fSampleRate/2.0) );
+    double on_src_power_per_Hz = on_integral*( 1.0/(meta.fSampleRate/2.0) );
     double on_norm = (t_sys_on/on_src_power_per_Hz);
-    double off_norm = (t_sys_off/off_src_power_per_Hz);
 
-    for(unsigned int j=0; j<on_source_spectrum.size(); j++)
+
+    std::vector<double> bh_coeff;
+    double s1;
+    double s2;
+    blackman_harris_coeff(meta.fNSamplesPerSpectrum, bh_coeff, s1, s2);
+    std::cout<<"samples per spec "<<meta.fNSamplesPerSpectrum<<std::endl;
+    std::cout<<"blackman-harris scale factors: s1, s2 = "<<s1<<", "<<s2<<std::endl;
+    std::cout<<"NENBW = N*(s2/(s1*s1)) = "<<meta.fNSamplesPerSpectrum*(s2/(s1*s1))<<std::endl;
+    std::cout<<"ENBW = NENBW*f_res = "<< (meta.fSampleRate)*(s2/(s1*s1))<<std::endl;
+
+    double enbw = (meta.fSampleRate)*(s2/(s1*s1));
+
+    double point_count = 0;
+    for(unsigned int j=0; j<spectrum.size(); j++)
     {
         double index = j;
-        double freq = on_source_freq[j];
-        double on_source_val = on_source_spectrum[j]*on_norm/gain_on;
-        double off_source_val = off_source_spectrum[j]*off_norm/gain_off;
-        double diff = (on_source_val - off_source_val);
-        double scaled_point = diff;
-        double point = scaled_point;
-        g->SetPoint(j, freq, point );
+        double freq_val = freq[j];
+        double val = (spectrum[j]*enbw)/input_ohms;
+        if(use_linear_scale)
+        {
+            //use Watts/Hz scale
+            g->SetPoint(point_count, freq_val, val);
+            point_count++;
+        }
+        else
+        {
+            //use dBm/Hz log-scale, so eliminate points which are ~zero
+            if( TMath::Abs(val) > 1e-15)
+            {
+                g->SetPoint(point_count, freq_val, 10.*TMath::Log10(val/0.001) );
+                point_count++;
+            }
+        }
     }
-
-//std::cout<<"integral = "<<integral<<std::endl;
 
     g->Draw("ALP");
     g->SetMarkerStyle(7);
-    g->SetTitle("Average ON-OFF Spectrum" );
+    g->SetTitle("Power spectral density at digitizer input" );
     g->GetXaxis()->SetTitle("Frequency (MHz)");
-    g->GetYaxis()->SetTitle("Arb. Units.");
-    // g->GetHistogram()->SetMaximum(100.0);
-    // g->GetHistogram()->SetMinimum(0.0);
+    if(use_linear_scale)
+    {
+        g->GetYaxis()->SetTitle("Power Spectral Density (W/Hz)");
+    }
+    else
+    {
+        g->GetYaxis()->SetTitle("Power Spectral Density (dBm/Hz)");
+    }
     g->GetYaxis()->CenterTitle();
     g->GetXaxis()->CenterTitle();
-
     pt->Draw();
-
     c->Update();
 
-    // //histogram the values of the on/off noise variance
-    // c->cd(2);
-    // TH1D* on_histo = new TH1D("on_noise_variance histogram", "on_noise_variance histogram", 5000, on_var_mean - 1.0*on_var_sigma, on_var_mean + 1.0*on_var_sigma);
-    // for(size_t i=0; i<fOnVarianceTimePairs.size(); i++)
-    // {
-    //     on_histo->Fill(fOnVarianceTimePairs[i].first);
-    // }
-    // on_histo->Draw("");
-    // c->Update();
-    //
-    // //histogram the values
-    // c->cd(3);
-    // TH1D* off_histo = new TH1D("off_noise_variance histogram", "off_noise_variance histogram", 5000, off_var_mean - 1.0*off_var_sigma, off_var_mean + 1.0*off_var_sigma);
-    // for(size_t i=0; i<fOffVarianceTimePairs.size(); i++)
-    // {
-    //     off_histo->Fill(fOffVarianceTimePairs[i].first);
-    // }
-    // off_histo->Draw("");
-    // c->Update();
-
     App->Run();
-
-
-
 
     return 0;
 }

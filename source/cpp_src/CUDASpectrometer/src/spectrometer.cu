@@ -1,5 +1,5 @@
 /* Project that takes signal and calculates averaged power spectrum using NVIDIA
-   CUDA GPGPU programming. 
+   CUDA GPGPU programming.
 
    Juha Vierinen (x@mit.edu)
    Cory Cotter (optimization of square and accumulate sum)
@@ -86,7 +86,7 @@ extern "C" spectrometer_data *new_spectrometer_data(int data_length, int spectru
   // initializing 1D FFT plan, this will tell cufft execution how to operate
   // cufft is well optimized and will run with different parameters than above
   //    cufftHandle plan;
-  if (cufftPlan1d(&d->plan, spectrum_length, CUFFT_R2C, n_spectra) != CUFFT_SUCCESS) 
+  if (cufftPlan1d(&d->plan, spectrum_length, CUFFT_R2C, n_spectra) != CUFFT_SUCCESS)
   {
     fprintf(stderr, "CUFFT error: Plan creation failed\n");
     exit(EXIT_FAILURE);
@@ -228,7 +228,7 @@ extern "C" spectrometer_data_s *new_spectrometer_data_s(int data_length, int spe
   // initializing 1D FFT plan, this will tell cufft execution how to operate
   // cufft is well optimized and will run with different parameters than above
   //    cufftHandle plan;
-    
+
   if (cufftPlan1d(&d->plan, spectrum_length, CUFFT_R2C, n_spectra) != CUFFT_SUCCESS)
   {
     fprintf(stderr, "CUFFT error: Plan creation failed\n");
@@ -329,6 +329,7 @@ __global__ void short_to_float_s(int16_t *ds, float *df, float *w, int n_spectra
     for(int freq_idx=threadIdx.x; freq_idx < spectrum_length ; freq_idx+=N_THREADS_S)
     {
       //map signed shorts into range [-0.5,0.5)
+      //ADQ7DC range is 1Vpp (-0.5V to +0.5V)
       int idx=spec_idx*spectrum_length + freq_idx;
       df[idx] = w[freq_idx]*( (float)ds[idx] ) / 65535.0;
     }
