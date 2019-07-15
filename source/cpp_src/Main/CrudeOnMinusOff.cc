@@ -717,8 +717,6 @@ int main(int argc, char** argv)
     std::cout<<"read the data"<<std::endl;
 
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 
     std::cout<<"starting root plotting"<<std::endl;
@@ -819,41 +817,19 @@ int main(int argc, char** argv)
         g->SetPoint(j, freq, point );
     }
 
-//std::cout<<"integral = "<<integral<<std::endl;
 
     g->Draw("ALP");
     g->SetMarkerStyle(7);
-    g->SetTitle("Average ON-OFF Spectrum" );
+    g->SetTitle("Average On-Off Spectrum" );
     g->GetXaxis()->SetTitle("Frequency (MHz)");
-    g->GetYaxis()->SetTitle("Arb. Units.");
-    // g->GetHistogram()->SetMaximum(100.0);
-    // g->GetHistogram()->SetMinimum(0.0);
+    g->GetYaxis()->SetTitle("Source Flux (Jy)");
     g->GetYaxis()->CenterTitle();
     g->GetXaxis()->CenterTitle();
+    g->GetYaxis()->SetTitleOffset(1.1);
 
     pt->Draw();
 
     c->Update();
-
-    // //histogram the values of the on/off noise variance
-    // c->cd(2);
-    // TH1D* on_histo = new TH1D("on_noise_variance histogram", "on_noise_variance histogram", 5000, on_var_mean - 1.0*on_var_sigma, on_var_mean + 1.0*on_var_sigma);
-    // for(size_t i=0; i<fOnVarianceTimePairs.size(); i++)
-    // {
-    //     on_histo->Fill(fOnVarianceTimePairs[i].first);
-    // }
-    // on_histo->Draw("");
-    // c->Update();
-    //
-    // //histogram the values
-    // c->cd(3);
-    // TH1D* off_histo = new TH1D("off_noise_variance histogram", "off_noise_variance histogram", 5000, off_var_mean - 1.0*off_var_sigma, off_var_mean + 1.0*off_var_sigma);
-    // for(size_t i=0; i<fOffVarianceTimePairs.size(); i++)
-    // {
-    //     off_histo->Fill(fOffVarianceTimePairs[i].first);
-    // }
-    // off_histo->Draw("");
-    // c->Update();
 
     App->Run();
 

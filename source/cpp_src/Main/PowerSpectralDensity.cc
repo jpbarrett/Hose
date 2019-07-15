@@ -831,6 +831,7 @@ int main(int argc, char** argv)
     }
     g->GetYaxis()->CenterTitle();
     g->GetXaxis()->CenterTitle();
+    g->GetYaxis()->SetTitleOffset(1.1);
     pt->Draw();
     c->Update();
 
