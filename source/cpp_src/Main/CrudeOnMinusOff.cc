@@ -699,10 +699,10 @@ int main(int argc, char** argv)
         double freq = on_source_freq[j];
         double on_source_val = on_source_spectrum[j];
         double off_source_val = off_source_spectrum[j];
-        double point = std::max(0.0, (on_source_val - off_source_val) );
-        //point *= t_src/integral*(625/0.2);
-        //if(freq < 6670.0 && 6669.8 < freq)
-        g->SetPoint(j, freq, point  );
+        double diff = (on_source_val - off_source_val);
+        double scaled_point = (diff*sample_period)/50.0;
+        double point = std::max(0.0, scaled_point );
+        g->SetPoint(j, freq, point );
     }
 
     std::cout<<"integral = "<<integral<<std::endl;
