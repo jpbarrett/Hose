@@ -630,33 +630,27 @@ int main(int argc, char** argv)
 {
     std::string usage =
     "\n"
-    "Usage: CrudeOnMinusOff <options> <directory>\n"
+    "Usage: MultipleScanPairsOnMinusOff <options> <directory>\n"
     "\n"
-    "Plot on-off spectrum from pair of scans.\n"
+    "Plot spectrum from scan data in the <directory>.\n"
     "\tOptions:\n"
     "\t -h, --help               (shows this message and exits)\n"
     "\t -t, --togggle-on-off     (swap the diode state labels on <-> off)\n"
-    "\t -o, --on-source-data-dir (path to the directory containing on-source scan data, mandatory)\n"
-    "\t -f, --off-data-dir       (path to the directory containing off-source scan data, mandatory)\n"
+    "\t -f, --file-list          (path to a file containing a list of the on-off scan directory pairs)\n"
     ;
 
     //set defaults
     unsigned int n_averages = 0; //default behavior is to average all spectra together
-    bool have_on_data = false;
-    bool have_off_data = false;
-    std::string on_source_data_dir = STR2(DATA_INSTALL_DIR);
-    std::string off_source_data_dir = STR2(DATA_INSTALL_DIR);
-    std::string o_dir = STR2(DATA_INSTALL_DIR);
+    std::string file_list = "";
 
     static struct option longOptions[] =
     {
         {"help", no_argument, 0, 'h'},
-        {"on-source-data-dir", required_argument, 0, 'o'},
-        {"off-source-data-dir", required_argument, 0, 'f'},
+        {"file-list", required_argument, 0, 'f'},
         {"togggle-on-off", no_argument, 0, 't'}
     };
 
-    static const char *optString = "hto:f:";
+    static const char *optString = "htf:";
 
     bool togggle_on_off = false;
     while(1)
@@ -668,13 +662,8 @@ int main(int argc, char** argv)
             case('h'): // help
             std::cout<<usage<<std::endl;
             return 0;
-            case('o'):
-                on_source_data_dir = std::string(optarg);
-                have_on_data = true;
-            break;
             case('f'):
-                off_source_data_dir = std::string(optarg);
-                have_off_data = true;
+                file_list = std::string(optarg);
             break;
             case('t'):
                 togggle_on_off = true;
@@ -686,43 +675,78 @@ int main(int argc, char** argv)
     }
 
 
-    if(!have_on_data || !have_off_data)
+    if(file_list == std::string(""))
     {
-        std::cout<<"On/Off data directory arguments is mandatory."<<std::endl;
+        std::cout<<"File containing list of scan-pair directories is mandatory."<<std::endl;
         std::cout<<usage<<std::endl;
         return 1;
     }
 
-
-    MetaDataContainer on_source_meta;
-    std::vector<double> on_source_freq;
-    std::vector<double> on_source_spectrum;
-
-    bool have_on_source_data =  ReadDataDirectory(on_source_data_dir, togggle_on_off, on_source_meta, on_source_freq, on_source_spectrum);
-
-    MetaDataContainer off_source_meta;
-    std::vector<double> off_source_freq;
-    std::vector<double> off_source_spectrum;
-
-    bool have_off_source_data =  ReadDataDirectory(off_source_data_dir, togggle_on_off, off_source_meta, off_source_freq, off_source_spectrum);
-
-
-    if(!have_on_source_data || !have_off_source_data)
+    //now read the file containing the file pair list:
+    std::vector< std::pair< std::string, std::string > > on_off_scan_pairs;
+    std::string line;
+    std::ifstream input_file(file_list);
+    while (std::getline(input_file, line))
     {
-        std::cout<<"Missing data!"<<std::endl;
-        return 0;
+        std::istringstream iss(line);
+        std::vector<std::string> result{ std::istream_iterator<std::string>(iss), {} };
+        if( result.size() == 2 )
+        {
+            on_off_scan_pairs.push_back( std::pair< std::string, std::string >( result[0], result[1] ) );
+        }
     }
 
 
-    std::cout<<"read the data"<<std::endl;
+    std::vector< MetaDataContainer > on_source_meta;
+    std::vector< std::vector< double>  > on_source_freq;
+    std::vector< std::vector< double> > on_source_spectrum;
 
+    std::vector< MetaDataContainer > off_source_meta;
+    std::vector< std::vector< double>  > off_source_freq;
+    std::vector< std::vector< double> > off_source_spectrum;
+
+    for(unsigned int i=0; i<on_off_scan_pairs.size(); i++)
+    {
+        std::string on_source_data_dir = on_off_scan_pairs[i].first;
+        std::string off_source_data_dir = on_off_scan_pairs[i].second;
+
+        bool have_on_data = false;
+        bool have_off_data = false;
+        MetaDataContainer on_source_meta_obj;
+        std::vector<double> on_source_freq_obj;
+        std::vector<double> on_source_spectrum_obj;
+        bool have_on_source_data =  ReadDataDirectory(on_source_data_dir, togggle_on_off, on_source_meta_obj, on_source_freq_obj, on_source_spectrum_obj);
+
+        MetaDataContainer off_source_meta_obj;
+        std::vector<double> off_source_freq_obj;
+        std::vector<double> off_source_spectrum_obj;
+        bool have_off_source_data =  ReadDataDirectory(off_source_data_dir, togggle_on_off, off_source_meta_obj, off_source_freq_obj, off_source_spectrum_obj);
+
+        if(!have_on_source_data || !have_off_source_data)
+        {
+            std::cout<<"Missing data from: "<<on_source_data_dir<<" and/or "<<off_source_data_dir<<std::endl;
+        }
+        else
+        {
+            on_source_meta.push_back(on_source_meta_obj);
+            on_source_freq.push_back(on_source_freq_obj);
+            on_source_spectrum.push_back(on_source_spectrum_obj);
+
+            off_source_meta.push_back(off_source_meta_obj);
+            off_source_freq.push_back(off_source_freq_obj);
+            off_source_spectrum.push_back(off_source_spectrum_obj);
+        }
+
+    }
+
+    std::cout<<"read the data"<<std::endl;
 
 ////////////////////////////////////////////////////////////////////////////////
 
     std::cout<<"starting root plotting"<<std::endl;
 
     //ROOT stuff for plots
-    TApplication* App = new TApplication("CrudeOnMinusOff",&argc,argv);
+    TApplication* App = new TApplication("MultipleScanPairsOnMinusOff",&argc,argv);
     TStyle* myStyle = new TStyle("Plain", "Plain");
     myStyle->SetCanvasBorderMode(0);
     myStyle->SetPadBorderMode(0);
@@ -761,62 +785,75 @@ int main(int argc, char** argv)
     TPaveText *pt = new TPaveText(.14,.72,.29,.88,"blNDC");
     pt->SetBorderSize(1);
     pt->SetFillColor(0);
-    pt->AddText( std::string( std::string( "Experiment: ") + on_source_meta.fExperimentName).c_str() );
-    pt->AddText( std::string( std::string( "Scan: ") + on_source_meta.fScanName).c_str() );
-    pt->AddText( std::string( std::string( "Source: ") + on_source_meta.fSourceName ).c_str() );
-    pt->AddText( std::string( std::string( "RA: ") + on_source_meta.fRA).c_str() );
-    pt->AddText( std::string( std::string( "DEC: ") + on_source_meta.fDEC).c_str() );
-    pt->AddText( std::string( std::string( "Epoch: ") + on_source_meta.fEpoch).c_str() );
-    pt->AddText( std::string( std::string( "Start Time: ") + on_source_meta.fStartTime).c_str() );
+    pt->AddText( std::string( std::string( "Experiment: ") + on_source_meta[0].fExperimentName).c_str() );
+    // pt->AddText( std::string( std::string( "Scan: ") + on_source_meta.fScanName).c_str() );
+    // pt->AddText( std::string( std::string( "Source: ") + on_source_meta.fSourceName ).c_str() );
+    // pt->AddText( std::string( std::string( "RA: ") + on_source_meta.fRA).c_str() );
+    // pt->AddText( std::string( std::string( "DEC: ") + on_source_meta.fDEC).c_str() );
+    // pt->AddText( std::string( std::string( "Epoch: ") + on_source_meta.fEpoch).c_str() );
+    // pt->AddText( std::string( std::string( "Start Time: ") + on_source_meta.fStartTime).c_str() );
 
-    //make a crude calculation to scale the y-axis
-    double t_diode = 3.0;
-    double SEFD = 2250; //assumed SEFD for band C in Jansky's (Jy)
-    double t_sys_on = on_source_meta.fKFactor*t_diode;
-    double t_sys_off = off_source_meta.fKFactor*t_diode;
+    std::vector< double > accumulated_on_off_spec;
+    accumulated_on_off_spec.resize(on_source_spectrum[0].size(),0.0);
 
-    std::cout<<"t_sys_on = "<<t_sys_on<<std::endl;
-    std::cout<<"t_sys_off = "<<t_sys_off<<std::endl;
-
-    double gain_on = t_sys_on/SEFD;
-    double gain_off = t_sys_off/SEFD;
-
-    double MHz_to_Hz = 1e6;
-    double on_integral = 0.0;
-    double off_integral = 0.0;
-
-    double input_ohms = 50.0;
-
-    for(unsigned int j=0; j<on_source_spectrum.size(); j++)
+    for(unsigned int i=0; i<on_source_spectrum.size(); i++)
     {
-        double index = j;
-        double freq = on_source_freq[j];
-        double on_source_val = on_source_spectrum[j];
-        double off_source_val = off_source_spectrum[j];
-        on_integral += TMath::Abs(on_source_meta.fFrequencyDeltaMHz)*MHz_to_Hz*on_source_val;
-        off_integral += TMath::Abs(off_source_meta.fFrequencyDeltaMHz)*MHz_to_Hz*off_source_val;
+        //make a crude calculation to scale the y-axis
+        double t_diode = 3.0;
+        double SEFD = 2250; //assumed SEFD for band C in Jansky's (Jy)
+        double t_sys_on = on_source_meta[i].fKFactor*t_diode;
+        double t_sys_off = off_source_meta[i].fKFactor*t_diode;
+
+        std::cout<<"t_sys_on = "<<t_sys_on<<std::endl;
+        std::cout<<"t_sys_off = "<<t_sys_off<<std::endl;
+
+        double gain_on = t_sys_on/SEFD;
+        double gain_off = t_sys_off/SEFD;
+
+        double MHz_to_Hz = 1e6;
+        double on_integral = 0.0;
+        double off_integral = 0.0;
+        double input_ohms = 50.0;
+
+        for(unsigned int j=0; j<on_source_spectrum[i].size(); j++)
+        {
+            double index = j;
+            double freq = on_source_freq[i][j];
+            double on_source_val = on_source_spectrum[i][j];
+            double off_source_val = off_source_spectrum[i][j];
+            on_integral += TMath::Abs(on_source_meta[i].fFrequencyDeltaMHz)*MHz_to_Hz*on_source_val;
+            off_integral += TMath::Abs(off_source_meta[i].fFrequencyDeltaMHz)*MHz_to_Hz*off_source_val;
+        }
+
+        std::cout<<"on_integral = "<<on_integral<<std::endl;
+        std::cout<<"off_integral = "<<off_integral<<std::endl;
+
+        double on_src_power_per_Hz = on_integral*( 1.0/(on_source_meta[i].fSampleRate/2.0) );
+        double off_src_power_per_Hz = off_integral*( 1.0/(off_source_meta[i].fSampleRate/2.0) );
+        double on_norm = (t_sys_on/on_src_power_per_Hz);
+        double off_norm = (t_sys_off/off_src_power_per_Hz);
+
+        for(unsigned int j=0; j<on_source_spectrum[i].size(); j++)
+        {
+            double index = j;
+            double freq = on_source_freq[i][j];
+            double on_source_val = on_source_spectrum[i][j]*on_norm/gain_on;
+            double off_source_val = off_source_spectrum[i][j]*off_norm/gain_off;
+            double diff = (on_source_val - off_source_val);
+            accumulated_on_off_spec[j] += diff;
+            //std::cout<<j<<", "<<diff<<std::endl;
+        }
     }
 
-    std::cout<<"on_integral = "<<on_integral<<std::endl;
-    std::cout<<"off_integral = "<<off_integral<<std::endl;
+    //compute the averaged accumulated_on_off_spec
+    double accum_norm = 1.0/(double)on_source_spectrum.size();
 
-    double on_src_power_per_Hz = on_integral*( 1.0/(on_source_meta.fSampleRate/2.0) );
-    double off_src_power_per_Hz = off_integral*( 1.0/(off_source_meta.fSampleRate/2.0) );
-    double on_norm = (t_sys_on/on_src_power_per_Hz);
-    double off_norm = (t_sys_off/off_src_power_per_Hz);
-
-    for(unsigned int j=0; j<on_source_spectrum.size(); j++)
+    for(unsigned int j=0; j<accumulated_on_off_spec.size(); j++)
     {
-        double index = j;
-        double freq = on_source_freq[j];
-        double on_source_val = on_source_spectrum[j]*on_norm/gain_on;
-        double off_source_val = off_source_spectrum[j]*off_norm/gain_off;
-        double diff = (on_source_val - off_source_val);
-        double scaled_point = diff;
-        double point = scaled_point;
-        g->SetPoint(j, freq, point );
+        accumulated_on_off_spec[j] *= accum_norm;
+        //std::cout<<accumulated_on_off_spec[j]<<std::endl;
+        g->SetPoint(j, on_source_freq[0][j], accumulated_on_off_spec[j]);
     }
-
 
     g->Draw("ALP");
     g->SetMarkerStyle(7);
