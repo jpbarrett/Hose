@@ -414,7 +414,7 @@ class HSpectrometerManager: public HApplicationBackend
                         wtnenbwss << "window_normalized_equivalent_noise_bandwidth=";
                         wtnenbwss << fFFTSize*s2/(s1*s1);
                         std::stringstream wtenbwss;
-                        wtenbwss << "window_equivalent_noise_bandwidth=";
+                        wtenbwss << "window_equivalent_noise_bandwidth_Hz=";
                         wtenbwss <<  (fFFTSize*s2/(s1*s1) )*(fDigitizer->GetSamplingFrequency()/fFFTSize);
 
                         std::stringstream nstss;
@@ -429,11 +429,11 @@ class HSpectrometerManager: public HApplicationBackend
                         std::string spectrometer_config = "spectrometer_config; " + navess.str() + "; "
                             + fftss.str() + "; "
                             + nstss.str() + "; "
-                            + nwtss.str() + ";"
-                            + wtss.str() + ";"
-                            + wts1ss.str() + ";"
-                            + wts2ss.str() + ";"
-                            + wtnenbwss.str() + ";"
+                            + nwtss.str() + "; "
+                            + wtss.str() + "; "
+                            + wts1ss.str() + "; "
+                            + wts2ss.str() + "; "
+                            + wtnenbwss.str() + "; "
                             + wtenbwss.str();
 
                         fConfigLogger->info( spectrometer_config.c_str() );
