@@ -13,6 +13,7 @@
 #include <signal.h>
 #include <ctime>
 #include <cstdio>
+#include <cmath>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -380,6 +381,42 @@ class HSpectrometerManager: public HApplicationBackend
                         fftss << "fft_size=";
                         fftss << fFFTSize;
 
+                        //window function information, this is essentially hard-code for now,
+                        //but it is possible we may implement different types in the future
+                        //TODO FIXME move this calculation out of here
+                        std::vector<double> pOut;
+                        double s1 = 0;
+                        double s2 = 0;
+                        pOut.resize(fFFTSize);
+                        double a0 = 0.35875f;
+                        double a1 = 0.48829f;
+                        double a2 = 0.14128f;
+                        double a3 = 0.01168f;
+                        unsigned int idx = 0;
+                        while( idx < fFFTSize )
+                        {
+                            pOut[idx]   = a0 - (a1 * std::cos( (2.0f * M_PI * idx) / (fFFTSize- 1) )) + (a2 * std::cos( (4.0f * M_PI * idx) / (fFFTSize- 1) )) - (a3 * std::cos( (6.0f * M_PI * idx) / (fFFTSize - 1) ));
+                            s1 += pOut[idx];
+                            s2 += pOut[idx]*pOut[idx];
+                            idx++;
+                        }
+
+
+                        std::stringstream wtss;
+                        wtss << "window_type=blackman_harris";
+                        std::stringstream wts1ss;
+                        wts1ss << "window_s1=";
+                        wts1ss << s1;
+                        std::stringstream wts2ss;
+                        wts2ss << "window_s2=";
+                        wts2ss << s2;
+                        std::stringstream wtnenbwss;
+                        wtnenbwss << "window_normalized_equivalent_noise_bandwidth=";
+                        wtnenbwss << fFFTSize*s2/(s1*s1);
+                        std::stringstream wtenbwss;
+                        wtenbwss << "window_equivalent_noise_bandwidth=";
+                        wtenbwss <<  (fFFTSize*s2/(s1*s1) )*(fDigitizer->GetSamplingFrequency()/fFFTSize);
+
                         std::stringstream nstss;
                         nstss << "n_spectrometer_threads=";
                         nstss << fNSpectrometerThreads;
@@ -388,7 +425,17 @@ class HSpectrometerManager: public HApplicationBackend
                         nwtss << "n_writer_threads=";
                         nwtss << 1;
 
-                        std::string spectrometer_config = "spectrometer_config; " + navess.str() + "; " + fftss.str() + "; " + nstss.str() + "; " + nwtss.str();
+
+                        std::string spectrometer_config = "spectrometer_config; " + navess.str() + "; "
+                            + fftss.str() + "; "
+                            + nstss.str() + "; "
+                            + nwtss.str() + ";"
+                            + wtss.str() + ";"
+                            + wts1ss.str() + ";"
+                            + wts2ss.str() + ";"
+                            + wtnenbwss.str() + ";"
+                            + wtenbwss.str();
+
                         fConfigLogger->info( spectrometer_config.c_str() );
 
                         //noise diode configuration
