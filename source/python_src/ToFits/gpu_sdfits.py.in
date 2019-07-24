@@ -97,7 +97,7 @@ __usage__="""\
  the FITS file name based on the basename returned.
 """
 __author__="S. Levine"
-__date__="2019 Jul 22"
+__date__="2019 Jul 24"
 
 #------------------------------------------------------------------------
 # import the FITS io routines for the I/O
@@ -1046,7 +1046,7 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     c['lsrvc']     = fits.Column(name='VLSRCORR', format='1E', unit='M/S',
                                  array=a['lsrvc'].to(u.m/u.s) )
     
-    c['veld']     = fits.Column(name='VELDEF', format='12A',
+    c['veld']     = fits.Column(name='VELDEF', format='8A',
                                  array=obs_spec['vdef'])
 
     c['spec']     = fits.Column(name='SPECTRUM',  format=dsize, unit='POWER',
