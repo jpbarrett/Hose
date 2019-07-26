@@ -235,15 +235,19 @@ class hprompt(Cmd):
 
         udc_info = self.dbclient.get_most_recent_measurement("udc_status", self.end_time_stamp)
         udc_luff_freq = 1.0 #defaults to 1
+        have_udc_data = False
         udc_time_stamp = ""
         if len(udc_info) >= 1:
             obj_list.append( json.dumps(udc_info[-1], indent=4, sort_keys=True) )
             udc_luff_freq = float(udc_info[-1]["fields"]["frequency_MHz"])
             udc_time_stamp = udc_info[-1]["time"]
+            have_udc_data = True
 
-        #now add the sky frequency information as well (this is hard-coded, not in the database)
-        #for this calculation we disable the pre-digitizer filter (filter4), since the center band frequency is actually just above the cut-off
-        udc_luff_freq = 7054.0 #TODO FIXME HARDCODED VALUE FOR MANUAL MODE ONLY
+        #now add the sky frequency information as well
+	if have_udc_data is False:
+            #if no data is available from database, assume a default hardcoded value
+            udc_luff_freq = 7054.0
+
         wf_signal_chain = westford_signal_chain(udc_luff_freq)
         spectral_resolution_MHz = float(sampling_frequency_Hz/float(spectrometer_fftsize))/1e6
         n_spec_bins = spectrometer_fftsize/2 + 1
