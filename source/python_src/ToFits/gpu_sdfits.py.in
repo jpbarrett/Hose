@@ -97,7 +97,7 @@ __usage__="""\
  the FITS file name based on the basename returned.
 """
 __author__="S. Levine"
-__date__="2019 Jul 24"
+__date__="2019 Jul 25"
 
 #------------------------------------------------------------------------
 # import the FITS io routines for the I/O
@@ -358,7 +358,7 @@ def sdf_getobs_spec (spec_record, meta_info):
     lut = spec_record.start_ut()
 
     obs_spec['spec_idx'].append(0)
-    obs_spec['vdef'].append('RADI-LSR')
+    obs_spec['vdef'].append('    RADI-LSR')
 
     obs_spec['datetime'].append(lut)
     obs_spec['date-obs'].append(lut.isoformat())
@@ -986,7 +986,7 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
                                 array=obs_spec['src_dec'])
 
     # Spectrum running index in the FITS file
-    c['spec_idx'] = fits.Column(name='SPECIDX',  format='1J', 
+    c['spec_idx'] = fits.Column(name='SUBSCAN',  format='1J', 
                                 array=obs_spec['spec_idx'])
 
     # compute this from the noise power
@@ -1046,8 +1046,11 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     c['lsrvc']     = fits.Column(name='VLSRCORR', format='1E', unit='M/S',
                                  array=a['lsrvc'].to(u.m/u.s) )
     
-    c['veld']     = fits.Column(name='VELDEF', format='8A',
-                                 array=obs_spec['vdef'])
+    c['veld']     = fits.Column(name='VELDEF', format='12A',
+                                array = (obs_spec['vdef']))
+    #                            array=np.array(obs_spec['vdef'],
+    #                                           dtype=np.unicode_))
+    print ('CVDEF {}'.format(c['veld']))
 
     c['spec']     = fits.Column(name='SPECTRUM',  format=dsize, unit='POWER',
                                  array=obs_spec['spec'])
@@ -1060,7 +1063,11 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     #                             array=obs_spec['samp_rate'])
 
     cols = fits.ColDefs([c[i] for i in sorted(c.keys())])
+    # cols.info()
     hdu  = fits.BinTableHDU.from_columns(cols, header=hdr)
+    
+    # hdu.data['VELDEF'][0] = b'RADI-LST    T'
+    # print ('veldef: {}'.format(hdu.data['VELDEF']))
 
     print ('{}'.format(hdu.columns))
 
@@ -1187,10 +1194,14 @@ def sdf_mkfits (ofile=None):
     # include primary and table HDUs into one
     hdu1 = fits.HDUList([phdu, shdu])
 
+    # hdu1[1].data['VELDEF'][0] = str('    RADI-LST').encode('ascii')
+    # print ('veldef: {}'.format(hdu1[1].data['VELDEF']))
+    
     # Write out FITS table file
     if (ofile != None):
         hdu1.writeto (ofile)
-
+        hdu1.close()
+        
     return
 
 #------------------------------------------------------------------------
