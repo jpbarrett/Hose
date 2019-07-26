@@ -97,7 +97,7 @@ __usage__="""\
  the FITS file name based on the basename returned.
 """
 __author__="S. Levine"
-__date__="2019 Jun 15"
+__date__="2019 Jul 25"
 
 #------------------------------------------------------------------------
 # import the FITS io routines for the I/O
@@ -159,8 +159,9 @@ obs_spec = {'spec_idx':[],
             'az': [], 'el':[],
             'crval_freq': [], 'crpix_freq': [], 'cdelt_freq': [],
             'src_id': [], 'src_ra': [], 'src_dec':[],
+            'src_ra_deg': [], 'src_dec_deg':[],
             'samp_len':[], 'samp_rate':[],
-            'tsys':[]}
+            'tsys':[], 'vdef':[]}
 
 # combined n-to-1 spectral records
 cmb_spec = {'spec_idx':[],
@@ -171,8 +172,9 @@ cmb_spec = {'spec_idx':[],
             'az': [], 'el':[],
             'crval_freq': [], 'crpix_freq': [], 'cdelt_freq': [],
             'src_id': [], 'src_ra': [], 'src_dec':[],
+            'src_ra_deg': [], 'src_dec_deg':[],
             'samp_len':[], 'samp_rate':[],
-            'tsys':[]}
+            'tsys':[], 'vdef':[]}
 
 # Noise dictionary
 obs_nois   = {'datetime': [], 'date-obs': [], 'ut': [], 'object': [],
@@ -295,6 +297,7 @@ def simple_combine_spec (num_to_avg):
 
         # cmb_spec['spec_idx'].append(k)
         cmb_spec['spec_idx'].append(obs_spec['spec_idx'][i])
+        cmb_spec['vdef'].append(obs_spec['vdef'][i])
 
         cmb_spec['datetime'].append(obs_spec['datetime'][i])
         cmb_spec['date-obs'].append(obs_spec['date-obs'][i])
@@ -317,6 +320,8 @@ def simple_combine_spec (num_to_avg):
         cmb_spec['src_id'].append(obs_spec['src_id'][i])
         cmb_spec['src_ra'].append(obs_spec['src_ra'][i])
         cmb_spec['src_dec'].append(obs_spec['src_dec'][i])
+        cmb_spec['src_ra_deg'].append(obs_spec['src_ra_deg'][i])
+        cmb_spec['src_dec_deg'].append(obs_spec['src_dec_deg'][i])
         
         cmb_spec['samp_len'].append(obs_spec['samp_len'][i])
         cmb_spec['samp_rate'].append(obs_spec['samp_rate'][i])
@@ -353,6 +358,8 @@ def sdf_getobs_spec (spec_record, meta_info):
     lut = spec_record.start_ut()
 
     obs_spec['spec_idx'].append(0)
+    obs_spec['vdef'].append('    RADI-LSR')
+
     obs_spec['datetime'].append(lut)
     obs_spec['date-obs'].append(lut.isoformat())
     obs_spec['ut'].append(sexig2decim (lut.time()))
@@ -410,11 +417,22 @@ def sdf_getobs_spec (spec_record, meta_info):
             obs_spec['src_id'].append('SourceID')
             obs_spec['src_ra'].append('000000.00')
             obs_spec['src_dec'].append('+000000.0')
+            obs_spec['src_ra_deg'].append(0.0)
+            obs_spec['src_dec_deg'].append(0.0)
         else:
             obs_spec['src_id'].append(c['fields']['source'])
             obs_spec['src_ra'].append(c['fields']['ra'])
             obs_spec['src_dec'].append(c['fields']['dec'])
-
+            rd = (float(c['fields']['ra'][0:2]) + 
+                  (float(c['fields']['ra'][2:4]) + 
+                   float(c['fields']['ra'][4:])/60.0) / 60.0) * 15.0
+            obs_spec['src_ra_deg'].append(rd)
+            dd = (float(c['fields']['dec'][1:3]) + 
+                  (float(c['fields']['dec'][3:5]) + 
+                   float(c['fields']['dec'][5:])/60.0) / 60.0)
+            if (c['fields']['dec'][0] == '-'):
+                dd = -1.0 * dd
+            obs_spec['src_dec_deg'].append(dd)
 
     else:
         obs_spec['az'].append(-1.0)
@@ -427,6 +445,8 @@ def sdf_getobs_spec (spec_record, meta_info):
         obs_spec['src_id'].append('SourceID')
         obs_spec['src_ra'].append('000000.00')
         obs_spec['src_dec'].append('+000000.0')
+        obs_spec['src_ra_deg'].append(0.0)
+        obs_spec['src_dec_deg'].append(0.0)
 
     #print ('{} {}'.format(obs_spec['scan_name'], obs_spec['scan']))
     #print ('{} {}'.format(obs_spec['date-obs'], obs_spec['ut']))
@@ -816,11 +836,13 @@ def sdf_bintab_hdr (obsrec, extname='MATRIX', obsmode=None, speclen=0):
         hdr['CTYPE{}'.format(j)] = wcs_meta['ctypeN'][i]
 
         if   (wcs_meta['ctypeN'][i] == 'RA'):
-            hdr['CRVAL{}'.format(j)] = a['ra'][0]
+            # hdr['CRVAL{}'.format(j)] = a['ra'][0]
+            hdr['CRVAL{}'.format(j)] = obsrec['src_ra_deg'][0]
             hdr['CDELT{}'.format(j)] = wcs_meta['cdeltN'][i]
             hdr['CRPIX{}'.format(j)] = wcs_meta['crpixN'][i]
         elif (wcs_meta['ctypeN'][i] == 'DEC'):
-            hdr['CRVAL{}'.format(j)] = a['dec'][0]
+            # hdr['CRVAL{}'.format(j)] = a['dec'][0]
+            hdr['CRVAL{}'.format(j)] = obsrec['src_dec_deg'][0]
             hdr['CDELT{}'.format(j)] = wcs_meta['cdeltN'][i]
             hdr['CRPIX{}'.format(j)] = wcs_meta['crpixN'][i]
         elif (wcs_meta['ctypeN'][i] == 'FREQ'):
@@ -846,7 +868,7 @@ def sdf_bintab_hdr (obsrec, extname='MATRIX', obsmode=None, speclen=0):
     hdr['RESTFREQ'] = 1.0  # class hdr
     # hdr['VELO-LSR'] = 0.0  # class hdr
     # hdr['VLSR']     = 0.0  # sdfits example hdr
-    hdr['VELDEF']   = 'RADI-LSR'  # class hdr
+    # hdr['VELDEF']   = 'RADI-LSR'  # class hdr
     hdr['DELTAV']   = 0.0  # class hdr
 
     hdr['BEAMEFF']  = site_meta['beameff']
@@ -915,25 +937,23 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     c['object']   = fits.Column(name='OBJECT',   format='12A', 
                                 array=obs_spec['object'])
 
-    # The RA,Dec here are based on the telescope pointing from the
-    # encoders, not to be confused with source RA, and Dec, from the
-    # input object catalogue
-
     # Check for Freq columns to pass into WCS cols in the bintable
     # CRVAL, CRPIX, CDELT (check for CD11?)
 
     # Check for RA, Dec columns to pass into CRVALs in table
+    # ra,dec are the source catalogue ra and dec
     for i in range(wcs_meta['maxis']):
         j = i + 1
         if   (wcs_meta['ctypeN'][i] == 'RA'):
-            c['ra']   = fits.Column(name='CRVAL{}'.format(j),
+            c['src_rad']   = fits.Column(name='CRVAL{}'.format(j),
                                          format='1E', unit='DEGREES',
-                                         array=a['ra'])
+                                         array=obs_spec['src_ra_deg'])
+            
 
         elif (wcs_meta['ctypeN'][i] == 'DEC'):
-            c['dec']   = fits.Column(name='CRVAL{}'.format(j),
+            c['src_decd']  = fits.Column(name='CRVAL{}'.format(j),   
                                          format='1E', unit='DEGREES',
-                                         array=a['dec'])
+                                         array=obs_spec['src_dec_deg'])
 
         elif (wcs_meta['ctypeN'][i] == 'FREQ'):
             c['freq_crval']   = fits.Column(name='CRVAL{}'.format(j),
@@ -946,6 +966,15 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
                                             format='1E', unit='HZ',
                                             array=obs_spec['cdelt_freq'])
 
+    # Encoder based RA, DEC
+    c['enc_ra']   = fits.Column(name='ENCRA',
+                                format='1E', unit='DEGREES',
+                                array=a['ra'])
+
+    c['enc_decd']   = fits.Column(name='ENCDEC',
+                                  format='1E', unit='DEGREES',
+                                  array=a['dec'])
+
     # Source catalogue ID, RA and Dec in string sexigesimal form
     c['src_id']   = fits.Column(name='SRCID',   format='12A', 
                                 array=obs_spec['src_id'])
@@ -957,7 +986,7 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
                                 array=obs_spec['src_dec'])
 
     # Spectrum running index in the FITS file
-    c['spec_idx'] = fits.Column(name='SPECIDX',  format='1J', 
+    c['spec_idx'] = fits.Column(name='SUBSCAN',  format='1J', 
                                 array=obs_spec['spec_idx'])
 
     # compute this from the noise power
@@ -992,11 +1021,11 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
 
     # Galactic longitude and latitude computed from az,el,telescope site,
     # ut. Added for debuging.
-    c['glon']      = fits.Column(name='GLON', format='1E', unit='DEGREES',
-                                 array=a['glon'])
+    # c['glon']      = fits.Column(name='GLON', format='1E', unit='DEGREES',
+    #                              array=a['glon'])
 
-    c['glat']      = fits.Column(name='GLAT',  format='1E', unit='DEGREES',
-                                 array=a['glat'])
+    # c['glat']      = fits.Column(name='GLAT',  format='1E', unit='DEGREES',
+    #                              array=a['glat'])
 
     c['date-obs']  = fits.Column(name='DATE-OBS', format='26A', 
                                  array=obs_spec['date-obs'])
@@ -1011,12 +1040,18 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
                                  array=obs_spec['obstime'])
 
 
-    c['brvc']      = fits.Column(name='BARYCORR', format='1E', unit='KM/S',
-                                 array=a['brvc'].to(u.km/u.s) )
+    c['brvc']      = fits.Column(name='BARYCORR', format='1E', unit='M/S',
+                                 array=a['brvc'].to(u.m/u.s) )
     
-    c['lsrvc']     = fits.Column(name='VLSRCORR', format='1E', unit='KM/S',
-                                 array=a['lsrvc'].to(u.km/u.s) )
+    c['lsrvc']     = fits.Column(name='VLSRCORR', format='1E', unit='M/S',
+                                 array=a['lsrvc'].to(u.m/u.s) )
     
+    c['veld']     = fits.Column(name='VELDEF', format='12A',
+                                array = (obs_spec['vdef']))
+    #                            array=np.array(obs_spec['vdef'],
+    #                                           dtype=np.unicode_))
+    print ('CVDEF {}'.format(c['veld']))
+
     c['spec']     = fits.Column(name='SPECTRUM',  format=dsize, unit='POWER',
                                  array=obs_spec['spec'])
 
@@ -1028,7 +1063,11 @@ def sdf_spectable_hdu(obsmode=None, max1=0):
     #                             array=obs_spec['samp_rate'])
 
     cols = fits.ColDefs([c[i] for i in sorted(c.keys())])
+    # cols.info()
     hdu  = fits.BinTableHDU.from_columns(cols, header=hdr)
+    
+    # hdu.data['VELDEF'][0] = b'RADI-LST    T'
+    # print ('veldef: {}'.format(hdu.data['VELDEF']))
 
     print ('{}'.format(hdu.columns))
 
@@ -1155,10 +1194,14 @@ def sdf_mkfits (ofile=None):
     # include primary and table HDUs into one
     hdu1 = fits.HDUList([phdu, shdu])
 
+    # hdu1[1].data['VELDEF'][0] = str('    RADI-LST').encode('ascii')
+    # print ('veldef: {}'.format(hdu1[1].data['VELDEF']))
+    
     # Write out FITS table file
     if (ofile != None):
         hdu1.writeto (ofile)
-
+        hdu1.close()
+        
     return
 
 #------------------------------------------------------------------------
