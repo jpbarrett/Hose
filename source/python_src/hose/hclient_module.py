@@ -293,10 +293,16 @@ class hprompt(Cmd):
         for z in fset:
             obj_list.append( z )
 
+
+        most_recent_antenna_position_info = self.dbclient.get_most_recent_measurement("antenna_position", self.end_time_stamp)
         antenna_position_info = self.dbclient.get_measurement_from_time_range("antenna_position", self.start_time_stamp, self.end_time_stamp, 1)
-        #print("start time", self.start_time_stamp)
-	#print("end time", self.end_time_stamp)
-        #print("len antenna info:",len(antenna_position_info))
-        for x in antenna_position_info:
-            obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
-        dump_dict_list_to_json_file(obj_list, meta_data_filepath)
+        if len(antenna_position_info) != 0:
+            #got the antenna position info, so go ahead and write it
+            for x in antenna_position_info:
+                obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
+            dump_dict_list_to_json_file(obj_list, meta_data_filepath)
+        else:
+            #add the most recent position (this may be irrelevant but the FITS converter needs at least one data point)
+            for x in most_recent_antenna_position_info:
+                obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
+            dump_dict_list_to_json_file(obj_list, meta_data_filepath)

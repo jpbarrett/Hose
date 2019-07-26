@@ -88,12 +88,11 @@ class config_digitizer(spectrometer_log_line):
         self.data_fields = { "n_digitizer_threads": 0, "sideband": '-', "polarization": '-', "sampling_frequency_Hz": 0}
 
 class config_spectrometer(spectrometer_log_line):
-
     def __init__(self):
         super(config_spectrometer, self).__init__()
         self.line_key = "spectrometer_config"
         self.name = "spectrometer_config"
-        self.data_fields = { "n_spectrometer_threads": 0, "n_averages": 0, "fft_size": 0, "n_writer_threads": 0}
+        self.data_fields = { "n_spectrometer_threads": 0, "n_averages": 0, "fft_size": 0, "n_spectrometer_threads":0, "n_writer_threads": 0, "window_type":"none", "window_s1":0, "window_s2":0, "window_normalized_equivalent_noise_bandwidth":0, "window_equivalent_noise_bandwidth_Hz":0 }
 
 class config_noise_diode(spectrometer_log_line):
 
@@ -116,7 +115,7 @@ class hstatuslog_stripper(object):
     def __init__(self):
         self.date_string_length = 25
         self.line_type_tuple = ( config_digitizer(), config_spectrometer(), config_noise_diode(), recording_status() )
-    
+
         #temporary storage of a parse data item (list of dicts), only valid if process_line returns true
         self.data_points = []
 

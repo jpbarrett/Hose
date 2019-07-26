@@ -416,11 +416,9 @@ class HSpectrometerManager: public HApplicationBackend
                         std::stringstream wtenbwss;
                         wtenbwss << "window_equivalent_noise_bandwidth_Hz=";
                         wtenbwss <<  (fFFTSize*s2/(s1*s1) )*(fDigitizer->GetSamplingFrequency()/fFFTSize);
-
                         std::stringstream nstss;
                         nstss << "n_spectrometer_threads=";
                         nstss << fNSpectrometerThreads;
-
                         std::stringstream nwtss;
                         nwtss << "n_writer_threads=";
                         nwtss << 1;

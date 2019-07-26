@@ -96,10 +96,18 @@ def generate_meta_data_file(dbclient, path_to_scan_data, start_time_stamp, end_t
     for z in fset:
         obj_list.append( z )
 
-    antenna_position_info = dbclient.get_measurement_from_time_range("antenna_position", start_time_stamp, end_time_stamp, 2)
-    for x in antenna_position_info:
-        obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
-    hinfluxdb_module.dump_dict_list_to_json_file(obj_list, meta_data_filepath)
+    most_recent_antenna_position_info = dbclient.get_most_recent_measurement("antenna_position", self.end_time_stamp)
+    antenna_position_info = dbclient.get_measurement_from_time_range("antenna_position", self.start_time_stamp, self.end_time_stamp, 1)
+    if len(antenna_position_info) != 0:
+        #got the antenna position info, so go ahead and write it
+        for x in antenna_position_info:
+            obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
+        dump_dict_list_to_json_file(obj_list, meta_data_filepath)
+    else:
+        #add the most recent position (this may be irrelevant but the FITS converter needs at least one data point)
+        for x in most_recent_antenna_position_info:
+            obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
+        dump_dict_list_to_json_file(obj_list, meta_data_filepath)
 
 
 def main():
