@@ -131,11 +131,11 @@ class fs_log_line(object):
 class udc_status(fs_log_line):
     def __init__(self):
         super(udc_status, self).__init__()
-        self.line_key = "udccc/updown"
+        self.line_key = "192.52.63.25/updown"
         self.name = "udc_status"
-        self.data_fields = {"frequency_MHz": 0, "attenuation_h": 0, "attenuation_v": 0, "udc": "c"}
+        self.data_fields = {"frequency_MHz": 0, "attenuation_h": 0, "attenuation_v": 0, "udc": "e"}
         self.token_map = {0: "frequency_MHz", 1: "attenuation_h", 2: "attenuation_v"}
-        self.primary_delim = "udccc/updown"
+        self.primary_delim = "192.52.63.25/updown"
         self.secondary_delim = " "
 
     def init_hook(self):
