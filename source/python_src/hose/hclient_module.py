@@ -245,7 +245,7 @@ class hprompt(Cmd):
 
         #now add the sky frequency information as well
 	if have_udc_data is False:
-            #if no data is available from database, assume a default hardcoded value
+            #if no data is available from database, assume a default hardcoded value (input from the front-panel of the UDC)
             udc_luff_freq = 7054.0
 
         wf_signal_chain = westford_signal_chain(udc_luff_freq)
