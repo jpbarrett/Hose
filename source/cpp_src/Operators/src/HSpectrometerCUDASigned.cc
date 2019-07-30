@@ -68,6 +68,9 @@ HSpectrometerCUDASigned::ExecuteThreadTask()
 
                 sdata->validity_flag = 1;
 
+                //zero out the buffer we are returning
+                memset( source->GetData(), 0, (source->GetArrayDimension(0))*sizeof(int16_t) );
+
                 //release the buffers
                 this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID());
                 this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
