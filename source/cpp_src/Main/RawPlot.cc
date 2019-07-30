@@ -219,7 +219,7 @@ int main(int argc, char** argv)
         if(datum.value > data_max){data_max = datum.value;}
         if(count % 100000 == 0){std::cout<<"on sample: "<<count<<" value = "<<datum.value<<std::endl;};
     }
-    while(!in_file.eof() && count < 10000000);
+    while(!in_file.eof() ); // && count < 10000000);
     in_file.close();
 
     double sample_frequency = 1250e6;
@@ -308,13 +308,13 @@ int main(int argc, char** argv)
     for(unsigned int i=1; i<dim[0]/2; i++)
     {
         double omega = i*(sample_frequency/dim[0]);
-        spectrum->SetPoint(spectrum->GetN(), std::log10(omega), 10.0*std::log10( norm*std::real( noise_xform_out[i]*std::conj(noise_xform_out[i]) ) ) );
+        spectrum->SetPoint(spectrum->GetN(), omega/1e6, 10.0*std::log10( norm*std::real( noise_xform_out[i]*std::conj(noise_xform_out[i]) ) ) );
     }
 
     c->cd(2);
     spectrum->Draw("ALP");
     spectrum->SetTitle("Power Spectrum");
-    spectrum->GetXaxis()->SetTitle("Log10(#omega)");
+    spectrum->GetXaxis()->SetTitle("Frequency (MHz)");
     spectrum->GetYaxis()->SetTitle("Spectral power density dB/Hz");
     spectrum->GetYaxis()->CenterTitle();
     spectrum->GetXaxis()->CenterTitle();
