@@ -96,18 +96,18 @@ class HRawDataDumper: public HConsumer< XBufferItemType, HConsumerBufferHandler_
                                 out_file.open (ss.str().c_str(),  std::ios::out | std::ios::binary);
                                 out_file.write( (char*)(tail->GetData()), (std::streamsize) ( tail->GetArrayDimension(0) )*sizeof(XBufferItemType) );
                                 out_file.close();
-
-                                //zero out the buffer we are returning
-                                memset( tail->GetData(), 0, (tail->GetArrayDimension(0))*sizeof(int16_t) );
+                                
+                                // //zero out the buffer we are returning
+                                // memset( tail->GetData(), 0, (tail->GetArrayDimension(0))*sizeof(int16_t) );
 
                                 //reset
                                 fBufferCount = 0;
                             }
-                            else 
-                            {
-                                //zero out the buffer we are returning
-                                memset( tail->GetData(), 0, (tail->GetArrayDimension(0))*sizeof(int16_t) );
-                            }
+                            // else 
+                            // {
+                            //     //zero out the buffer we are returning
+                            //     memset( tail->GetData(), 0, (tail->GetArrayDimension(0))*sizeof(int16_t) );
+                            // }
                         }
                     }
                     //free the tail for use by other consumer
