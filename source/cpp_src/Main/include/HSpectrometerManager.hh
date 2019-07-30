@@ -86,7 +86,7 @@ extern "C"
         #define N_SPECTROMETER_THREADS 1
         #define N_NOISE_POWER_POOL_SIZE 10
         #define N_NOISE_POWER_THREADS 1
-        #define DUMP_FREQ 2
+        #define DUMP_FREQ 100
         #define N_AVE_BUFFERS 2
         #define SPEC_AVE_POOL_SIZE 4
     #endif
@@ -330,10 +330,10 @@ class HSpectrometerManager: public HApplicationBackend
                         fNoisePowerCalculator->SetSinkBufferPool(fNoisePowerPool);
 
                         //create an itermittent raw data dumper
-                        // fDumper = new HRawDataDumper< typename XDigitizerType::sample_type >();
-                        // fDumper->SetBufferPool(fDigitizerSourcePool);
-                        // fDumper->SetBufferDumpFrequency(DUMP_FREQ);
-                        // fDumper->SetNThreads(1);
+                        fDumper = new HRawDataDumper< typename XDigitizerType::sample_type >();
+                        fDumper->SetBufferPool(fDigitizerSourcePool);
+                        fDumper->SetBufferDumpFrequency(DUMP_FREQ);
+                        fDumper->SetNThreads(1);
 
                         //spectrum file writing consumer to drain the spectrum data buffers
                         // fWriter = new HSimpleMultiThreadedSpectrumDataWriterSigned();
@@ -473,7 +473,7 @@ class HSpectrometerManager: public HApplicationBackend
                     fAveragedSpectrumWriter->AssociateThreadWithSingleProcessor(i, core_id++);
                 };
 
-                // fDumper->StartConsumption();
+                fDumper->StartConsumption();
                 fDataAccumulationWriter->StartConsumption();
                 for(unsigned int i=0; i<1; i++)
                 {
@@ -868,10 +868,10 @@ class HSpectrometerManager: public HApplicationBackend
             fDataAccumulationWriter->SetScanName(fScanName);
             fDataAccumulationWriter->InitializeOutputDirectory();
 
-            // fDumper->SetExperimentName(fExperimentName);
-            // fDumper->SetSourceName(fSourceName);
-            // fDumper->SetScanName(fScanName);
-            // fDumper->InitializeOutputDirectory();
+            fDumper->SetExperimentName(fExperimentName);
+            fDumper->SetSourceName(fSourceName);
+            fDumper->SetScanName(fScanName);
+            fDumper->InitializeOutputDirectory();
 
             fAveragedSpectrumWriter->SetExperimentName(fExperimentName);
             fAveragedSpectrumWriter->SetSourceName(fSourceName);
