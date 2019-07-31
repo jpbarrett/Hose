@@ -770,7 +770,7 @@ int main(int argc, char** argv)
     pt->AddText( std::string( std::string( "Start Time: ") + on_source_meta.fStartTime).c_str() );
 
     //make a crude calculation to scale the y-axis
-    double t_diode = 3.0;
+    double t_diode = 1.25;
     double SEFD = 2250; //assumed SEFD for band C in Jansky's (Jy)
     double t_sys_on = on_source_meta.fKFactor*t_diode;
     double t_sys_off = off_source_meta.fKFactor*t_diode;

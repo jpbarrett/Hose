@@ -320,51 +320,9 @@ int main(int argc, char** argv)
     spectrum->GetXaxis()->CenterTitle();
     c->Update();
 
-    //
-    //
-    //
-    //
-    // //now we want to do an FFT of the raw data sample and plot the output:
-    //
-    // //Allocate an array big enough to hold the transform output
-    // //Transform output in 1d contains, for a transform of size N,
-    // //N/2+1 complex numbers, i.e. 2*(N/2+1) real numbers
-    // //our transform is of size n+1, because the histogram has n+1 bins
-    // int sample_len = raw_data.size();
-    // double *in = new double[2*((sample_len+1)/2+1)];
-    // for(size_t i=0; i<=sample_len; i++)
-    // {
-    //     in[i] = raw_data[i];
-    // }
-    // //Make our own TVirtualFFT object (using option "K")
-    // //Third parameter (option) consists of 3 parts:
-    // //- transform type:
-    // // real input/complex output in our case
-    // //- transform flag:
-    // // the amount of time spent in planning
-    // // the transform (see TVirtualFFT class description)
-    // //- to create a new TVirtualFFT object (option "K") or use the global (default)
-    // int n_size = sample_len+1;
-    // TVirtualFFT *fft_own = TVirtualFFT::FFT(1, &n_size, "R2C ES K");
-    // if (!fft_own) return 1;
-    // fft_own->SetPoints(in);
-    // fft_own->Transform();
-    // //Copy all the output points:
-    // fft_own->GetPoints(in);
-    // //Draw the real part of the output
-    // c->cd(2);
-    // TH1 *hr = 0;
-    // hr = TH1::TransformHisto(fft_own, hr, "MAG");
-    // hr->SetTitle("Raw Spectrum");
-    // hr->Draw();
-    // hr->SetStats(kFALSE);
-    // hr->GetXaxis()->SetLabelSize(0.05);
-    // hr->GetYaxis()->SetLabelSize(0.05);
-    // gPad->SetLogy();
-
     // //histogram the values of the on/off noise variance
     c->cd(3);
-    TH1D* histo = new TH1D("sample histogram", "sample histogram", 256, data_min, data_max);
+    TH1D* histo = new TH1D("sample histogram", "sample histogram", TMath::Abs(data_max - data_min), data_min, data_max);
     for(size_t i=0; i<raw_data.size(); i++)
     {
         histo->Fill(raw_data[i]);
