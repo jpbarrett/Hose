@@ -315,7 +315,6 @@ HADQ7Digitizer::ExecutePreWorkTasks()
         if( buffer != nullptr && (fBufferCode & HProducerBufferPolicyCode::success))
         {
             //successfully got a buffer, assigned it
-            memset( buffer->GetData(), 0, (buffer->GetArrayDimension(0))*sizeof(adq_sample_t) );
             this->SetBuffer(buffer);
         }
 
