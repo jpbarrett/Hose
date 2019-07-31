@@ -55,7 +55,7 @@ if (HOSE_USE_ROOT)
     find_package(ROOT REQUIRED)
     include_directories(${ROOT_INCLUDE_DIRS})
     list(APPEND HOSE_MAIN_LIBS ${ROOT_LIBRARIES})
-    list(APPEND SOURCE_BASENAMES SpectrumPlot RawPlot PowerPlot CrudeOnMinusOff PowerSpectralDensity MultipleScanPairsOnMinusOff SimpleDiodeCalibration)
+    list(APPEND SOURCE_BASENAMES SpectrumPlot RawPlot PowerPlot CrudeOnMinusOff PowerSpectralDensity MultipleScanPairsOnMinusOff SimpleDiodeCalibration OnMinusOffPSD)
 endif()
 
 foreach( BASENAME ${SOURCE_BASENAMES} )
