@@ -97,7 +97,7 @@ __usage__="""\
  the FITS file name based on the basename returned.
 """
 __author__="S. Levine"
-__date__="2019 Jul 26"
+__date__="2019 Aug 01"
 
 #------------------------------------------------------------------------
 # import the FITS io routines for the I/O
@@ -279,6 +279,10 @@ def simple_combine_spec (num_to_avg):
     global obs_spec
     global cmb_spec
 
+    # Null the combined spectrum lists
+    for j in cmb_spec:
+        cmb_spec[j] = []
+
     # number of raw spectral records
     os_len = len(obs_spec['spec_idx'])
 
@@ -388,8 +392,9 @@ def sdf_getobs_spec (spec_record, meta_info):
     #        format(obs_spec['date-obs'][-1],
     #               obs_nois['date-obs'][d],
     #               d))
-    tsys = tnoise * obs_nois['mean_power_off'][d] /  \
-        (obs_nois['mean_power_on'][d] - obs_nois['mean_power_off'][d])
+    # tsys = tnoise * obs_nois['mean_power_off'][d] /  \
+    #     (obs_nois['mean_power_on'][d] - obs_nois['mean_power_off'][d])
+    tsys = 1.0
     obs_spec['tsys'].append(tsys)
 
     if (meta_info != None):
@@ -1292,6 +1297,9 @@ def load_spectra(idnum, d, fs, fm, ff):
             v1 = md.antenna_pos()
             print ('  META - antpos - {}'.format(v1[0]))
 
+    # Null the spectrum lists
+    for j in obs_spec:
+        obs_spec[j] = []
 
     # loop and load spectrum files
     ct = 0
@@ -1366,6 +1374,10 @@ def load_noise(idnum, d, fn, fm, ff):
             v1 = md.antenna_pos()
             print ('  META - antpos - {}'.format(v1[0]))
 
+
+    # Null the noise lists
+    for j in obs_nois:
+        obs_nois[j] = []
 
     # loop and load noise files
     ct = 0
