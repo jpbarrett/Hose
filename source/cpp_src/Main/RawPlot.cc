@@ -283,6 +283,15 @@ int main(int argc, char** argv)
     g->GetXaxis()->CenterTitle();
     c->Update();
 
+    // //histogram the values of the on/off noise variance
+    c->cd(3);
+    TH1D* histo = new TH1D("sample histogram", "sample histogram", TMath::Abs(data_max - data_min), data_min, data_max);
+    for(size_t i=0; i<raw_data.size(); i++)
+    {
+        histo->Fill(raw_data[i]);
+    }
+    histo->Draw("");
+    c->Update();
 
     //now we want to compute the spectral power density
     //wrap the array (needed for FFT interface
@@ -319,7 +328,7 @@ int main(int argc, char** argv)
     spectrum->GetYaxis()->CenterTitle();
     spectrum->GetXaxis()->CenterTitle();
     c->Update();
-
+/*
     // //histogram the values of the on/off noise variance
     c->cd(3);
     TH1D* histo = new TH1D("sample histogram", "sample histogram", TMath::Abs(data_max - data_min), data_min, data_max);
@@ -329,7 +338,7 @@ int main(int argc, char** argv)
     }
     histo->Draw("");
     c->Update();
-
+*/
     App->Run();
 
     return 0;
