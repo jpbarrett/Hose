@@ -31,4 +31,7 @@ if (PYTHON_EXECUTABLE)
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/test_freq_conversion.py.in" "${CMAKE_CURRENT_BINARY_DIR}/test_freq_conversion.py" @ONLY)
     install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/test_freq_conversion.py" DESTINATION ${BIN_INSTALL_DIR})
 
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/check_luff.py.in" "${CMAKE_CURRENT_BINARY_DIR}/check_luff.py" @ONLY)
+    install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/check_luff.py" DESTINATION ${BIN_INSTALL_DIR})
+
 endif (PYTHON_EXECUTABLE)

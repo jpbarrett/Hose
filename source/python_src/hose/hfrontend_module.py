@@ -68,6 +68,8 @@ class ideal_rf_filter(object):
             #else:
                 #print("signal with frequency ", freq, " does NOT pass filter: ", self.low_frequency_MHz, " - ", self.high_frequency_MHz)
         signal_obj.amplitude_frequency_pair_list = copy.copy(tmp_af_pair)
+        #print("resulting signal object after filter:")
+        #signal_obj.print_amp_freqs()
 
 class aliasing_sampler(object):
     """ ideal aliasing sampler """
@@ -75,7 +77,7 @@ class aliasing_sampler(object):
     def __init__(self, name="aliasing_sampler", sampling_frequency_MHz=0.0, nyquist_zone=1):
         self.name = name
         self.sampling_frequency_MHz = float(sampling_frequency_MHz)
-        self.nyquist_zone = nyquist_zone #this is needed to map the mapping 1-to-1
+        self.nyquist_zone = nyquist_zone #this is needed to keep the mapping 1-to-1
 
     def is_freq_in_first_nyquist_zone(self, freq):
         if 0.0 <= freq and freq < self.sampling_frequency_MHz/2.0:
@@ -93,15 +95,23 @@ class aliasing_sampler(object):
                     #convert the input frequency to the proper nyquist_zone
                     converted_freq = map_aliased_counterpart_to_zone_frequency(freq, self.sampling_frequency_MHz, self.nyquist_zone)
                     tmp_af_pair.append( (amp, converted_freq) )
+                    # print("nyquist zone : ", self.nyquist_zone)
+                    # print(tmp_af_pair)
                 else:
                     # pass this frequncy untouched
+                    # print("nyquist_zone1")
                     tmp_af_pair.append( (amp, freq) )
+                    # print(tmp_af_pair)
             else:
                 #input isn't in first nyquist-zone, so assume we are doing the aliasing conversion
+                #print("assuming aliased input: ")
                 aliased_freq = map_zone_frequency_to_aliased_counterpart(freq, self.sampling_frequency_MHz)
                 tmp_af_pair.append( (amp, aliased_freq) )
+                #print(tmp_af_pair)
 
         signal_obj.amplitude_frequency_pair_list = copy.copy(tmp_af_pair)
+        #print("resulting signal object:")
+        #signal_obj.print_amp_freqs()
 
 
 class signal_chain(object):
@@ -137,7 +147,12 @@ class signal_chain(object):
         if tmp_signal.get_n_tones() == 1:
             return tmp_signal.amplitude_frequency_pair_list[0][1]
         else:
-            return np.nan #either no tone, or more than one tone
+            if tmp_signal.get_n_tones() > 1:
+                #tmp_signal.print_amp_freqs()
+                return np.nan
+            else:
+                #print("no tones found")
+                return np.nan #either no tone, or more than one tone
 
     def map_frequency_pair_forward(self, low_freq_MHz, high_freq_MHz):
         val1 =  self.map_frequency_forward(low_freq_MHz)

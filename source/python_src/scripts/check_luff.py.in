@@ -1,0 +1,78 @@
+#!@PYTHON_EXECUTABLE@
+from datetime import datetime, timedelta
+import json
+import os
+import sys
+import copy
+import argparse
+import numpy as np
+
+from hose import hfrontend_module
+
+def main(): 
+
+    parser = argparse.ArgumentParser(
+        prog='ffres2pcp.py', \
+        description='''utility for calculating luff --> sky frequency for the UDC ''' \
+        )
+
+    parser.add_argument('luff_freq', help='the value of the luff frequency in MHz', type=float)
+
+    args = parser.parse_args()
+
+    #add the sky frequency information as well
+    udc_luff_freq = abs(args.luff_freq)
+    #sampling frequency is fixed for now
+    sampling_frequency_Hz = 1250e6 #Hz
+    spectrometer_fftsize = 2*1048576 #number of points in FFT
+
+    wf_signal_chain = hfrontend_module.westford_signal_chain(udc_luff_freq, apply_last_filter=False)
+
+    #bandwidth of the spectrometer
+    low_freq = 0.0;
+    high_freq = sampling_frequency_Hz/2.0
+
+    sky_freq_pair = wf_signal_chain.map_frequency_pair_backward(low_freq, high_freq)
+    spectral_resolution_MHz = float(sampling_frequency_Hz/float(spectrometer_fftsize))/1e6
+    print("Spectral resolution (kHz) = ", spectral_resolution_MHz*1e3)
+    n_spec_bins = spectrometer_fftsize/2 + 1
+    center_bin = int(n_spec_bins/2)
+    center_bin_if_freq = (float(center_bin) + 0.5)*spectral_resolution_MHz
+    # print("Central bin IF frequency = ", center_bin_if_freq)
+    center_bin_sky_freq = wf_signal_chain.map_frequency_backward(center_bin_if_freq)
+    [if_low, if_high] = [spectral_resolution_MHz*0.5, (n_spec_bins-1.0 + 0.5)*spectral_resolution_MHz ] #[lower edge of lowest bin, upper edge of lowest bin]
+    [sky_low, sky_high] = wf_signal_chain.map_frequency_pair_backward(if_low, if_high)
+
+    #flip because we are dealing with a second nyquist zone sampler
+    sky_low2 = sky_low
+    sky_high2 = sky_high
+    if sky_low > sky_high:
+        sky_low2 = sky_high
+        sky_high2 = sky_low
+
+    if np.isnan(sky_low2) or np.isnan(sky_high2) or np.isnan(center_bin_sky_freq):
+        print("A portion of the observable band is outside of the range of the first filter (4-14GHz).")
+    else:
+        print("Lowest bin sky frequecy = ", sky_low2)
+        print("Central bin sky frequency = ", center_bin_sky_freq)
+        print("Highest bin sky frequency = ", sky_high2)
+
+    # bin_delta = 1 #a bin increment of (bin_delta) corresponds to an incrment in frequecy space of (frequency_delta)
+    # slope = ( (sky_high - sky_low)/(if_high - if_low) ) #slope had better be either +1 or -1
+    # 
+    # frequency_delta = slope*spectral_resolution_MHz
+    # freq_map = hfrontend_module.frequency_map()
+    # freq_map.set_time("") #frequency_map gets the same time stamp as the UDC LO-set time
+    # freq_map.set_reference_bin_index(center_bin)
+    # freq_map.set_reference_bin_center_sky_frequency(center_bin_sky_freq)
+    # freq_map.set_bin_delta(bin_delta)
+    # freq_map.set_frequency_delta(frequency_delta)
+    # 
+    # print("freq map: ", freq_map.as_dict() )
+
+
+
+
+if __name__ == '__main__':          # official entry point
+    main()
+    sys.exit(0)
