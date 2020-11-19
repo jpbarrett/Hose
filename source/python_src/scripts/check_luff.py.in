@@ -12,7 +12,7 @@ from hose import hfrontend_module
 def main(): 
 
     parser = argparse.ArgumentParser(
-        prog='ffres2pcp.py', \
+        prog='check_luff.py', \
         description='''utility for calculating luff --> sky frequency for the UDC ''' \
         )
 
