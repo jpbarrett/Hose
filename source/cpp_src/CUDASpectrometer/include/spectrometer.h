@@ -23,51 +23,10 @@
 // GPU parallelization
 #define N_BLOCKS 8
 #define N_THREADS 1024
-// what is the number of files to  process
-//#define N_FILES 300
-// require files to be of this size
-#define SAMPLE_RATE 200000000
-
-// 5 ms blanking
-//#define BLANKING 2000000
-
-// 0 ms blanking
-//#define BLANKING 0
-// 11 ms
-#define BLANKING (floor(SAMPLE_RATE * 11e-3))
-
-// #define SPECTRUM_LENGTH 32768 //131072 //  8192*2*2
-#define SPECTRUM_LENGTH 131072 //  8192*2*2
-// debug output files
-//#define WRITE_INPUT 1
-//#define DEBUG_Z_OUT 1
-#define TIMING_PRINT 1
-//#define TEST_SIGNAL 1
 
 // GPU parallelization
 #define N_BLOCKS_S 8
 #define N_THREADS_S 1024
-#define SAMPLE_RATE_S 10000000000 //10GHz
-
-// 5 ms blanking
-//#define BLANKING 2000000
-
-// 0 ms blanking
-//#define BLANKING 0
-// 11 ms
-#define BLANKING_S (floor(SAMPLE_RATE * 11e-3))
-
-// #define SPECTRUM_LENGTH 32768 //131072 //  8192*2*2
-// #define SPECTRUM_LENGTH_S 524288
-//#define SPECTRUM_LENGTH_S 2048
-// #define SPECTRUM_LENGTH_S 32768
-#define SPECTRUM_LENGTH_S 131072
-// debug output files
-//#define WRITE_INPUT 1
-//#define DEBUG_Z_OUT 1
-#define TIMING_PRINT_S 1
-//#define TEST_SIGNAL 1
-
 
 typedef struct spectrometer_data_str_s
 {

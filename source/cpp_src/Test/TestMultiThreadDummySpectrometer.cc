@@ -16,13 +16,14 @@
 
 using namespace hose;
 
+#define SPECTRUM_LENGTH 131072
 
 using PoolType = HBufferPool< uint16_t >;
 
 int main(int /*argc*/, char** /*argv*/)
 {
     size_t n_ave = 128;
-    size_t vector_length = SPECTRUM_LENGTH_S*n_ave;
+    size_t vector_length = SPECTRUM_LENGTH*n_ave;
     size_t nAcq = 1;
     unsigned int n_dropped = 0;
 
@@ -77,7 +78,7 @@ int main(int /*argc*/, char** /*argv*/)
     m_spec.StartConsumptionProduction();
     dummy.StartProduction();
 
-    //wait 
+    //wait
     usleep(10000000);
 
     std::cout<<"stopping"<<std::endl;

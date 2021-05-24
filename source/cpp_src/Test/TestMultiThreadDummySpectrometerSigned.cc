@@ -13,8 +13,10 @@
 
 using namespace hose;
 
+#define SPECTRUM_LENGTH 131072
+
 using PoolType = HBufferPool< int16_t >;
-uint64_t vector_length = SPECTRUM_LENGTH_S*128;
+uint64_t vector_length = SPECTRUM_LENGTH*128;
 uint64_t nAcq = 1;
 unsigned int n_dropped = 0;
 
@@ -46,7 +48,7 @@ int main(int /*argc*/, char** /*argv*/)
 
     dummy.StartProduction();
 
-    //wait 
+    //wait
     usleep(1000000); //0.1 sec
 
     dummy.StopProduction();
