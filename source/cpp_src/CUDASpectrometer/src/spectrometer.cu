@@ -142,6 +142,7 @@ extern "C" spectrometer_data_s *new_spectrometer_data_s(int data_length, int spe
 {
   spectrometer_data_s *d;
   int n_spectra;
+  int code;
   n_spectra=data_length/spectrum_length;
 
   unsigned long available, total;
@@ -167,7 +168,7 @@ extern "C" spectrometer_data_s *new_spectrometer_data_s(int data_length, int spe
     printf("required gpu buff size = %lu \n", want);
 
 
-  int code = cudaMalloc( (void **) &d->d_in, sizeof(cufftComplex)*n_spectra*(spectrum_length/2 + 1) );
+  code =cudaMalloc( (void **) &d->d_in, sizeof(cufftComplex)*n_spectra*(spectrum_length/2 + 1) );
   if( code != cudaSuccess)
   {
     printf("code = %d\n", code);
@@ -179,7 +180,7 @@ extern "C" spectrometer_data_s *new_spectrometer_data_s(int data_length, int spe
     cudaMemGetInfo(&available, &total);
       printf("gpu mem: avail and total = %lu and %lu\n", available, total);
 
-  int code = cudaMalloc( (void **) &d->d_out, sizeof(float)*N_THREADS );
+  code =cudaMalloc( (void **) &d->d_out, sizeof(float)*N_THREADS );
   if( code != cudaSuccess)
   {
     printf("code = %d\n", code);
@@ -192,7 +193,7 @@ extern "C" spectrometer_data_s *new_spectrometer_data_s(int data_length, int spe
       printf("gpu mem: avail and total = %lu and %lu\n", available, total);
 
 
-  int code = cudaMalloc( (void **) &d->d_out2, sizeof(float)*N_THREADS );
+  code =cudaMalloc( (void **) &d->d_out2, sizeof(float)*N_THREADS );
   if( code != cudaSuccess)
   {
     printf("code = %d\n", code);
@@ -200,7 +201,7 @@ extern "C" spectrometer_data_s *new_spectrometer_data_s(int data_length, int spe
     exit(EXIT_FAILURE);
   }
 
-  int code = cudaMalloc( (void **) &d->f_out, sizeof(float) );
+  code =cudaMalloc( (void **) &d->f_out, sizeof(float) );
   if( code != cudaSuccess)
   {
     printf("code = %d\n", code);
@@ -209,7 +210,7 @@ extern "C" spectrometer_data_s *new_spectrometer_data_s(int data_length, int spe
   }
 
 
-  int code = cudaMalloc( (void **) &d->f_out2, sizeof(float) );
+  code =cudaMalloc( (void **) &d->f_out2, sizeof(float) );
   if( code != cudaSuccess)
   {
     printf("code = %d\n", code);
