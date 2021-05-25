@@ -44,8 +44,8 @@ typedef struct spectrometer_data_str_s
   uint64_t acquistion_start_second;
   uint64_t leading_sample_index;
   double sample_rate;
-  double sum;
-  double sum2;
+  float sum;
+  float sum2;
   int validity_flag;
 } spectrometer_data_s;
 

@@ -442,14 +442,14 @@ extern "C" void process_vector_no_output_s(int16_t *d_in, spectrometer_data_s *d
     }
 
     // ensure empty noise data acuumulation buffers
-    if (cudaMemsetAsync(d_out, 0, sizeof(float)*N_THREADS) != cudaSuccess)
+    if (cudaMemsetAsync(d->d_out, 0, sizeof(float)*N_THREADS) != cudaSuccess)
     {
       fprintf(stderr, "Cuda error: Failed to zero device spectrum\n");
         exit(EXIT_FAILURE);
     }
 
     // ensure empty noise data acuumulation buffers
-    if (cudaMemsetAsync(d_out2, 0, sizeof(float)*N_THREADS) != cudaSuccess)
+    if (cudaMemsetAsync(d->d_out2, 0, sizeof(float)*N_THREADS) != cudaSuccess)
     {
       fprintf(stderr, "Cuda error: Failed to zero device spectrum\n");
         exit(EXIT_FAILURE);
