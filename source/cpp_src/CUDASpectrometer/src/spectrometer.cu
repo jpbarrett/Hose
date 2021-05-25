@@ -480,8 +480,8 @@ extern "C" void process_vector_no_output_s(int16_t *d_in, spectrometer_data_s *d
     cudaDeviceSynchronize();
 
     //copy the <x> and <x^2> values back to the host
-    cudaMemcpy(d->sum, f_out, sizeof(float), cudaMemcpyDeviceToHost );
-    cudaMemcpy(d->sum2, f_out2, sizeof(float), cudaMemcpyDeviceToHost );
+    cudaMemcpy(d->sum, d->f_out, sizeof(float), cudaMemcpyDeviceToHost );
+    cudaMemcpy(d->sum2, d->f_out2, sizeof(float), cudaMemcpyDeviceToHost );
 
 
     // cufft kernel execution
