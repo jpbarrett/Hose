@@ -8,11 +8,13 @@ if(HOSE_USE_CUDA)
 
     set(CUDASpectrometer_HEADERFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/include/spectrometer.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/noise_statistics_mbp_reduce.h
         # ${CMAKE_CURRENT_SOURCE_DIR}/include/spectrometer_signed.h
     )
 
     set(CUDASpectrometer_SOURCEFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/spectrometer.cu
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/noise_statistics_mbp_reduce.cu
         # ${CMAKE_CURRENT_SOURCE_DIR}/src/spectrometer_signed.cu
     )
 

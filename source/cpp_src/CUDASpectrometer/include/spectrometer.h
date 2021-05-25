@@ -24,13 +24,13 @@
 #define N_BLOCKS 8
 #define N_THREADS 1024
 
-// GPU parallelization
-#define N_BLOCKS_S 8
-#define N_THREADS_S 1024
-
 typedef struct spectrometer_data_str_s
 {
   float *d_in;
+  float *d_out;
+  float *d_out2;
+  float *f_out;
+  float *f_out2;
   int16_t *ds_in;
   cufftComplex *d_z_out;
   float *d_spectrum;
@@ -44,6 +44,8 @@ typedef struct spectrometer_data_str_s
   uint64_t acquistion_start_second;
   uint64_t leading_sample_index;
   double sample_rate;
+  double sum;
+  double sum2;
   int validity_flag;
 } spectrometer_data_s;
 

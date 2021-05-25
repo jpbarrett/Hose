@@ -8,6 +8,10 @@
 
 
 #include "spectrometer.h"
+#include "noise_statistics_mbp_reduce.h"
+
+
+
 #define MIN(X,Y) (((X) < (Y)) ? (X) : (Y))
 
 void cuda_alloc_pinned_memory( void** ptr, size_t s)
@@ -171,6 +175,50 @@ extern "C" spectrometer_data_s *new_spectrometer_data_s(int data_length, int spe
     exit(EXIT_FAILURE);
   }
 
+
+    cudaMemGetInfo(&available, &total);
+      printf("gpu mem: avail and total = %lu and %lu\n", available, total);
+
+  int code = cudaMalloc( (void **) &d->d_out, sizeof(float)*N_THREADS );
+  if( code != cudaSuccess)
+  {
+    printf("code = %d\n", code);
+    fprintf(stderr, "Cuda error: Failed to allocate input data vector\n");
+    exit(EXIT_FAILURE);
+  }
+
+
+    cudaMemGetInfo(&available, &total);
+      printf("gpu mem: avail and total = %lu and %lu\n", available, total);
+
+
+  int code = cudaMalloc( (void **) &d->d_out2, sizeof(float)*N_THREADS );
+  if( code != cudaSuccess)
+  {
+    printf("code = %d\n", code);
+    fprintf(stderr, "Cuda error: Failed to allocate input data vector\n");
+    exit(EXIT_FAILURE);
+  }
+
+  int code = cudaMalloc( (void **) &d->f_out, sizeof(float) );
+  if( code != cudaSuccess)
+  {
+    printf("code = %d\n", code);
+    fprintf(stderr, "Cuda error: Failed to allocate input data vector\n");
+    exit(EXIT_FAILURE);
+  }
+
+
+  int code = cudaMalloc( (void **) &d->f_out2, sizeof(float) );
+  if( code != cudaSuccess)
+  {
+    printf("code = %d\n", code);
+    fprintf(stderr, "Cuda error: Failed to allocate input data vector\n");
+    exit(EXIT_FAILURE);
+  }
+
+
+
   cudaMemGetInfo(&available, &total);
     printf("gpu mem: avail and total = %lu and %lu\n", available, total);
 
@@ -266,6 +314,26 @@ extern "C" void free_spectrometer_data_s(spectrometer_data_s *d)
     exit(EXIT_FAILURE);
   }
 
+  if (cudaFree(d->d_out) != cudaSuccess) {
+    fprintf(stderr, "Cuda error: Failed to free input\n");
+    exit(EXIT_FAILURE);
+  }
+
+  if (cudaFree(d->d_out2) != cudaSuccess) {
+    fprintf(stderr, "Cuda error: Failed to free input\n");
+    exit(EXIT_FAILURE);
+  }
+
+  if (cudaFree(d->f_out) != cudaSuccess) {
+    fprintf(stderr, "Cuda error: Failed to free input\n");
+    exit(EXIT_FAILURE);
+  }
+
+  if (cudaFree(d->f_out2) != cudaSuccess) {
+    fprintf(stderr, "Cuda error: Failed to free input\n");
+    exit(EXIT_FAILURE);
+  }
+
   if (cudaFree(d->d_spectrum) != cudaSuccess) {
     fprintf(stderr, "Cuda error: Failed to free spec\n");
     exit(EXIT_FAILURE);
@@ -324,9 +392,9 @@ __global__ void square_and_accumulate_sum(const cufftComplex* d_in,
  */
 __global__ void short_to_float_s(int16_t *ds, float *df, float *w, int n_spectra, int spectrum_length)
 {
-  for(int spec_idx=blockIdx.x; spec_idx < n_spectra ; spec_idx+=N_BLOCKS_S)
+  for(int spec_idx=blockIdx.x; spec_idx < n_spectra ; spec_idx+=N_BLOCKS)
   {
-    for(int freq_idx=threadIdx.x; freq_idx < spectrum_length ; freq_idx+=N_THREADS_S)
+    for(int freq_idx=threadIdx.x; freq_idx < spectrum_length ; freq_idx+=N_THREADS)
     {
       //map signed shorts into range [-0.5,0.5)
       //ADQ7DC range is 1Vpp (-0.5V to +0.5V)
@@ -365,13 +433,28 @@ extern "C" void process_vector_no_output_s(int16_t *d_in, spectrometer_data_s *d
     data_length=d->data_length;
     spectrum_length=d->spectrum_length;
 
-
     // ensure empty device spectrum
     if (cudaMemsetAsync(d->d_spectrum, 0, sizeof(float)*(spectrum_length/2 + 1)) != cudaSuccess)
     {
       fprintf(stderr, "Cuda error: Failed to zero device spectrum\n");
         exit(EXIT_FAILURE);
     }
+
+    // ensure empty noise data acuumulation buffers
+    if (cudaMemsetAsync(d_out, 0, sizeof(float)*N_THREADS) != cudaSuccess)
+    {
+      fprintf(stderr, "Cuda error: Failed to zero device spectrum\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // ensure empty noise data acuumulation buffers
+    if (cudaMemsetAsync(d_out2, 0, sizeof(float)*N_THREADS) != cudaSuccess)
+    {
+      fprintf(stderr, "Cuda error: Failed to zero device spectrum\n");
+        exit(EXIT_FAILURE);
+    }
+
+
 
     // copy mem to device
     if (cudaMemcpyAsync(d->ds_in, d_in, sizeof(int16_t)*data_length, cudaMemcpyHostToDevice) != cudaSuccess)
@@ -381,7 +464,24 @@ extern "C" void process_vector_no_output_s(int16_t *d_in, spectrometer_data_s *d
     }
 
     // convert datatype using GPU
-    short_to_float_s<<< N_BLOCKS_S, N_THREADS_S >>>(d->ds_in, d->d_in, d->d_window, n_spectra, spectrum_length);
+    short_to_float_s<<< N_BLOCKS, N_THREADS >>>(d->ds_in, d->d_in, d->d_window, n_spectra, spectrum_length);
+
+
+    //TODO.
+
+
+    //do the first pass parallel reduction of the data for the noise statistics
+    cuda_noise_statistics_mbp_reduce1<<< N_BLOCKS, N_THREADS>>>(d->d_in, d->d_out, d->d_out2, data_length);
+
+    //do the second pass parallel reduction of the data for the noise statistics
+    cuda_noise_statistics_mbp_reduce2<<<1, N_THREADS>>>(d->d_out, d->d_out2, d->f_out, d->f_out2, N_THREADS);
+    //dev_out[0] now holds the final result
+    cudaDeviceSynchronize();
+
+    //copy the <x> and <x^2> values back to the host
+    cudaMemcpy(d->sum, f_out, sizeof(float), cudaMemcpyDeviceToHost );
+    cudaMemcpy(d->sum2, f_out2, sizeof(float), cudaMemcpyDeviceToHost );
+
 
     // cufft kernel execution
     if (cufftExecR2C(d->plan, (float *)d->d_in, (cufftComplex *)d->d_z_out)
@@ -392,7 +492,7 @@ extern "C" void process_vector_no_output_s(int16_t *d_in, spectrometer_data_s *d
     }
 
     // this needs to be faster:
-    square_and_accumulate_sum<<< 1, N_THREADS_S >>>(d->d_z_out, d->d_spectrum, n_spectra, spectrum_length/2+1);
+    square_and_accumulate_sum<<< 1, N_THREADS >>>(d->d_z_out, d->d_spectrum, n_spectra, spectrum_length/2+1);
     if (cudaGetLastError() != cudaSuccess) {
        fprintf(stderr, "Cuda error: Kernel failure, square_and_accumulate_sum\n");
        exit(EXIT_FAILURE);
@@ -407,6 +507,34 @@ extern "C" void process_vector_no_output_s(int16_t *d_in, spectrometer_data_s *d
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /*
@@ -437,7 +565,7 @@ extern "C" void process_vector_no_output(uint16_t *d_in, spectrometer_data *d)
     }
 
     // // convert datatype using GPU
-    short_to_float<<< N_BLOCKS_S, N_THREADS_S >>>(d->ds_in, d->d_in, d->d_window, n_spectra, spectrum_length);
+    short_to_float<<< N_BLOCKS, N_THREADS >>>(d->ds_in, d->d_in, d->d_window, n_spectra, spectrum_length);
 
     // cufft kernel execution
     if (cufftExecR2C(d->plan, (float *)d->d_in, (cufftComplex *)d->d_z_out)
@@ -448,7 +576,7 @@ extern "C" void process_vector_no_output(uint16_t *d_in, spectrometer_data *d)
     }
 
     // this needs to be faster:
-    square_and_accumulate_sum<<< 1, N_THREADS_S >>>(d->d_z_out, d->d_spectrum, n_spectra, spectrum_length/2+1);
+    square_and_accumulate_sum<<< 1, N_THREADS >>>(d->d_z_out, d->d_spectrum, n_spectra, spectrum_length/2+1);
     if (cudaGetLastError() != cudaSuccess) {
        fprintf(stderr, "Cuda error: Kernel failure, square_and_accumulate_sum\n");
        exit(EXIT_FAILURE);
