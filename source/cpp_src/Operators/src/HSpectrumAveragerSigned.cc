@@ -56,6 +56,9 @@ HSpectrumAveragerSigned::ExecuteThreadTask()
             uint64_t power_spectrum_length = ((sdata->spectrum_length)/2+1); //length of the power spectrum
             uint64_t n_total_samples = (sdata->n_spectra)*(sdata->spectrum_length); //total number of samples used to compute the averaged spectrum we get from this buffer
 
+            //collect the noise power data
+            float sum = sdata->sum;
+            float sum2 = sdata->sum2;
 
             //pass checks?
             if(fNBuffersAccumulated == 0 && power_spectrum_length == fPowerSpectrumLength)
@@ -69,6 +72,27 @@ HSpectrumAveragerSigned::ExecuteThreadTask()
                 fLeadingSampleIndex = leading_sample_index;
                 fNTotalSpectrum = n_spectra;
                 fNTotalSamplesAccumulated = n_total_samples;
+
+                //set appropriate meta data quantities for the accumulation container
+                fNoisePowerAccumulator.SetSampleRate( fSampleRate );
+                fNoisePowerAccumulator.SetAcquisitionStartSecond( fAcquisitionStartSecond );
+                fNoisePowerAccumulator.SetLeadingSampleIndex( fLeadingSampleIndex );
+                fNoisePowerAccumulator.SetSampleLength( n_total_samples );
+                fNoisePowerAccumulator.SetNoiseDiodeSwitchingFrequency(0);
+                fNoisePowerAccumulator.SetNoiseDiodeBlankingPeriod(0);
+                fNoisePowerAccumulator.SetSidebandFlag( fSidebandFlag );
+                fNoisePowerAccumulator.SetPolarizationFlag( fPolarizationFlag );
+
+                //noise power data
+                struct HDataAccumulationStruct stat;
+                stat.start_index = leading_sample_index;
+                stat.stop_index = leading_sample_index + n_total_samples;
+                stat.sum_x = sum;
+                stat.sum_x2 = sum2;
+                stat.count = n_total_samples;
+                stat.state_flag = H_NOISE_UNKNOWN;
+                fNoisePowerAccumulator.AppendAccumulation(stat);
+
             }
             else if( CheckMetaData(sideband_flag, pol_flag, start_second, sample_rate, leading_sample_index) ) //meta data matches, so accumulate another spectrum
             {
@@ -81,10 +105,21 @@ HSpectrumAveragerSigned::ExecuteThreadTask()
                 this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID() );
                 source = nullptr;
 
+                //noise power data
+                struct HDataAccumulationStruct stat;
+                stat.start_index = leading_sample_index;
+                stat.stop_index = leading_sample_index + n_total_samples;
+                stat.sum_x = sum;
+                stat.sum_x2 = sum2;
+                stat.count = n_total_samples;
+                stat.state_flag = H_NOISE_UNKNOWN;
+                fNoisePowerAccumulator.AppendAccumulation(stat);
+
                 //check if we have reached the desired number of buffers,
                 if(fNBuffersAccumulated == fNBuffersToAccumulate)
                 {
                     WriteAccumulatedSpectrumAverage();
+                    WriteNoisePower();
                     Reset();
                 }
             }
@@ -95,7 +130,6 @@ HSpectrumAveragerSigned::ExecuteThreadTask()
                 //WriteAccumulatedSpectrumAverage();
                 Reset();
 
-
                 //now start on new buffer
                 fNBuffersAccumulated++;
                 fSidebandFlag = sideband_flag;
@@ -105,8 +139,18 @@ HSpectrumAveragerSigned::ExecuteThreadTask()
                 fLeadingSampleIndex = leading_sample_index;
                 fNTotalSpectrum = n_spectra;
                 fNTotalSamplesAccumulated = n_total_samples;
-
                 Accumulate(sdata->spectrum);
+
+                //noise power data
+                struct HDataAccumulationStruct stat;
+                stat.start_index = leading_sample_index;
+                stat.stop_index = leading_sample_index + n_total_samples;
+                stat.sum_x = sum;
+                stat.sum_x2 = sum2;
+                stat.count = n_total_samples;
+                stat.state_flag = H_NOISE_UNKNOWN;
+                fNoisePowerAccumulator.AppendAccumulation(stat);
+
                 this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID() );
                 source = nullptr;
 
@@ -114,6 +158,7 @@ HSpectrumAveragerSigned::ExecuteThreadTask()
                 if(fNBuffersAccumulated == fNBuffersToAccumulate)
                 {
                     WriteAccumulatedSpectrumAverage();
+                    WriteNoisePower();
                     Reset();
                 }
             }
@@ -208,8 +253,57 @@ void HSpectrumAveragerSigned::Reset()
     {
         accum[i] = 0.0;
     }
+
+    //for the noise power, clear out all the accumulation structs
+    fNoisePowerAccumulator.ClearAccumulation();
+
 }
 
+void HSpectrumAveragerSigned::WriteNoisePower()
+{
+    auto accum_container = &fNoisePowerAccumulator;
+
+    //we rely on acquisitions start time, sample index, and sideband/pol flags to uniquely name/stamp a file
+    std::stringstream ss;
+    ss << fCurrentOutputDirectory;
+    ss << "/";
+    ss <<  accum_container->GetAcquisitionStartSecond();
+    ss << "_";
+    ss <<  accum_container->GetLeadingSampleIndex();
+    ss << "_";
+    ss <<  accum_container->GetSidebandFlag();
+    ss <<  accum_container->GetPolarizationFlag();
+
+    std::string noise_power_filename = ss.str() + ".npow";
+
+    //write out the noise diode data
+    struct HNoisePowerFileStruct* power_data = CreateNoisePowerFileStruct();
+    if(power_data != NULL)
+    {
+        memcpy( power_data->fHeader.fVersionFlag, NOISE_POWER_HEADER_VERSION, HVERSION_WIDTH);
+        power_data->fHeader.fSidebandFlag[0] = accum_container->GetSidebandFlag() ;
+        power_data->fHeader.fPolarizationFlag[0] = accum_container->GetPolarizationFlag();
+        power_data->fHeader.fStartTime = accum_container->GetAcquisitionStartSecond();
+        power_data->fHeader.fSampleRate = accum_container->GetSampleRate();
+        power_data->fHeader.fLeadingSampleIndex = accum_container->GetLeadingSampleIndex();
+        power_data->fHeader.fSampleLength = accum_container->GetSampleLength();
+        power_data->fHeader.fAccumulationLength = accum_container->GetAccumulations()->size();
+        power_data->fHeader.fSwitchingFrequency =  accum_container->GetNoiseDiodeSwitchingFrequency();
+        power_data->fHeader.fBlankingPeriod = accum_container->GetNoiseDiodeBlankingPeriod();
+        // strcpy(power_data->fHeader.fExperimentName, fExperimentName.c_str() );
+        // strcpy(power_data->fHeader.fSourceName, fSourceName.c_str() );
+        // strcpy(power_data->fHeader.fScanName, fScanName.c_str() );
+
+        //now point the accumulation data to the right memory block
+        power_data->fAccumulations = static_cast< struct HDataAccumulationStruct* >( &((*(fNoisePowerAccumulatorGetAccumulations()))[0] ) );
+
+        int ret_val = WriteNoisePowerFile(noise_power_filename.c_str(), power_data);
+        if(ret_val != HSUCCESS){std::cout<<"file error!"<<std::endl;}
+
+        InitializeNoisePowerFileStruct(power_data);
+        DestroyNoisePowerFileStruct(power_data);
+    }
+}
 
 
 }

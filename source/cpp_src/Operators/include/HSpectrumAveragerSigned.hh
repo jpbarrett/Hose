@@ -2,7 +2,16 @@
 #define HSpectrumAveragerSigned_HH__
 
 #include "HConsumerProducer.hh"
+
 #include "spectrometer.h"
+
+extern "C"
+{
+    #include "HDataAccumulationStruct.h"
+}
+
+#include "HDataAccumulationContainer.hh"
+
 
 namespace hose
 {
@@ -32,6 +41,10 @@ class HSpectrumAveragerSigned: public HConsumerProducer< spectrometer_data_s, fl
         bool CheckMetaData(char sideband_flag, char pol_flag, uint64_t start_second, uint64_t sample_rate, uint64_t leading_sample_index) const;
         void Accumulate(float* array);
         bool WriteAccumulatedSpectrumAverage();
+
+        void WriteNoisePower();
+
+
         void Reset();
 
         size_t fPowerSpectrumLength;
@@ -48,6 +61,10 @@ class HSpectrumAveragerSigned: public HConsumerProducer< spectrometer_data_s, fl
         uint64_t fSampleRate;
         std::vector<float> fAccumulatedSpectrum;
         HLinearBuffer< float >* fAccumulationBuffer;
+
+        //for the noise power info
+        HDataAccumulationContainer fNoisePowerAccumulator;
+
 
 };
 
