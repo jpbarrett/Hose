@@ -405,11 +405,13 @@ class HSpectrometerManager: public HApplicationBackend
                         //noise diode configuration
                         std::stringstream ndsfss;
                         ndsfss << "noise_diode_switching_frequency_Hz=";
-                        ndsfss << noise_diode_switching_freq;
+                        ndsfss << 0;
+                        // ndsfss << noise_diode_switching_freq;
 
                         std::stringstream ndbpss;
                         ndbpss << "noise_blanking_period=";
-                        ndbpss << noise_diode_blanking_period;
+                        ndbpss << 0;
+                        // ndbpss << noise_diode_blanking_period;
 
                         std::string noise_diode_config = "noise_diode_config; " + ndsfss.str() + "; " + ndbpss.str();
                         fConfigLogger->info( noise_diode_config.c_str() );
