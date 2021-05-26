@@ -160,23 +160,18 @@ class HSpectrometerManager: public HApplicationBackend
             // fFFTSize(131072),
             fDigitizerPoolSize(N_DIGITIZER_POOL_SIZE),
             fSpectrometerPoolSize(N_SPECTROMETER_POOL_SIZE),
-            fNoisePowerPoolSize(N_NOISE_POWER_POOL_SIZE),
             fNDigitizerThreads(N_DIGITIZER_THREADS),
             fNSpectrometerThreads(N_SPECTROMETER_THREADS),
-            fNNoisePowerThreads(N_NOISE_POWER_THREADS),
             fServer(nullptr),
             fDigitizer(nullptr),
             fCUDABufferAllocator(nullptr),
             fSpectrometerBufferAllocator(nullptr),
-            fNoisePowerContainerBufferAllocator(nullptr),
             fSpectrometer(nullptr),
             fWriter(nullptr),
-            fNoisePowerCalculator(nullptr),
             fDataAccumulationWriter(nullptr),
             fDumper(nullptr),
             fDigitizerSourcePool(nullptr),
             fSpectrometerSinkPool(nullptr),
-            fNoisePowerPool(nullptr),
             fSpectrumAveragingBufferAllocator(nullptr),
             fSpectrumAveragingBufferPool(nullptr),
             fSpectrumAverager(nullptr),
@@ -195,16 +190,13 @@ class HSpectrometerManager: public HApplicationBackend
             delete fServer;
             delete fDigitizer;
             delete fSpectrometer;
-            delete fNoisePowerCalculator;
             delete fWriter;
             delete fDumper;
             delete fDataAccumulationWriter;
-            delete fNoisePowerPool;
             delete fDigitizerSourcePool;
             delete fSpectrometerSinkPool;
             delete fCUDABufferAllocator;
             delete fSpectrometerBufferAllocator;
-            delete fNoisePowerContainerBufferAllocator;
             delete fSpectrumAveragingBufferAllocator;
             delete fSpectrumAveragingBufferPool;
             delete fSpectrumAverager;
@@ -294,11 +286,6 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrometerSinkPool = new HBufferPool< SPECTRUM_TYPE >( fSpectrometerBufferAllocator );
                         fSpectrometerSinkPool->Allocate(fSpectrometerPoolSize, 1);
 
-                        //create a noise accumulation container data pool
-                        fNoisePowerContainerBufferAllocator = new HBufferAllocatorNew< HDataAccumulationContainer >();
-                        fNoisePowerPool = new HBufferPool< HDataAccumulationContainer >(fNoisePowerContainerBufferAllocator);
-                        fNoisePowerPool->Allocate(fNoisePowerPoolSize, 1);
-
                         //create spectrometer
                         fSpectrometer = new SPECTROMETER_TYPE(fFFTSize, fNSpectrumAverages);
                         fSpectrometer->SetNThreads(fNSpectrometerThreads);
@@ -319,36 +306,15 @@ class HSpectrometerManager: public HApplicationBackend
                         fAveragedSpectrumWriter->SetBufferPool(fSpectrumAveragingBufferPool);
                         fAveragedSpectrumWriter->SetNThreads(1);
 
-                        //create the noise power calculator
-                        double noise_diode_switching_freq = NOISE_DIODE_SWITCHING_FREQ;
-                        double noise_diode_blanking_period = NOISE_DIODE_BLANK_PERIOD;
-                        fNoisePowerCalculator = new HSwitchedPowerCalculator< typename XDigitizerType::sample_type >();
-                        fNoisePowerCalculator->SetSwitchingFrequency(noise_diode_switching_freq);
-                        fNoisePowerCalculator->SetSamplingFrequency( fDigitizer->GetSamplingFrequency() );
-                        fNoisePowerCalculator->SetBlankingPeriod(noise_diode_blanking_period); //11ms (from original GPU spec)
-                        fNoisePowerCalculator->SetSourceBufferPool(fDigitizerSourcePool);
-                        fNoisePowerCalculator->SetSinkBufferPool(fNoisePowerPool);
-
                         //create an itermittent raw data dumper
                         fDumper = new HRawDataDumper< typename XDigitizerType::sample_type >();
                         fDumper->SetBufferPool(fDigitizerSourcePool);
                         fDumper->SetBufferDumpFrequency(DUMP_FREQ);
                         fDumper->SetNThreads(1);
 
-                        //spectrum file writing consumer to drain the spectrum data buffers
-                        // fWriter = new HSimpleMultiThreadedSpectrumDataWriterSigned();
-                        // fWriter->SetBufferPool(fSpectrometerSinkPool);
-                        // fWriter->SetNThreads(1);
-
-                        //noise power file writing consumer to drain the noise power calculator buffers
-                        fDataAccumulationWriter = new HDataAccumulationWriter();
-                        fDataAccumulationWriter->SetBufferPool(fNoisePowerPool);
-                        fDataAccumulationWriter->SetNThreads(1);
-
                         fDigitizerSourcePool->Initialize();
                         fSpectrometerSinkPool->Initialize();
                         fSpectrumAveragingBufferPool->Initialize();
-                        fNoisePowerPool->Initialize();
 
                         #ifdef HOSE_USE_SPDLOG
 
@@ -381,7 +347,7 @@ class HSpectrometerManager: public HApplicationBackend
                         fftss << "fft_size=";
                         fftss << fFFTSize;
 
-                        //window function information, this is essentially hard-code for now,
+                        //window function information, this is essentially hard-coded for now,
                         //but it is possible we may implement different types in the future
                         //TODO FIXME move this calculation out of here
                         std::vector<double> pOut;
@@ -491,12 +457,6 @@ class HSpectrometerManager: public HApplicationBackend
                 for(size_t i=0; i<fNSpectrometerThreads; i++)
                 {
                     fSpectrometer->AssociateThreadWithSingleProcessor(i, core_id++);
-                };
-
-                fNoisePowerCalculator->StartConsumptionProduction();
-                for(size_t i=0; i<N_NOISE_POWER_THREADS; i++)
-                {
-                    fNoisePowerCalculator->AssociateThreadWithSingleProcessor(i, core_id++);
                 };
 
                 fDigitizer->StartProduction();
@@ -1153,10 +1113,9 @@ class HSpectrometerManager: public HApplicationBackend
         size_t fFFTSize;
         size_t fDigitizerPoolSize;
         size_t fSpectrometerPoolSize;
-        size_t fNoisePowerPoolSize;
         size_t fNDigitizerThreads;
         size_t fNSpectrometerThreads;
-        size_t fNNoisePowerThreads;
+
 
         //state data
         int fRecordingState;
@@ -1172,15 +1131,12 @@ class HSpectrometerManager: public HApplicationBackend
         XDigitizerType* fDigitizer;
         HCudaHostBufferAllocator< typename XDigitizerType::sample_type >* fCUDABufferAllocator;
         HBufferAllocatorSpectrometerDataCUDA< SPECTRUM_TYPE >* fSpectrometerBufferAllocator;
-        HBufferAllocatorNew< HDataAccumulationContainer >* fNoisePowerContainerBufferAllocator;
         SPECTROMETER_TYPE* fSpectrometer;
         HSimpleMultiThreadedSpectrumDataWriterSigned* fWriter;
-        HSwitchedPowerCalculator< typename XDigitizerType::sample_type >* fNoisePowerCalculator;
         HDataAccumulationWriter* fDataAccumulationWriter;
         HRawDataDumper< typename XDigitizerType::sample_type >* fDumper;
         HBufferPool< typename XDigitizerType::sample_type >* fDigitizerSourcePool;
         HBufferPool< SPECTRUM_TYPE >* fSpectrometerSinkPool;
-        HBufferPool< HDataAccumulationContainer >* fNoisePowerPool;
 
         HBufferAllocatorNew< float >* fSpectrumAveragingBufferAllocator;
         HBufferPool< float >* fSpectrumAveragingBufferPool;
