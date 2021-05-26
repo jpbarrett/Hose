@@ -17,6 +17,7 @@
 //it might be possible this could be expanded upon to handle other situations (vane cal?)
 #define H_NOISE_DIODE_OFF 0
 #define H_NOISE_DIODE_ON 1
+#define H_NOISE_UNKNOWN 2
 
 struct HDataAccumulationStruct
 {

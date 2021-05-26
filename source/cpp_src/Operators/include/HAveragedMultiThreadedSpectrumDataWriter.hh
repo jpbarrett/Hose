@@ -13,10 +13,11 @@
 #include "HConsumer.hh"
 #include "HDirectoryWriter.hh"
 
-extern "C" 
+extern "C"
 {
     #include "HBasicDefines.h"
     #include "HSpectrumFile.h"
+    #include "HNoisePowerFile.h"
 }
 
 namespace hose

@@ -73,16 +73,6 @@ HSpectrumAveragerSigned::ExecuteThreadTask()
                 fNTotalSpectrum = n_spectra;
                 fNTotalSamplesAccumulated = n_total_samples;
 
-                //set appropriate meta data quantities for the accumulation container
-                fNoisePowerAccumulator.SetSampleRate( fSampleRate );
-                fNoisePowerAccumulator.SetAcquisitionStartSecond( fAcquisitionStartSecond );
-                fNoisePowerAccumulator.SetLeadingSampleIndex( fLeadingSampleIndex );
-                fNoisePowerAccumulator.SetSampleLength( n_total_samples );
-                fNoisePowerAccumulator.SetNoiseDiodeSwitchingFrequency(0);
-                fNoisePowerAccumulator.SetNoiseDiodeBlankingPeriod(0);
-                fNoisePowerAccumulator.SetSidebandFlag( fSidebandFlag );
-                fNoisePowerAccumulator.SetPolarizationFlag( fPolarizationFlag );
-
                 //noise power data
                 struct HDataAccumulationStruct stat;
                 stat.start_index = leading_sample_index;
@@ -119,7 +109,6 @@ HSpectrumAveragerSigned::ExecuteThreadTask()
                 if(fNBuffersAccumulated == fNBuffersToAccumulate)
                 {
                     WriteAccumulatedSpectrumAverage();
-                    WriteNoisePower();
                     Reset();
                 }
             }
@@ -158,7 +147,6 @@ HSpectrumAveragerSigned::ExecuteThreadTask()
                 if(fNBuffersAccumulated == fNBuffersToAccumulate)
                 {
                     WriteAccumulatedSpectrumAverage();
-                    WriteNoisePower();
                     Reset();
                 }
             }
@@ -214,6 +202,9 @@ HSpectrumAveragerSigned::WriteAccumulatedSpectrumAverage()
         sink->GetMetaData()->SetNTotalSpectrum(fNTotalSpectrum);
         sink->GetMetaData()->SetNTotalSamplesCollected(fNTotalSamplesAccumulated);
         sink->GetMetaData()->SetPowerSpectrumLength(fPowerSpectrumLength);
+        //noise diode is not used at 37m
+        sink->GetMetaData()->SetNoiseDiodeSwitchingFrequency(0);
+        sink->GetMetaData()->SetNoiseDiodeBlankingPeriod(0);
 
         //compute average and finish writing meta data
         float* accum = fAccumulationBuffer->GetData();
@@ -222,6 +213,10 @@ HSpectrumAveragerSigned::WriteAccumulatedSpectrumAverage()
         {
             ave[i] = accum[i]/(float)fNBuffersAccumulated;;
         }
+
+        //stuff the noise power data into the meta data container
+        sink->GetMetaData()->ClearAccumulation();
+        sink->GetMetaData()->ExtendAccumulation(fNoisePowerAccumulator.GetAccumulations());
 
         //release to consumer
         this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
@@ -259,51 +254,6 @@ void HSpectrumAveragerSigned::Reset()
 
 }
 
-void HSpectrumAveragerSigned::WriteNoisePower()
-{
-    auto accum_container = &fNoisePowerAccumulator;
-
-    //we rely on acquisitions start time, sample index, and sideband/pol flags to uniquely name/stamp a file
-    std::stringstream ss;
-    ss << fCurrentOutputDirectory;
-    ss << "/";
-    ss <<  accum_container->GetAcquisitionStartSecond();
-    ss << "_";
-    ss <<  accum_container->GetLeadingSampleIndex();
-    ss << "_";
-    ss <<  accum_container->GetSidebandFlag();
-    ss <<  accum_container->GetPolarizationFlag();
-
-    std::string noise_power_filename = ss.str() + ".npow";
-
-    //write out the noise diode data
-    struct HNoisePowerFileStruct* power_data = CreateNoisePowerFileStruct();
-    if(power_data != NULL)
-    {
-        memcpy( power_data->fHeader.fVersionFlag, NOISE_POWER_HEADER_VERSION, HVERSION_WIDTH);
-        power_data->fHeader.fSidebandFlag[0] = accum_container->GetSidebandFlag() ;
-        power_data->fHeader.fPolarizationFlag[0] = accum_container->GetPolarizationFlag();
-        power_data->fHeader.fStartTime = accum_container->GetAcquisitionStartSecond();
-        power_data->fHeader.fSampleRate = accum_container->GetSampleRate();
-        power_data->fHeader.fLeadingSampleIndex = accum_container->GetLeadingSampleIndex();
-        power_data->fHeader.fSampleLength = accum_container->GetSampleLength();
-        power_data->fHeader.fAccumulationLength = accum_container->GetAccumulations()->size();
-        power_data->fHeader.fSwitchingFrequency =  accum_container->GetNoiseDiodeSwitchingFrequency();
-        power_data->fHeader.fBlankingPeriod = accum_container->GetNoiseDiodeBlankingPeriod();
-        // strcpy(power_data->fHeader.fExperimentName, fExperimentName.c_str() );
-        // strcpy(power_data->fHeader.fSourceName, fSourceName.c_str() );
-        // strcpy(power_data->fHeader.fScanName, fScanName.c_str() );
-
-        //now point the accumulation data to the right memory block
-        power_data->fAccumulations = static_cast< struct HDataAccumulationStruct* >( &((*(fNoisePowerAccumulatorGetAccumulations()))[0] ) );
-
-        int ret_val = WriteNoisePowerFile(noise_power_filename.c_str(), power_data);
-        if(ret_val != HSUCCESS){std::cout<<"file error!"<<std::endl;}
-
-        InitializeNoisePowerFileStruct(power_data);
-        DestroyNoisePowerFileStruct(power_data);
-    }
-}
 
 
 }

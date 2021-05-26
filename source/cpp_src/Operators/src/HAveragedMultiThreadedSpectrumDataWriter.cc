@@ -13,12 +13,12 @@ HAveragedMultiThreadedSpectrumDataWriter::HAveragedMultiThreadedSpectrumDataWrit
 HAveragedMultiThreadedSpectrumDataWriter::~HAveragedMultiThreadedSpectrumDataWriter(){};
 
 
-void 
+void
 HAveragedMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
 {
     //get a buffer from the buffer handler
     HLinearBuffer< float >* tail = nullptr;
-    
+
     if( this->fBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) != 0 )
     {
         //grab a buffer to process
@@ -78,8 +78,50 @@ HAveragedMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                 DestroySpectrumFileStruct(spec_data);
             }
 
+
+            //Now we write out the noise power data (stored in the buffer meta data)
+            std::stringstream ss2;
+            ss2 << fCurrentOutputDirectory;
+            ss2 << "/";
+            ss2 << tail->GetMetaData()->GetAcquisitionStartSecond();
+            ss2 << "_";
+            ss2 <<  tail->GetMetaData()->GetLeadingSampleIndex();
+            ss2 << "_";
+            ss2 << tail->GetMetaData()->GetSidebandFlag();
+            ss2 << tail->GetMetaData()->GetPolarizationFlag();
+
+            std::string noise_power_filename = ss2.str() + ".npow";
+
+            //write out the noise diode data
+            struct HNoisePowerFileStruct* power_data = CreateNoisePowerFileStruct();
+            if(power_data != NULL)
+            {
+                memcpy( power_data->fHeader.fVersionFlag, NOISE_POWER_HEADER_VERSION, HVERSION_WIDTH);
+                power_data->fHeader.fSidebandFlag[0] = tail->GetMetaData()->GetSidebandFlag() ;
+                power_data->fHeader.fPolarizationFlag[0] = tail->GetMetaData()->GetPolarizationFlag();
+                power_data->fHeader.fStartTime = tail->GetMetaData()->GetAcquisitionStartSecond();
+                power_data->fHeader.fSampleRate = tail->GetMetaData()->GetSampleRate();
+                power_data->fHeader.fLeadingSampleIndex = tail->GetMetaData()->GetLeadingSampleIndex();
+                power_data->fHeader.fSampleLength = tail->GetMetaData()->GetNTotalSamplesCollected();
+                power_data->fHeader.fAccumulationLength = tail->GetMetaData()->GetAccumulations()->size();
+                power_data->fHeader.fSwitchingFrequency =  tail->GetMetaData()->GetNoiseDiodeSwitchingFrequency();
+                power_data->fHeader.fBlankingPeriod = tail->GetMetaData()->GetNoiseDiodeBlankingPeriod();
+                // strcpy(power_data->fHeader.fExperimentName, fExperimentName.c_str() );
+                // strcpy(power_data->fHeader.fSourceName, fSourceName.c_str() );
+                // strcpy(power_data->fHeader.fScanName, fScanName.c_str() );
+
+                //now point the accumulation data to the right memory block
+                power_data->fAccumulations = static_cast< struct HDataAccumulationStruct* >( &((*(tail->GetMetaData()->GetAccumulations()))[0] ) );
+
+                int ret_val = WriteNoisePowerFile(noise_power_filename.c_str(), power_data);
+                if(ret_val != HSUCCESS){std::cout<<"file error!"<<std::endl;}
+
+                InitializeNoisePowerFileStruct(power_data);
+                DestroyNoisePowerFileStruct(power_data);
+            }
+
         }
-        
+
         // if(tail != nullptr)
         // {
         //     this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
@@ -91,9 +133,9 @@ HAveragedMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
 
     }
 }
-    
-bool 
-HAveragedMultiThreadedSpectrumDataWriter::WorkPresent() 
+
+bool
+HAveragedMultiThreadedSpectrumDataWriter::WorkPresent()
 {
     if(this->fBufferPool->GetConsumerPoolSize(this->GetConsumerID()) == 0)
     {
@@ -102,8 +144,8 @@ HAveragedMultiThreadedSpectrumDataWriter::WorkPresent()
     return true;
 }
 
-void 
-HAveragedMultiThreadedSpectrumDataWriter::Idle() 
+void
+HAveragedMultiThreadedSpectrumDataWriter::Idle()
 {
     usleep(10);
 }
