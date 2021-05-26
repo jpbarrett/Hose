@@ -168,7 +168,6 @@ class HSpectrometerManager: public HApplicationBackend
             fSpectrometerBufferAllocator(nullptr),
             fSpectrometer(nullptr),
             fWriter(nullptr),
-            fDataAccumulationWriter(nullptr),
             fDumper(nullptr),
             fDigitizerSourcePool(nullptr),
             fSpectrometerSinkPool(nullptr),
@@ -192,7 +191,6 @@ class HSpectrometerManager: public HApplicationBackend
             delete fSpectrometer;
             delete fWriter;
             delete fDumper;
-            delete fDataAccumulationWriter;
             delete fDigitizerSourcePool;
             delete fSpectrometerSinkPool;
             delete fCUDABufferAllocator;
@@ -442,11 +440,6 @@ class HSpectrometerManager: public HApplicationBackend
                 };
 
                 fDumper->StartConsumption();
-                fDataAccumulationWriter->StartConsumption();
-                for(unsigned int i=0; i<1; i++)
-                {
-                    fDataAccumulationWriter->AssociateThreadWithSingleProcessor(i, core_id++);
-                };
 
                 fSpectrumAverager->StartConsumptionProduction();
                 for(unsigned int i=0; i<1; i++)
@@ -820,16 +813,6 @@ class HSpectrometerManager: public HApplicationBackend
                 fScanName = "ScnX";
             }
 
-            // fWriter->SetExperimentName(fExperimentName);
-            // fWriter->SetSourceName(fSourceName);
-            // fWriter->SetScanName(fScanName);
-            // fWriter->InitializeOutputDirectory();
-
-            fDataAccumulationWriter->SetExperimentName(fExperimentName);
-            fDataAccumulationWriter->SetSourceName(fSourceName);
-            fDataAccumulationWriter->SetScanName(fScanName);
-            fDataAccumulationWriter->InitializeOutputDirectory();
-
             fDumper->SetExperimentName(fExperimentName);
             fDumper->SetSourceName(fSourceName);
             fDumper->SetScanName(fScanName);
@@ -1134,8 +1117,6 @@ class HSpectrometerManager: public HApplicationBackend
         HCudaHostBufferAllocator< typename XDigitizerType::sample_type >* fCUDABufferAllocator;
         HBufferAllocatorSpectrometerDataCUDA< SPECTRUM_TYPE >* fSpectrometerBufferAllocator;
         SPECTROMETER_TYPE* fSpectrometer;
-        HSimpleMultiThreadedSpectrumDataWriterSigned* fWriter;
-        HDataAccumulationWriter* fDataAccumulationWriter;
         HRawDataDumper< typename XDigitizerType::sample_type >* fDumper;
         HBufferPool< typename XDigitizerType::sample_type >* fDigitizerSourcePool;
         HBufferPool< SPECTRUM_TYPE >* fSpectrometerSinkPool;
