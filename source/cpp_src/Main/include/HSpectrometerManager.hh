@@ -167,7 +167,6 @@ class HSpectrometerManager: public HApplicationBackend
             fCUDABufferAllocator(nullptr),
             fSpectrometerBufferAllocator(nullptr),
             fSpectrometer(nullptr),
-            fWriter(nullptr),
             fDumper(nullptr),
             fDigitizerSourcePool(nullptr),
             fSpectrometerSinkPool(nullptr),
@@ -189,7 +188,6 @@ class HSpectrometerManager: public HApplicationBackend
             delete fServer;
             delete fDigitizer;
             delete fSpectrometer;
-            delete fWriter;
             delete fDumper;
             delete fDigitizerSourcePool;
             delete fSpectrometerSinkPool;
@@ -427,7 +425,7 @@ class HSpectrometerManager: public HApplicationBackend
             {
                 //start the command server thread
                 std::thread server_thread( &HServer::Run, fServer );
-                //fWriter->StartConsumption();
+
                 fAveragedSpectrumWriter->StartConsumption();
 
                 // NUMA node0 CPU(s):     0-7,16-23
@@ -527,7 +525,6 @@ class HSpectrometerManager: public HApplicationBackend
                 sleep(1);
                 fSpectrometer->StopConsumptionProduction();
                 sleep(1);
-                //fWriter->StopConsumption();
                 fAveragedSpectrumWriter->StopConsumption();
 
                 CleanUp();
