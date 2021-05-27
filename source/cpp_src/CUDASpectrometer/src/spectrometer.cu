@@ -11,9 +11,6 @@
 #include "noise_statistics_mbp_reduce.h"
 
 
-
-#define MIN(X,Y) (((X) < (Y)) ? (X) : (Y))
-
 void cuda_alloc_pinned_memory( void** ptr, size_t s)
 {
     int code = cudaMallocHost(ptr, s);
