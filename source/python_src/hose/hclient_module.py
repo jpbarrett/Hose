@@ -28,7 +28,7 @@ class hclient(object):
             response = self.socket.recv()
         else:
             raise IOError("Timeout processing auth request")
-        print "Server status: ", response
+        print( "Server status: ", response)
 
     def SendMessage(self, msg_string):
         print("Sending message: ", msg_string)
@@ -42,7 +42,7 @@ class hclient(object):
             response = self.socket.recv()
         else:
             raise IOError("Timeout processing auth request")
-        print "Server status: ", response
+        print( "Server status: ", response)
         return '\0'
 
     def Shutdown(self):
@@ -87,7 +87,7 @@ class hprompt(Cmd):
 
     def do_quit(self, args):
         """Quits the client."""
-        print "Quitting."
+        print( "Quitting.")
         time.sleep(1)
         for x in self.process_list:
             x.kill()
@@ -96,7 +96,7 @@ class hprompt(Cmd):
 
     def do_shutdown(self, args):
         """Shutdown the recording daemon and quit the client."""
-        print "Shutting down."
+        print( "Shutting down.")
         cmd_string = "shutdown"
         self.interface.SendRecieveMessage(cmd_string)
         time.sleep(1)

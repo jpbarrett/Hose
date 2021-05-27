@@ -2,7 +2,16 @@
 #define HSpectrumAverager_HH__
 
 #include "HConsumerProducer.hh"
+
 #include "spectrometer.h"
+
+extern "C"
+{
+    #include "HDataAccumulationStruct.h"
+}
+
+#include "HDataAccumulationContainer.hh"
+
 
 namespace hose
 {
@@ -20,7 +29,7 @@ class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HCo
 {
 
     public:
-        HSpectrumAverager(size_t spectrum_length, size_t n_buffers);  //spec size and n buffers to average are fixed at constuction time
+        HSpectrumAverager(size_t spectrum_length, size_t n_buffers);  //spec size and averages are fixed at constuction time
         virtual ~HSpectrumAverager();
 
     protected:
@@ -48,6 +57,10 @@ class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HCo
         uint64_t fSampleRate;
         std::vector<float> fAccumulatedSpectrum;
         HLinearBuffer< float >* fAccumulationBuffer;
+
+        //to collect the noise power info
+        HDataAccumulationContainer fNoisePowerAccumulator;
+
 
 };
 

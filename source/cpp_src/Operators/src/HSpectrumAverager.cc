@@ -54,8 +54,11 @@ HSpectrumAverager::ExecuteThreadTask()
             uint64_t n_spectra = sdata->n_spectra;
             uint64_t n_spectrum_samples_length = sdata->spectrum_length; //number of samples used in FFT to create an individual spectrum
             uint64_t power_spectrum_length = ((sdata->spectrum_length)/2+1); //length of the power spectrum
-            uint64_t n_total_samples = (sdata->n_spectra)*(sdata->spectrum_length); //total number of samples used to compute the averaged spectrum we get from this buffer
+            uint64_t n_total_samples = n_spectra*n_spectrum_samples_length; //total number of samples used to compute the averaged spectrum we get from this buffer
 
+            //collect the noise power data
+            float sum = sdata->sum;
+            float sum2 = sdata->sum2;
 
             //pass checks?
             if(fNBuffersAccumulated == 0 && power_spectrum_length == fPowerSpectrumLength)
@@ -69,6 +72,17 @@ HSpectrumAverager::ExecuteThreadTask()
                 fLeadingSampleIndex = leading_sample_index;
                 fNTotalSpectrum = n_spectra;
                 fNTotalSamplesAccumulated = n_total_samples;
+
+                //noise power data
+                struct HDataAccumulationStruct stat;
+                stat.start_index = leading_sample_index;
+                stat.stop_index = leading_sample_index + n_total_samples;
+                stat.sum_x = sum;
+                stat.sum_x2 = sum2;
+                stat.count = n_total_samples;
+                stat.state_flag = H_NOISE_UNKNOWN;
+                fNoisePowerAccumulator.AppendAccumulation(stat);
+
             }
             else if( CheckMetaData(sideband_flag, pol_flag, start_second, sample_rate, leading_sample_index) ) //meta data matches, so accumulate another spectrum
             {
@@ -80,6 +94,16 @@ HSpectrumAverager::ExecuteThreadTask()
                 Accumulate(sdata->spectrum);
                 this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID() );
                 source = nullptr;
+
+                //noise power data
+                struct HDataAccumulationStruct stat;
+                stat.start_index = leading_sample_index;
+                stat.stop_index = leading_sample_index + n_total_samples;
+                stat.sum_x = sum;
+                stat.sum_x2 = sum2;
+                stat.count = n_total_samples;
+                stat.state_flag = H_NOISE_UNKNOWN;
+                fNoisePowerAccumulator.AppendAccumulation(stat);
 
                 //check if we have reached the desired number of buffers,
                 if(fNBuffersAccumulated == fNBuffersToAccumulate)
@@ -95,7 +119,6 @@ HSpectrumAverager::ExecuteThreadTask()
                 //WriteAccumulatedSpectrumAverage();
                 Reset();
 
-
                 //now start on new buffer
                 fNBuffersAccumulated++;
                 fSidebandFlag = sideband_flag;
@@ -105,8 +128,18 @@ HSpectrumAverager::ExecuteThreadTask()
                 fLeadingSampleIndex = leading_sample_index;
                 fNTotalSpectrum = n_spectra;
                 fNTotalSamplesAccumulated = n_total_samples;
-
                 Accumulate(sdata->spectrum);
+
+                //noise power data
+                struct HDataAccumulationStruct stat;
+                stat.start_index = leading_sample_index;
+                stat.stop_index = leading_sample_index + n_total_samples;
+                stat.sum_x = sum;
+                stat.sum_x2 = sum2;
+                stat.count = n_total_samples;
+                stat.state_flag = H_NOISE_UNKNOWN;
+                fNoisePowerAccumulator.AppendAccumulation(stat);
+
                 this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID() );
                 source = nullptr;
 
@@ -169,6 +202,9 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
         sink->GetMetaData()->SetNTotalSpectrum(fNTotalSpectrum);
         sink->GetMetaData()->SetNTotalSamplesCollected(fNTotalSamplesAccumulated);
         sink->GetMetaData()->SetPowerSpectrumLength(fPowerSpectrumLength);
+        //noise diode is not used at 37m
+        sink->GetMetaData()->SetNoiseDiodeSwitchingFrequency(0);
+        sink->GetMetaData()->SetNoiseDiodeBlankingPeriod(0);
 
         //compute average and finish writing meta data
         float* accum = fAccumulationBuffer->GetData();
@@ -177,6 +213,10 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
         {
             ave[i] = accum[i]/(float)fNBuffersAccumulated;;
         }
+
+        //stuff the noise power data into the meta data container
+        sink->GetMetaData()->ClearAccumulation();
+        sink->GetMetaData()->ExtendAccumulation(fNoisePowerAccumulator.GetAccumulations());
 
         //release to consumer
         this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
@@ -208,6 +248,10 @@ void HSpectrumAverager::Reset()
     {
         accum[i] = 0.0;
     }
+
+    //for the noise power, clear out all the accumulation structs
+    fNoisePowerAccumulator.ClearAccumulation();
+
 }
 
 

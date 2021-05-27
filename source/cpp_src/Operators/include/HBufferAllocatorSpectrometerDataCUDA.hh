@@ -52,7 +52,7 @@ class HBufferAllocatorSpectrometerDataCUDA: public HBufferAllocatorBase< XBuffer
 //template specialization spectrometer_data
 
 template<>
-spectrometer_data* 
+spectrometer_data*
 HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >::AllocateImpl(size_t size)
 {
     if(size != 1)
@@ -73,17 +73,17 @@ HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >::AllocateImpl(size_t s
 }
 
 template<>
-void 
+void
 HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >::DeallocateImpl(spectrometer_data* ptr, size_t /*size*/)
 {
     free_spectrometer_data(ptr);
 }
 
 
-//template specialization spectrometer_data_s
+//template specialization spectrometer_data
 template<>
-spectrometer_data_s* 
-HBufferAllocatorSpectrometerDataCUDA< spectrometer_data_s >::AllocateImpl(size_t size)
+spectrometer_data*
+HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >::AllocateImpl(size_t size)
 {
     if(size != 1)
     {
@@ -97,22 +97,22 @@ HBufferAllocatorSpectrometerDataCUDA< spectrometer_data_s >::AllocateImpl(size_t
         std::exit(1); //crash and burn
     }
 
-    spectrometer_data_s* ptr = nullptr;
-    ptr = new_spectrometer_data_s(fSampleArrayLength, fSpectrumLength);
+    spectrometer_data* ptr = nullptr;
+    ptr = new_spectrometer_data(fSampleArrayLength, fSpectrumLength);
     return ptr;
 }
 
 template<>
-void 
-HBufferAllocatorSpectrometerDataCUDA< spectrometer_data_s >::DeallocateImpl(spectrometer_data_s* ptr, size_t /*size*/)
+void
+HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >::DeallocateImpl(spectrometer_data* ptr, size_t /*size*/)
 {
-    free_spectrometer_data_s(ptr);
+    free_spectrometer_data(ptr);
 }
 
 
 
 template< typename XBufferItemType>
-XBufferItemType* 
+XBufferItemType*
 HBufferAllocatorSpectrometerDataCUDA< XBufferItemType >::AllocateImpl(size_t size)
 {
     //fail away
@@ -121,7 +121,7 @@ HBufferAllocatorSpectrometerDataCUDA< XBufferItemType >::AllocateImpl(size_t siz
 }
 
 template< typename XBufferItemType >
-void 
+void
 HBufferAllocatorSpectrometerDataCUDA< XBufferItemType >::DeallocateImpl(XBufferItemType* ptr, size_t /*size*/)
 {
     //fail away

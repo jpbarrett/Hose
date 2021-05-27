@@ -63,7 +63,7 @@ typedef struct spectrometer_datatr_s
   int validity_flag;
 } spectrometer_data;
 
-extern "C" void process_vector_no_output_s(int16_t *d_in, spectrometer_data *d);
+extern "C" void process_vector_no_output(SAMPLE_TYPE *d_in, spectrometer_data *d);
 extern "C" spectrometer_data *new_spectrometer_data(int data_length, int spectrum_length);
 extern "C" void free_spectrometer_data(spectrometer_data *d);
 

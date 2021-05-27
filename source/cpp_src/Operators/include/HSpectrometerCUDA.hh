@@ -13,10 +13,10 @@ namespace hose
 *Author: J. Barrett
 *Email: barrettj@mit.edu
 *Date:
-*Description: unsigned short int version
+*Description: signed short int version
 */
 
-class HSpectrometerCUDA: public HConsumerProducer< uint16_t, spectrometer_data, HConsumerBufferHandler_WaitWithTimeout< uint16_t >, HProducerBufferHandler_Steal< spectrometer_data > >
+class HSpectrometerCUDA: public HConsumerProducer< SAMPLE_TYPE, spectrometer_data, HConsumerBufferHandler_Immediate< SAMPLE_TYPE >, HProducerBufferHandler_Steal< spectrometer_data > >
 {
 
     public:

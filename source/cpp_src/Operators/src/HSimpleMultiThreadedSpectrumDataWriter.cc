@@ -13,12 +13,12 @@ HSimpleMultiThreadedSpectrumDataWriter::HSimpleMultiThreadedSpectrumDataWriter()
 HSimpleMultiThreadedSpectrumDataWriter::~HSimpleMultiThreadedSpectrumDataWriter(){};
 
 
-void 
+void
 HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
 {
     //get a buffer from the buffer handler
     HLinearBuffer< spectrometer_data >* tail = nullptr;
-    
+
     if( this->fBufferPool->GetConsumerPoolSize(this->GetConsumerID()) != 0 )
     {
         //grab a buffer to process
@@ -34,15 +34,15 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
             //get sdata pointer
             sdata = &( (tail->GetData())[0] ); //should have buffer size of 1
 
-            if(sdata != nullptr)
+            if(sdata != nullptr && sdata->validity_flag == 1)
             {
                 //we rely on acquisitions start time, sample index, and sideband/pol flags to uniquely name/stamp a file
                 std::stringstream ss;
                 ss << fCurrentOutputDirectory;
                 ss << "/";
-                ss <<  sdata->acquistion_start_second;
+                ss <<  tail->GetMetaData()->GetAcquisitionStartSecond();
                 ss << "_";
-                ss <<  sdata->leading_sample_index;
+                ss <<  tail->GetMetaData()->GetLeadingSampleIndex();
                 ss << "_";
                 ss <<  tail->GetMetaData()->GetSidebandFlag();
                 ss <<  tail->GetMetaData()->GetPolarizationFlag();
@@ -65,9 +65,9 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                     spec_data->fHeader.fVersionFlag[HVERSION_WIDTH+1] = 'F'; //F indicates the spectrum data type is a float
                     spec_data->fHeader.fSidebandFlag[0] = tail->GetMetaData()->GetSidebandFlag() ;
                     spec_data->fHeader.fPolarizationFlag[0] = tail->GetMetaData()->GetPolarizationFlag();
-                    spec_data->fHeader.fStartTime = sdata->acquistion_start_second;
-                    spec_data->fHeader.fSampleRate = sdata->sample_rate;
-                    spec_data->fHeader.fLeadingSampleIndex = sdata->leading_sample_index;
+                    spec_data->fHeader.fStartTime = tail->GetMetaData()->GetAcquisitionStartSecond();
+                    spec_data->fHeader.fSampleRate = tail->GetMetaData()->GetSampleRate();
+                    spec_data->fHeader.fLeadingSampleIndex =  tail->GetMetaData()->GetLeadingSampleIndex();
 
                     spec_data->fHeader.fSampleLength = (sdata->n_spectra)*(sdata->spectrum_length);
                     spec_data->fHeader.fNAverages = sdata->n_spectra;
@@ -88,9 +88,11 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
                     InitializeSpectrumFileStruct(spec_data);
                     DestroySpectrumFileStruct(spec_data);
                 }
+
+                sdata->validity_flag = 0;
             }
         }
-        
+
         if(tail != nullptr)
         {
             //std::cout<<"spec writer releasing buffer, consumer id = "<<this->GetConsumerID()<<std::endl;
@@ -98,9 +100,9 @@ HSimpleMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
         }
     }
 }
-    
-bool 
-HSimpleMultiThreadedSpectrumDataWriter::WorkPresent() 
+
+bool
+HSimpleMultiThreadedSpectrumDataWriter::WorkPresent()
 {
     if(this->fBufferPool->GetConsumerPoolSize(this->GetConsumerID()) == 0)
     {
@@ -109,8 +111,8 @@ HSimpleMultiThreadedSpectrumDataWriter::WorkPresent()
     return true;
 }
 
-void 
-HSimpleMultiThreadedSpectrumDataWriter::Idle() 
+void
+HSimpleMultiThreadedSpectrumDataWriter::Idle()
 {
     usleep(10);
 }

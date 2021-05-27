@@ -14,7 +14,7 @@ HSpectrometerCUDA::HSpectrometerCUDA(size_t spectrum_length, size_t n_averages):
 HSpectrometerCUDA::~HSpectrometerCUDA(){};
 
 
-bool 
+bool
 HSpectrometerCUDA::WorkPresent()
 {
     if( fSourceBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) == 0)
@@ -25,7 +25,7 @@ HSpectrometerCUDA::WorkPresent()
 }
 
 
-void 
+void
 HSpectrometerCUDA::ExecuteThreadTask()
 {
     //initialize the thread workspace
@@ -33,7 +33,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
 
     //buffers
     HLinearBuffer< spectrometer_data >* sink = nullptr;
-    HLinearBuffer< uint16_t>* source = nullptr;
+    HLinearBuffer< SAMPLE_TYPE >* source = nullptr;
 
     if( fSourceBufferPool->GetConsumerPoolSize( this->GetConsumerID() ) != 0 ) //only do work if there is stuff to process
     {
@@ -50,7 +50,7 @@ HSpectrometerCUDA::ExecuteThreadTask()
             {
 
                 std::lock_guard<std::mutex> source_lock(source->fMutex);
-                
+
                 //point the sdata to the buffer object (this is a horrible hack)
                 sdata = &( (sink->GetData())[0] ); //should have buffer size of 1
 
@@ -65,6 +65,8 @@ HSpectrometerCUDA::ExecuteThreadTask()
 
                 //call Juha's process_vector routine
                 process_vector_no_output(source->GetData(), sdata);
+
+                sdata->validity_flag = 1;
 
                 //release the buffers
                 this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID());

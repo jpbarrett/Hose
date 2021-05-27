@@ -15,7 +15,7 @@
 
 #include "spectrometer.h"
 
-extern "C" 
+extern "C"
 {
     #include "HBasicDefines.h"
     #include "HSpectrumFile.h"
@@ -33,7 +33,7 @@ namespace hose
 *Description:
 */
 
-class HSimpleMultiThreadedSpectrumDataWriter: public HConsumer< spectrometer_data, HConsumerBufferHandler_Immediate< spectrometer_data > >, public HDirectoryWriter
+class HSimpleMultiThreadedSpectrumDataWriter: public HConsumer< spectrometer_data, HConsumerBufferHandler_Wait< spectrometer_data > >, public HDirectoryWriter
 {
     public:
 

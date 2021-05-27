@@ -31,21 +31,21 @@ class hose_structure_base(ctypes.Structure):
         return False
 
     def printsummary(self):
-        print self.__class__.__name__, ":"
+        print(self.__class__.__name__, ":")
         for field in self._fields_:
             a = getattr(self, field[0])
             if isinstance(a, ctypes.Array):
-                print field[0], ":", "array of length: ", len(a), ":"
+                print(field[0], ":", "array of length: ", len(a), ":")
                 for x in a:
                     if isinstance(x, hose_structure_base):
                         x.printsummary()
                     else:
-                        print x
+                        print(x)
             elif isinstance(a, hose_structure_base):
-                print field[0], ":"
+                print( field[0], ":")
                 a.printsummary()
             else:
-                print field[0], ":" , a
+                print(field[0], ":" , a)
 
 
 

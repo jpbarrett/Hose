@@ -34,7 +34,7 @@ void cuda_free_pinned_memory(void* ptr)
 
 void wrapped_cuda_malloc(void** ptr, size_t s)
 {
-    code =cudaMalloc(ptr, s);
+    int code =cudaMalloc(ptr, s);
     if( code != cudaSuccess)
     {
         printf("code = %d\n", code);
@@ -63,7 +63,6 @@ extern "C" spectrometer_data *new_spectrometer_data(int data_length, int spectru
 {
     spectrometer_data *d;
     int n_spectra;
-    int code;
     n_spectra = data_length/spectrum_length;
     print_cuda_meminfo();
 
@@ -233,7 +232,7 @@ __global__ void short_to_float(uint16_t *ds, float *df, int n_spectra, int spect
 }
 
 
-__global__ void apply_weights(float *df, float *w, int n_spectra, int spectrum_length);
+__global__ void apply_weights(float *df, float *w, int n_spectra, int spectrum_length)
 {
     for(int spec_idx=blockIdx.x; spec_idx < n_spectra ; spec_idx+=N_BLOCKS)
     {
@@ -246,12 +245,11 @@ __global__ void apply_weights(float *df, float *w, int n_spectra, int spectrum_l
 }
 
 
-
 /*
  transform and average signed data
 */
 
-extern "C" void process_vector_no_output_s(SAMPLE_TYPE *d_in, spectrometer_data *d)
+void process_vector_no_output(SAMPLE_TYPE *d_in, spectrometer_data *d)
 {
     int n_spectra, data_length, spectrum_length;
 

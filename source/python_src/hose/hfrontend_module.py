@@ -32,7 +32,7 @@ class signal(object):
     def print_amp_freqs(self):
         for amp, freq in self.amplitude_frequency_pair_list:
             if amp != 0.0:
-                print "amp = ", amp, " and freq = ", freq
+                print("amp = ", amp, " and freq = ", freq)
 
 class ideal_rf_mixer(object):
     """ ideal ideal_rf_mixer object """

@@ -53,12 +53,12 @@ extern "C"
 
 #ifdef HOSE_USE_ADQ7
     #include "HADQ7Digitizer.hh"
-    #include "HSpectrometerCUDASigned.hh"
-    #include "HSpectrumAveragerSigned.hh"
+    #include "HSpectrometerCUDA.hh"
+    #include "HSpectrumAverager.hh"
     #define DIGITIZER_TYPE HADQ7Digitizer
-    #define SPECTROMETER_TYPE HSpectrometerCUDASigned
-    #define SPECTRUM_TYPE spectrometer_data_s
-    #define AVERAGER_TYPE HSpectrumAveragerSigned
+    #define SPECTROMETER_TYPE HSpectrometerCUDA
+    #define SPECTRUM_TYPE spectrometer_data
+    #define AVERAGER_TYPE HSpectrumAverager
     #define N_DIGITIZER_THREADS 2
     #define N_DIGITIZER_POOL_SIZE 128 //need 128 buffers in pool when running ADQ7 at 2.5GSPS (this configuration works)
     #define N_SPECTROMETER_POOL_SIZE 16
@@ -99,7 +99,7 @@ extern "C"
 #include "HBufferAllocatorSpectrometerDataCUDA.hh"
 #include "HSwitchedPowerCalculator.hh"
 #include "HDataAccumulationWriter.hh"
-#include "HSimpleMultiThreadedSpectrumDataWriterSigned.hh"
+#include "HSimpleMultiThreadedSpectrumDataWriter.hh"
 #include "HAveragedMultiThreadedSpectrumDataWriter.hh"
 #include "HRawDataDumper.hh"
 

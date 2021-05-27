@@ -8,14 +8,14 @@
 
 #include "HDummyDigitizer.hh"
 #include "HBufferPool.hh"
-#include "HSpectrometerCUDASigned.hh"
+#include "HSpectrometerCUDA.hh"
 #include "HCudaHostBufferAllocator.hh"
 
 using namespace hose;
 
 #define SPECTRUM_LENGTH 131072
 
-using PoolType = HBufferPool< int16_t >;
+using PoolType = HBufferPool< SAMPLE_TYPE >;
 uint64_t vector_length = SPECTRUM_LENGTH*128;
 uint64_t nAcq = 1;
 unsigned int n_dropped = 0;
@@ -24,13 +24,13 @@ int main(int /*argc*/, char** /*argv*/)
 {
 
     //dummy digitizer
-    HDummyDigitizer< int16_t > dummy;
+    HDummyDigitizer< SAMPLE_TYPE > dummy;
     dummy.Initialize();
 
     //create pool buffer
     //create buffer pool
-    HCudaHostBufferAllocator< int16_t >* balloc = new HCudaHostBufferAllocator<  int16_t >();
-    HBufferPool< int16_t >* pool = new HBufferPool< int16_t >( balloc );
+    HCudaHostBufferAllocator< SAMPLE_TYPE >* balloc = new HCudaHostBufferAllocator<  SAMPLE_TYPE >();
+    HBufferPool< SAMPLE_TYPE >* pool = new HBufferPool< SAMPLE_TYPE >( balloc );
 
     //allocate space
     const size_t n_chunks = 10;
@@ -38,7 +38,7 @@ int main(int /*argc*/, char** /*argv*/)
     pool->Allocate(n_chunks, items_per_chunk);
     dummy.SetBufferPool(pool);
 
-    HSpectrometerCUDASigned m_spec;
+    HSpectrometerCUDA m_spec;
     m_spec.SetDataLength(items_per_chunk);
     std::cout<<"data install dir = "<<STR2(DATA_INSTALL_DIR)<<std::endl;
     m_spec.SetOutputDirectory(STR2(DATA_INSTALL_DIR));

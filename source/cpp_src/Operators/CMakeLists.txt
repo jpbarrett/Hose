@@ -41,22 +41,16 @@ if(HOSE_USE_CUDA)
 
     set(CUDAOPERATOR_HEADERFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrometerCUDA.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrometerCUDASigned.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HCudaHostBufferAllocator.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HBufferAllocatorSpectrometerDataCUDA.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HSimpleMultiThreadedSpectrumDataWriter.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/HSimpleMultiThreadedSpectrumDataWriterSigned.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumAverager.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumAveragerSigned.hh
     )
 
     set(CUDAOPERATOR_SOURCEFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HSpectrometerCUDA.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HSpectrumAverager.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/HSpectrumAveragerSigned.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/HSpectrometerCUDASigned.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/src/HSimpleMultiThreadedSpectrumDataWriter.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/HSimpleMultiThreadedSpectrumDataWriterSigned.cc
     )
 
     add_library (HCUDAOperators SHARED ${CUDAOPERATOR_SOURCEFILES})

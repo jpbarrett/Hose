@@ -85,7 +85,7 @@ class fs_log_line(object):
         self.line_key = "none" #line must contain this to trigger parsing
         self.name = "none" #name given to this data object (measurement) in the database
         self.data_fields = dict() #dictionary of data fields
-        self.token_map = dict() #map token indices on to data fields 
+        self.token_map = dict() #map token indices on to data fields
         self.primary_delim = ""
         self.secondary_delim = ""
 
@@ -174,7 +174,7 @@ class source_status(fs_log_line):
         self.primary_delim = "source="
         self.secondary_delim = ","
 
-#we expect the line to have the following format: 2018.061.13:11:54.00:data_valid=on 
+#we expect the line to have the following format: 2018.061.13:11:54.00:data_valid=on
 #or alternatively: 2018.061.13:12:24.00:data_valid=off
 class data_status(fs_log_line):
     def __init__(self):
