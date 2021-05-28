@@ -79,38 +79,6 @@ HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >::DeallocateImpl(spectr
     free_spectrometer_data(ptr);
 }
 
-
-//template specialization spectrometer_data
-template<>
-spectrometer_data*
-HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >::AllocateImpl(size_t size)
-{
-    if(size != 1)
-    {
-        std::cout<<"HBufferAllocatorSpectrometerDataCUDA::AllocateImpl: Error! spectrometer_data buffers can only be of size 1."<<std::endl;
-        std::exit(1); //crash and burn
-    }
-
-    if(fSampleArrayLength%fSpectrumLength != 0)
-    {
-        std::cout<<"HBufferAllocatorSpectrometerDataCUDA::AllocateImpl: Error! Sample data array must be multiple of spectrum length"<<std::endl;
-        std::exit(1); //crash and burn
-    }
-
-    spectrometer_data* ptr = nullptr;
-    ptr = new_spectrometer_data(fSampleArrayLength, fSpectrumLength);
-    return ptr;
-}
-
-template<>
-void
-HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >::DeallocateImpl(spectrometer_data* ptr, size_t /*size*/)
-{
-    free_spectrometer_data(ptr);
-}
-
-
-
 template< typename XBufferItemType>
 XBufferItemType*
 HBufferAllocatorSpectrometerDataCUDA< XBufferItemType >::AllocateImpl(size_t size)
