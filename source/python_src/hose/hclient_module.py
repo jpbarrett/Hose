@@ -144,7 +144,7 @@ class hprompt(Cmd):
                 self.interface.SendRecieveMessage(cmd_string)
                 self.is_recording = True
                 time.sleep(int(duration)+1)
-		self.end_time_stamp = datetime.utcnow()
+                self.end_time_stamp = datetime.utcnow()
                 self.create_meta_data_file()
                 return 0
             else:
@@ -244,7 +244,7 @@ class hprompt(Cmd):
             have_udc_data = True
 
         #now add the sky frequency information as well
-	if have_udc_data is False:
+        if have_udc_data is False:
             #if no data is available from database, assume a default hardcoded value (input from the front-panel of the UDC)
             udc_luff_freq = 7054.0
 

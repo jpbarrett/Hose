@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 project(Hose)
 
-if(POLICY CMP0053)
-    cmake_policy(SET CMP0053 OLD)
-endif()
+# if(POLICY CMP0053)
+#     cmake_policy(SET CMP0053 OLD)
+# endif()
 
 # Module version
 set(MODULE_VERSION_MAJOR 0)
