@@ -8,16 +8,16 @@
 
 #include "HADQ7Digitizer.hh"
 #include "HBufferPool.hh"
-#include "HSpectrometerCUDASigned.hh"
+#include "HSpectrometerCUDA.hh"
 #include "HCudaHostBufferAllocator.hh"
 #include "HBufferAllocatorSpectrometerDataCUDA.hh"
-#include "HSimpleMultiThreadedSpectrumDataWriterSigned.hh"
+#include "HSimpleMultiThreadedSpectrumDataWriter.hh"
 
 using namespace hose;
 
 #define FAKE_SPECTRUM_LENGTH 131072
 
-using PoolType = HBufferPool< int16_t >;
+using PoolType = HBufferPool< SAMPLE_TYPE >;
 
 int main(int /*argc*/, char** /*argv*/)
 {
@@ -37,8 +37,8 @@ int main(int /*argc*/, char** /*argv*/)
 
     std::cout<<"allocating cuda host buffs"<<std::endl;
     //create source buffer pool
-    HCudaHostBufferAllocator< int16_t >* balloc = new HCudaHostBufferAllocator<  int16_t >();
-    HBufferPool< int16_t >* source_pool = new HBufferPool< int16_t >( balloc );
+    HCudaHostBufferAllocator< SAMPLE_TYPE >* balloc = new HCudaHostBufferAllocator<  SAMPLE_TYPE >();
+    HBufferPool< SAMPLE_TYPE >* source_pool = new HBufferPool< SAMPLE_TYPE >( balloc );
 
     const size_t source_n_chunks = 32;
     const size_t source_items_per_chunk = vector_length;
@@ -49,17 +49,17 @@ int main(int /*argc*/, char** /*argv*/)
 
     std::cout<<"allocating cuda dev buffs"<<std::endl;
     //create sink buffer pool
-    HBufferAllocatorSpectrometerDataCUDA< spectrometer_data_s >* sdata_alloc = new HBufferAllocatorSpectrometerDataCUDA< spectrometer_data_s >();
+    HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >* sdata_alloc = new HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >();
     sdata_alloc->SetSampleArrayLength(vector_length);
     sdata_alloc->SetSpectrumLength(FAKE_SPECTRUM_LENGTH);
 
-    HBufferPool< spectrometer_data_s >* sink_pool = new HBufferPool< spectrometer_data_s >( sdata_alloc );
+    HBufferPool< spectrometer_data >* sink_pool = new HBufferPool< spectrometer_data >( sdata_alloc );
     const size_t sink_n_chunks = 16;
     const size_t sink_items_per_chunk = 1; //THERE CAN BE ONLY ONE!!!
     sink_pool->Allocate(sink_n_chunks, sink_items_per_chunk);
     std::cout<<"done"<<std::endl;
 
-    HSpectrometerCUDASigned m_spec(FAKE_SPECTRUM_LENGTH, n_ave);
+    HSpectrometerCUDA m_spec(FAKE_SPECTRUM_LENGTH, n_ave);
     m_spec.SetNThreads(3);
     m_spec.SetSourceBufferPool(source_pool);
     m_spec.SetSinkBufferPool(sink_pool);
@@ -70,7 +70,7 @@ int main(int /*argc*/, char** /*argv*/)
     // m_spec.SetBlankingPeriod( 20.0*(1.0/dummy.GetSamplingFrequency()) );
 
     //file writing consumer to drain the spectrum data buffers
-    HSimpleMultiThreadedSpectrumDataWriterSigned spec_writer;
+    HSimpleMultiThreadedSpectrumDataWriter spec_writer;
     spec_writer.SetExperimentName("test");
     spec_writer.SetSourceName("none");
     spec_writer.SetScanName("test1");
