@@ -30,8 +30,10 @@
 
 #ifdef HOSE_USE_ADQ7
     #define SAMPLE_TYPE int16_t
+    #warning "The sample type is defined as int16_t"
 #else
     #define SAMPLE_TYPE uint16_t
+    #warning "The sample type is defined as uint16_t"
 #endif
 
 // #ifndef HOSE_USE_ADQ7
