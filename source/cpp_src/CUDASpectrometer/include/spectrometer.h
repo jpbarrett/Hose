@@ -24,19 +24,21 @@
 #define N_BLOCKS 8
 #define N_THREADS 1024
 
-#ifdef HOSE_USE_PX14
-    #define SAMPLE_TYPE uint16_t
-#endif
+// #ifdef HOSE_USE_PX14
+//     #define SAMPLE_TYPE uint16_t
+// #endif
 
 #ifdef HOSE_USE_ADQ7
     #define SAMPLE_TYPE int16_t
+#else
+    #define SAMPLE_TYPE uint16_t
 #endif
 
-#ifndef HOSE_USE_ADQ7
-    #ifndef HOSE_USE_PX14
-        #define SAMPLE_TYPE uint16_t
-    #endif
-#endif
+// #ifndef HOSE_USE_ADQ7
+//     #ifndef HOSE_USE_PX14
+//         #define SAMPLE_TYPE uint16_t
+//     #endif
+// #endif
 
 typedef struct spectrometer_datatr_s
 {
