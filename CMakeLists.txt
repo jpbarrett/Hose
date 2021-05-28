@@ -61,6 +61,11 @@ if(HOSE_USE_SPDLOG)
     hose_add_cxxflag(HOSE_USE_SPDLOG)
 endif(HOSE_USE_SPDLOG)
 
+if(HOSE_USE_ADQ7)
+    hose_add_cxxflag(HOSE_USE_ADQ7)
+    hose_add_cflag(HOSE_USE_ADQ7)
+endif(HOSE_USE_ADQ7)
+
 #convenience variables
 set(CSOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source/c_src)
 set(CPPSOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source/cpp_src)
