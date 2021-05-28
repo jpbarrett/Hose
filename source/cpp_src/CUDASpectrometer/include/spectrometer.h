@@ -63,14 +63,15 @@ typedef struct spectrometer_datatr_s
   int validity_flag;
 } spectrometer_data;
 
-extern "C" void process_vector_no_output(SAMPLE_TYPE *d_in, spectrometer_data *d);
-extern "C" spectrometer_data *new_spectrometer_data(int data_length, int spectrum_length);
-extern "C" void free_spectrometer_data(spectrometer_data *d);
 
 __global__ void short_to_float(uint16_t *ds, float *df, int n_spectra, int spectrum_length);
 __global__ void short_to_float_s(int16_t *ds, float *df, int n_spectra, int spectrum_length);
 __global__ void apply_weights(float *df, float *w, int n_spectra, int spectrum_length);
 __global__ void square_and_accumulate_sum(cufftComplex *z, float *spectrum);
+
+extern "C" void process_vector_no_output(SAMPLE_TYPE *d_in, spectrometer_data *d);
+extern "C" spectrometer_data *new_spectrometer_data(int data_length, int spectrum_length);
+extern "C" void free_spectrometer_data(spectrometer_data *d);
 
 extern "C" void blackmann_harris( float* pOut, unsigned int num );
 extern "C" void cuda_alloc_pinned_memory( void** ptr, size_t s);
