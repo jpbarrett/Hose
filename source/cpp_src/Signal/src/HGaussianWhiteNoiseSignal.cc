@@ -11,7 +11,7 @@ HGaussianWhiteNoiseSignal::HGaussianWhiteNoiseSignal():
     fGenerator(nullptr),
     fDistribution(nullptr)
 {
-    fDistribution = new std::normal_distribution<double>(0.0, 1.0);
+    fDistribution = new std::normal_distribution<double>(0.0, 100.0);
 };
 
 HGaussianWhiteNoiseSignal::~HGaussianWhiteNoiseSignal()
@@ -20,7 +20,7 @@ HGaussianWhiteNoiseSignal::~HGaussianWhiteNoiseSignal()
     delete fDistribution;
 };
 
-void 
+void
 HGaussianWhiteNoiseSignal::Initialize()
 {
     if(fGenerator == nullptr)
@@ -29,7 +29,7 @@ HGaussianWhiteNoiseSignal::Initialize()
     }
 }
 
-bool 
+bool
 HGaussianWhiteNoiseSignal::GenerateSample(const double& /*sample_time*/, double& sample) const
 {
     sample = (*fDistribution)( *fGenerator );

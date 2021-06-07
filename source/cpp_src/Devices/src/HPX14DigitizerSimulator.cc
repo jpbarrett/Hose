@@ -37,7 +37,9 @@ HPX14DigitizerSimulator::HPX14DigitizerSimulator():
     this->fAllocator = nullptr;
     fSamplePeriod = 1.0/(fAcquisitionRateMHz*1e6);
     //TODO make the clipping/range thresholds user configurable
-    fSimpleADC = new HSimpleAnalogToDigitalConverter<double, uint16_t, 14>(-10.0,10.0);
+    // fSimpleADC = new HSimpleAnalogToDigitalConverter<double, uint16_t, 14>(-10.0,10.0);
+
+    fSimpleADC = new HSimpleAnalogToDigitalConverter<double, uint16_t, 14>(-16384./2., 16384/2.);
     //fSimpleADC = new HSimpleAnalogToDigitalConverter<double, uint16_t, 14>(0,RAND_MAX);
 }
 
@@ -54,7 +56,7 @@ HPX14DigitizerSimulator::~HPX14DigitizerSimulator()
     }
 }
 
-bool 
+bool
 HPX14DigitizerSimulator::InitializeImpl()
 {
     if(!fInitialized)
@@ -91,7 +93,7 @@ HPX14DigitizerSimulator::InitializeImpl()
 
         fSummedSignalGenerator = new HSummedSignal();
         fSummedSignalGenerator->AddSignalGenerator(fPower1, 1.0);
-        fSummedSignalGenerator->AddSignalGenerator(fSwitchedPower, 0.1);
+        fSummedSignalGenerator->AddSignalGenerator(fSwitchedPower, 0.0);
         fSummedSignalGenerator->Initialize();
 
         fErrorCode = 0;
@@ -102,7 +104,7 @@ HPX14DigitizerSimulator::InitializeImpl()
 
 }
 
-void 
+void
 HPX14DigitizerSimulator::AcquireImpl()
 {
     fArmed = false;
@@ -115,7 +117,7 @@ HPX14DigitizerSimulator::AcquireImpl()
     fArmed = true;
 }
 
-void 
+void
 HPX14DigitizerSimulator::TransferImpl()
 {
     if(fArmed && this->fBuffer != nullptr )
@@ -157,7 +159,7 @@ HPX14DigitizerSimulator::TransferImpl()
     }
 }
 
-HDigitizerErrorCode 
+HDigitizerErrorCode
 HPX14DigitizerSimulator::FinalizeImpl()
 {
     if(fArmed && this->fBuffer != nullptr)
@@ -199,20 +201,20 @@ HPX14DigitizerSimulator::TearDownImpl()
 }
 
 //required by the producer interface
-void 
+void
 HPX14DigitizerSimulator::ExecutePreProductionTasks()
 {
     Initialize();
 }
 
-void 
+void
 HPX14DigitizerSimulator::ExecutePostProductionTasks()
 {
     this->Stop();
     this->TearDown();
 }
 
-void 
+void
 HPX14DigitizerSimulator::ExecutePreWorkTasks()
 {
     if(fArmed)
@@ -242,7 +244,7 @@ HPX14DigitizerSimulator::ExecutePreWorkTasks()
     }
 }
 
-void 
+void
 HPX14DigitizerSimulator::DoWork()
 {
     //we have an active buffer, transfer the data
@@ -256,12 +258,12 @@ HPX14DigitizerSimulator::DoWork()
     }
 }
 
-void 
+void
 HPX14DigitizerSimulator::ExecutePostWorkTasks()
 {
     if( (fBufferCode & HProducerBufferPolicyCode::success) && fArmed)
-    {   
-        HDigitizerErrorCode finalize_code = this->Finalize(); 
+    {
+        HDigitizerErrorCode finalize_code = this->Finalize();
         if(finalize_code == HDigitizerErrorCode::success)
         {
             //std::cout<<"sim digi releasing a good buffer"<<std::endl;
@@ -286,7 +288,7 @@ HPX14DigitizerSimulator::ExecutePostWorkTasks()
 }
 
 //needed by the thread pool interface
-void 
+void
 HPX14DigitizerSimulator::ExecuteThreadTask()
 {
     if(fArmed && fBuffer != nullptr)
@@ -318,7 +320,7 @@ HPX14DigitizerSimulator::ExecuteThreadTask()
     }
 }
 
-bool 
+bool
 HPX14DigitizerSimulator::WorkPresent()
 {
     if( fInternalBufferPool->GetConsumerPoolSize() == 0)
@@ -328,7 +330,7 @@ HPX14DigitizerSimulator::WorkPresent()
     return true;
 }
 
-void 
+void
 HPX14DigitizerSimulator::SimulateDataTransfer(uint64_t global_count, size_t n_samples, uint16_t* buffer)
 {
     //copy fake data into the buffer

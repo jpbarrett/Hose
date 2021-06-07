@@ -93,8 +93,6 @@ extern "C"
 #endif
 
 #include "HBufferPool.hh"
-
-
 #include "HCudaHostBufferAllocator.hh"
 #include "HBufferAllocatorSpectrometerDataCUDA.hh"
 #include "HSwitchedPowerCalculator.hh"

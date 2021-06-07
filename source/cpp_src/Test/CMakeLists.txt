@@ -6,20 +6,18 @@ if (HOSE_ENABLE_TEST)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Operators/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Devices/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Signal/include)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-    set (HOSE_TEST_LIBS HCore HInterface HSignal)
+    set (HOSE_TEST_LIBS HCore HInterface HSignal HOperators)
 
     set(SOURCE_BASENAMES
         TestBufferAllocator
         TestTimeStampConverter
         # TestDummyDigitizer
         # TestMultiThreadDummy
+        TestMultiThreadDummySpectrometer
     )
 
-    if( HOSE_USE_PX14 OR HOSE_USE_ADQ7 OR HOSE_USE_ATS)
-        list(APPEND HOSE_TEST_LIBS HDevices)
-    endif(HOSE_USE_PX14 OR HOSE_USE_ADQ7 OR HOSE_USE_ATS)
+    list(APPEND HOSE_TEST_LIBS HDevices)
 
     if(HOSE_USE_ZEROMQ)
         include(FindZeroMQ)
@@ -41,12 +39,6 @@ if (HOSE_ENABLE_TEST)
         include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../CUDASpectrometer/include)
         list(APPEND HOSE_TEST_LIBS HCUDASpectrometer HCUDAOperators ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
     endif(HOSE_USE_CUDA)
-
-    # if(HOSE_USE_CUDA)
-    #     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../CUDASpectrometer/include)
-    #     list(APPEND HOSE_TEST_LIBS HCUDASpectrometer HCUDAOperators ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
-    #     list(APPEND SOURCE_BASENAMES )
-    # endif(HOSE_USE_CUDA)
 
     if (HOSE_USE_ADQ7)
         find_package(ADQSDK REQUIRED)
