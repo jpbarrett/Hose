@@ -14,7 +14,7 @@ if (HOSE_ENABLE_TEST)
         TestTimeStampConverter
         # TestDummyDigitizer
         # TestMultiThreadDummy
-        TestMultiThreadDummySpectrometer
+        # TestMultiThreadDummySpectrometer
     )
 
     list(APPEND HOSE_TEST_LIBS HDevices)

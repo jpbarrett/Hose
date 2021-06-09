@@ -31,7 +31,6 @@
 #define SPEC_AVE_POOL_SIZE 4
 #define FFT_SIZE 131072
 #define SPECTRUM_LENGTH 131072
-#define SAMPLE_TYPE uint16_t
 #define N_AVERAGES 256
 
 
