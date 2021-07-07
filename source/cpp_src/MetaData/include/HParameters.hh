@@ -13,7 +13,10 @@
 #include <string>
 #include <map>
 
-namespace hose 
+#include "HTokenizer.hh"
+
+
+namespace hose
 {
 
 class HParameters
@@ -27,11 +30,12 @@ class HParameters
         void ReadParameters();
 
         //reset parameter values to the defaults
+        void Initialize();
         void UseDefaultParameters();
 
         int GetIntegerParameter(std::string& name);
         std::string GetStringParameter(std::string name);
-        
+
     private:
 
         std::string fParameterFile;
@@ -40,6 +44,9 @@ class HParameters
         std::map<std::string, int> fIntegerParam;
         //string parameter map
         std::map<std::string, std::string> fStringParam;
+
+        HTokenizer fTokenizer;
+        std::vector< std::string > fTokens;
 
 };
 
