@@ -6,12 +6,14 @@ if (HOSE_ENABLE_TEST)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Operators/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Devices/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Signal/include)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../MetaData/include)
 
-    set (HOSE_TEST_LIBS HCore HInterface HSignal HOperators)
+    set (HOSE_TEST_LIBS HCore HInterface HSignal HOperators HMeta)
 
     set(SOURCE_BASENAMES
         TestBufferAllocator
         TestTimeStampConverter
+        TestParameters
         # TestDummyDigitizer
         # TestMultiThreadDummy
         # TestMultiThreadDummySpectrometer
