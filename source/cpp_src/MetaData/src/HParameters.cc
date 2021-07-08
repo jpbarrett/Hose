@@ -18,6 +18,14 @@ HParameters::HParameters()
     Initialize();
 }
 
+HParameters::HParameters(const HParameters& copy)
+{
+    fParameterFile = copy.fParameterFile;
+    fHaveParameterFile = copy.fParameterFile;
+    fIntegerParam = copy.fIntegerParam;
+    fStringParam = copy.fStringParam;
+}
+
 HParameters::~HParameters()
 {
 
@@ -31,55 +39,44 @@ HParameters::Initialize()
     fStringParam[std::string("port")] = std::string("12345");
     fStringParam[std::string("window_type")] = std::string("blackman_harris");
 
-    // #ifdef HOSE_USE_PX14
-    //     #define N_DIGITIZER_THREADS 16
-    //     #define N_DIGITIZER_POOL_SIZE 32
-    //     #define N_SPECTROMETER_POOL_SIZE 16
-    //     #define N_NOISE_POWER_POOL_SIZE 10
-    //     #define N_SPECTROMETER_THREADS 3
-    //     #define N_NOISE_POWER_THREADS 1
-    //     #define DUMP_FREQ 120
-    //     #define N_AVE_BUFFERS 12 //this is about once every second
-    //     #define SPEC_AVE_POOL_SIZE 12
-    // #endif
-    //
-    // #ifdef HOSE_USE_ADQ7
-    //     #define N_DIGITIZER_THREADS 2
-    //     #define N_DIGITIZER_POOL_SIZE 128 //need 128 buffers in pool when running ADQ7 at 2.5GSPS (this configuration works)
-    //     #define N_SPECTROMETER_POOL_SIZE 16
-    //     #define N_NOISE_POWER_POOL_SIZE 32
-    //     #define N_SPECTROMETER_THREADS 2
-    //     #define N_NOISE_POWER_THREADS 2
-    //     #define DUMP_FREQ 120
-    //     #define N_AVE_BUFFERS 32
-    //     // #define N_AVE_BUFFERS 12
-    //     #define SPEC_AVE_POOL_SIZE 20
-    // #endif
-
-    // #ifndef HOSE_USE_ADQ7
-    //     #ifndef HOSE_USE_PX14
-    //         #define N_DIGITIZER_THREADS 1
-    //         #define N_DIGITIZER_POOL_SIZE 8
-    //         #define N_SPECTROMETER_POOL_SIZE 4
-    //         #define N_SPECTROMETER_THREADS 1
-    //         #define N_NOISE_POWER_POOL_SIZE 10
-    //         #define N_NOISE_POWER_THREADS 1
-    //         #define DUMP_FREQ 100
-    //         #define N_AVE_BUFFERS 2
-    //         #define SPEC_AVE_POOL_SIZE 4
-    //     #endif
-    // #endif
-
-
-
-
-    fIntegerParam[std::string("sample_skip")] = 2;
+    #ifdef HOSE_USE_PX14
     fIntegerParam[std::string("n_ave_spectra_gpu")] = 16;
     fIntegerParam[std::string("n_ave_spectra_cpu")] = 12;
     fIntegerParam[std::string("n_fft_pts")] = 2097152;
+    fIntegerParam[std::string("n_digitizer_threads")] = 16;
+    fIntegerParam[std::string("n_digitizer_pool_size")] = 32;
+    fIntegerParam[std::string("n_spec_pool_size")] = 16;
+    fIntegerParam[std::string("n_spec_threads")] = 3;
+    fIntegerParam[std::string("n_dump_skip")] = 120;
+    fIntegerParam[std::string("n_spec_ave_pool_size")] = 12;
+    #endif
 
+    #ifdef HOSE_USE_ADQ7
+    fIntegerParam[std::string("n_adq7_sample_skip")] = 2;
+    fIntegerParam[std::string("n_ave_spectra_gpu")] = 16;
+    fIntegerParam[std::string("n_ave_spectra_cpu")] = 32;
+    fIntegerParam[std::string("n_fft_pts")] = 2097152;
+    fIntegerParam[std::string("n_digitizer_threads")] = 2;
+    fIntegerParam[std::string("n_digitizer_pool_size")] = 128;
+    fIntegerParam[std::string("n_spec_pool_size")] = 16;
+    fIntegerParam[std::string("n_spec_threads")] = 2;
+    fIntegerParam[std::string("n_dump_skip")] = 120;
+    fIntegerParam[std::string("n_spec_ave_pool_size")] = 20;
+    #endif
 
-
+    #ifndef HOSE_USE_ADQ7
+        #ifndef HOSE_USE_PX14
+            fIntegerParam[std::string("n_ave_spectra_gpu")] = 16;
+            fIntegerParam[std::string("n_ave_spectra_cpu")] = 2;
+            fIntegerParam[std::string("n_fft_pts")] = 2097152;
+            fIntegerParam[std::string("n_digitizer_threads")] = 1;
+            fIntegerParam[std::string("n_digitizer_pool_size")] = 8;
+            fIntegerParam[std::string("n_spec_pool_size")] = 4;
+            fIntegerParam[std::string("n_spec_threads")] = 1;
+            fIntegerParam[std::string("n_dump_skip")] = 100;
+            fIntegerParam[std::string("n_spec_ave_pool_size")] = 4;
+        #endif
+    #endif
 }
 
 //set a filename and read the parameter values
@@ -124,7 +121,7 @@ HParameters::ReadParameters()
                     if(sparam != fStringParam.end() )
                     {
                         //we have a string parameter
-                        std::cout<<"s setting: "<<fTokens[0]<<", "<<fTokens[1]<<std::endl;
+                        std::cout<<"setting: "<<fTokens[0]<<", "<<fTokens[1]<<std::endl;
                         fStringParam[ fTokens[0] ] = fTokens[1];
                     }
 
@@ -132,7 +129,7 @@ HParameters::ReadParameters()
                     if(param != fIntegerParam.end() )
                     {
                         //we have an integer parameter
-                        std::cout<<"i setting: "<<fTokens[0]<<", "<<fTokens[1]<<std::endl;
+                        std::cout<<"setting: "<<fTokens[0]<<", "<<fTokens[1]<<std::endl;
                         fStringParam[ fTokens[0] ] = atoi(fTokens[1].c_str());
                     }
                 }

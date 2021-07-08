@@ -28,71 +28,13 @@ extern "C"
     #include "HBasicDefines.h"
 }
 
+#include "HParameters.hh"
 #include "HTokenizer.hh"
 #include "HBufferAllocatorNew.hh"
 
-
-#ifdef HOSE_USE_PX14
-    #include "HPX14Digitizer.hh"
-    #include "HSpectrometerCUDA.hh"
-    #include "HSpectrumAverager.hh"
-    #define DIGITIZER_TYPE HPX14Digitizer
-    #define SPECTROMETER_TYPE HSpectrometerCUDA
-    #define SPECTRUM_TYPE spectrometer_data
-    #define AVERAGER_TYPE HSpectrumAverager
-    #define N_DIGITIZER_THREADS 16
-    #define N_DIGITIZER_POOL_SIZE 32
-    #define N_SPECTROMETER_POOL_SIZE 16
-    #define N_NOISE_POWER_POOL_SIZE 10
-    #define N_SPECTROMETER_THREADS 3
-    #define N_NOISE_POWER_THREADS 1
-    #define DUMP_FREQ 120
-    #define N_AVE_BUFFERS 12 //this is about once every second
-    #define SPEC_AVE_POOL_SIZE 12
-#endif
-
-#ifdef HOSE_USE_ADQ7
-    #include "HADQ7Digitizer.hh"
-    #include "HSpectrometerCUDA.hh"
-    #include "HSpectrumAverager.hh"
-    #define DIGITIZER_TYPE HADQ7Digitizer
-    #define SPECTROMETER_TYPE HSpectrometerCUDA
-    #define SPECTRUM_TYPE spectrometer_data
-    #define AVERAGER_TYPE HSpectrumAverager
-    #define N_DIGITIZER_THREADS 2
-    #define N_DIGITIZER_POOL_SIZE 128 //need 128 buffers in pool when running ADQ7 at 2.5GSPS (this configuration works)
-    #define N_SPECTROMETER_POOL_SIZE 16
-    #define N_NOISE_POWER_POOL_SIZE 32
-    #define N_SPECTROMETER_THREADS 2
-    #define N_NOISE_POWER_THREADS 2
-    #define DUMP_FREQ 120
-    #define N_AVE_BUFFERS 32
-    // #define N_AVE_BUFFERS 12
-    #define SPEC_AVE_POOL_SIZE 20
-#endif
-
-#ifndef HOSE_USE_ADQ7
-    #ifndef HOSE_USE_PX14
-        #include "HPX14DigitizerSimulator.hh"
-        #include "HSpectrometerCUDA.hh"
-        #include "HSpectrumAverager.hh"
-        #define DIGITIZER_TYPE HPX14DigitizerSimulator
-        #define SPECTROMETER_TYPE HSpectrometerCUDA
-        #define SPECTRUM_TYPE spectrometer_data
-        #define AVERAGER_TYPE HSpectrumAverager
-        #define N_DIGITIZER_THREADS 1
-        #define N_DIGITIZER_POOL_SIZE 8
-        #define N_SPECTROMETER_POOL_SIZE 4
-        #define N_SPECTROMETER_THREADS 1
-        #define N_NOISE_POWER_POOL_SIZE 10
-        #define N_NOISE_POWER_THREADS 1
-        #define DUMP_FREQ 100
-        #define N_AVE_BUFFERS 2
-        #define SPEC_AVE_POOL_SIZE 4
-    #endif
-#endif
-
 #include "HBufferPool.hh"
+#include "HSpectrometerCUDA.hh"
+#include "HSpectrumAverager.hh"
 #include "HCudaHostBufferAllocator.hh"
 #include "HBufferAllocatorSpectrometerDataCUDA.hh"
 #include "HSwitchedPowerCalculator.hh"
@@ -103,6 +45,28 @@ extern "C"
 
 #include "HApplicationBackend.hh"
 #include "HServer.hh"
+
+#define SPECTROMETER_TYPE HSpectrometerCUDA
+#define SPECTRUM_TYPE spectrometer_data
+#define AVERAGER_TYPE HSpectrumAverager
+
+#ifdef HOSE_USE_PX14
+    #include "HPX14Digitizer.hh"
+    #define DIGITIZER_TYPE HPX14Digitizer
+#endif
+
+#ifdef HOSE_USE_ADQ7
+    #include "HADQ7Digitizer.hh"
+    #define DIGITIZER_TYPE HADQ7Digitizer
+
+#endif
+
+#ifndef HOSE_USE_ADQ7
+    #ifndef HOSE_USE_PX14
+        #include "HPX14DigitizerSimulator.hh"
+        #define DIGITIZER_TYPE HPX14DigitizerSimulator
+    #endif
+#endif
 
 
 //TODO FIXME: replace these with real enums
@@ -152,14 +116,6 @@ class HSpectrometerManager: public HApplicationBackend
             fStop(false),
             fIP("127.0.0.1"),
             fPort("12345"),
-            fNSpectrumAverages(16),
-            fFFTSize(1048576*2),
-            // fNSpectrumAverages(256),
-            // fFFTSize(131072),
-            fDigitizerPoolSize(N_DIGITIZER_POOL_SIZE),
-            fSpectrometerPoolSize(N_SPECTROMETER_POOL_SIZE),
-            fNDigitizerThreads(N_DIGITIZER_THREADS),
-            fNSpectrometerThreads(N_SPECTROMETER_THREADS),
             fServer(nullptr),
             fDigitizer(nullptr),
             fCUDABufferAllocator(nullptr),
@@ -208,6 +164,12 @@ class HSpectrometerManager: public HApplicationBackend
         void SetNDigitizerThreads(size_t n){fNDigitizerThreads = n;};
         void SetNSpectrometerThreads(size_t n){fNSpectrometerThreads = n;};
 
+        void SetParameters(const HParameters& params)
+        {
+            //accept configuration parameters
+            fParameters = params;
+        }
+
         void Initialize()
         {
             //get our pid
@@ -218,6 +180,21 @@ class HSpectrometerManager: public HApplicationBackend
                 bool lock_success = GetLockByPID();
                 if(lock_success)
                 {
+
+                    //extract parameters from configuration
+                    fNSpectrumAverages = fParameters->GetIntegerParameter("n_ave_spectra_gpu");
+                    fFFTSize = fParameters->GetIntegerParameter("n_fft_pts");
+                    fDigitizerPoolSize = fParameters->GetIntegerParameter("n_digitizer_pool_size");
+                    fSpectrometerPoolSize = fParameters->GetIntegerParameter("n_spec_pool_size");
+                    fNDigitizerThreads = fParameters->GetIntegerParameter("n_digitizer_threads");
+                    fNSpectrometerThreads = fParameters->GetIntegerParameter("n_spec_threads");
+                    fNSpectrumAveragesCPU = fParameters->GetIntegerParameter("n_ave_spectra_cpu");
+                    fNDumpSkip = fParameters->GetIntegerParameter("n_dump_skip");
+                    fNSpectrumAveragerPoolSize = fParameters->GetIntegerParameter("n_spec_ave_pool_size");
+                    #ifdef HOSE_USE_ADQ7
+                    fNADQ7SampleSkip = fParameters->GetIntegerParameter("n_adq7_sample_skip");
+                    #endif
+
                     //create the loggers
                     #ifdef HOSE_USE_SPDLOG
                     try
@@ -272,6 +249,9 @@ class HSpectrometerManager: public HApplicationBackend
                         //TODO fill these in with real values!
                         fDigitizer->SetSidebandFlag('U');
                         fDigitizer->SetPolarizationFlag('X');
+                        #ifdef HOSE_USE_ADQ7
+                        fDigitizer->SetSampleSkipFactor(fNADQ7SampleSkip);
+                        #endif
 
                         //create spectrometer data pool
                         fSpectrometerBufferAllocator = new HBufferAllocatorSpectrometerDataCUDA<SPECTRUM_TYPE>();
@@ -289,9 +269,9 @@ class HSpectrometerManager: public HApplicationBackend
                         //create post-spectrometer data pool for averaging
                         fSpectrumAveragingBufferAllocator = new HBufferAllocatorNew< float >();
                         fSpectrumAveragingBufferPool = new HBufferPool< float >(fSpectrumAveragingBufferAllocator);
-                        fSpectrumAveragingBufferPool->Allocate(SPEC_AVE_POOL_SIZE, fFFTSize/2+1); //create a work space of buffers
+                        fSpectrumAveragingBufferPool->Allocate(fNSpectrumAveragerPoolSize, fFFTSize/2+1); //create a work space of buffers
 
-                        fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, N_AVE_BUFFERS); //we average over 12 buffers
+                        fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, fNSpectrumAveragesCPU); //further average down on cpu
                         fSpectrumAverager->SetNThreads(1); //ONE THREAD ONLY!
                         fSpectrumAverager->SetSourceBufferPool(fSpectrometerSinkPool);
                         fSpectrumAverager->SetSinkBufferPool(fSpectrumAveragingBufferPool);
@@ -303,7 +283,7 @@ class HSpectrometerManager: public HApplicationBackend
                         //create an itermittent raw data dumper
                         fDumper = new HRawDataDumper< typename XDigitizerType::sample_type >();
                         fDumper->SetBufferPool(fDigitizerSourcePool);
-                        fDumper->SetBufferDumpFrequency(DUMP_FREQ);
+                        fDumper->SetBufferDumpFrequency(fNDumpSkip);
                         fDumper->SetNThreads(1);
 
                         fDigitizerSourcePool->Initialize();
@@ -1096,6 +1076,10 @@ class HSpectrometerManager: public HApplicationBackend
         size_t fNDigitizerThreads;
         size_t fNSpectrometerThreads;
 
+        size_t fNADQ7SampleSkip;
+        size_t fNSpectrumAveragesCPU;
+        size_t fNDumpSkip;
+        size_t fNSpectrumAveragerPoolSize;
 
         //state data
         int fRecordingState;
@@ -1106,6 +1090,7 @@ class HSpectrometerManager: public HApplicationBackend
         uint64_t fStartTime;
 
         //objects
+        HParameters fParameters;
         HTokenizer fTokenizer;
         HServer* fServer;
         XDigitizerType* fDigitizer;

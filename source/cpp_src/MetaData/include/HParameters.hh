@@ -23,6 +23,7 @@ class HParameters
 {
     public:
         HParameters();
+        HParameters(const HParameters& copy);
         virtual ~HParameters();
 
         //set a filename and read the parameter values
@@ -36,6 +37,18 @@ class HParameters
         int GetIntegerParameter(std::string& name);
         std::string GetStringParameter(std::string name);
 
+        HParameters& operator=(const HParameters& rhs)
+        {
+            if(this != &rhs)
+            {
+                fParameterFile = rhs.fParameterFile;
+                fHaveParameterFile = rhs.fParameterFile;
+                fIntegerParam = rhs.fIntegerParam;
+                fStringParam = rhs.fStringParam;
+            }
+            return *this;
+        }
+
     private:
 
         std::string fParameterFile;
@@ -47,7 +60,6 @@ class HParameters
 
         HTokenizer fTokenizer;
         std::vector< std::string > fTokens;
-
 };
 
 }
