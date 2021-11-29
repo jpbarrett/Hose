@@ -1,8 +1,6 @@
 #ifndef HParameters_HH__
 #define HParameters_HH__
 
-#include <iostream>
-
 /*
 *File: HParameters.hh
 *Class: HParameters
@@ -48,13 +46,8 @@ class HParameters
             {
                 fParameterFile = rhs.fParameterFile;
                 fHaveParameterFile = rhs.fHaveParameterFile;
-                std::cout<<"before size of integer param = "<<fIntegerParam.size()<<std::endl;
                 fIntegerParam = rhs.fIntegerParam;
-                std::cout<<"before size of integer param = "<<fIntegerParam.size()<<std::endl;
-                std::cout<<"this fft size = "<<fIntegerParam[std::string("n_fft_pts")]<<std::endl;
-                std::cout<<"rhs fft size = "<<const_cast<HParameters&>(rhs).fIntegerParam[std::string("n_fft_pts")]<<std::endl;
                 fStringParam = rhs.fStringParam;
-                std::cout<<"copying over"<<std::endl;
             }
             return *this;
         }
