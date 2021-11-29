@@ -130,7 +130,7 @@ HParameters::ReadParameters()
                     {
                         //we have an integer parameter
                         std::cout<<"setting: "<<fTokens[0]<<", "<<fTokens[1]<<std::endl;
-                        fStringParam[ fTokens[0] ] = atoi(fTokens[1].c_str());
+                        fIntegerParam[ fTokens[0] ] = atoi(fTokens[1].c_str());
                     }
                 }
             }
