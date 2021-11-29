@@ -48,7 +48,10 @@ class HParameters
             {
                 fParameterFile = rhs.fParameterFile;
                 fHaveParameterFile = rhs.fHaveParameterFile;
+                std::cout<<"before size of integer param = "<<fIntegerParam.size()<<std::endl;
                 fIntegerParam = rhs.fIntegerParam;
+                std::cout<<"before size of integer param = "<<fIntegerParam.size()<<std::endl;
+                std::cout<<"fft size = "<<fIntegerParam[std::string("n_fft_pts")]<<std::endl;
                 fStringParam = rhs.fStringParam;
                 std::cout<<"copying over"<<std::endl;
             }

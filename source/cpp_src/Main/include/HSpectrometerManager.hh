@@ -135,6 +135,7 @@ class HSpectrometerManager: public HApplicationBackend
             #endif
         {
             fCannedStopCommand = "record=off";
+            fParameters.Initialize();
         }
 
         virtual ~HSpectrometerManager()
