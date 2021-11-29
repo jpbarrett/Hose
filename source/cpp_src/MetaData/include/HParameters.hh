@@ -1,6 +1,8 @@
 #ifndef HParameters_HH__
 #define HParameters_HH__
 
+#include <iostream>
+
 /*
 *File: HParameters.hh
 *Class: HParameters
@@ -48,6 +50,7 @@ class HParameters
                 fHaveParameterFile = rhs.fHaveParameterFile;
                 fIntegerParam = rhs.fIntegerParam;
                 fStringParam = rhs.fStringParam;
+                std::cout<<"copying over"<<std::endl;
             }
             return *this;
         }

@@ -36,6 +36,7 @@ int main(int argc, char** argv)
 
     HSpectrometerManager<>* specManager = new HSpectrometerManager<>();
     HParameters param;
+    param.Initialize();
 
     if(config_file != "")
     {

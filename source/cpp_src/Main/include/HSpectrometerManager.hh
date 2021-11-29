@@ -394,6 +394,10 @@ class HSpectrometerManager: public HApplicationBackend
                         fInitialized = true;
                     }
                 }
+                else 
+                {
+                    fStatusLogger->info("Initializtion fail. Could not lock by PID.");
+                }
             }
         }
 
