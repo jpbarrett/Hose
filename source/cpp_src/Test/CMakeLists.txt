@@ -14,6 +14,8 @@ if (HOSE_ENABLE_TEST)
         TestBufferAllocator
         TestTimeStampConverter
         TestParameters
+        TestUDPClient
+        TestUDPServer
         # TestDummyDigitizer
         # TestMultiThreadDummy
         # TestMultiThreadDummySpectrometer
