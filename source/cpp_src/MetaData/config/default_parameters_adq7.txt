@@ -1,7 +1,7 @@
 n_adq7_sample_skip=2
 n_ave_spectra_gpu=16
 n_ave_spectra_cpu=32
-n_fft_pts= 2097152
+n_fft_pts=2097152
 n_digitizer_threads=2
 n_digitizer_pool_size=128
 n_spec_pool_size=16
