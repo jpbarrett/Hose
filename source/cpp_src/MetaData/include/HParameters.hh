@@ -34,15 +34,18 @@ class HParameters
         void Initialize();
         void UseDefaultParameters();
 
-        int GetIntegerParameter(std::string& name);
+        int GetIntegerParameter(std::string name);
         std::string GetStringParameter(std::string name);
+
+        int GetIntegerParameter(const char* name);
+        std::string GetStringParameter(const char* name);
 
         HParameters& operator=(const HParameters& rhs)
         {
             if(this != &rhs)
             {
                 fParameterFile = rhs.fParameterFile;
-                fHaveParameterFile = rhs.fParameterFile;
+                fHaveParameterFile = rhs.fHaveParameterFile;
                 fIntegerParam = rhs.fIntegerParam;
                 fStringParam = rhs.fStringParam;
             }

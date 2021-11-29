@@ -182,17 +182,17 @@ class HSpectrometerManager: public HApplicationBackend
                 {
 
                     //extract parameters from configuration
-                    fNSpectrumAverages = fParameters->GetIntegerParameter("n_ave_spectra_gpu");
-                    fFFTSize = fParameters->GetIntegerParameter("n_fft_pts");
-                    fDigitizerPoolSize = fParameters->GetIntegerParameter("n_digitizer_pool_size");
-                    fSpectrometerPoolSize = fParameters->GetIntegerParameter("n_spec_pool_size");
-                    fNDigitizerThreads = fParameters->GetIntegerParameter("n_digitizer_threads");
-                    fNSpectrometerThreads = fParameters->GetIntegerParameter("n_spec_threads");
-                    fNSpectrumAveragesCPU = fParameters->GetIntegerParameter("n_ave_spectra_cpu");
-                    fNDumpSkip = fParameters->GetIntegerParameter("n_dump_skip");
-                    fNSpectrumAveragerPoolSize = fParameters->GetIntegerParameter("n_spec_ave_pool_size");
+                    fNSpectrumAverages = fParameters.GetIntegerParameter("n_ave_spectra_gpu");
+                    fFFTSize = fParameters.GetIntegerParameter("n_fft_pts");
+                    fDigitizerPoolSize = fParameters.GetIntegerParameter("n_digitizer_pool_size");
+                    fSpectrometerPoolSize = fParameters.GetIntegerParameter("n_spec_pool_size");
+                    fNDigitizerThreads = fParameters.GetIntegerParameter("n_digitizer_threads");
+                    fNSpectrometerThreads = fParameters.GetIntegerParameter("n_spec_threads");
+                    fNSpectrumAveragesCPU = fParameters.GetIntegerParameter("n_ave_spectra_cpu");
+                    fNDumpSkip = fParameters.GetIntegerParameter("n_dump_skip");
+                    fNSpectrumAveragerPoolSize = fParameters.GetIntegerParameter("n_spec_ave_pool_size");
                     #ifdef HOSE_USE_ADQ7
-                    fNADQ7SampleSkip = fParameters->GetIntegerParameter("n_adq7_sample_skip");
+                    fNADQ7SampleSkip = fParameters.GetIntegerParameter("n_adq7_sample_skip");
                     #endif
 
                     //create the loggers

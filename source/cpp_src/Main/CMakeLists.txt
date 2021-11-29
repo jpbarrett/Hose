@@ -12,7 +12,7 @@ if(HOSE_USE_SPDLOG)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Logging/include)
 endif(HOSE_USE_SPDLOG)
 
-set(HOSE_MAIN_LIBS HCore HInterface HDevices HOperators)
+set(HOSE_MAIN_LIBS HCore HInterface HDevices HOperators HMeta)
 
 if(HOSE_USE_CUDA AND HOSE_USE_ZEROMQ)
     set(SOURCE_BASENAMES

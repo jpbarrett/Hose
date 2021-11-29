@@ -35,19 +35,18 @@ int main(int argc, char** argv)
     }
 
     HSpectrometerManager<>* specManager = new HSpectrometerManager<>();
-    HParameters* param = new HParameters();
+    HParameters param;
+
     if(config_file != "")
     {
-
-        param->SetParameterFilename(fname);
-        param->ReadParameters();
-
+        param.SetParameterFilename(config_file);
+        param.ReadParameters();
+        specManager->SetParameters(param);
     }
     else
     {
         std::cout<<"No config file given, using defaults."<<std::endl;
     }
-
 
     specManager->Initialize();
 

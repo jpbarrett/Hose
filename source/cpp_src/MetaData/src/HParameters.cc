@@ -21,7 +21,7 @@ HParameters::HParameters()
 HParameters::HParameters(const HParameters& copy)
 {
     fParameterFile = copy.fParameterFile;
-    fHaveParameterFile = copy.fParameterFile;
+    fHaveParameterFile = copy.fHaveParameterFile;
     fIntegerParam = copy.fIntegerParam;
     fStringParam = copy.fStringParam;
 }
@@ -145,8 +145,20 @@ HParameters::UseDefaultParameters()
     Initialize();
 }
 
+int 
+HParameters::GetIntegerParameter(const char* name)
+{
+    return GetIntegerParameter(std::string(name));
+}
+
+std::string 
+HParameters::GetStringParameter(const char* name)
+{
+    return GetStringParameter(std::string(name));
+}
+
 int
-HParameters::GetIntegerParameter(std::string& name)
+HParameters::GetIntegerParameter(std::string name)
 {
     auto param = fIntegerParam.find(name);
     if(param != fIntegerParam.end() )
