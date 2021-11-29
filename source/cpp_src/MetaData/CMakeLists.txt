@@ -24,8 +24,6 @@ if(HOSE_USE_ADQ7)
     hose_add_cxxflag(HOSE_USE_ADQ7)
 endif(HOSE_USE_ADQ7)
 
-
-
 set(HMETA_LIBS HCore)
 
 add_library (HMeta SHARED ${HMETA_SOURCEFILES})
@@ -33,3 +31,7 @@ target_link_libraries (HMeta ${HMETA_LIBS})
 
 hose_install_headers (${HMETA_HEADERFILES})
 hose_install_libraries (HMeta)
+
+#install the default parameter files 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/default_parameters_adq7.txt ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/default_parameters_adq7.txt DESTINATION ${CONFIG_INSTALL_DIR} )
