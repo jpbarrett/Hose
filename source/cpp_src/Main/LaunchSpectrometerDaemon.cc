@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <getopt.h>
 
 #include "HSpectrometerManager.hh"
 
@@ -43,12 +44,54 @@ static void daemonize(void)
 }
 
 
-int main(int /*argc*/, char** /*argv*/)
+int main(int argc, char** argv)
 {
-    daemonize();
+
+    std::string usage = "LaunchSpectrometerDaemon -f <config_file>";
+    std::string config_file = "";
+
+    static struct option longOptions[] = {{"help", no_argument, 0, 'h'},
+                                          {"config_file", required_argument, 0, 'f'}};
+
+    static const char* optString = "hf:";
+
+    while(true)
+    {
+        char optId = getopt_long(argc, argv, optString, longOptions, NULL);
+        if (optId == -1)
+            break;
+        switch(optId)
+        {
+            case ('h'):  // help
+                std::cout << usage << std::endl;
+                return 0;
+            case ('f'):
+                config_file = std::string(optarg);
+                break;
+            default:
+                std::cout << usage << std::endl;
+                return 1;
+        }
+    }
 
     /* this thread runs now runs as a daemon in the background */
     HSpectrometerManager<>* specManager = new HSpectrometerManager<>();
+    HParameters param;
+    param.Initialize();
+
+    if(config_file != "")
+    {
+        param.SetParameterFilename(config_file);
+        param.ReadParameters();
+        specManager->SetParameters(param);
+    }
+    else
+    {
+        std::cout<<"No config file given, using defaults."<<std::endl;
+    }
+
+    daemonize();
+
     specManager->Initialize();
     std::thread spectrometer_thread( &HSpectrometerManager<>::Run, specManager);
     spectrometer_thread.join();
