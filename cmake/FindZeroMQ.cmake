@@ -7,9 +7,9 @@
 
 find_path ( ZMQ_INCLUDE_DIR zmq.h )
 find_library ( ZMQ_LIBRARY NAMES zmq )
-find_library ( ZMQPP_LIBRARY NAMES zmqpp )
+#find_library ( ZMQPP_LIBRARY NAMES zmqpp )
 
-set ( ZMQ_LIBRARIES ${ZMQ_LIBRARY} ${ZMQPP_LIBRARY} )
+set ( ZMQ_LIBRARIES ${ZMQ_LIBRARY} )
 set ( ZMQ_INCLUDE_DIRS ${ZMQ_INCLUDE_DIR} )
 
 include ( FindPackageHandleStandardArgs )
