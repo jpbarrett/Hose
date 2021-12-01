@@ -18,7 +18,7 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers):
         #ifdef HOSE_USE_ZEROMQ
             fContext = new zmq::context_t(1);
             fPublisher = new zmq::socket_t(*fContext, ZMQ_RADIO);
-            fPublisher.connect("udp://192.52.61.185:8181"); //hardcoded hopefully curie is up
+            fPublisher->connect("udp://192.52.61.185:8181"); //hardcoded hopefully curie is up
         #endif
 };
 
@@ -297,12 +297,12 @@ void HSpectrumAverager::SendNoisePowerUDPPacket(struct HDataAccumulationStruct& 
     ss << ";";
     std::string msg = ss.str();
 
-    if(fPublisher.connected())
+    if(fPublisher->connected())
     {
         zmq::message_t update{msg.data(), msg.size()};
         update.set_group("test");
         std::cout << "Sending noise pwr" << std::endl;
-        fPublisher.send(update);
+        fPublisher->send(update);
     }
 
 }
