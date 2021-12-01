@@ -13,6 +13,12 @@ extern "C"
 #include "HDataAccumulationContainer.hh"
 
 
+#ifdef HOSE_USE_ZEROMQ
+#include <zmq.hpp>
+#include <string>
+#include <sstream>
+#endif
+
 namespace hose
 {
 
@@ -61,7 +67,13 @@ class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HCo
         //to collect the noise power info
         HDataAccumulationContainer fNoisePowerAccumulator;
 
+    private:
 
+        #ifdef HOSE_USE_ZEROMQ
+            zmq::context_t* fContext;
+            zmq::socket_t* fPublisher;
+            void SendNoisePowerUDPPacket(struct HDataAccumulationStruct& stat);
+        #endif
 };
 
 

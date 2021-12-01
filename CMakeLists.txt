@@ -57,6 +57,10 @@ option( HOSE_USE_SPDLOG "Build logging support using spdlog library" ON)
 option( HOSE_ENABLE_TEST "Build developer tests." OFF)
 option( HOSE_ADQ7_SOFTWARE_TRIGGER "Enable software trigger for ADQ7" OFF)
 
+if(HOSE_USE_ZEROMQ)
+    hose_add_cxxflag(HOSE_USE_ZEROMQ)
+endif(HOSE_USE_ZEROMQ)
+
 if(HOSE_USE_SPDLOG)
     hose_add_cxxflag(HOSE_USE_SPDLOG)
 endif(HOSE_USE_SPDLOG)

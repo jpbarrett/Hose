@@ -1,5 +1,8 @@
 #include "HSpectrumAverager.hh"
 
+
+
+
 namespace hose
 {
 
@@ -11,10 +14,22 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers):
         fAccumulationBuffer = new HLinearBuffer<float>( &(fAccumulatedSpectrum[0]), spectrum_length);
         fNBuffersAccumulated = 0;
         //std::cout<<"spectrum averager = "<<this<<std::endl;
+
+        #ifdef HOSE_USE_ZEROMQ
+            fContext = new zmq::context_t(1);
+            fPublisher = new zmq::socket_t(*fContext, ZMQ_RADIO);
+            fPublisher.connect("udp://192.52.61.185:8181"); //hardcoded hopefully curie is up
+        #endif
 };
 
 
-HSpectrumAverager::~HSpectrumAverager(){};
+HSpectrumAverager::~HSpectrumAverager()
+{
+    #ifdef HOSE_USE_ZEROMQ
+        delete fContext;
+        delete fPublisher;
+    #endif
+};
 
 
 bool
@@ -83,6 +98,11 @@ HSpectrumAverager::ExecuteThreadTask()
                 stat.state_flag = H_NOISE_UNKNOWN;
                 fNoisePowerAccumulator.AppendAccumulation(stat);
 
+                #ifdef HOSE_USE_ZEROMQ
+                    SendNoisePowerUDPPacket(stat);
+                #endif 
+
+
             }
             else if( CheckMetaData(sideband_flag, pol_flag, start_second, sample_rate, leading_sample_index) ) //meta data matches, so accumulate another spectrum
             {
@@ -104,6 +124,10 @@ HSpectrumAverager::ExecuteThreadTask()
                 stat.count = n_total_samples;
                 stat.state_flag = H_NOISE_UNKNOWN;
                 fNoisePowerAccumulator.AppendAccumulation(stat);
+
+                #ifdef HOSE_USE_ZEROMQ
+                    SendNoisePowerUDPPacket(stat);
+                #endif 
 
                 //check if we have reached the desired number of buffers,
                 if(fNBuffersAccumulated == fNBuffersToAccumulate)
@@ -254,6 +278,34 @@ void HSpectrumAverager::Reset()
 
 }
 
+#ifdef HOSE_USE_ZEROMQ
+void HSpectrumAverager::SendNoisePowerUDPPacket(struct HDataAccumulationStruct& stat)
+{
+    //noise power data
+    std::stringstream ss;
+    ss << stat.start_index;
+    ss << ";";
+    ss << stat.stop_index;
+    ss << ";";
+    ss << stat.sum_x;
+    ss << ";";
+    ss << stat.sum_x2;
+    ss << ";";
+    ss << stat.count;
+    ss << ";";
+    ss << stat.state_flag;
+    ss << ";";
+    std::string msg = ss.str();
 
+    if(fPublisher.connected())
+    {
+        zmq::message_t update{msg.data(), msg.size()};
+        update.set_group("test");
+        std::cout << "Sending noise pwr" << std::endl;
+        fPublisher.send(update);
+    }
+
+}
+#endif HOSE_USE_ZEROMQ
 
 }

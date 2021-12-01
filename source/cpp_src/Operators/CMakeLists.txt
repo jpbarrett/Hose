@@ -54,7 +54,16 @@ if(HOSE_USE_CUDA)
     )
 
     add_library (HCUDAOperators SHARED ${CUDAOPERATOR_SOURCEFILES})
-    target_link_libraries ( HCUDAOperators HInterface HCore HCUDASpectrometer )
+
+    if(HOSE_USE_ZEROMQ)
+        include(FindZeroMQ)
+        find_package(ZeroMQ REQUIRED)
+        include_directories(${ZMQ_INCLUDE_DIRS})
+        hose_add_cxxflag(ZMQ_BUILD_DRAFT_API)
+        target_link_libraries ( HCUDAOperators HInterface HCore HCUDASpectrometer ${ZMQ_LIBRARIES})
+    else(HOSE_USE_ZEROMQ)
+        target_link_libraries ( HCUDAOperators HInterface HCore HCUDASpectrometer )
+    endif(HOSE_USE_ZEROMQ)
 
     hose_install_headers( ${CUDAOPERATOR_HEADERFILES} )
     hose_install_libraries( HCUDAOperators )
