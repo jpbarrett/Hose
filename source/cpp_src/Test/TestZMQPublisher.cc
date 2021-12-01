@@ -30,7 +30,7 @@ int main()
         text += std::to_string(++number);
 
         zmq::message_t update{text.data(), text.size()};
-        //update.set_group("test");
+        update.set_group("test");
         std::cout << "Sending: " << timestamp.count() << " number:" << number << std::endl;
         publisher.send(update);
         sleep(1);
