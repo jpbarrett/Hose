@@ -1,4 +1,3 @@
-// Server side implementation of UDP client-server model
 #include <zmq.hpp>
 #include <string>
 #include <iostream>
@@ -12,7 +11,6 @@ int main()
 
     zmq::context_t context(1);
     zmq::socket_t publisher(context, ZMQ_RADIO);
-    // We need set IP of destination, sad but true
     publisher.connect("udp://192.52.61.185:8181");
 
     std::string text;
@@ -34,12 +32,5 @@ int main()
         std::cout << "Sending: " << timestamp.count() << " number:" << number << std::endl;
         publisher.send(update);
         sleep(1);
-        // std::this_thread::sleep_for(1);
     }
-
-
-
-
-
-
 }
