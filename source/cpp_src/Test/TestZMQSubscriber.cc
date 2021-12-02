@@ -26,24 +26,24 @@ int main()
         subscriber.recv(&update);
 
         std::string text(update.data<const char>(), update.size());
-        std::cout << text;
+        std::cout << text << std::endl;
 
-        auto splitPoint = text.find(';');
-        std::string serverTime = std::string(text.substr(0, splitPoint));
-        std::string serverNumber = std::string(text.substr(splitPoint + 1));
-        auto number = std::stoi(serverNumber);
-        if(number != previousNumber + 1)
-        {
-            ++lostCount;
-        }
-        previousNumber = number;
-
-        const auto diff =
-            std::chrono::system_clock::now() -
-            std::chrono::system_clock::time_point{std::chrono::microseconds{std::stoull(serverTime)}};
-
-        // Beautify at: https://github.com/gelldur/common-cpp/blob/master/src/acme/beautify.h
-        std::cout << " ping:"  << "UDP lost: " << lostCount << std::endl;
+        // auto splitPoint = text.find(';');
+        // std::string serverTime = std::string(text.substr(0, splitPoint));
+        // std::string serverNumber = std::string(text.substr(splitPoint + 1));
+        // auto number = std::stoi(serverNumber);
+        // if(number != previousNumber + 1)
+        // {
+        //     ++lostCount;
+        // }
+        // previousNumber = number;
+        // 
+        // const auto diff =
+        //     std::chrono::system_clock::now() -
+        //     std::chrono::system_clock::time_point{std::chrono::microseconds{std::stoull(serverTime)}};
+        // 
+        // // Beautify at: https://github.com/gelldur/common-cpp/blob/master/src/acme/beautify.h
+        // std::cout << " ping:"  << "UDP lost: " << lostCount << std::endl;
     }
 
 
