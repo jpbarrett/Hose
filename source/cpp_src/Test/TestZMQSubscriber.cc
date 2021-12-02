@@ -13,7 +13,7 @@ int main()
     zmq::context_t context(1);
     zmq::socket_t subscriber(context, ZMQ_DISH);
     subscriber.bind("udp://*:8181");
-    subscriber.join("test");
+    subscriber.join("noise_power");
 
     int previousNumber = 0;
     int lostCount = -1;

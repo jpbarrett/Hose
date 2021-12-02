@@ -279,29 +279,26 @@ void HSpectrumAverager::Reset()
 }
 
 #ifdef HOSE_USE_ZEROMQ
-void HSpectrumAverager::SendNoisePowerUDPPacket(struct HDataAccumulationStruct& stat)
+void HSpectrumAverager::SendNoisePowerUDPPacket(uint64_t start_sec, uint64_t leading_sample_index, uint64_t sample_rate, struct HDataAccumulationStruct& stat)
 {
     //noise power data
     std::stringstream ss;
-    ss << stat.start_index;
-    ss << ";";
-    ss << stat.stop_index;
-    ss << ";";
-    ss << stat.sum_x;
-    ss << ";";
-    ss << stat.sum_x2;
-    ss << ";";
-    ss << stat.count;
-    ss << ";";
-    ss << stat.state_flag;
-    ss << ";";
+    ss << start_sec << "; ";
+    ss << leading_sample_index << "; ";
+    ss << sample_rate << "; ";
+    ss << stat.start_index << "; ";
+    ss << stat.stop_index << ";";
+    ss << stat.sum_x << "; ";
+    ss << stat.sum_x2 << "; ";
+    ss << stat.count << "; ";
+    ss << stat.state_flag << "; ";
+
     std::string msg = ss.str();
 
     if(fPublisher->connected())
     {
         zmq::message_t update{msg.data(), msg.size()};
-        update.set_group("test");
-        std::cout << "Sending noise pwr" << std::endl;
+        update.set_group("noise_power");
         fPublisher->send(update);
     }
 
