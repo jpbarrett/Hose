@@ -99,7 +99,7 @@ HSpectrumAverager::ExecuteThreadTask()
                 fNoisePowerAccumulator.AppendAccumulation(stat);
 
                 #ifdef HOSE_USE_ZEROMQ
-                    SendNoisePowerUDPPacket(stat);
+                    SendNoisePowerUDPPacket(fAcquisitionStartSecond, fLeadingSampleIndex, fSampleRate, stat);
                 #endif 
 
 
@@ -126,7 +126,7 @@ HSpectrumAverager::ExecuteThreadTask()
                 fNoisePowerAccumulator.AppendAccumulation(stat);
 
                 #ifdef HOSE_USE_ZEROMQ
-                    SendNoisePowerUDPPacket(stat);
+                    SendNoisePowerUDPPacket(fAcquisitionStartSecond, fLeadingSampleIndex, fSampleRate, stat);
                 #endif 
 
                 //check if we have reached the desired number of buffers,
