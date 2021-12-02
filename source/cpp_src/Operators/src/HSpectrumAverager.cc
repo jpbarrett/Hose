@@ -284,10 +284,10 @@ void HSpectrumAverager::SendNoisePowerUDPPacket(const uint64_t& start_sec, const
     //noise power data
     std::stringstream ss;
     ss << start_sec << "; ";
-    ss << leading_sample_index << "; ";
+    // ss << leading_sample_index << "; ";
     ss << sample_rate << "; ";
     ss << stat.start_index << "; ";
-    ss << stat.stop_index << ";";
+    ss << stat.stop_index << "; ";
     ss << stat.sum_x << "; ";
     ss << stat.sum_x2 << "; ";
     ss << stat.count << "; ";
