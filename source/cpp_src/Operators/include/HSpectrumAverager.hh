@@ -72,7 +72,7 @@ class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HCo
         #ifdef HOSE_USE_ZEROMQ
             zmq::context_t* fContext;
             zmq::socket_t* fPublisher;
-            void SendNoisePowerUDPPacket(struct HDataAccumulationStruct& stat);
+            void SendNoisePowerUDPPacket(const uint64_t& start_sec, const uint64_t& leading_sample_index, const uint64_t& sample_rate, const struct HDataAccumulationStruct& stat);
         #endif
 };
 

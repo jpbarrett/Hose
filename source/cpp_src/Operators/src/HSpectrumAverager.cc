@@ -279,7 +279,7 @@ void HSpectrumAverager::Reset()
 }
 
 #ifdef HOSE_USE_ZEROMQ
-void HSpectrumAverager::SendNoisePowerUDPPacket(uint64_t start_sec, uint64_t leading_sample_index, uint64_t sample_rate, struct HDataAccumulationStruct& stat)
+void HSpectrumAverager::SendNoisePowerUDPPacket(const uint64_t& start_sec, const uint64_t& leading_sample_index, const uint64_t& sample_rate, const struct HDataAccumulationStruct& stat)
 {
     //noise power data
     std::stringstream ss;
