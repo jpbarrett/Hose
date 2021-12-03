@@ -116,6 +116,8 @@ class HSpectrometerManager: public HApplicationBackend
             fStop(false),
             fIP("127.0.0.1"),
             fPort("12345"),
+            fUDPNoisePowerIP("192.52.61.185"),
+            fUDPNoisePowerPort("8181"),
             fServer(nullptr),
             fDigitizer(nullptr),
             fCUDABufferAllocator(nullptr),
@@ -183,6 +185,13 @@ class HSpectrometerManager: public HApplicationBackend
                 {
 
                     //extract parameters from configuration
+                    fPort = fParameters.GetStringParameter("port");
+                    fIP = fParameters.GetStringParameter("ip");
+
+                    fUDPNoisePowerPort = fParameters.GetStringParameter("noise_power_port");
+                    fUDPNoisePowerIP = fParameters.GetStringParameter("noise_power_ip_address");
+
+
                     fNSpectrumAverages = fParameters.GetIntegerParameter("n_ave_spectra_gpu");
                     fFFTSize = fParameters.GetIntegerParameter("n_fft_pts");
                     fDigitizerPoolSize = fParameters.GetIntegerParameter("n_digitizer_pool_size");
@@ -272,7 +281,8 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrumAveragingBufferPool = new HBufferPool< float >(fSpectrumAveragingBufferAllocator);
                         fSpectrumAveragingBufferPool->Allocate(fNSpectrumAveragerPoolSize, fFFTSize/2+1); //create a work space of buffers
 
-                        fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, fNSpectrumAveragesCPU); //further average down on cpu
+                        // fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, fNSpectrumAveragesCPU); //further average down on cpu
+                        fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, fNSpectrumAveragesCPU, fUDPNoisePowerPort, fUDPNoisePowerIP); //further average down on cpu
                         fSpectrumAverager->SetNThreads(1); //ONE THREAD ONLY!
                         fSpectrumAverager->SetSourceBufferPool(fSpectrometerSinkPool);
                         fSpectrumAverager->SetSinkBufferPool(fSpectrumAveragingBufferPool);
@@ -1072,8 +1082,14 @@ class HSpectrometerManager: public HApplicationBackend
         //config data data
         bool fInitialized;
         volatile bool fStop;
+        //this is for communication with hoseclient.py
         std::string fIP;
-        std::string fPort;
+        std::string fPort; 
+
+        //this is for unicast of noise power data 
+        std::string fUDPNoisePowerIP;
+        std::string fUDPNoisePowerPort;
+
         size_t fNSpectrumAverages;
         size_t fFFTSize;
         size_t fDigitizerPoolSize;

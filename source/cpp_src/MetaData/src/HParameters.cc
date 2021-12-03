@@ -37,6 +37,8 @@ HParameters::Initialize()
     //we need to set up all the default parameter values
     fStringParam[std::string("ip_address")] = std::string("127.0.0.1");
     fStringParam[std::string("port")] = std::string("12345");
+    fStringParam[std::string("noise_power_ip_address")] = std::string("192.52.61.185"); //curie
+    fStringParam[std::string("noise_power_port")] = std::string("8181");
     fStringParam[std::string("window_type")] = std::string("blackman_harris");
 
     #ifdef HOSE_USE_PX14

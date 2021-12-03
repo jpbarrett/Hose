@@ -35,7 +35,15 @@ class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HCo
 {
 
     public:
-        HSpectrumAverager(size_t spectrum_length, size_t n_buffers);  //spec size and averages are fixed at constuction time
+
+        //spec size and averages are fixed at constuction time
+        HSpectrumAverager(size_t spectrum_length, size_t n_buffers);
+
+        //for better or worse, the spectrum averager is the best place to insert the 
+        //code to handle the noise-power UDP unicast messaging. So we add some options to
+        //configure the the IP/port here (fixed at construction time)
+        HSpectrumAverager(size_t spectrum_length, size_t n_buffers, std::string port, std::string ip);  
+
         virtual ~HSpectrumAverager();
 
     protected:
@@ -68,6 +76,10 @@ class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HCo
         HDataAccumulationContainer fNoisePowerAccumulator;
 
     private:
+        
+        bool fEnableUDP;
+        std::string fPort;
+        std::string fIPAddress;
 
         #ifdef HOSE_USE_ZEROMQ
             zmq::context_t* fContext;

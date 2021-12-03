@@ -10,4 +10,6 @@ n_dump_skip=120
 n_spec_ave_pool_size=20
 ip_address=127.0.0.1
 port=12345
+noise_power_ip_address=192.52.61.185
+noise_power_port=8181
 window_type=blackman_harris
