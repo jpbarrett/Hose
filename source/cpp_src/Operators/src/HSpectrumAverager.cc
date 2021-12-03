@@ -8,12 +8,12 @@ namespace hose
 
 HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers):
     fPowerSpectrumLength(spectrum_length),
-    fNBuffersToAccumulate(n_buffers)
+    fNBuffersToAccumulate(n_buffers),
+    fEnableUDP(false)
 {
     fAccumulatedSpectrum.resize(spectrum_length);
     fAccumulationBuffer = new HLinearBuffer<float>( &(fAccumulatedSpectrum[0]), spectrum_length);
     fNBuffersAccumulated = 0;
-    fEnableUDP = false;
 };
 
 
@@ -21,19 +21,21 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers, s
     fPowerSpectrumLength(spectrum_length),
     fNBuffersToAccumulate(n_buffers),
     fPort(port),
-    fIPAddress(ip)
+    fIPAddress(ip),
+    fEnableUDP(false)
 {
         fAccumulatedSpectrum.resize(spectrum_length);
         fAccumulationBuffer = new HLinearBuffer<float>( &(fAccumulatedSpectrum[0]), spectrum_length);
         fNBuffersAccumulated = 0;
 
-        fEnableUDP = true;
         #ifdef HOSE_USE_ZEROMQ
+            fEnableUDP = true;
             fContext = new zmq::context_t(1);
             fPublisher = new zmq::socket_t(*fContext, ZMQ_RADIO);
             std::string udp_connection = "udp://" + fIPAddress + ":" + fPort;
             std::cout<<"udp connection = "<<udp_connection<<std::endl;
             fPublisher->connect("udp://192.52.61.185:8181"); 
+            std::cout<<"debug"<<std::endl;
             //fPublisher->connect(udp_connection.c_str());
         #endif
 };
