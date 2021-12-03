@@ -311,6 +311,8 @@ void HSpectrumAverager::SendNoisePowerUDPPacket(const uint64_t& start_sec, const
 
     std::string msg = ss.str();
 
+    std::cout<<"sending msg"<<msg<<std::endl;
+
     if(fPublisher->connected())
     {
         zmq::message_t update{msg.data(), msg.size()};
