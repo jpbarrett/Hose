@@ -323,9 +323,9 @@ void HSpectrumAverager::SendNoisePowerUDPPacket(const uint64_t& start_sec, const
     ss << stat.state_flag << "; ";
 
     //also dump the spectral bin power
-    ss << fSpectralPowerSum << "; ";
     ss << fSpecLowerBound << "; ";
     ss << fSpecUpperBound << "; ";
+    ss << fSpectralPowerSum << "; ";
 
     std::string msg = ss.str();
 

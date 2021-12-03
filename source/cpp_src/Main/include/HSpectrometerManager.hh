@@ -286,7 +286,7 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrumAverager->SetSourceBufferPool(fSpectrometerSinkPool);
                         fSpectrumAverager->SetSinkBufferPool(fSpectrumAveragingBufferPool);
                         fSpectrumAverager->SetSpectralPowerLowerBound(0);
-                        fSpectrumAverager->SetSpectralPowerLowerBound(100);
+                        fSpectrumAverager->SetSpectralPowerUpperBound(100);
 
                         fAveragedSpectrumWriter = new HAveragedMultiThreadedSpectrumDataWriter();
                         fAveragedSpectrumWriter->SetBufferPool(fSpectrumAveragingBufferPool);
