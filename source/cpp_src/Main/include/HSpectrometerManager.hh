@@ -188,8 +188,8 @@ class HSpectrometerManager: public HApplicationBackend
                     fPort = fParameters.GetStringParameter("port");
                     fIP = fParameters.GetStringParameter("ip");
 
-                    std::cout<<"fIP = "<<fIP"<<std::endl;
-                    std::cout<<"fPort = "<<fPort"<<std::endl;
+                    std::cout<<"fIP = "<<fIP<<std::endl;
+                    std::cout<<"fPort = "<<fPort<<std::endl;
 
                     fUDPNoisePowerPort = fParameters.GetStringParameter("noise_power_port");
                     fUDPNoisePowerIP = fParameters.GetStringParameter("noise_power_ip_address");
