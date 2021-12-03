@@ -105,6 +105,9 @@ HSpectrumAverager::ExecuteThreadTask()
                 fLeadingSampleIndex = leading_sample_index;
                 fNTotalSpectrum = n_spectra;
                 fNTotalSamplesAccumulated = n_total_samples;
+                Accumulate(sdata->spectrum);
+                this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID() );
+                source = nullptr;
 
                 //noise power data
                 struct HDataAccumulationStruct stat;
@@ -194,12 +197,12 @@ HSpectrumAverager::ExecuteThreadTask()
             }
         }
 
-        if(source != nullptr)
-        {
-            //std::cout<<"averager releasing spec source buffer to consumer #"<<this->GetNextConsumerID()<<" in pool: "<<this->fSourceBufferPool<<std::endl;
-            //release source buffer
-            this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID() );
-        }
+        // if(source != nullptr)
+        // {
+        //     //std::cout<<"averager releasing spec source buffer to consumer #"<<this->GetNextConsumerID()<<" in pool: "<<this->fSourceBufferPool<<std::endl;
+        //     //release source buffer
+        //     this->fSourceBufferHandler.ReleaseBufferToConsumer(this->fSourceBufferPool, source, this->GetNextConsumerID() );
+        // }
 
     }
 }
