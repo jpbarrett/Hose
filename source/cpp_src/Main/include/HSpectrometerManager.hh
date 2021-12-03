@@ -186,7 +186,7 @@ class HSpectrometerManager: public HApplicationBackend
 
                     //extract parameters from configuration
                     fPort = fParameters.GetStringParameter("port");
-                    fIP = fParameters.GetStringParameter("ip");
+                    fIP = fParameters.GetStringParameter("ip_address");
 
                     std::cout<<"fIP = "<<fIP<<std::endl;
                     std::cout<<"fPort = "<<fPort<<std::endl;
