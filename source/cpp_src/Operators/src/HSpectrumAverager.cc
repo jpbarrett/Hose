@@ -9,6 +9,8 @@ namespace hose
 HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers):
     fPowerSpectrumLength(spectrum_length),
     fNBuffersToAccumulate(n_buffers),
+    fSpecLowerBound(0),
+    fSpecUpperBound(0),
     fEnableUDP(false)
 {
     fAccumulatedSpectrum.resize(spectrum_length);
@@ -22,6 +24,8 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers, s
     fNBuffersToAccumulate(n_buffers),
     fPort(port),
     fIPAddress(ip),
+    fSpecLowerBound(0),
+    fSpecUpperBound(0),
     fEnableUDP(false)
 {
         fAccumulatedSpectrum.resize(spectrum_length);
@@ -33,7 +37,7 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers, s
             fContext = new zmq::context_t(1);
             fPublisher = new zmq::socket_t(*fContext, ZMQ_RADIO);
             std::string udp_connection = "udp://" + fIPAddress + ":" + fPort;
-            std::cout<<"udp connection = "<<udp_connection<<std::endl;
+            //std::cout<<"udp connection = "<<udp_connection<<std::endl;
             fPublisher->connect(udp_connection.c_str());
         #endif
 };
@@ -220,6 +224,14 @@ HSpectrumAverager::Accumulate(float* array)
     {
         accum[i] += array[i];
     }
+    
+    //hopefully this is not too inefficient --- if it is, we may have to move this to the GPU
+    //accculate total 'power' in specified spectral bins
+    fSpectralPowerSum = 0.0;
+    for(size_t j=fSpecLowerBound; j<fSpecUpperBound; j++)
+    {
+        fSpectralPowerSum += array[j];
+    }
 }
 
 bool
@@ -307,9 +319,12 @@ void HSpectrumAverager::SendNoisePowerUDPPacket(const uint64_t& start_sec, const
     ss << stat.count << "; ";
     ss << stat.state_flag << "; ";
 
-    std::string msg = ss.str();
+    //also dump the spectral bin power
+    ss << fSpectralPowerSum << "; ";
+    ss << fSpecLowerBound << "; ";
+    ss << fSpecUpperBound << "; ";
 
-    std::cout<<"sending msg"<<msg<<std::endl;
+    std::string msg = ss.str();
 
     if(fPublisher->connected())
     {

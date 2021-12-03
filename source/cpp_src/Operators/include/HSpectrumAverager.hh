@@ -46,6 +46,10 @@ class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HCo
 
         virtual ~HSpectrumAverager();
 
+        //Sum a set of spectral bins to export this 'noise power'
+        void SetSpectralPowerLowerBound(size_t lower_bound){fSpecLowerBound = lower_bound;};
+        void SetSpectralPowerUpperBound(size_t upper_bound){fSpecUpperBound = upper_bound;};
+
     protected:
 
         virtual void ExecuteThreadTask() override;
@@ -80,6 +84,12 @@ class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HCo
         bool fEnableUDP;
         std::string fPort;
         std::string fIPAddress;
+
+        //accumulation of spectral bins 
+        double fSpectralPowerSum;
+        size_t fSpecLowerBound;
+        size_t fSpecUpperBound;
+
 
         #ifdef HOSE_USE_ZEROMQ
             zmq::context_t* fContext;

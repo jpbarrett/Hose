@@ -188,12 +188,8 @@ class HSpectrometerManager: public HApplicationBackend
                     fPort = fParameters.GetStringParameter("port");
                     fIP = fParameters.GetStringParameter("ip_address");
 
-                    std::cout<<"fIP = "<<fIP<<std::endl;
-                    std::cout<<"fPort = "<<fPort<<std::endl;
-
                     fUDPNoisePowerPort = fParameters.GetStringParameter("noise_power_port");
                     fUDPNoisePowerIP = fParameters.GetStringParameter("noise_power_ip_address");
-
 
                     fNSpectrumAverages = fParameters.GetIntegerParameter("n_ave_spectra_gpu");
                     fFFTSize = fParameters.GetIntegerParameter("n_fft_pts");
@@ -289,6 +285,8 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrumAverager->SetNThreads(1); //ONE THREAD ONLY!
                         fSpectrumAverager->SetSourceBufferPool(fSpectrometerSinkPool);
                         fSpectrumAverager->SetSinkBufferPool(fSpectrumAveragingBufferPool);
+                        fSpectrumAverager->SetSpectralPowerLowerBound(0);
+                        fSpectrumAverager->SetSpectralPowerLowerBound(100);
 
                         fAveragedSpectrumWriter = new HAveragedMultiThreadedSpectrumDataWriter();
                         fAveragedSpectrumWriter->SetBufferPool(fSpectrumAveragingBufferPool);
