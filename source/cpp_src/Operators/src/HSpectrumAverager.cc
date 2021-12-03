@@ -8,17 +8,35 @@ namespace hose
 
 HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers):
     fPowerSpectrumLength(spectrum_length),
-    fNBuffersToAccumulate(n_buffers)
+    fNBuffersToAccumulate(n_buffers),
+    fEnableUDP(false)
+{
+    fAccumulatedSpectrum.resize(spectrum_length);
+    fAccumulationBuffer = new HLinearBuffer<float>( &(fAccumulatedSpectrum[0]), spectrum_length);
+    fNBuffersAccumulated = 0;
+};
+
+
+HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers, std::string port, std::string ip):
+    fPowerSpectrumLength(spectrum_length),
+    fNBuffersToAccumulate(n_buffers),
+    fPort(port),
+    fIPAddress(ip),
+    fEnableUDP(false)
 {
         fAccumulatedSpectrum.resize(spectrum_length);
         fAccumulationBuffer = new HLinearBuffer<float>( &(fAccumulatedSpectrum[0]), spectrum_length);
         fNBuffersAccumulated = 0;
-        //std::cout<<"spectrum averager = "<<this<<std::endl;
 
         #ifdef HOSE_USE_ZEROMQ
+            fEnableUDP = true;
             fContext = new zmq::context_t(1);
             fPublisher = new zmq::socket_t(*fContext, ZMQ_RADIO);
-            fPublisher->connect("udp://192.52.61.185:8181"); //hardcoded hopefully curie is up
+            std::string udp_connection = "udp://" + fIPAddress + ":" + fPort;
+            std::cout<<"udp connection = "<<udp_connection<<std::endl;
+            fPublisher->connect("udp://192.52.61.185:8181"); 
+            std::cout<<"debug"<<std::endl;
+            //fPublisher->connect(udp_connection.c_str());
         #endif
 };
 
@@ -58,9 +76,7 @@ HSpectrumAverager::ExecuteThreadTask()
             std::lock_guard<std::mutex> source_lock(source->fMutex);
             sdata = &( (source->GetData())[0] ); //should have buffer size of 1
 
-            //std::cout<<"got a buff"<<std::endl;
-
-            //first collect the meta-data information from this buffer
+                //first collect the meta-data information from this buffer
             char sideband_flag = source->GetMetaData()->GetSidebandFlag() ;
             char pol_flag = source->GetMetaData()->GetPolarizationFlag();
             uint64_t start_second = source->GetMetaData()->GetAcquisitionStartSecond();
@@ -99,7 +115,7 @@ HSpectrumAverager::ExecuteThreadTask()
                 fNoisePowerAccumulator.AppendAccumulation(stat);
 
                 #ifdef HOSE_USE_ZEROMQ
-                    SendNoisePowerUDPPacket(fAcquisitionStartSecond, fLeadingSampleIndex, fSampleRate, stat);
+                    if(fEnableUDP){SendNoisePowerUDPPacket(fAcquisitionStartSecond, fLeadingSampleIndex, fSampleRate, stat);}
                 #endif 
 
 
@@ -126,7 +142,7 @@ HSpectrumAverager::ExecuteThreadTask()
                 fNoisePowerAccumulator.AppendAccumulation(stat);
 
                 #ifdef HOSE_USE_ZEROMQ
-                    SendNoisePowerUDPPacket(fAcquisitionStartSecond, fLeadingSampleIndex, fSampleRate, stat);
+                    if(fEnableUDP){SendNoisePowerUDPPacket(fAcquisitionStartSecond, fLeadingSampleIndex, fSampleRate, stat);}
                 #endif 
 
                 //check if we have reached the desired number of buffers,
@@ -294,6 +310,8 @@ void HSpectrumAverager::SendNoisePowerUDPPacket(const uint64_t& start_sec, const
     ss << stat.state_flag << "; ";
 
     std::string msg = ss.str();
+
+    std::cout<<"sending msg"<<msg<<std::endl;
 
     if(fPublisher->connected())
     {
