@@ -33,7 +33,8 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers, s
             fPublisher = new zmq::socket_t(*fContext, ZMQ_RADIO);
             std::string udp_connection = "udp://" + fIPAddress + ":" + fPort;
             std::cout<<"udp connection = "<<udp_connection<<std::endl;
-            fPublisher->connect(udp_connection.c_str());
+            fPublisher->connect("udp://192.52.61.185:8181"); 
+            //fPublisher->connect(udp_connection.c_str());
         #endif
 };
 
