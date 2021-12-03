@@ -281,8 +281,8 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrumAveragingBufferPool = new HBufferPool< float >(fSpectrumAveragingBufferAllocator);
                         fSpectrumAveragingBufferPool->Allocate(fNSpectrumAveragerPoolSize, fFFTSize/2+1); //create a work space of buffers
 
-                        // fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, fNSpectrumAveragesCPU); //further average down on cpu
-                        fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, fNSpectrumAveragesCPU, fUDPNoisePowerPort, fUDPNoisePowerIP); //further average down on cpu
+                        fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, fNSpectrumAveragesCPU); //further average down on cpu
+                        //fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, fNSpectrumAveragesCPU, fUDPNoisePowerPort, fUDPNoisePowerIP); //further average down on cpu
                         fSpectrumAverager->SetNThreads(1); //ONE THREAD ONLY!
                         fSpectrumAverager->SetSourceBufferPool(fSpectrometerSinkPool);
                         fSpectrumAverager->SetSinkBufferPool(fSpectrumAveragingBufferPool);
