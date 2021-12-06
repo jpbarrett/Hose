@@ -75,7 +75,8 @@ int main(int argc, char* argv[])
 
     uint64_t prev_start_index = 0;
     uint64_t prev_start_sec = 0;
-    double reset_interval = 300; //reset the plots every 5 minutes
+    double reset_interval = 30; //reset the plots every 5 minutes
+    double prev_chunk_time = 0;
 
     while(subscriber.connected())
     {
@@ -100,6 +101,7 @@ int main(int argc, char* argv[])
                 //reset the plots, clear all points 
                 g1->Set(0);
                 g2->Set(0);
+                prev_start_sec = start_sec;
             }
 
             uint64_t sample_rate = atoll(tokens[1].c_str());  
@@ -115,11 +117,12 @@ int main(int argc, char* argv[])
             //compute time of this data chunk and noise variance
             double chunk_time = (double)start_index/(double)sample_rate;
 
-            if(chunk_time > reset_interval)
+            if( (chunk_time - prev_chunk_time) > reset_interval)
             {
                 //reset the plots, clear all points
                 g1->Set(0);
                 g2->Set(0);
+                prev_chunk_time = chunk_time;
             }
 
 
