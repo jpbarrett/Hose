@@ -27,11 +27,11 @@ int main(int argc, char* argv[])
     TApplication rootapp("noise monitor", &argc, argv);
 
     //canvas
-    auto c1 = std::make_unique<TCanvas>("c1", "Noise Power Plot");
+    auto c1 = new TCanvas("c1", "Noise Power Plot");
     c1->SetWindowSize(1550, 700);
 
     //create a plot for the continuum noise power
-    auto g1 = std::make_unique<TGraph>();
+    auto g1 = new TGraph();
     g1->SetTitle("Continuum Noise Power");
     g1->GetYaxis()->SetTitle("Power (a.u.)");
     g1->GetXaxis()->SetTitle("Time since start (s)");
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     // g1->SetMaximum(100);
 
     //create a plot for the narrow band noise power
-    auto g2 = std::make_unique<TGraph>();
+    auto g2 = new TGraph();
     g2->SetTitle("Narrow Band Noise Power");
     g2->GetYaxis()->SetTitle("Power (a.u)");
     g2->GetXaxis()->SetTitle("Time since start (s)");
