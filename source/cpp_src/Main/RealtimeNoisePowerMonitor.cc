@@ -53,11 +53,11 @@ int main(int argc, char* argv[])
     c1->cd(1); 
     c1->Pad()->SetLeftMargin(0.08);
     c1->Pad()->SetRightMargin(0.01);
-    g1->Draw();
+    g1->Draw("A");
     c1->cd(2); 
     c1->Pad()->SetLeftMargin(0.08);
     c1->Pad()->SetRightMargin(0.01);
-    g2->Draw();
+    g2->Draw("A");
 
     //set up ZeroMQ UDP client to grab packets
     zmq::context_t context(1);
@@ -74,6 +74,8 @@ int main(int argc, char* argv[])
     timer.MeasureWallclockTime();
 
     uint64_t prev_start_index = 0;
+    uint64_t prev_start_sec = 0;
+    double reset_interval = 300; //reset the plots every 5 minutes
 
     while(subscriber.connected())
     {
@@ -92,6 +94,14 @@ int main(int argc, char* argv[])
         {
         
             uint64_t start_sec = atoll(tokens[0].c_str());  
+
+            if(prev_start_sec != start_sec)
+            {
+                //reset the plots, clear all points 
+                g1->Set(0);
+                g2->Set(0);
+            }
+
             uint64_t sample_rate = atoll(tokens[1].c_str());  
             uint64_t start_index = atoll(tokens[2].c_str());  
             uint64_t stop_index = atoll(tokens[3].c_str());  
@@ -104,6 +114,15 @@ int main(int argc, char* argv[])
 
             //compute time of this data chunk and noise variance
             double chunk_time = (double)start_index/(double)sample_rate;
+
+            if(chunk_time > reset_interval)
+            {
+                //reset the plots, clear all points
+                g1->Set(0);
+                g2->Set(0);
+            }
+
+
             double var = sum_x2/delta - (sum/delta)*(sum/delta);
             g1->SetPoint(g1->GetN(), chunk_time, var );
         
@@ -112,9 +131,13 @@ int main(int argc, char* argv[])
             //update the plots in the window
             c1->cd(1);
             g1->Draw("AP");
+            g1->GetYaxis()->SetTitle("Power (a.u.)");
+            g1->GetXaxis()->SetTitle("Time since start (s)");
             c1->Update();
             c1->Pad()->Draw();
             c1->cd(2);
+            g2->GetYaxis()->SetTitle("Power (a.u)");
+            g2->GetXaxis()->SetTitle("Time since start (s)");
             g2->Draw("AP");
             c1->Update();
             c1->Pad()->Draw();
