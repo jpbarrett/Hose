@@ -109,11 +109,13 @@ int main(int argc, char* argv[])
 
             //update the plots in the window
             c1->cd(1);
+            g1->Draw("AP");
             c1->Update();
-            c1->Pad()->Draw("AP");
+        //    c1->Pad()->Draw();
             c1->cd(2);
+            g2->Draw("AP");
             c1->Update();
-            c1->Pad()->Draw();
+        //    c1->Pad()->Draw();
             gSystem->ProcessEvents();
             
             prev_start_index = start_index;
