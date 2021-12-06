@@ -1,0 +1,163 @@
+#include <zmq.hpp>
+#include <string>
+#include <iostream>
+#include <unistd.h>
+#include <sstream>
+#include <thread>
+#include <chrono>
+
+
+// ROOT headers
+#include "TStyle.h"
+#include "TSystem.h"
+#include "TCanvas.h"
+#include "TGraph.h"
+#include "TApplication.h"
+#include "TAxis.h"
+#include "TROOT.h"
+
+#include "HTokenizer.hh"
+#include "HTimer.hh"
+
+using namespace hose;
+
+int main(int argc, char* argv[])
+{
+    //root app
+    TApplication rootapp("noise monitor", &argc, argv);
+
+    //canvas
+    auto c1 = std::make_unique<TCanvas>("c1", "Noise Power Plot");
+    c1->SetWindowSize(1550, 700);
+
+    //create a plot for the continuum noise power
+    auto g1 = std::make_unique<TGraph>();
+    g1->SetTitle("Continuum Noise Power");
+    g1->GetYaxis()->SetTitle("Power (a.u.)");
+    g1->GetXaxis()->SetTitle("Time since start (s)");
+    // g1->SetMinimum(0);
+    // g1->SetMaximum(100);
+
+    //create a plot for the narrow band noise power
+    auto g2 = std::make_unique<TGraph>();
+    g2->SetTitle("Narrow Band Noise Power");
+    g2->GetYaxis()->SetTitle("Power (a.u)");
+    g2->GetXaxis()->SetTitle("Time since start (s)");
+    // g2->SetMinimum(-1);
+    // g2->SetMaximum(1);
+
+    //divide canvas and set plots
+    c1->Divide(1, 2);
+    c1->cd(1); 
+    c1->Pad()->SetLeftMargin(0.08);
+    c1->Pad()->SetRightMargin(0.01);
+    g1->Draw();
+    c1->cd(2); 
+    c1->Pad()->SetLeftMargin(0.08);
+    c1->Pad()->SetRightMargin(0.01);
+    g2->Draw();
+
+    //set up ZeroMQ UDP client to grab packets
+    zmq::context_t context(1);
+    zmq::socket_t subscriber(context, ZMQ_DISH);
+    subscriber.bind("udp://*:8181");
+    subscriber.join("noise_power");
+
+    //tokenizer and timer utils 
+    HTokenizer tokenizer;
+    tokenizer.SetDelimiter(";");
+    std::vector< std::string > tokens;
+
+    HTimer timer;
+    timer.MeasureWallclockTime();
+
+    uint64_t prev_start_index = 0;
+
+    while(subscriber.connected())
+    {
+        //make sure canvas hasn't been closed
+        if(gROOT->GetListOfCanvases()->FindObject("c1") == nullptr){break;}
+
+        zmq::message_t update;
+        subscriber.recv(&update);
+        std::string text(update.data<const char>(), update.size());
+        std::cout << text << std::endl;
+
+        tokenizer.SetString(&text);
+        tokenizer.GetTokens(&tokens);
+
+        if(tokens.size() >= 7)
+        {
+        
+            uint64_t start_sec = atoll(tokens[0].c_str());  
+            uint64_t sample_rate = atoll(tokens[1].c_str());  
+            uint64_t start_index = atoll(tokens[2].c_str());  
+            uint64_t stop_index = atoll(tokens[3].c_str());  
+            double sum = atof(tokens[4].c_str());  
+            double sum_x2 = atof(tokens[5].c_str());  
+            double delta = atof(tokens[6].c_str());  
+
+            //compute time of this data chunk and noise variance
+            double chunk_time = (double)start_index/(double)sample_rate;
+            double var = sum_x2/delta - (sum/delta)*(sum/delta);
+            g1->SetPoint(g1->GetN(), chunk_time, var );
+
+            //update the plots in the window
+            c1->cd(1);
+            c1->Update();
+            c1->Pad()->Draw();
+            c1->cd(2);
+            c1->Update();
+            c1->Pad()->Draw();
+            gSystem->ProcessEvents();
+            
+            prev_start_index = start_index;
+        }
+
+        //every some x amount of time we ought to clear the graphs
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}

@@ -27,6 +27,7 @@ if( HOSE_USE_ZEROMQ)
     include_directories(${ZMQ_INCLUDE_DIRS})
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Server/include)
     list(APPEND HOSE_MAIN_LIBS HServer ${ZMQ_LIBRARIES})
+    hose_add_cxxflag(ZMQ_BUILD_DRAFT_API)
 endif(HOSE_USE_ZEROMQ)
 
 if(HOSE_USE_CUDA)
@@ -56,6 +57,10 @@ if (HOSE_USE_ROOT)
     include_directories(${ROOT_INCLUDE_DIRS})
     list(APPEND HOSE_MAIN_LIBS ${ROOT_LIBRARIES})
     list(APPEND SOURCE_BASENAMES SpectrumPlot RawPlot PowerPlot CrudeOnMinusOff PowerSpectralDensity MultipleScanPairsOnMinusOff SimpleDiodeCalibration OnMinusOffPSD)
+endif()
+
+if(HOSE_USE_ROOT AND HOSE_USE_ZEROMQ)
+    list(APPEND SOURCE_BASENAMES RealtimeNoisePowerMonitor)
 endif()
 
 foreach( BASENAME ${SOURCE_BASENAMES} )
