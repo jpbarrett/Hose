@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
         tokenizer.SetString(&text);
         tokenizer.GetTokens(&tokens);
 
-        if(tokens.size() >= 7)
+        if(tokens.size() >= 11)
         {
         
             uint64_t start_sec = atoll(tokens[0].c_str());  
@@ -96,16 +96,21 @@ int main(int argc, char* argv[])
             double sum = atof(tokens[4].c_str());  
             double sum_x2 = atof(tokens[5].c_str());  
             double delta = atof(tokens[6].c_str());  
+            int low_bin = atof(tokens[8].c_str());  
+            int high_bin = atof(tokens[9].c_str());  
+            double bin_sum = atof(tokens[10].c_str());  
 
             //compute time of this data chunk and noise variance
             double chunk_time = (double)start_index/(double)sample_rate;
             double var = sum_x2/delta - (sum/delta)*(sum/delta);
             g1->SetPoint(g1->GetN(), chunk_time, var );
+        
+            g2->SetPoint(g2->GetN(), chunk_time, bin_sum);
 
             //update the plots in the window
             c1->cd(1);
             c1->Update();
-            c1->Pad()->Draw();
+            c1->Pad()->Draw("AP");
             c1->cd(2);
             c1->Update();
             c1->Pad()->Draw();
