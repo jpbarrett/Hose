@@ -118,6 +118,9 @@ class HSpectrometerManager: public HApplicationBackend
             fPort("12345"),
             fUDPNoisePowerIP("192.52.61.185"),
             fUDPNoisePowerPort("8181"),
+            fUDPNoisePowerSkipInterval(1),
+            fNoisePowerBinLow(0),
+            fNoisePowerBinHigh(0),
             fServer(nullptr),
             fDigitizer(nullptr),
             fCUDABufferAllocator(nullptr),
@@ -190,6 +193,9 @@ class HSpectrometerManager: public HApplicationBackend
 
                     fUDPNoisePowerPort = fParameters.GetStringParameter("noise_power_port");
                     fUDPNoisePowerIP = fParameters.GetStringParameter("noise_power_ip_address");
+                    fUDPNoisePowerSkipInterval = fParameters.GetIntegerParameter("noise_power_udp_skip_interval");
+                    fNoisePowerBinLow = fParameters.GetIntegerParameter("spectral_noise_power_bin_low");
+                    fNoisePowerBinHigh = fParameters.GetIntegerParameter("spectral_noise_power_bin_high");
 
                     fNSpectrumAverages = fParameters.GetIntegerParameter("n_ave_spectra_gpu");
                     fFFTSize = fParameters.GetIntegerParameter("n_fft_pts");
@@ -287,6 +293,9 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrumAverager->SetSinkBufferPool(fSpectrumAveragingBufferPool);
                         fSpectrumAverager->SetSpectralPowerLowerBound(0);
                         fSpectrumAverager->SetSpectralPowerUpperBound(100);
+                        fSpectrumAverager->SetBufferSkip(fUDPNoisePowerSkipInterval);
+                        fSpectrumAverager->SetSpectralPowerUpperBound(fNoisePowerBinHigh);
+                        fSpectrumAverager->SetSpectralPowerLowerBound(fNoisePowerBinLow);
 
                         fAveragedSpectrumWriter = new HAveragedMultiThreadedSpectrumDataWriter();
                         fAveragedSpectrumWriter->SetBufferPool(fSpectrumAveragingBufferPool);
@@ -1090,6 +1099,9 @@ class HSpectrometerManager: public HApplicationBackend
         //this is for unicast of noise power data 
         std::string fUDPNoisePowerIP;
         std::string fUDPNoisePowerPort;
+        int fUDPNoisePowerSkipInterval;
+        int fNoisePowerBinLow;
+        int fNoisePowerBinHigh;
 
         size_t fNSpectrumAverages;
         size_t fFFTSize;

@@ -11,7 +11,8 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers):
     fNBuffersToAccumulate(n_buffers),
     fSpecLowerBound(0),
     fSpecUpperBound(0),
-    fEnableUDP(false)
+    fEnableUDP(false),
+    fSkipInterval(8)
 {
     fAccumulatedSpectrum.resize(spectrum_length);
     fAccumulationBuffer = new HLinearBuffer<float>( &(fAccumulatedSpectrum[0]), spectrum_length);
@@ -26,7 +27,8 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers, s
     fIPAddress(ip),
     fSpecLowerBound(0),
     fSpecUpperBound(0),
-    fEnableUDP(false)
+    fEnableUDP(false),
+    fSkipInterval(8)
 {
         fAccumulatedSpectrum.resize(spectrum_length);
         fAccumulationBuffer = new HLinearBuffer<float>( &(fAccumulatedSpectrum[0]), spectrum_length);
@@ -120,7 +122,7 @@ HSpectrumAverager::ExecuteThreadTask()
                 fNoisePowerAccumulator.AppendAccumulation(stat);
 
                 #ifdef HOSE_USE_ZEROMQ
-                    if(fEnableUDP && fNBuffersAccumulated%8 == 0){SendNoisePowerUDPPacket(fAcquisitionStartSecond, fLeadingSampleIndex, fSampleRate, stat);}
+                    if(fEnableUDP && fNBuffersAccumulated%fSkipInterval == 0){SendNoisePowerUDPPacket(fAcquisitionStartSecond, fLeadingSampleIndex, fSampleRate, stat);}
                 #endif 
 
 
@@ -147,7 +149,7 @@ HSpectrumAverager::ExecuteThreadTask()
                 fNoisePowerAccumulator.AppendAccumulation(stat);
 
                 #ifdef HOSE_USE_ZEROMQ
-                    if(fEnableUDP && fNBuffersAccumulated%8 == 0){SendNoisePowerUDPPacket(fAcquisitionStartSecond, fLeadingSampleIndex, fSampleRate, stat);}
+                    if(fEnableUDP && fNBuffersAccumulated%fSkipInterval == 0){SendNoisePowerUDPPacket(fAcquisitionStartSecond, fLeadingSampleIndex, fSampleRate, stat);}
                 #endif 
 
                 //check if we have reached the desired number of buffers,

@@ -47,6 +47,7 @@ class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HCo
         virtual ~HSpectrumAverager();
 
         //Sum a set of spectral bins to export this 'noise power'
+        void SetBufferSkip(int skip_interval){fSkipInterval = skip_interval;};
         void SetSpectralPowerLowerBound(size_t lower_bound){fSpecLowerBound = lower_bound;};
         void SetSpectralPowerUpperBound(size_t upper_bound){fSpecUpperBound = upper_bound;};
 
@@ -82,6 +83,7 @@ class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HCo
     private:
         
         bool fEnableUDP;
+        int fSkipInterval;
         std::string fPort;
         std::string fIPAddress;
 
