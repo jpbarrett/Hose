@@ -24,7 +24,10 @@ using namespace hose;
 int main(int argc, char* argv[])
 {
     //root app
-    TApplication rootapp("noise monitor", &argc, argv);
+    int fake_argc = 0;
+    char** fake_argv = nullptr;
+    //ROOT stuff for plots
+    TApplication app("noise_monitor",&fake_argc,fake_argv);
 
     //canvas
     auto c1 = new TCanvas("c1", "Noise Power Plot");
