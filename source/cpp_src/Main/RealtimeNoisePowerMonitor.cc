@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     g2->SetTitle("Narrow Band Noise Power");
     g2->GetYaxis()->SetTitle("Power (a.u)");
     g2->GetXaxis()->SetTitle("Time since start (s)");
-    g->SetMarkerStyle(4);
+    g2->SetMarkerStyle(4);
     // g2->SetMinimum(-1);
     // g2->SetMaximum(1);
 
