@@ -35,6 +35,7 @@ int main(int argc, char* argv[])
     g1->SetTitle("Continuum Noise Power");
     g1->GetYaxis()->SetTitle("Power (a.u.)");
     g1->GetXaxis()->SetTitle("Time since start (s)");
+    g1->SetMarkerStyle(4);
     // g1->SetMinimum(0);
     // g1->SetMaximum(100);
 
@@ -43,6 +44,7 @@ int main(int argc, char* argv[])
     g2->SetTitle("Narrow Band Noise Power");
     g2->GetYaxis()->SetTitle("Power (a.u)");
     g2->GetXaxis()->SetTitle("Time since start (s)");
+    g->SetMarkerStyle(4);
     // g2->SetMinimum(-1);
     // g2->SetMaximum(1);
 
@@ -111,11 +113,11 @@ int main(int argc, char* argv[])
             c1->cd(1);
             g1->Draw("AP");
             c1->Update();
-        //    c1->Pad()->Draw();
+            c1->Pad()->Draw();
             c1->cd(2);
             g2->Draw("AP");
             c1->Update();
-        //    c1->Pad()->Draw();
+            c1->Pad()->Draw();
             gSystem->ProcessEvents();
             
             prev_start_index = start_index;
