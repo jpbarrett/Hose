@@ -14,5 +14,5 @@ noise_power_ip_address=192.52.61.185
 noise_power_port=8181
 noise_power_udp_skip_interval=8
 spectral_noise_power_bin_low=0
-noise_power_narrow_bin_high=101
+spectral_noise_power_bin_low=101
 window_type=blackman_harris

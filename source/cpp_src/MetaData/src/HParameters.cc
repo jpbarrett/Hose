@@ -43,7 +43,7 @@ HParameters::Initialize()
 
     fIntegerParam[std::string("noise_power_udp_skip_interval")] = 8; //will only send a noise power UDP packet every n-th buffer
     //select the spectral bins to sum in the narrow-band noise power estimate
-    fIntegerParam[std::string("noise_power_narrow_bin_low")] = 0;
+    fIntegerParam[std::string("spectral_noise_power_bin_low")] = 0;
     fIntegerParam[std::string("spectral_noise_power_bin_high")] = 0;
 
 
