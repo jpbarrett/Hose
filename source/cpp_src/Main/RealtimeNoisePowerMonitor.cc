@@ -5,7 +5,7 @@
 #include <sstream>
 #include <thread>
 #include <chrono>
-
+#include <getopt.h>
 
 // ROOT headers
 #include "TStyle.h"
@@ -23,8 +23,59 @@ using namespace hose;
 
 int main(int argc, char* argv[])
 {
+
+
+    std::string usage =
+    "\n"
+    "Usage: RealtimeNoisePowerMonitior <options> \n"
+    "\n"
+    "Plot the incoming noise power data as a function of time.\n"
+    "\tOptions:\n"
+    "\t -h, --help               (shows this message and exits)\n"
+    "\t -i, --interval           (plotting refresh interval (seconds))\n"
+    ;
+
+    //set defaults
+    int refresh_interval = 300;
+    static struct option longOptions[] =
+    {
+        {"help", no_argument, 0, 'h'},
+        {"interval", required_argument, 0, 'i'}
+    };
+
+    static const char *optString = "hi:";
+
+    while(1)
+    {
+        char optId = getopt_long(argc, argv, optString, longOptions, NULL);
+        if(optId == -1) break;
+        switch(optId)
+        {
+            case('h'): // help
+            std::cout<<usage<<std::endl;
+            return 0;
+            case('i'):
+            refresh_interval = std::abs( atoi(optarg) );
+            break;
+            default:
+                std::cout<<usage<<std::endl;
+            return 1;
+        }
+    }
+
+    if(refresh_interval <= 0)
+    {
+        std::cout<<"Cannot support a refresh interval of "<<refresh_interval<<std::endl;
+        std::cout<<"Using 300 sec instead."<<std::endl;
+        refresh_interval = 300;
+    }
+
+
     //root app
-    TApplication rootapp("noise monitor", &argc, argv);
+    int fake_argc = 0;
+    char** fake_argv = nullptr;
+    //ROOT stuff for plots
+    TApplication app("noise_monitor",&fake_argc,fake_argv);
 
     //canvas
     auto c1 = new TCanvas("c1", "Noise Power Plot");
@@ -75,7 +126,7 @@ int main(int argc, char* argv[])
 
     uint64_t prev_start_index = 0;
     uint64_t prev_start_sec = 0;
-    double reset_interval = 30; //reset the plots every 5 minutes
+    double reset_interval = refresh_interval; //reset the plots after this amount of time passes
     double prev_chunk_time = 0;
 
     while(subscriber.connected())
@@ -98,6 +149,7 @@ int main(int argc, char* argv[])
 
             if(prev_start_sec != start_sec)
             {
+                //new recording is active
                 //reset the plots, clear all points 
                 g1->Set(0);
                 g2->Set(0);
