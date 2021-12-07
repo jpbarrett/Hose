@@ -60,7 +60,7 @@ if (HOSE_USE_ROOT)
 endif()
 
 if(HOSE_USE_ROOT AND HOSE_USE_ZEROMQ)
-    list(APPEND SOURCE_BASENAMES RealtimeNoisePowerMonitor)
+    list(APPEND SOURCE_BASENAMES RealtimeNoisePowerMonitor RealtimeSpectrumMonitor)
 endif()
 
 foreach( BASENAME ${SOURCE_BASENAMES} )
