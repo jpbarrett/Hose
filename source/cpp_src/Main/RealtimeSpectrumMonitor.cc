@@ -73,6 +73,11 @@ int main(int argc, char* argv[])
     double sum_spec[256];
     double count = 0;
 
+    for(int i=0; i<256; i++)
+    {
+        spec[256] = 0.0;
+        sum_spec[256] = 1e-30;
+    }
 
     while(subscriber.connected())
     {

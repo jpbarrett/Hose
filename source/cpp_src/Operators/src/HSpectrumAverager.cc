@@ -269,7 +269,7 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
         //compute average and finish writing meta data
         float* accum = fAccumulationBuffer->GetData();
         float* ave = sink->GetData();
-        for(size_t i=1; i<fPowerSpectrumLength; i++)
+        for(size_t i=0; i<fPowerSpectrumLength; i++)
         {
             ave[i] = accum[i]/(float)fNBuffersAccumulated;
             #ifdef ENABLE_SPECTRUM_UDP
