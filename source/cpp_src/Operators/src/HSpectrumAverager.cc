@@ -35,7 +35,7 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers, s
         fNBuffersAccumulated = 0;
 
         #ifdef HOSE_USE_ZEROMQ
-            fEnableUDP = true;
+            //fEnableUDP = true;
             fContext = new zmq::context_t(1);
             fPublisher = new zmq::socket_t(*fContext, ZMQ_RADIO);
             std::string udp_connection = "udp://" + fIPAddress + ":" + fPort;
