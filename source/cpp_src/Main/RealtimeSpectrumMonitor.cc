@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
         }
 
         //copy in spectrum data 
-        memcpy(&spec, update.data<const char>(), update.size());
+        memcpy(&spec, update.data<float>(), update.size());
 
         count += 1;
         g1->Set(0);

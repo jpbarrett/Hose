@@ -273,7 +273,7 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
         {
             ave[i] = accum[i]/(float)fNBuffersAccumulated;
             #ifdef ENABLE_SPECTRUM_UDP
-            fRebinnedSpectrum[i/fBinFactor] += rand();// ave[i];
+            fRebinnedSpectrum[i/fBinFactor] += ave[i];
             #endif
         }
 
@@ -288,7 +288,7 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
         #ifdef ENABLE_SPECTRUM_UDP
             if(fPublisher->connected())
             {
-                zmq::message_t update{ reinterpret_cast<const char*>(&(fRebinnedSpectrum[0])), sizeof(float)*NBINS};
+                zmq::message_t update{ &(fRebinnedSpectrum[0]), sizeof(float)*NBINS};
                 update.set_group("spectrum");
                 fPublisher->send(update);
             }
