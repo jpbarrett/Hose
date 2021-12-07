@@ -42,6 +42,11 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers, s
             //std::cout<<"udp connection = "<<udp_connection<<std::endl;
             fPublisher->connect(udp_connection.c_str());
         #endif
+
+        #ifdef ENABLE_SPECTRUM_UDP
+            fBinFactor = fPowerSpectrumLength/NBINS;
+        #endif
+
 };
 
 
@@ -266,7 +271,10 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
         float* ave = sink->GetData();
         for(size_t i=0; i<fPowerSpectrumLength; i++)
         {
-            ave[i] = accum[i]/(float)fNBuffersAccumulated;;
+            ave[i] = accum[i]/(float)fNBuffersAccumulated;
+            #ifdef ENABLE_SPECTRUM_UDP
+            fRebinnedSpectrum[i/fBinFactor] += ave[i];
+            #endif
         }
 
         //stuff the noise power data into the meta data container
@@ -275,6 +283,17 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
 
         //release to consumer
         this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
+
+
+        #ifdef ENABLE_SPECTRUM_UDP
+            if(fPublisher->connected())
+            {
+                zmq::message_t update{ reinterpret_cast<const char*>(&(fRebinnedSpectrum[0])), sizeof(float)*NBINS};
+                update.set_group("spectrum");
+                fPublisher->send(update);
+            }
+        #endif 
+
         return true;
 
     }
@@ -303,6 +322,13 @@ void HSpectrumAverager::Reset()
     {
         accum[i] = 0.0;
     }
+
+    #ifdef ENABLE_SPECTRUM_UDP
+    for(size_t i=0; i<NBINS; i++)
+    {
+        fRebinnedSpectrum[i] = 0.0;
+    }
+    #endif
 
     //for the noise power, clear out all the accumulation structs
     fNoisePowerAccumulator.ClearAccumulation();

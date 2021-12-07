@@ -19,6 +19,10 @@ extern "C"
 #include <sstream>
 #endif
 
+
+#define ENABLE_SPECTRUM_UDP
+#define NBINS 256
+
 namespace hose
 {
 
@@ -98,6 +102,13 @@ class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HCo
             zmq::socket_t* fPublisher;
             void SendNoisePowerUDPPacket(const uint64_t& start_sec, const uint64_t& leading_sample_index, const uint64_t& sample_rate, const struct HDataAccumulationStruct& stat);
         #endif
+
+        #ifdef ENABLE_SPECTRUM_UDP
+            size_t fBinFactor;
+            float fRebinnedSpectrum[NBINS];
+        #endif 
+
+
 };
 
 
