@@ -75,8 +75,8 @@ int main(int argc, char* argv[])
 
     for(int i=0; i<256; i++)
     {
-        spec[256] = 0.0;
-        sum_spec[256] = 1e-30;
+        spec[i] = 0.0;
+        sum_spec[i] = 1e-30;
     }
 
     while(subscriber.connected())
@@ -86,44 +86,48 @@ int main(int argc, char* argv[])
 
         zmq::message_t update;
         subscriber.recv(&update);
-    //    std::string text(update.data<const char>(), update.size());
+        // std::string text(update.data<const char>(), update.size());
+        // std::cout<<text<<std::endl;
 
-        if(update.size() != sizeof(float)*256)
+        if(update.size() == sizeof(float)*256)
+        {
+            //copy in spectrum data 
+            memcpy(&spec, update.data<float>(), update.size());
+
+            count += 1;
+            g1->Set(0);
+            for(int i=0; i<256; i++)
+            {
+                sum_spec[i] += spec[i]; 
+                g1->SetPoint(g1->GetN(), i, sum_spec[i]/count);
+            }
+
+            //g2->SetPoint(g2->GetN(), chunk_time, bin_sum);
+
+            //update the plots in the window
+            c1->cd(1);
+            c1->SetLogy();
+            g1->Draw("AP");
+            g1->GetYaxis()->SetTitle("Spectral Power (a.u.)");
+            g1->GetXaxis()->SetTitle("Frequency Bin (s)");
+            c1->Update();
+            c1->Pad()->Draw();
+            // c1->cd(2);
+            // g2->GetYaxis()->SetTitle("Power (a.u)");
+            // g2->GetXaxis()->SetTitle("Time since start (s)");
+            // g2->Draw("AP");
+            // c1->Update();
+            // c1->Pad()->Draw();
+            gSystem->ProcessEvents();
+
+            //every some x amount of time we ought to clear the graphs
+        }
+        else
         {
             std::cout<<"error message size of "<<update.size()<<" != "<<sizeof(float)*256<<std::endl;
             break;
         }
 
-        //copy in spectrum data 
-        memcpy(&spec, update.data<float>(), update.size());
-
-        count += 1;
-        g1->Set(0);
-        for(int i=0; i<256; i++)
-        {
-            sum_spec[i] += spec[i]; 
-            g1->SetPoint(g1->GetN(), i, sum_spec[i]/count);
-        }
-
-        //g2->SetPoint(g2->GetN(), chunk_time, bin_sum);
-
-        //update the plots in the window
-        c1->cd(1);
-        c1->SetLogy();
-        g1->Draw("AP");
-        g1->GetYaxis()->SetTitle("Spectral Power (a.u.)");
-        g1->GetXaxis()->SetTitle("Frequency Bin (s)");
-        c1->Update();
-        c1->Pad()->Draw();
-        // c1->cd(2);
-        // g2->GetYaxis()->SetTitle("Power (a.u)");
-        // g2->GetXaxis()->SetTitle("Time since start (s)");
-        // g2->Draw("AP");
-        // c1->Update();
-        // c1->Pad()->Draw();
-        gSystem->ProcessEvents();
-
-        //every some x amount of time we ought to clear the graphs
 
     }
 
