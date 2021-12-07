@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
             for(int i=0; i<256; i++)
             {
                 sum_spec[i] += spec[i]; 
-                g1->SetPoint(g1->GetN(), i, sum_spec[i]/count);
+                g1->SetPoint(g1->GetN(), i, spec[i]);
             }
 
             //g2->SetPoint(g2->GetN(), chunk_time, bin_sum);
