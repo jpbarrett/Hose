@@ -1,6 +1,6 @@
 #include "HSpectrumAverager.hh"
 
-
+#include <cstdlib>
 
 
 namespace hose
@@ -273,7 +273,7 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
         {
             ave[i] = accum[i]/(float)fNBuffersAccumulated;
             #ifdef ENABLE_SPECTRUM_UDP
-            fRebinnedSpectrum[i/fBinFactor] += ave[i];
+            fRebinnedSpectrum[i/fBinFactor] += rand();// ave[i];
             #endif
         }
 
