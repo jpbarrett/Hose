@@ -104,6 +104,7 @@ int main(int argc, char* argv[])
 
         //update the plots in the window
         c1->cd(1);
+        c1->SetLogy();
         g1->Draw("AP");
         g1->GetYaxis()->SetTitle("Spectral Power (a.u.)");
         g1->GetXaxis()->SetTitle("Frequency Bin (s)");
