@@ -70,6 +70,8 @@ int main(int argc, char* argv[])
 //    timer.MeasureWallclockTime();
 
     float spec[256];
+    double sum_spec[256];
+    double count = 0;
 
 
     while(subscriber.connected())
@@ -79,7 +81,7 @@ int main(int argc, char* argv[])
 
         zmq::message_t update;
         subscriber.recv(&update);
-        std::string text(update.data<const char>(), update.size());
+    //    std::string text(update.data<const char>(), update.size());
 
         if(update.size() != sizeof(float)*256)
         {
@@ -88,11 +90,14 @@ int main(int argc, char* argv[])
         }
 
         //copy in spectrum data 
-        memcpy(&spec, text.data(), update.size());
+        memcpy(&spec, update.data<const char>(), update.size());
 
+        count += 1;
+        g1->Set(0);
         for(int i=0; i<256; i++)
         {
-            g1->SetPoint(g1->GetN(), i, spec[i]);
+            sum_spec[i] += spec[i]; 
+            g1->SetPoint(g1->GetN(), i, sum_spec[i]/count);
         }
 
         //g2->SetPoint(g2->GetN(), chunk_time, bin_sum);
