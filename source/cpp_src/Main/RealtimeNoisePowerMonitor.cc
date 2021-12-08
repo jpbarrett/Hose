@@ -87,8 +87,6 @@ int main(int argc, char* argv[])
     g1->GetYaxis()->SetTitle("Power (a.u.)");
     g1->GetXaxis()->SetTitle("Time since start (s)");
     g1->SetMarkerStyle(4);
-    // g1->SetMinimum(0);
-    // g1->SetMaximum(100);
 
     //create a plot for the narrow band noise power
     auto g2 = new TGraph();
@@ -96,8 +94,6 @@ int main(int argc, char* argv[])
     g2->GetYaxis()->SetTitle("Power (a.u)");
     g2->GetXaxis()->SetTitle("Time since start (s)");
     g2->SetMarkerStyle(4);
-    // g2->SetMinimum(-1);
-    // g2->SetMaximum(1);
 
     //divide canvas and set plots
     c1->Divide(1, 2);
