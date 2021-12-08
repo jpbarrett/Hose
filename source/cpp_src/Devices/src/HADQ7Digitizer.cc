@@ -9,7 +9,7 @@ namespace hose
 HADQ7Digitizer::HADQ7Digitizer():
     fSidebandFlag('?'),
     fPolarizationFlag('?'),
-    fClockMode(1), //0 is internal 10MHz reference, 1 uses external 10MHz reference
+    fClockMode(0), //0 is internal 10MHz reference, 1 uses external 10MHz reference
     fADQControlUnit(nullptr),
     fADQDeviceNumber(1), //board id
     fSerialNumber(),
