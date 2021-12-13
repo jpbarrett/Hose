@@ -46,9 +46,17 @@ class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HCo
         //for better or worse, the spectrum averager is the best place to insert the 
         //code to handle the noise-power UDP unicast messaging. So we add some options to
         //configure the the IP/port here (fixed at construction time)
-        HSpectrumAverager(size_t spectrum_length, size_t n_buffers, std::string port, std::string ip);  
+        HSpectrumAverager(size_t spectrum_length, size_t n_buffers,
+                          std::string noise_port, std::string noise_ip,
+                          std::string spec_port, std::string spec_ip); 
 
         virtual ~HSpectrumAverager();
+
+        void EnableNoisePowerUDPMessages(){fEnableNoiseUDP = true;};
+        void DisableNoisePowerUDPMessages(){fEnableNoiseUDP = false;};
+
+        void EnableSpectrumUDPMessages(){fEnableSpectrumUDP = true;};
+        void DisableSpectrumUDPMessages(){fEnableSpectrumUDP = false;}
 
         //Sum a set of spectral bins to export this 'noise power'
         void SetBufferSkip(int skip_interval){fSkipInterval = skip_interval;};
@@ -85,11 +93,15 @@ class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HCo
         HDataAccumulationContainer fNoisePowerAccumulator;
 
     private:
-        
-        bool fEnableUDP;
+
+        bool fEnableNoiseUDP;
+        bool fEnableSpectrumUDP;
+
         int fSkipInterval;
-        std::string fPort;
-        std::string fIPAddress;
+        std::string fNoisePort;
+        std::string fNoiseIPAddress;
+        std::string fSpectrumPort;
+        std::string fSpectrumIPAddress;
 
         //accumulation of spectral bins 
         double fSpectralPowerSum;
@@ -98,13 +110,15 @@ class HSpectrumAverager: public HConsumerProducer< spectrometer_data, float, HCo
 
 
         #ifdef HOSE_USE_ZEROMQ
-            zmq::context_t* fContext;
-            zmq::socket_t* fPublisher;
+            zmq::context_t* fNoiseContext;
+            zmq::socket_t* fNoisePublisher;
             void SendNoisePowerUDPPacket(const uint64_t& start_sec, const uint64_t& leading_sample_index, const uint64_t& sample_rate, const struct HDataAccumulationStruct& stat);
         #endif
 
         #ifdef ENABLE_SPECTRUM_UDP
             size_t fBinFactor;
+            zmq::context_t* fSpectrumContext;
+            zmq::socket_t* fSpectrumPublisher;
             float fRebinnedSpectrum[NBINS];
         #endif 
 

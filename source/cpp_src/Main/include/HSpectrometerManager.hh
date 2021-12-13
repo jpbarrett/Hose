@@ -188,14 +188,20 @@ class HSpectrometerManager: public HApplicationBackend
                 {
 
                     //extract parameters from configuration
-                    fPort = fParameters.GetStringParameter("port");
-                    fIP = fParameters.GetStringParameter("ip_address");
+                    fPort = fParameters.GetStringParameter("command_server_port");
+                    fIP = fParameters.GetStringParameter("command_server_ip_address");
+                    fEnableWriteToFile = fParameters.GetIntegerParameter("enable_write_to_file");
 
                     fUDPNoisePowerPort = fParameters.GetStringParameter("noise_power_port");
                     fUDPNoisePowerIP = fParameters.GetStringParameter("noise_power_ip_address");
                     fUDPNoisePowerSkipInterval = fParameters.GetIntegerParameter("noise_power_udp_skip_interval");
                     fNoisePowerBinLow = fParameters.GetIntegerParameter("spectral_noise_power_bin_low");
                     fNoisePowerBinHigh = fParameters.GetIntegerParameter("spectral_noise_power_bin_high");
+                    fEnableNoisePowerUDPMessages = fParameters.GetIntegerParameter("enable_noise_power_udp");
+        
+                    fUDPSpectrumPort = fParameters.GetStringParameter("spectrum_port");
+                    fUDPSpectrumIP = fParameters.GetStringParameter("spectrum_ip_address");
+                    fEnableSpectrumUDPMessages = fParameters.GetIntegerParameter("enable_spectrum_udp");
 
                     fNSpectrumAverages = fParameters.GetIntegerParameter("n_ave_spectra_gpu");
                     fFFTSize = fParameters.GetIntegerParameter("n_fft_pts");
@@ -287,15 +293,17 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrumAveragingBufferPool->Allocate(fNSpectrumAveragerPoolSize, fFFTSize/2+1); //create a work space of buffers
 
                         // fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, fNSpectrumAveragesCPU); //further average down on cpu
-                        fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, fNSpectrumAveragesCPU, fUDPNoisePowerPort, fUDPNoisePowerIP); //further average down on cpu
+                        fSpectrumAverager = new AVERAGER_TYPE(fFFTSize/2+1, fNSpectrumAveragesCPU, fUDPNoisePowerPort, fUDPNoisePowerIP, fUDPSpectrumPort, fUDPSpectrumIP);
                         fSpectrumAverager->SetNThreads(1); //ONE THREAD ONLY!
                         fSpectrumAverager->SetSourceBufferPool(fSpectrometerSinkPool);
                         fSpectrumAverager->SetSinkBufferPool(fSpectrumAveragingBufferPool);
-                        fSpectrumAverager->SetSpectralPowerLowerBound(0);
-                        fSpectrumAverager->SetSpectralPowerUpperBound(100);
                         fSpectrumAverager->SetBufferSkip(fUDPNoisePowerSkipInterval);
                         fSpectrumAverager->SetSpectralPowerUpperBound(fNoisePowerBinHigh);
                         fSpectrumAverager->SetSpectralPowerLowerBound(fNoisePowerBinLow);
+                        if(fEnableNoiseUDP){fSpectrumAverager->EnableNoisePowerUDPMessages();}
+                        else{fSpectrumAverager->DisableNoisePowerUDPMessages();}
+                        if(fEnableSpectrumUDP){fSpectrumAverager->EnableSpectrumUDPMessages();}
+                        else{fSpectrumAverager->DisableSpectrumUDPMessages();}
 
                         fAveragedSpectrumWriter = new HAveragedMultiThreadedSpectrumDataWriter();
                         fAveragedSpectrumWriter->SetBufferPool(fSpectrumAveragingBufferPool);
@@ -1095,13 +1103,20 @@ class HSpectrometerManager: public HApplicationBackend
         //this is for communication with hoseclient.py
         std::string fIP;
         std::string fPort; 
+        int fEnableWriteToFile; //control whether or not data is dumped to disk (may want to disable when only runnin as noise-power for pointing mode)
 
-        //this is for unicast of noise power data 
+        //this is for UDP unicast of noise power data 
         std::string fUDPNoisePowerIP;
         std::string fUDPNoisePowerPort;
         int fUDPNoisePowerSkipInterval;
         int fNoisePowerBinLow;
         int fNoisePowerBinHigh;
+        int fEnableNoisePowerUDPMessages;
+
+        //configure spectrum monitoring UDP messages
+        std::string fUDPSpectrumPort;
+        std::string fUDPSpectrumIP;
+        int fEnableSpectrumUDPMessages;
 
         size_t fNSpectrumAverages;
         size_t fFFTSize;

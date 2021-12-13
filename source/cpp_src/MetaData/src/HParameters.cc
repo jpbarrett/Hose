@@ -35,16 +35,23 @@ void
 HParameters::Initialize()
 {
     //we need to set up all the default parameter values
-    fStringParam[std::string("ip_address")] = std::string("127.0.0.1");
-    fStringParam[std::string("port")] = std::string("12345");
+    fStringParam[std::string("command_server_ip_address")] = std::string("127.0.0.1");
+    fStringParam[std::string("command_server_port")] = std::string("12345");
+    fStringParam[std::string("window_type")] = std::string("blackman_harris");
+    fIntegerParam[std::string("enable_write_to_file")] = 1; //enable write data to file on disk (enable=1, disable=0)
+
+    //configure noise power monitoring UDP messages
     fStringParam[std::string("noise_power_ip_address")] = std::string("192.52.61.185"); //curie
     fStringParam[std::string("noise_power_port")] = std::string("8181");
-    fStringParam[std::string("window_type")] = std::string("blackman_harris");
-
     fIntegerParam[std::string("noise_power_udp_skip_interval")] = 8; //will only send a noise power UDP packet every n-th buffer
-    //select the spectral bins to sum in the narrow-band noise power estimate
-    fIntegerParam[std::string("spectral_noise_power_bin_low")] = 0;
+    fIntegerParam[std::string("spectral_noise_power_bin_low")] = 0; //select bins to sum over for spectral noise power
     fIntegerParam[std::string("spectral_noise_power_bin_high")] = 0;
+    fIntegerParam[std::string("enable_noise_power_udp")] = 0; //enable noise power udp messages (enable=1, disable=0)
+
+    //configure spectrum monitorying UDP messages
+    fStringParam[std::string("spectrum_ip_address")] = std::string("192.52.63.48"); //odyssey
+    fStringParam[std::string("spectrum_port")] = std::string("8282");
+    fIntegerParam[std::string("enable_spectrum_udp")] = 0; //enable udp spectrum monitoring messages (enable=1, disable=0)
 
 
     #ifdef HOSE_USE_PX14

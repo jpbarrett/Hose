@@ -11,7 +11,8 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers):
     fNBuffersToAccumulate(n_buffers),
     fSpecLowerBound(0),
     fSpecUpperBound(0),
-    fEnableUDP(false),
+    fEnableNoiseUDP(false),
+    fEnableSpectrumUDP(false),
     fSkipInterval(8)
 {
     fAccumulatedSpectrum.resize(spectrum_length);
@@ -20,14 +21,19 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers):
 };
 
 
-HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers, std::string port, std::string ip):
+HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers,
+                                     std::string noise_port, std::string noise_ip,
+                                     std::string spec_port, std::string spec_ip):
     fPowerSpectrumLength(spectrum_length),
     fNBuffersToAccumulate(n_buffers),
-    fPort(port),
-    fIPAddress(ip),
+    fNoisePort(noise_port),
+    fNoiseIPAddress(noise_ip),
+    fSpectrumPort(spec_port),
+    fSpectrumIPAddress(spec_ip),
     fSpecLowerBound(0),
     fSpecUpperBound(0),
-    fEnableUDP(false),
+    fEnableNoiseUDP(false),
+    fEnableSpectrumUDP(false),
     fSkipInterval(8)
 {
         fAccumulatedSpectrum.resize(spectrum_length);
@@ -35,12 +41,21 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers, s
         fNBuffersAccumulated = 0;
 
         #ifdef HOSE_USE_ZEROMQ
-            //fEnableUDP = true;
-            fContext = new zmq::context_t(1);
-            fPublisher = new zmq::socket_t(*fContext, ZMQ_RADIO);
-            std::string udp_connection = "udp://" + fIPAddress + ":" + fPort;
+            //fEnableNoiseUDP = true;
+            fNoiseContext = new zmq::context_t(1);
+            fNoisePublisher = new zmq::socket_t(*fNoiseContext, ZMQ_RADIO);
+            std::string noise_udp_connection = "udp://" + fNoiseIPAddress + ":" + fNoisePort;
             //std::cout<<"udp connection = "<<udp_connection<<std::endl;
-            fPublisher->connect(udp_connection.c_str());
+            fNoisePublisher->connect(noise_udp_connection.c_str());
+        #endif
+
+        #ifdef HOSE_USE_ZEROMQ
+            //fEnableNoiseUDP = true;
+            fSpectrumContext = new zmq::context_t(1);
+            fSpectrumPublisher = new zmq::socket_t(*fSpectrumContext, ZMQ_RADIO);
+            std::string spec_udp_connection = "udp://" + fSpectrumIPAddress + ":" + fSpectrumPort;
+            //std::cout<<"udp connection = "<<udp_connection<<std::endl;
+            fSpectrumPublisher->connect(spec_udp_connection.c_str());
         #endif
 
         #ifdef ENABLE_SPECTRUM_UDP
@@ -53,8 +68,10 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers, s
 HSpectrumAverager::~HSpectrumAverager()
 {
     #ifdef HOSE_USE_ZEROMQ
-        delete fContext;
-        delete fPublisher;
+        delete fNoisePublisher;
+        delete fNoiseContext;
+        delete fSpectrumPublisher;
+        delete fSpectrumContext;
     #endif
 };
 
@@ -127,7 +144,7 @@ HSpectrumAverager::ExecuteThreadTask()
                 fNoisePowerAccumulator.AppendAccumulation(stat);
 
                 #ifdef HOSE_USE_ZEROMQ
-                    if(fEnableUDP && fNBuffersAccumulated%fSkipInterval == 0){SendNoisePowerUDPPacket(fAcquisitionStartSecond, fLeadingSampleIndex, fSampleRate, stat);}
+                    if(fEnableNoiseUDP && fNBuffersAccumulated%fSkipInterval == 0){SendNoisePowerUDPPacket(fAcquisitionStartSecond, fLeadingSampleIndex, fSampleRate, stat);}
                 #endif 
 
 
@@ -154,7 +171,7 @@ HSpectrumAverager::ExecuteThreadTask()
                 fNoisePowerAccumulator.AppendAccumulation(stat);
 
                 #ifdef HOSE_USE_ZEROMQ
-                    if(fEnableUDP && fNBuffersAccumulated%fSkipInterval == 0){SendNoisePowerUDPPacket(fAcquisitionStartSecond, fLeadingSampleIndex, fSampleRate, stat);}
+                    if(fEnableNoiseUDP && fNBuffersAccumulated%fSkipInterval == 0){SendNoisePowerUDPPacket(fAcquisitionStartSecond, fLeadingSampleIndex, fSampleRate, stat);}
                 #endif 
 
                 //check if we have reached the desired number of buffers,
@@ -284,14 +301,16 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
         //release to consumer
         this->fSinkBufferHandler.ReleaseBufferToConsumer(this->fSinkBufferPool, sink);
 
-
         #ifdef ENABLE_SPECTRUM_UDP
-            if(fPublisher->connected())
+        if(fEnableSpectrumUDP)
+        {
+            if(fSpectrumPublisher->connected())
             {
                 zmq::message_t update{ &(fRebinnedSpectrum[0]), sizeof(float)*NBINS};
                 update.set_group("spectrum");
-                fPublisher->send(update);
+                fSpectrumPublisher->send(update);
             }
+        }
         #endif 
 
         return true;
@@ -356,14 +375,11 @@ void HSpectrumAverager::SendNoisePowerUDPPacket(const uint64_t& start_sec, const
     ss << fSpectralPowerSum << "; ";
 
     std::string msg = ss.str();
-
-    std::cout<<msg<<std::endl;
-
-    if(fPublisher->connected())
+    if(fNoisePublisher->connected())
     {
         zmq::message_t update{msg.data(), msg.size()};
         update.set_group("noise_power");
-        fPublisher->send(update);
+        fNoisePublisher->send(update);
     }
 
 }
