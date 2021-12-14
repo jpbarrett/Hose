@@ -17,8 +17,9 @@
 
 #include "HTokenizer.hh"
 #include "HTimer.hh"
+#include "HNetworkDefines.hh"
 
-#define NBINS 256
+#define SPEC_UDP_NBINS 256
 using namespace hose;
 
 int main(int argc, char* argv[])
@@ -64,22 +65,23 @@ int main(int argc, char* argv[])
     //set up ZeroMQ UDP client to grab packets
     zmq::context_t context(1);
     zmq::socket_t subscriber(context, ZMQ_DISH);
-    subscriber.bind("udp://*:8181");
-    subscriber.join("spectrum");
+    std::string connection = std::string("udp://*:") + std::string(SPECTRUM_UDP_PORT);
+    subscriber.bind( connection.c_str() );
+    subscriber.join(SPECTRUM_GROUP);
 
 
     //hard-coded frequency map
     double sample_rate = 1.25e9;
-    double n_samples_per_spec = NBINS;
+    double n_samples_per_spec = SPEC_UDP_NBINS;
     double flip = -1.0;
     double spec_res = (sample_rate/2.)/n_samples_per_spec;
     double Hz_perMHz = 1e6;
 
-    float spec[NBINS];
-    double sum_spec[NBINS];
+    float spec[SPEC_UDP_NBINS];
+    double sum_spec[SPEC_UDP_NBINS];
     double count = 0;
 
-    for(int i=0; i<NBINS; i++)
+    for(int i=0; i<SPEC_UDP_NBINS; i++)
     {
         spec[i] = 0.0;
         sum_spec[i] = 1e-30;
@@ -93,7 +95,7 @@ int main(int argc, char* argv[])
         zmq::message_t update;
         subscriber.recv(&update);
 
-        if(update.size() == sizeof(float)*NBINS)
+        if(update.size() == sizeof(float)*SPEC_UDP_NBINS)
         {
             //copy in spectrum data 
             memcpy(&spec, update.data<float>(), update.size());
@@ -101,7 +103,7 @@ int main(int argc, char* argv[])
             count += 1;
             g1->Set(0);
             g2->Set(0);
-            for(int i=NBINS-1; i>0; i--)
+            for(int i=SPEC_UDP_NBINS-1; i>0; i--)
             {
                 sum_spec[i] += spec[i]; 
                 g1->SetPoint(g1->GetN(), i*spec_res/Hz_perMHz, 20.0*std::log10(spec[i]) );
@@ -126,7 +128,7 @@ int main(int argc, char* argv[])
         }
         else
         {
-            std::cout<<"error message size of "<<update.size()<<" != "<<sizeof(float)*NBINS<<std::endl;
+            std::cout<<"error message size of "<<update.size()<<" != "<<sizeof(float)*SPEC_UDP_NBINS<<std::endl;
             break;
         }
 

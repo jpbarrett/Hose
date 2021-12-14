@@ -17,6 +17,7 @@ extern "C"
 
 #include "HStateStruct.hh"
 #include "HApplicationBackend.hh"
+#include "HNetworkDefines.hh"
 
 
 #ifdef HOSE_USE_SPDLOG

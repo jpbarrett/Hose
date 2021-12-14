@@ -28,6 +28,7 @@ extern "C"
     #include "HBasicDefines.h"
 }
 
+#include "HNetworkDefines.hh"
 #include "HParameters.hh"
 #include "HTokenizer.hh"
 #include "HBufferAllocatorNew.hh"
@@ -114,10 +115,10 @@ class HSpectrometerManager: public HApplicationBackend
         HSpectrometerManager():
             fInitialized(false),
             fStop(false),
-            fIP("127.0.0.1"),
-            fPort("12345"),
-            fUDPNoisePowerIP("192.52.61.185"),
-            fUDPNoisePowerPort("8181"),
+            fIP(COMMAND_SERVER_IP_ADDRESS),
+            fPort(COMMAND_SERVER_PORT),
+            fUDPNoisePowerIP(ODYSSEY_LOCAL_IP_ADDRESS),
+            fUDPNoisePowerPort(NOISE_POWER_UDP_PORT),
             fUDPNoisePowerSkipInterval(1),
             fNoisePowerBinLow(0),
             fNoisePowerBinHigh(0),

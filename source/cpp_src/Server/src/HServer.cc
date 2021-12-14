@@ -7,7 +7,7 @@ HServer::HServer():
     fStop(false),
     fAppBackend(nullptr)
     {
-        fConnection = "tcp://127.0.0.1:12345";
+        fConnection = std::string("tcp://") + std::string(COMMAND_SERVER_IP_ADDRESS) + ":" +  std::string(COMMAND_SERVER_PORT);
     }
 
 HServer::HServer(std::string ip, std::string port):

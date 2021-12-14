@@ -14,7 +14,6 @@ set (HCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HBufferAllocatorMalloc.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HDigitizer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HBufferMetaData.hh
-    # ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumObject.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HSpectrumFileStructWrapper.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HTimer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HThreadPool.hh
@@ -26,6 +25,7 @@ set (HCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HDataAccumulationContainer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HTokenizer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/HTimeStampConverter.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/HNetworkDefines.hh
 )
 
 #list source files #############################################################

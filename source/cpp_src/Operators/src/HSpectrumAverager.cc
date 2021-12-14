@@ -1,4 +1,5 @@
 #include "HSpectrumAverager.hh"
+#include "HNetworkDefines.hh"
 
 #include <cstdlib>
 
@@ -59,7 +60,7 @@ HSpectrumAverager::HSpectrumAverager(size_t spectrum_length, size_t n_buffers,
         #endif
 
         #ifdef ENABLE_SPECTRUM_UDP
-            fBinFactor = fPowerSpectrumLength/NBINS;
+            fBinFactor = fPowerSpectrumLength/SPEC_UDP_NBINS;
         #endif
 
 };
@@ -306,8 +307,8 @@ HSpectrumAverager::WriteAccumulatedSpectrumAverage()
         {
             if(fSpectrumPublisher->connected())
             {
-                zmq::message_t update{ &(fRebinnedSpectrum[0]), sizeof(float)*NBINS};
-                update.set_group("spectrum");
+                zmq::message_t update{ &(fRebinnedSpectrum[0]), sizeof(float)*SPEC_UDP_NBINS};
+                update.set_group(SPECTRUM_GROUP);
                 fSpectrumPublisher->send(update);
             }
         }
@@ -343,7 +344,7 @@ void HSpectrumAverager::Reset()
     }
 
     #ifdef ENABLE_SPECTRUM_UDP
-    for(size_t i=0; i<NBINS; i++)
+    for(size_t i=0; i<SPEC_UDP_NBINS; i++)
     {
         fRebinnedSpectrum[i] = 0.0;
     }
@@ -378,7 +379,7 @@ void HSpectrumAverager::SendNoisePowerUDPPacket(const uint64_t& start_sec, const
     if(fNoisePublisher->connected())
     {
         zmq::message_t update{msg.data(), msg.size()};
-        update.set_group("noise_power");
+        update.set_group(NOISE_GROUP);
         fNoisePublisher->send(update);
     }
 

@@ -18,6 +18,7 @@
 
 #include "HTokenizer.hh"
 #include "HTimer.hh"
+#include "HNetworkDefines.hh"
 
 using namespace hose;
 
@@ -109,8 +110,9 @@ int main(int argc, char* argv[])
     //set up ZeroMQ UDP client to grab packets
     zmq::context_t context(1);
     zmq::socket_t subscriber(context, ZMQ_DISH);
-    subscriber.bind("udp://*:8181");
-    subscriber.join("noise_power");
+    std::string connection = std::string("udp://*:") + std::string(NOISE_POWER_UDP_PORT);
+    subscriber.bind( connection.c_str() );
+    subscriber.join(NOISE_GROUP);
 
     //tokenizer and timer utils 
     HTokenizer tokenizer;
