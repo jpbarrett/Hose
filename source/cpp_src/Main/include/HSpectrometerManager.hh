@@ -300,14 +300,16 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrumAverager->SetBufferSkip(fUDPNoisePowerSkipInterval);
                         fSpectrumAverager->SetSpectralPowerUpperBound(fNoisePowerBinHigh);
                         fSpectrumAverager->SetSpectralPowerLowerBound(fNoisePowerBinLow);
-                        if(fEnableNoiseUDP){fSpectrumAverager->EnableNoisePowerUDPMessages();}
+                        if(fEnableNoisePowerUDPMessages){fSpectrumAverager->EnableNoisePowerUDPMessages();}
                         else{fSpectrumAverager->DisableNoisePowerUDPMessages();}
-                        if(fEnableSpectrumUDP){fSpectrumAverager->EnableSpectrumUDPMessages();}
+                        if(fEnableSpectrumUDPMessages){fSpectrumAverager->EnableSpectrumUDPMessages();}
                         else{fSpectrumAverager->DisableSpectrumUDPMessages();}
 
                         fAveragedSpectrumWriter = new HAveragedMultiThreadedSpectrumDataWriter();
                         fAveragedSpectrumWriter->SetBufferPool(fSpectrumAveragingBufferPool);
                         fAveragedSpectrumWriter->SetNThreads(1);
+                        if(fEnableWriteToFile){fAveragedSpectrumWriter->EnableWriteToDisk();}
+                        else{fAveragedSpectrumWriter->DisableWriteToDisk();}
 
                         //create an itermittent raw data dumper
                         fDumper = new HRawDataDumper< typename XDigitizerType::sample_type >();

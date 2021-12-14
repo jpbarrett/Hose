@@ -5,10 +5,9 @@ namespace hose
 
 
 HAveragedMultiThreadedSpectrumDataWriter::HAveragedMultiThreadedSpectrumDataWriter():
-    HDirectoryWriter()
-{
-        //std::cout<<"ave spec writer = "<<this<<std::endl;
-};
+    HDirectoryWriter(),
+    fEnable(true)
+{};
 
 HAveragedMultiThreadedSpectrumDataWriter::~HAveragedMultiThreadedSpectrumDataWriter(){};
 
@@ -23,7 +22,7 @@ HAveragedMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
     {
         //grab a buffer to process
         HConsumerBufferPolicyCode buffer_code = this->fBufferHandler.ReserveBuffer(this->fBufferPool, tail, this->GetConsumerID() );
-        if(buffer_code & HConsumerBufferPolicyCode::success && tail != nullptr)
+        if(fEnable && (buffer_code & HConsumerBufferPolicyCode::success) && tail != nullptr)
         {
             std::lock_guard<std::mutex> lock(tail->fMutex);
 
@@ -122,10 +121,6 @@ HAveragedMultiThreadedSpectrumDataWriter::ExecuteThreadTask()
 
         }
 
-        // if(tail != nullptr)
-        // {
-        //     this->fBufferHandler.ReleaseBufferToProducer(this->fBufferPool, tail);
-        // }
         if(tail != nullptr)
         {
             this->fBufferHandler.ReleaseBufferToConsumer(this->fBufferPool, tail, this->GetNextConsumerID() );
