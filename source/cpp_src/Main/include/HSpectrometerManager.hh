@@ -257,6 +257,9 @@ class HSpectrometerManager: public HApplicationBackend
                     //create digitizer
                     fDigitizer = new XDigitizerType();
                     fDigitizer->SetNThreads(fNDigitizerThreads);
+                    #ifdef HOSE_USE_ADQ7
+                    fDigitizer->SetSampleSkipFactor(fNADQ7SampleSkip);
+                    #endif
                     bool digitizer_init_success = fDigitizer->Initialize();
 
                     if(digitizer_init_success)
@@ -270,9 +273,6 @@ class HSpectrometerManager: public HApplicationBackend
                         //TODO fill these in with real values!
                         fDigitizer->SetSidebandFlag('U');
                         fDigitizer->SetPolarizationFlag('X');
-                        #ifdef HOSE_USE_ADQ7
-                        fDigitizer->SetSampleSkipFactor(fNADQ7SampleSkip);
-                        #endif
 
                         //create spectrometer data pool
                         fSpectrometerBufferAllocator = new HBufferAllocatorSpectrometerDataCUDA<SPECTRUM_TYPE>();
