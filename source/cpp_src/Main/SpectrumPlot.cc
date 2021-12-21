@@ -361,8 +361,9 @@ int main(int argc, char** argv)
         raw_accumulated_spec[j] /= spec_count;
     }
 
-    //zero-out the first and last 4 bins to get rid of DC
-    for(size_t k=0; k<4; k++)
+    //zero-out the first and last few bins to get rid of DC
+    int bin_mask = std::max(4, (int) ( 0.0001*(double)spec_length) );
+    for(size_t k=0; k<bin_mask; k++)
     {
         raw_accumulated_spec[k] = 0.0;
         raw_accumulated_spec[spec_length-1-k] = 0.0;
@@ -552,7 +553,7 @@ int main(int argc, char** argv)
         }
         else
         {
-	    std::cout<<"j, val = "<<j<<", "<<raw_accumulated_spec[j]<<std::endl;
+	    //std::cout<<"j, val = "<<j<<", "<<raw_accumulated_spec[j]<<std::endl;
             double index = j;
             double ref_index = referenceBinIndex;
             double freq = (index - referenceBinIndex)*freqDeltaMHz + referenceBinCenterSkyFreqMHz;
