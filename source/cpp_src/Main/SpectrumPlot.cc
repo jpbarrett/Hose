@@ -362,7 +362,7 @@ int main(int argc, char** argv)
     }
 
     //zero-out the first and last 4 bins to get rid of DC
-    for(size_t k=0; k<2; k++)
+    for(size_t k=0; k<4; k++)
     {
         raw_accumulated_spec[k] = 0.0;
         raw_accumulated_spec[spec_length-1-k] = 0.0;
