@@ -11,6 +11,7 @@
 #include <getopt.h>
 #include <iomanip>
 
+
 //single header JSON lib
 #include <json.hpp>
 using json = nlohmann::json;
@@ -107,10 +108,13 @@ int main(int argc, char** argv)
     "\t -h, --help               (shows this message and exits)\n"
     "\t -d, --data-dir           (path to the directory containing scan data, mandatory)\n"
     "\t -n, --n-averages         (number of spectra files (.spec) to average together, optional)\n"
+    "\t -r, --resolution         (desired spectral resolution in MHz, if greater than the native spectral resolution, frequency bins will be averaged together)\n"
     ;
 
     //set defaults
     unsigned int n_averages = 0; //default behavior is to average all spectra together
+    double desired_spec_res = 0.0;
+    bool rebin = false;
     bool have_data = false;
     std::string data_dir = STR2(DATA_INSTALL_DIR);
     std::string o_dir = STR2(DATA_INSTALL_DIR);
@@ -119,10 +123,11 @@ int main(int argc, char** argv)
     {
         {"help", no_argument, 0, 'h'},
         {"data_dir", required_argument, 0, 'd'},
-        {"n-averages", required_argument, 0, 'n'}
+        {"n-averages", required_argument, 0, 'n'},
+        {"resolution", required_argument, 0, 'r'}
     };
 
-    static const char *optString = "hd:n:";
+    static const char *optString = "hd:n:r:";
 
     while(1)
     {
@@ -139,6 +144,10 @@ int main(int argc, char** argv)
             break;
             case('n'):
             n_averages = atoi(optarg);
+            break;
+            case('r'):
+            desired_spec_res = 1e6*atof(optarg);
+            rebin = true;
             break;
             default:
                 std::cout<<usage<<std::endl;
@@ -369,6 +378,28 @@ int main(int argc, char** argv)
         raw_accumulated_spec[spec_length-1-k] = 0.0;
     }
 
+    //if the user has asked for a reduced spectral resolution, we join bins together
+    std::vector<float> rebinned_spec;
+    int n_to_merge = 1;
+    if(rebin)
+    {
+        n_to_merge = std::max(1, (int)std::floor(desired_spec_res/spec_res) );
+        std::cout<<"Rebinning frequency axis. Desired resolution: "<<desired_spec_res<<", native resolution: "<<spec_res<<std::endl;
+        std::cout<<"Number of bins to merge: "<<n_to_merge<<", new spectral resolution: "<<n_to_merge*spec_res<<std::endl;
+        size_t new_spec_length = spec_length/n_to_merge;
+        rebinned_spec.resize(new_spec_length, 0);
+        for(size_t j=0; j<new_spec_length; j++)
+        {
+            rebinned_spec[j] = 0;
+            for(size_t k=0; k<n_to_merge; k++)
+            {
+                rebinned_spec[j] += raw_accumulated_spec[j*n_to_merge + k];
+            }
+            rebinned_spec[j] /= (double)n_to_merge;
+        }
+    }
+    
+
 ////////////////////////////////////////////////////////////////////////////////
 //collect the raw accumulations
 
@@ -545,19 +576,43 @@ int main(int argc, char** argv)
     pt->AddText( std::string( std::string( "Start Time: ") + start_time).c_str() );
     pt->AddText( std::string( std::string( "Duration: ") + duration).c_str() );
 
-    for(unsigned int j=0; j<spec_length; j++)
+    if(rebinned_spec.size() == 0)
     {
-        if(!map_to_sky_frequency)
+        //plot the raw averaged spectrum
+        for(unsigned int j=0; j<spec_length; j++)
         {
-            g->SetPoint(j, j*spec_res/1e6, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
+            if(!map_to_sky_frequency)
+            {
+                g->SetPoint(j, j*spec_res/1e6, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
+            }
+            else
+            {
+    	    //std::cout<<"j, val = "<<j<<", "<<raw_accumulated_spec[j]<<std::endl;
+                double index = j;
+                double ref_index = referenceBinIndex;
+                double freq = (index - referenceBinIndex)*freqDeltaMHz + referenceBinCenterSkyFreqMHz;
+                g->SetPoint(j, freq, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
+            }
         }
-        else
+    }
+    else 
+    {
+        //plot the re-binned spectrum
+        double new_spec_res = spec_res*n_to_merge;
+        for(unsigned int j=0; j<rebinned_spec.size(); j++)
         {
-	    //std::cout<<"j, val = "<<j<<", "<<raw_accumulated_spec[j]<<std::endl;
-            double index = j;
-            double ref_index = referenceBinIndex;
-            double freq = (index - referenceBinIndex)*freqDeltaMHz + referenceBinCenterSkyFreqMHz;
-            g->SetPoint(j, freq, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
+            if(!map_to_sky_frequency)
+            {
+                g->SetPoint(j, j*new_spec_res/1e6, 20.0*std::log10( rebinned_spec[j] + eps ) );
+            }
+            else
+            {
+            //std::cout<<"j, val = "<<j<<", "<<raw_accumulated_spec[j]<<std::endl;
+                double index = j;
+                double ref_index = referenceBinIndex;
+                double freq = (index - referenceBinIndex)*(n_to_merge*freqDeltaMHz) + referenceBinCenterSkyFreqMHz;
+                g->SetPoint(j, freq, 20.0*std::log10( rebinned_spec[j] + eps ) );
+            }
         }
     }
 
