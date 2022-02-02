@@ -809,8 +809,8 @@ int main(int argc, char** argv)
     {
         double index = j;
         double freq = on_source_freq[j];
-        double on_source_val = on_source_spectrum[j]*on_norm/gain_on;
-        double off_source_val = off_source_spectrum[j]*off_norm/gain_off;
+        double on_source_val = on_source_spectrum[j];//*on_norm/gain_on;
+        double off_source_val = off_source_spectrum[j];//*off_norm/gain_off;
         double diff = (on_source_val - off_source_val);
         double scaled_point = diff;
         double point = scaled_point;
