@@ -648,7 +648,6 @@ int main(int argc, char** argv)
     RebinSpectra(rebin, desired_spec_res, rebinned_on_src_spec, rebinned_on_freq_axis, norm_on_src_spec, on_src_freq);
     RebinSpectra(rebin, desired_spec_res, rebinned_off_src_spec, rebinned_off_freq_axis, norm_off_src_spec, off_src_freq);
 
-
     std::cout<<"rebinned off size = "<<rebinned_off_freq_axis.size()<<", "<<rebinned_off_src_spec.size()<<std::endl;
     std::cout<<"rebinned on size = "<<rebinned_on_freq_axis.size()<<", "<<rebinned_on_src_spec.size()<<std::endl;
 
@@ -771,7 +770,6 @@ int main(int argc, char** argv)
     count=0;
     for(unsigned int j=0; j<rebinned_off_freq_axis.size(); j++)
     {
-        std::cout<<rebinned_off_freq_axis[j]<<", "<<relative_diff_spec[j]<<std::endl;
         g4->SetPoint(count,  rebinned_off_freq_axis[j], relative_diff_spec[j] );
         count++;
     }
