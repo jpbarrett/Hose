@@ -4,9 +4,8 @@
 #include <gsl/gsl_integration.h>
 #include <iostream>
 
-#include "<string>"
+#include <string>
 #include "TMath.h"
-#include "NSObject.hh"
 
 /*////////////////////////////////////////////////////////////
 * @file GSLIntegrationInterface.hh
@@ -20,7 +19,7 @@
 *
 */////////////////////////////////////////////////////////////
 
-class GSLIntegrationInterface : public NSObject
+class GSLIntegrationInterface
 {
 	public:
 		GSLIntegrationInterface(std::string name);
