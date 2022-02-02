@@ -297,11 +297,11 @@ bool ReadDataDirectory
     }
 
 
-    if(!map_to_sky_frequency || ! source_info || !recording_status_info)
-    {
-        std::cout<<"Error: missing meta-data!"<<std::endl;
-        return false;
-    }
+    // if(!map_to_sky_frequency || ! source_info || !recording_status_info)
+    // {
+    //     std::cout<<"Error: missing meta-data!"<<std::endl;
+    //     return false;
+    // }
 
 ////////////////////////////////////////////////////////////////////////////////
 //compute an averaged spectrum
