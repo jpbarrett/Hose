@@ -425,7 +425,8 @@ bool ReadDataDirectory
 
 
 
-void RebinSpectra(double desired_spec_res, 
+void RebinSpectra(bool toggle,
+                  double desired_spec_res, 
                   std::vector<double>& rebinned_spec, 
                   std::vector<double>& rebinned_freq_axis, 
                   std::vector<double>& raw_accumulated_spec,
@@ -446,9 +447,8 @@ void RebinSpectra(double desired_spec_res,
 
     double spec_res = std::fabs(raw_freq_axis[1] - raw_freq_axis[0]);
 
-    //if the user has asked for a reduced spectral resolution, we join bins together
-    int n_to_merge = 1;
-    n_to_merge = std::max(1, (int)std::floor(desired_spec_res/spec_res) );
+    int n_to_merge = 1; //only if toggle is true do we actually do any rebinning
+    if(toggle){ n_to_merge = std::max(1, (int)std::floor(desired_spec_res/spec_res) ); }
     std::cout<<"Rebinning frequency axis. Desired resolution: "<<desired_spec_res<<", native resolution: "<<spec_res<<std::endl;
     std::cout<<"Number of bins to merge: "<<n_to_merge<<", new spectral resolution: "<<n_to_merge*spec_res<<std::endl;
     size_t new_spec_length = spec_length/n_to_merge;
@@ -644,11 +644,8 @@ int main(int argc, char** argv)
     std::vector<double> rebinned_off_freq_axis;
 
     //now we can re-bin the spectra if a different spectral resolution is desired 
-    if(rebin)
-    {
-        RebinSpectra(desired_spec_res, rebinned_on_src_spec, rebinned_on_freq_axis, norm_on_src_spec, on_src_freq);
-        RebinSpectra(desired_spec_res, rebinned_off_src_spec, rebinned_off_freq_axis, norm_off_src_spec, off_src_freq);
-    }
+    RebinSpectra(rebin, desired_spec_res, rebinned_on_src_spec, rebinned_on_freq_axis, norm_on_src_spec, on_src_freq);
+    RebinSpectra(rebin, desired_spec_res, rebinned_off_src_spec, rebinned_off_freq_axis, norm_off_src_spec, off_src_freq);
 
     std::vector<double> norm_diff_spec; //W/Hz
     std::vector<double> relative_diff_spec; //W/Hz
@@ -766,7 +763,7 @@ int main(int argc, char** argv)
     c->cd(4);
     TGraph* g4 = new TGraph();
     count=0;
-    for(unsigned int j=100; j<rebinned_off_freq_axis.size()-100; j++)
+    for(unsigned int j=0; j<rebinned_off_freq_axis.size(); j++)
     {
         g4->SetPoint(count,  rebinned_off_freq_axis[j], relative_diff_spec[j] );
         count++;
