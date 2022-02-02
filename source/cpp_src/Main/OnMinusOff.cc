@@ -766,7 +766,7 @@ int main(int argc, char** argv)
     c->cd(4);
     TGraph* g4 = new TGraph();
     count=0;
-    for(unsigned int j=100; j<on_src_freq.size()-100; j++)
+    for(unsigned int j=100; j<rebinned_off_freq_axis.size()-100; j++)
     {
         g4->SetPoint(count,  rebinned_off_freq_axis[j], relative_diff_spec[j] );
         count++;
