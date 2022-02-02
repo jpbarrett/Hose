@@ -445,7 +445,7 @@ void RebinSpectra(bool toggle,
 
     //determine the current spectral resolution from bin delta
 
-    double spec_res = std::fabs(raw_freq_axis[1] - raw_freq_axis[0]);
+    double spec_res = std::fabs(raw_freq_axis[1] - raw_freq_axis[0])*1e6; //1e6 fudge factor is to convert freq axis (in MHz) to Hz
 
     int n_to_merge = 1; //only if toggle is true do we actually do any rebinning
     if(toggle){ n_to_merge = std::max(1, (int)std::floor(desired_spec_res/spec_res) ); }
@@ -454,6 +454,7 @@ void RebinSpectra(bool toggle,
     size_t new_spec_length = spec_length/n_to_merge;
     rebinned_spec.resize(new_spec_length, 0);
     rebinned_freq_axis.resize(new_spec_length, 0);
+    std::cout<<"new spectra length = "<<new_spec_length<<std::endl;
     for(size_t j=0; j<new_spec_length; j++)
     {
         rebinned_spec[j] = 0;
@@ -647,6 +648,10 @@ int main(int argc, char** argv)
     RebinSpectra(rebin, desired_spec_res, rebinned_on_src_spec, rebinned_on_freq_axis, norm_on_src_spec, on_src_freq);
     RebinSpectra(rebin, desired_spec_res, rebinned_off_src_spec, rebinned_off_freq_axis, norm_off_src_spec, off_src_freq);
 
+
+    std::cout<<"rebinned off size = "<<rebinned_off_freq_axis.size()<<", "<<rebinned_off_src_spec.size()<<std::endl;
+    std::cout<<"rebinned on size = "<<rebinned_on_freq_axis.size()<<", "<<rebinned_on_src_spec.size()<<std::endl;
+
     std::vector<double> norm_diff_spec; //W/Hz
     std::vector<double> relative_diff_spec; //W/Hz
     for(unsigned int j=0; j<rebinned_on_freq_axis.size(); j++)
@@ -655,7 +660,7 @@ int main(int argc, char** argv)
         double off_src = rebinned_off_src_spec[j];
         double diff = on_src - off_src;
         double rel_diff = diff/off_src;
-        if( std::fabs(off_src) < 1e-15){rel_diff = 0.0;}
+        if( std::fabs(off_src) < 1e-15){rel_diff = 0.0;} //guard agains div by zero
         norm_diff_spec.push_back(diff);
         relative_diff_spec.push_back(rel_diff);
     }
