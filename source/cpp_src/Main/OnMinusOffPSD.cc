@@ -634,7 +634,7 @@ int main(int argc, char** argv)
 {
     std::string usage =
     "\n"
-    "Usage: SimpleDiodeCalibration <options> <directory>\n"
+    "Usage: OnMinusOffPSD <options> <directory>\n"
     "\n"
     "Plot spectrum from scan data in the <directory>.\n"
     "\tOptions:\n"

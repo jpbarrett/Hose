@@ -56,7 +56,7 @@ if (HOSE_USE_ROOT)
     find_package(ROOT REQUIRED)
     include_directories(${ROOT_INCLUDE_DIRS})
     list(APPEND HOSE_MAIN_LIBS ${ROOT_LIBRARIES})
-    list(APPEND SOURCE_BASENAMES SpectrumPlot RawPlot PowerPlot CrudeOnMinusOff PowerSpectralDensity MultipleScanPairsOnMinusOff SimpleDiodeCalibration OnMinusOffPSD)
+    list(APPEND SOURCE_BASENAMES SpectrumPlot RawPlot PowerPlot CrudeOnMinusOff PowerSpectralDensity MultipleScanPairsOnMinusOff SimpleDiodeCalibration OnMinusOffPSD OnMinusOff)
 endif()
 
 if(HOSE_USE_ROOT AND HOSE_USE_ZEROMQ)
