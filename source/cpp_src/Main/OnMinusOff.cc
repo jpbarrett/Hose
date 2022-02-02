@@ -655,7 +655,7 @@ int main(int argc, char** argv)
         double off_src = rebinned_off_src_spec[j];
         double diff = on_src - off_src;
         double rel_diff = diff/off_src;
-        if( std::fabs(off_src) < 1e-9*std::fabs(diff)){rel_diff = 0.0;}
+        if( std::fabs(off_src) < 1e-15){rel_diff = 0.0;}
         norm_diff_spec.push_back(diff);
         relative_diff_spec.push_back(rel_diff);
     }
