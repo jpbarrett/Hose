@@ -316,6 +316,11 @@ bool ReadDataDirectory
     //now open up all the spec data one by one and accumulate
 
     std::cout<<"number of spec files = "<<specFiles.size()<<std::endl;
+    if(specFiles.size() == 0)
+    {
+        std::cout<<"Error: could not locate any spectrum files in directory: "<<data_dir<<std::endl;
+        return 1;
+    }
 
     std::pair<uint64_t, uint64_t >  begin_time_stamp = specFiles.begin()->second;
     std::pair<uint64_t, uint64_t >  end_time_stamp = specFiles.rbegin()->second;
@@ -520,6 +525,7 @@ int main(int argc, char** argv)
     "\t -o, --on-source-data-dir  (path to the directory containing hot-load scan data, mandatory)\n"
     "\t -f, --off-source-data-dir (path to the directory containing cold-load scan data, mandatory)\n"
     "\t -r, --resolution          (desired spectral resolution in MHz, if greater than the native spectral resolution, frequency bins will be averaged together)\n"
+    "\t -d, --dump-output         (output text file to dump spectal data)\n"
     ;
 
     //set defaults
@@ -530,6 +536,7 @@ int main(int argc, char** argv)
     std::string off_src_data_dir;
     bool have_on_src_data = false;
     bool have_off_src_data = false;
+    std::string output_file = "";
 
     double sampling_rate = 1250*1e6;
 
@@ -538,10 +545,11 @@ int main(int argc, char** argv)
         {"help", no_argument, 0, 'h'},
         {"on-source-data-dir", required_argument, 0, 'o'},
         {"off-source-data-dir", required_argument, 0, 'f'},
-        {"resolution", required_argument, 0, 'r'}
+        {"resolution", required_argument, 0, 'r'},
+        {"dump-output", required_argument, 0, 'd'}
     };
 
-    static const char *optString = "ho:f:r:";
+    static const char *optString = "ho:f:r:d:";
 
     bool togggle_on_off = false;
     while(1)
@@ -564,6 +572,9 @@ int main(int argc, char** argv)
             case('r'):
                 desired_spec_res = 1e6*atof(optarg);
                 rebin = true;
+            break;
+            case('d'):
+            output_file = std::string(optarg);
             break;
             default:
                 std::cout<<usage<<std::endl;
@@ -667,6 +678,14 @@ int main(int argc, char** argv)
 
     ////////////////////////////////////////////////////////////////////////////////
 
+    //output data objects 
+    std::vector<double> output_freq;
+    std::vector<double> output_on_spectra;
+    std::vector<double> output_off_spectra;
+    std::vector<double> output_absdiff_spectra;
+    std::vector<double> output_reldiff_spectra;
+
+
     std::cout<<"starting root plotting"<<std::endl;
 
     //ROOT stuff for plots
@@ -716,6 +735,8 @@ int main(int argc, char** argv)
     for(unsigned int j=0; j<rebinned_on_freq_axis.size(); j++)
     {
         g1->SetPoint(count, rebinned_on_freq_axis[j], rebinned_on_src_spec[j] );
+        output_freq.push_back(rebinned_on_freq_axis[j]);
+        output_on_spectra.push_back(rebinned_on_src_spec[j]);
         count++;
     }
     g1->Draw("ALP");
@@ -734,6 +755,7 @@ int main(int argc, char** argv)
     for(unsigned int j=0; j<rebinned_off_freq_axis.size(); j++)
     {
         g2->SetPoint(count, rebinned_off_freq_axis[j], rebinned_off_src_spec[j] );
+        output_off_spectra.push_back(rebinned_off_src_spec[j]);
         count++;
     }
     g2->Draw("ALP");
@@ -752,6 +774,7 @@ int main(int argc, char** argv)
     for(unsigned int j=0; j<rebinned_off_freq_axis.size(); j++)
     {
         g3->SetPoint(count, rebinned_off_freq_axis[j], norm_diff_spec[j] );
+        output_absdiff_spectra.push_back(norm_diff_spec[j]);
         count++;
     }
     g3->Draw("ALP");
@@ -771,6 +794,7 @@ int main(int argc, char** argv)
     for(unsigned int j=0; j<rebinned_off_freq_axis.size(); j++)
     {
         g4->SetPoint(count,  rebinned_off_freq_axis[j], relative_diff_spec[j] );
+        output_reldiff_spectra.push_back(relative_diff_spec[j]);
         count++;
     }
     g4->Draw("ALP");
@@ -782,6 +806,27 @@ int main(int argc, char** argv)
     // g1->GetHistogram()->SetMinimum(0.0);
     g4->GetYaxis()->CenterTitle();
     g4->GetXaxis()->CenterTitle();
+
+    if(output_file != "")
+    {
+        //if the output_file is defined, dump the spectra to file
+        std::ofstream ofile;
+        ofile.open(output_file.c_str());
+        ofile << "bin \t" << "frequency \t" << "on_power \t" << "off_power \t" << "absdiff_power \t" << "reldiff_power \t" << std::endl;
+        for(unsigned int j=0; j<output_freq.size(); j++)
+        {
+            ofile << j<< " \t"
+                  <<output_freq[j]<<" \t"
+                  <<output_on_spectra[j]<<" \t"
+                  <<output_off_spectra[j]<<" \t"
+                  <<output_absdiff_spectra[j]<<" \t"
+                  <<output_reldiff_spectra[j]<<std::endl;
+        }
+        ofile.close();
+    }
+
+
+
 
     // TPaveText *pt = new TPaveText(.14,.72,.29,.88,"blNDC");
     // pt->SetBorderSize(1);
