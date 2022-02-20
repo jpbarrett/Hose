@@ -7,8 +7,14 @@ if (HOSE_ENABLE_TEST)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Devices/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Signal/include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../MetaData/include)
-
+    
     set (HOSE_TEST_LIBS HCore HInterface HSignal HOperators HMeta)
+
+    if(HOSE_USE_ROOT AND HOSE_USE_GSL)
+        include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Math/include)
+        list(APPEND HOSE_TEST_LIBS HMath)
+    endif()
+
 
     set(SOURCE_BASENAMES
         TestBufferAllocator
@@ -62,6 +68,18 @@ if (HOSE_ENABLE_TEST)
         list(APPEND HOSE_TEST_LIBS ${ROOT_LIBRARIES})
         list(APPEND SOURCE_BASENAMES  TestNoiseGenerator TestSummedNoiseGenerator)
     endif()
+
+    if (HOSE_USE_GSL)
+        include(FindGSL)
+        find_package(GSL REQUIRED)
+        include_directories(${GSL_INCLUDE_DIRS})
+        list(APPEND HOSE_TEST_LIBS ${GSL_LIBRARIES})
+    endif()
+
+    if(HOSE_USE_ROOT AND HOSE_USE_GSL)
+        list(APPEND SOURCE_BASENAMES TestBoxGaussianConvolution)
+    endif()
+
 
     if (HOSE_USE_PX14)
         find_package(PX14400 REQUIRED)

@@ -109,6 +109,7 @@ int main(int argc, char** argv)
     "\t -d, --data-dir           (path to the directory containing scan data, mandatory)\n"
     "\t -n, --n-averages         (number of spectra files (.spec) to average together, optional)\n"
     "\t -r, --resolution         (desired spectral resolution in MHz, if greater than the native spectral resolution, frequency bins will be averaged together)\n"
+    "\t -o, --output             (output text file to dump spectal data)\n"
     ;
 
     //set defaults
@@ -118,16 +119,18 @@ int main(int argc, char** argv)
     bool have_data = false;
     std::string data_dir = STR2(DATA_INSTALL_DIR);
     std::string o_dir = STR2(DATA_INSTALL_DIR);
+    std::string output_file = "";
 
     static struct option longOptions[] =
     {
         {"help", no_argument, 0, 'h'},
         {"data_dir", required_argument, 0, 'd'},
         {"n-averages", required_argument, 0, 'n'},
-        {"resolution", required_argument, 0, 'r'}
+        {"resolution", required_argument, 0, 'r'},
+        {"output", required_argument, 0, 'o'}
     };
 
-    static const char *optString = "hd:n:r:";
+    static const char *optString = "hd:n:r:o:";
 
     while(1)
     {
@@ -148,6 +151,9 @@ int main(int argc, char** argv)
             case('r'):
             desired_spec_res = 1e6*atof(optarg);
             rebin = true;
+            break;
+            case('o'):
+            output_file = std::string(optarg);
             break;
             default:
                 std::cout<<usage<<std::endl;
@@ -259,6 +265,8 @@ int main(int argc, char** argv)
                 std::cout << "frequency delta (MHZ) = "<< freqDeltaMHz << std::endl;
                 std::cout << "reference_bin_center_sky_frequency (MHz) " << referenceBinCenterSkyFreqMHz << std::endl;
                 std::cout << "reference_bin_index =  " << referenceBinIndex << std::endl;
+
+                //std::cout<<"WARNING: IGNORING SKY FREQUENCY MAP."<<std::endl;
                 map_to_sky_frequency = true;
             }
 
@@ -315,6 +323,11 @@ int main(int argc, char** argv)
     //now open up all the spec data one by one and accumulate
 
     std::cout<<"number of spec files = "<<specFiles.size()<<std::endl;
+    if(specFiles.size() == 0)
+    {
+        std::cout<<"Error: could not locate any spectrum files in directory: "<<data_dir<<std::endl;
+        return 1;
+    }
 
     std::pair<uint64_t, uint64_t >  begin_time_stamp = specFiles.begin()->second;
     std::pair<uint64_t, uint64_t >  end_time_stamp = specFiles.rbegin()->second;
@@ -576,6 +589,11 @@ int main(int argc, char** argv)
     pt->AddText( std::string( std::string( "Start Time: ") + start_time).c_str() );
     pt->AddText( std::string( std::string( "Duration: ") + duration).c_str() );
 
+
+    //output data objects 
+    std::vector<double> output_freq;
+    std::vector<double> output_spectra;
+
     if(rebinned_spec.size() == 0)
     {
         //plot the raw averaged spectrum
@@ -584,14 +602,18 @@ int main(int argc, char** argv)
             if(!map_to_sky_frequency)
             {
                 g->SetPoint(j, j*spec_res/1e6, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
+                output_freq.push_back(j*spec_res/1e6);
+                output_spectra.push_back(raw_accumulated_spec[j]);
             }
             else
             {
-    	    //std::cout<<"j, val = "<<j<<", "<<raw_accumulated_spec[j]<<std::endl;
+                //std::cout<<"j, val = "<<j<<", "<<raw_accumulated_spec[j]<<std::endl;
                 double index = j;
                 double ref_index = referenceBinIndex;
                 double freq = (index - referenceBinIndex)*freqDeltaMHz + referenceBinCenterSkyFreqMHz;
                 g->SetPoint(j, freq, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
+                output_freq.push_back(freq);
+                output_spectra.push_back(raw_accumulated_spec[j]);
             }
         }
     }
@@ -604,17 +626,35 @@ int main(int argc, char** argv)
             if(!map_to_sky_frequency)
             {
                 g->SetPoint(j, j*new_spec_res/1e6, 20.0*std::log10( rebinned_spec[j] + eps ) );
+                output_freq.push_back(j*spec_res/1e6);
+                output_spectra.push_back(rebinned_spec[j]);
             }
             else
             {
-            //std::cout<<"j, val = "<<j<<", "<<raw_accumulated_spec[j]<<std::endl;
+                //std::cout<<"j, val = "<<j<<", "<<raw_accumulated_spec[j]<<std::endl;
                 double index = j;
                 double ref_index = referenceBinIndex;
                 double freq = (index - referenceBinIndex)*(n_to_merge*freqDeltaMHz) + referenceBinCenterSkyFreqMHz;
                 g->SetPoint(j, freq, 20.0*std::log10( rebinned_spec[j] + eps ) );
+                output_freq.push_back(freq);
+                output_spectra.push_back(rebinned_spec[j]);
             }
         }
     }
+
+    if(output_file != "")
+    {
+        //if the output_file is defined, dump the spectra to file
+        std::ofstream ofile;
+        ofile.open(output_file.c_str());
+        ofile << "bin \t" << "frequency \t" << "power \t" << std::endl;
+        for(unsigned int j=0; j<output_spectra.size(); j++)
+        {
+            ofile  << j<<" \t"<<output_freq[j]<<" \t"<<output_spectra[j]<<std::endl;
+        }
+        ofile.close();
+    }
+    
 
     g->Draw("ALP");
     g->SetMarkerStyle(7);
@@ -625,30 +665,8 @@ int main(int argc, char** argv)
     g->GetHistogram()->SetMinimum(0.0);
     g->GetYaxis()->CenterTitle();
     g->GetXaxis()->CenterTitle();
-
     pt->Draw();
-
     c->Update();
-
-    // //histogram the values of the on/off noise variance
-    // c->cd(2);
-    // TH1D* on_histo = new TH1D("on_noise_variance histogram", "on_noise_variance histogram", 5000, on_var_mean - 1.0*on_var_sigma, on_var_mean + 1.0*on_var_sigma);
-    // for(size_t i=0; i<fOnVarianceTimePairs.size(); i++)
-    // {
-    //     on_histo->Fill(fOnVarianceTimePairs[i].first);
-    // }
-    // on_histo->Draw("");
-    // c->Update();
-    //
-    // //histogram the values
-    // c->cd(3);
-    // TH1D* off_histo = new TH1D("off_noise_variance histogram", "off_noise_variance histogram", 5000, off_var_mean - 1.0*off_var_sigma, off_var_mean + 1.0*off_var_sigma);
-    // for(size_t i=0; i<fOffVarianceTimePairs.size(); i++)
-    // {
-    //     off_histo->Fill(fOffVarianceTimePairs[i].first);
-    // }
-    // off_histo->Draw("");
-    // c->Update();
 
     App->Run();
 
