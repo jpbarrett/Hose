@@ -525,7 +525,7 @@ int main(int argc, char** argv)
     "\t -o, --on-source-data-dir  (path to the directory containing hot-load scan data, mandatory)\n"
     "\t -f, --off-source-data-dir (path to the directory containing cold-load scan data, mandatory)\n"
     "\t -r, --resolution          (desired spectral resolution in MHz, if greater than the native spectral resolution, frequency bins will be averaged together)\n"
-    "\t -d, --dump-output         (output text file to dump spectal data)\n"
+    "\t -d, --dump-output         (output text file to dump spectral data)\n"
     ;
 
     //set defaults

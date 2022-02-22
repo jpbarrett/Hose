@@ -109,7 +109,7 @@ int main(int argc, char** argv)
     "\t -d, --data-dir           (path to the directory containing scan data, mandatory)\n"
     "\t -n, --n-averages         (number of spectra files (.spec) to average together, optional)\n"
     "\t -r, --resolution         (desired spectral resolution in MHz, if greater than the native spectral resolution, frequency bins will be averaged together)\n"
-    "\t -o, --output             (output text file to dump spectal data)\n"
+    "\t -o, --output             (output text file to dump spectral data)\n"
     ;
 
     //set defaults
