@@ -79,6 +79,7 @@ extern "C"
 #define CONFIGURE_NEXT_RECORDING 3
 #define QUERY 4
 #define SHUTDOWN 5
+#define SET_POWER_BINS 6
 
 //recording states
 #define RECORDING_UNTIL_OFF 1
@@ -621,10 +622,16 @@ class HSpectrometerManager: public HApplicationBackend
                             fStatusLogger->info( ss.str().c_str() );
                             #endif
                         }
-                        break;
+                    break;
                     case QUERY:
                             //do nothing
-                            return;
+                    return;
+                    case SET_POWER_BINS:
+                            fNoisePowerBinLow = std::atoi(tokens[1].c_str());
+                            fNoisePowerBinHigh = std::atoi(tokens[2].c_str());
+                            fSpectrumAverager->SetSpectralPowerUpperBound(fNoisePowerBinHigh);
+                            fSpectrumAverager->SetSpectralPowerLowerBound(fNoisePowerBinLow);
+                    break;
                     case RECORD_ON:
                         if(fRecordingState == IDLE)
                         {
@@ -786,6 +793,11 @@ class HSpectrometerManager: public HApplicationBackend
 
             if(command_tokens.size() >= 2)
             {
+                if(command_tokens[0] == std::string("set_power_bins") && command_tokens.size() == 3)
+                {
+                    return SET_POWER_BINS;
+                }
+
                 if(command_tokens[0] == std::string("record") )
                 {
                     if(command_tokens[1] == std::string("on") && command_tokens.size() == 5)
@@ -994,6 +1006,9 @@ class HSpectrometerManager: public HApplicationBackend
                         return true;
                     break;
                     case RECORD_ON:
+                        return true;
+                    break;
+                    case SET_POWER_BINS:
                         return true;
                     break;
                     case RECORD_OFF:

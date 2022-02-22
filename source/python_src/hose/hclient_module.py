@@ -105,6 +105,20 @@ class hprompt(Cmd):
         self.interface.Shutdown()
         raise SystemExit
 
+    def do_set_power_bins(self, args):
+        """Set the lower/upper bin range to sum for a power measurement"""
+        arg_list = args.split("=");
+        if(len(arg_list)) == 2:
+            bin_list = arg_list[1].split(":")
+            if(len(bin_list) == 2):
+                low_bin = bin_list[0]
+                high_bin = bin_list[1]
+                cmd_string = "set_power_bins="
+                cmd_string += str(low_bin) 
+                cmd_string += ":"
+                cmd_string += str(high_bin)
+                self.interface.SendRecieveMessage(cmd_string)
+
     def parse_record_command(self, args):
         if( len(args) == 1 and args[0] == "?" ):
             cmd_string = "record?"
