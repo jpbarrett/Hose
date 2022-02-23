@@ -633,8 +633,8 @@ class HSpectrometerManager: public HApplicationBackend
                             fSpectrumAverager->SetSpectralPowerLowerBound(fNoisePowerBinLow);
                             #ifdef HOSE_USE_SPDLOG
                             ss << "set_power_bins;";
-                            ss << "low_bin:" << fNoisePowerBinLow;
-                            ss << "high_bin:" << fNoisePowerBinHigh;
+                            ss << "low_bin=" << fNoisePowerBinLow << ";";
+                            ss << "high_bin=" << fNoisePowerBinHigh << ";";
                             fStatusLogger->info( ss.str().c_str() );
                             #endif
                     break;
