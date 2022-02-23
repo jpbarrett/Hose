@@ -599,7 +599,7 @@ class HSpectrometerManager: public HApplicationBackend
             if(tokens.size() != 0)
             {
                 int command_type = LookUpCommand(tokens);
-
+                std::stringstream ss;
                 switch(command_type)
                 {
                     case SHUTDOWN:
@@ -613,7 +613,7 @@ class HSpectrometerManager: public HApplicationBackend
                             }
                             fRecordingState = IDLE;
                             #ifdef HOSE_USE_SPDLOG
-                            std::stringstream ss;
+                            
                             ss << "recording_status; ";
                             ss << "recording=off; ";
                             ss << "experiment_name=" << fExperimentName << "; ";
@@ -631,11 +631,12 @@ class HSpectrometerManager: public HApplicationBackend
                             fNoisePowerBinHigh = std::atoi(tokens[2].c_str());
                             fSpectrumAverager->SetSpectralPowerUpperBound(fNoisePowerBinHigh);
                             fSpectrumAverager->SetSpectralPowerLowerBound(fNoisePowerBinLow);
-                            std::stringstream ss;
+                            #ifdef HOSE_USE_SPDLOG
                             ss << "set_power_bins;";
                             ss << "low_bin:" << fNoisePowerBinLow;
                             ss << "high_bin:" << fNoisePowerBinHigh;
                             fStatusLogger->info( ss.str().c_str() );
+                            #endif
                     break;
                     case RECORD_ON:
                         if(fRecordingState == IDLE)
@@ -649,7 +650,6 @@ class HSpectrometerManager: public HApplicationBackend
                             fDigitizer->Acquire();
                             fRecordingState = RECORDING_UNTIL_OFF;
                             #ifdef HOSE_USE_SPDLOG
-                            std::stringstream ss;
                             ss << "recording_status; ";
                             ss << "recording=on; ";
                             ss << "experiment_name=" << fExperimentName << "; ";
@@ -669,7 +669,6 @@ class HSpectrometerManager: public HApplicationBackend
                             }
                             fRecordingState = IDLE;
                             #ifdef HOSE_USE_SPDLOG
-                            std::stringstream ss;
                             ss << "recording_status; ";
                             ss << "recording=off; ";
                             ss << "experiment_name=" << fExperimentName << "; ";
@@ -710,7 +709,6 @@ class HSpectrometerManager: public HApplicationBackend
                                         fRecordingState = RECORDING_UNTIL_TIME;
                                         fDigitizer->Acquire();
                                         #ifdef HOSE_USE_SPDLOG
-                                        std::stringstream ss;
                                         ss << "recording_status; ";
                                         ss << "recording=on; ";
                                         ss << "experiment_name=" << fExperimentName << "; ";
