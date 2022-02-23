@@ -631,6 +631,11 @@ class HSpectrometerManager: public HApplicationBackend
                             fNoisePowerBinHigh = std::atoi(tokens[2].c_str());
                             fSpectrumAverager->SetSpectralPowerUpperBound(fNoisePowerBinHigh);
                             fSpectrumAverager->SetSpectralPowerLowerBound(fNoisePowerBinLow);
+                            std::stringstream ss;
+                            ss << "set_power_bins;";
+                            ss << "low_bin:" << fNoisePowerBinLow;
+                            ss << "high_bin:" << fNoisePowerBinHigh;
+                            fStatusLogger->info( ss.str().c_str() );
                     break;
                     case RECORD_ON:
                         if(fRecordingState == IDLE)
