@@ -12,14 +12,18 @@
 6. On a Red Hat base Linux system (untested), they may be installed with:
     - sudo yum install git gcc cmake
 
-# Optional external dependencies:
+
+# Optional (not really optional) external dependencies:
 1. Signatec library for interfacing with PX14400 digitizer.
 2. Teledyne SP devices library for interfacing with ADQ7 digitizer.
 3. NVidia CUDA Toolkit (https://developer.nvidia.com/cuda-zone). 
     Needed for GPU support (only tested with version 6.0 and 8.0). 
     If you enable CUDA, you must use a gcc <= 6.4, and more recent versions are not supported.
+    GCC 5.5 is installed on gpu1080 for this purpose under /home/oper/gcc55
 4. ROOT (https://root.cern.ch/), needed for spectrum plotting.
-5. ZeroMQ (http://zeromq.org/), needed for GPU spectrometer client/server interface.
+5. ZeroMQ (http://zeromq.org/), needed for GPU spectrometer client/server interface, and for noise power UDP packet messages.
+On the GPU spectrometer (gpu1080) this library is install in /home/oper/software/libzmq/install
+
 
 # To compile and install:
 1. Download the repository with:
@@ -36,6 +40,33 @@
     2. cd ./build
     3. ccmake ../
     4. Press 'c' to configure, and 'g' to generate the build (accept the defaults to simply build the I/O library, or configure options as needed)
+    Options as currently configured on gpu1080 (2/23/22) look like:
+    ```
+    ADQSDK_INCLUDE_DIR               /usr/include                                                                                                                                                            
+    ADQSDK_LIBRARY                   /usr/lib/libadq.so                                                                                                                                                      
+    CMAKE_BUILD_TYPE                                                                                                                                                                                         
+    CMAKE_INSTALL_PREFIX             /home/oper/software/alt/Hose/install                                                                                                                                    
+    CUDA_HOST_COMPILER               /home/oper/gcc55/bin/gcc                                                                                                                                                
+    CUDA_SDK_ROOT_DIR                CUDA_SDK_ROOT_DIR-NOTFOUND                                                                                                                                              
+    CUDA_TOOLKIT_ROOT_DIR            /usr                                                                                                                                                                    
+    CUDA_USE_STATIC_CUDA_RUNTIME     ON                                                                                                                                                                      
+    CUDA_rt_LIBRARY                  /usr/lib/x86_64-linux-gnu/librt.so                                                                                                                                      
+    DATA_INSTALL_DIR                 /home/oper/software/alt/Hose/install/data                                                                                                                               
+    HOSE_ADQ7_SOFTWARE_TRIGGER       OFF                                                                                                                                                                     
+    HOSE_ENABLE_TEST                 ON                                                                                                                                                                      
+    HOSE_USE_ADQ7                    ON                                                                                                                                                                      
+    HOSE_USE_ATS                     OFF                                                                                                                                                                     
+    HOSE_USE_CUDA                    ON                                                                                                                                                                      
+    HOSE_USE_FFTW                    ON                                                                                                                                                                      
+    HOSE_USE_GSL                     OFF                                                                                                                                                                     
+    HOSE_USE_PX14                    OFF                                                                                                                                                                     
+    HOSE_USE_ROOT                    ON                                                                                                                                                                      
+    HOSE_USE_SPDLOG                  ON                                                                                                                                                                      
+    HOSE_USE_ZEROMQ                  ON                                                                                                                                                                      
+    ZMQ_INCLUDE_DIR                  /home/oper/software/libzmq/install/include                                                                                                                              
+    ZMQ_LIBRARY                      /home/oper/software/libzmq/install/lib/libzmq.so.5.2.5                                                                                                                  
+    ZMQ_LIB_DIR                      /home/oper/software/libzmq/install/lib
+    ```
     5. make && make install
 
 3. To place the necessary libraries and executables in your path, run:
