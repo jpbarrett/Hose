@@ -44,14 +44,14 @@ On the GPU spectrometer (gpu1080) this library is install in /home/oper/software
     ```
     ADQSDK_INCLUDE_DIR               /usr/include                                                                                                                                                            
     ADQSDK_LIBRARY                   /usr/lib/libadq.so                                                                                                                                                      
-    CMAKE_BUILD_TYPE                                                                                                                                                                                         
-    CMAKE_INSTALL_PREFIX             /home/oper/software/alt/Hose/install                                                                                                                                    
+    CMAKE_BUILD_TYPE                 Debug                                                                                                                                                                   
+    CMAKE_INSTALL_PREFIX             /home/oper/software/Hose/install                                                                                                                                        
     CUDA_HOST_COMPILER               /home/oper/gcc55/bin/gcc                                                                                                                                                
     CUDA_SDK_ROOT_DIR                CUDA_SDK_ROOT_DIR-NOTFOUND                                                                                                                                              
     CUDA_TOOLKIT_ROOT_DIR            /usr                                                                                                                                                                    
     CUDA_USE_STATIC_CUDA_RUNTIME     ON                                                                                                                                                                      
     CUDA_rt_LIBRARY                  /usr/lib/x86_64-linux-gnu/librt.so                                                                                                                                      
-    DATA_INSTALL_DIR                 /home/oper/software/alt/Hose/install/data                                                                                                                               
+    DATA_INSTALL_DIR                 /media/oper/data                                                                                                                                                        
     HOSE_ADQ7_SOFTWARE_TRIGGER       OFF                                                                                                                                                                     
     HOSE_ENABLE_TEST                 ON                                                                                                                                                                      
     HOSE_USE_ADQ7                    ON                                                                                                                                                                      
@@ -64,8 +64,8 @@ On the GPU spectrometer (gpu1080) this library is install in /home/oper/software
     HOSE_USE_SPDLOG                  ON                                                                                                                                                                      
     HOSE_USE_ZEROMQ                  ON                                                                                                                                                                      
     ZMQ_INCLUDE_DIR                  /home/oper/software/libzmq/install/include                                                                                                                              
-    ZMQ_LIBRARY                      /home/oper/software/libzmq/install/lib/libzmq.so.5.2.5                                                                                                                  
-    ZMQ_LIB_DIR                      /home/oper/software/libzmq/install/lib
+    ZMQ_LIBRARY                      /home/oper/software/libzmq/install/lib/libzmq.so                                                                                                                        
+    ZMQ_LIB_DIR                      /home/oper/software/libzmq/install/lib  
     ```
     5. make && make install
 
