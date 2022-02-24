@@ -110,6 +110,7 @@ int main(int argc, char** argv)
     "\t -n, --n-averages         (number of spectra files (.spec) to average together, optional)\n"
     "\t -r, --resolution         (desired spectral resolution in MHz, if greater than the native spectral resolution, frequency bins will be averaged together)\n"
     "\t -o, --output             (output text file to dump spectral data)\n"
+    "\t -b, --bins               (plot spectrum as function of bin number)\n"
     ;
 
     //set defaults
@@ -117,6 +118,7 @@ int main(int argc, char** argv)
     double desired_spec_res = 0.0;
     bool rebin = false;
     bool have_data = false;
+    bool use_bin_numbers = false;
     std::string data_dir = STR2(DATA_INSTALL_DIR);
     std::string o_dir = STR2(DATA_INSTALL_DIR);
     std::string output_file = "";
@@ -127,10 +129,11 @@ int main(int argc, char** argv)
         {"data_dir", required_argument, 0, 'd'},
         {"n-averages", required_argument, 0, 'n'},
         {"resolution", required_argument, 0, 'r'},
-        {"output", required_argument, 0, 'o'}
+        {"output", required_argument, 0, 'o'},
+        {"bins", no_argument, 0, 'b'}
     };
 
-    static const char *optString = "hd:n:r:o:";
+    static const char *optString = "hd:n:r:o:b";
 
     while(1)
     {
@@ -154,6 +157,9 @@ int main(int argc, char** argv)
             break;
             case('o'):
             output_file = std::string(optarg);
+            break;
+            case('b'):
+            use_bin_numbers = true;
             break;
             default:
                 std::cout<<usage<<std::endl;
@@ -625,7 +631,14 @@ int main(int argc, char** argv)
         {
             if(!map_to_sky_frequency)
             {
-                g->SetPoint(j, j*new_spec_res/1e6, 20.0*std::log10( rebinned_spec[j] + eps ) );
+                if(use_bin_numbers)
+                {
+                    g->SetPoint(j, j, 20.0*std::log10( rebinned_spec[j] + eps ) );
+                }
+                else 
+                {
+                    g->SetPoint(j, j*new_spec_res/1e6, 20.0*std::log10( rebinned_spec[j] + eps ) );
+                }
                 output_freq.push_back(j*spec_res/1e6);
                 output_spectra.push_back(rebinned_spec[j]);
             }
@@ -635,7 +648,14 @@ int main(int argc, char** argv)
                 double index = j;
                 double ref_index = referenceBinIndex;
                 double freq = (index - referenceBinIndex)*(n_to_merge*freqDeltaMHz) + referenceBinCenterSkyFreqMHz;
-                g->SetPoint(j, freq, 20.0*std::log10( rebinned_spec[j] + eps ) );
+                if(use_bin_numbers)
+                {
+                    g->SetPoint(j, index, 20.0*std::log10( rebinned_spec[j] + eps ) );
+                }
+                else 
+                {
+                    g->SetPoint(j, freq, 20.0*std::log10( rebinned_spec[j] + eps ) );
+                }
                 output_freq.push_back(freq);
                 output_spectra.push_back(rebinned_spec[j]);
             }
