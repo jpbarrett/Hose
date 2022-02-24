@@ -633,7 +633,7 @@ int main(int argc, char** argv)
             {
                 if(use_bin_numbers)
                 {
-                    g->SetPoint(j, j, 20.0*std::log10( rebinned_spec[j] + eps ) );
+                    g->SetPoint(j, j*n_to_merge, 20.0*std::log10( rebinned_spec[j] + eps ) );
                 }
                 else 
                 {
@@ -650,7 +650,7 @@ int main(int argc, char** argv)
                 double freq = (index - referenceBinIndex)*(n_to_merge*freqDeltaMHz) + referenceBinCenterSkyFreqMHz;
                 if(use_bin_numbers)
                 {
-                    g->SetPoint(j, index, 20.0*std::log10( rebinned_spec[j] + eps ) );
+                    g->SetPoint(j, index*n_to_merge, 20.0*std::log10( rebinned_spec[j] + eps ) );
                 }
                 else 
                 {
