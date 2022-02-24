@@ -545,7 +545,9 @@ int main(int argc, char** argv)
     std::cout<<"starting root plotting"<<std::endl;
 
     //ROOT stuff for plots
-    TApplication* App = new TApplication("TestSpectrumPlot",&argc,argv);
+    int dummy_argc = 1;
+    char* dummy_argv[] = {"myapp"};
+    TApplication* App = new TApplication("TestSpectrumPlot",&dummy_argc,dummy_argv);
     TStyle* myStyle = new TStyle("Plain", "Plain");
     myStyle->SetCanvasBorderMode(0);
     myStyle->SetPadBorderMode(0);
@@ -607,7 +609,14 @@ int main(int argc, char** argv)
         {
             if(!map_to_sky_frequency)
             {
-                g->SetPoint(j, j*spec_res/1e6, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
+                if(use_bin_numbers)
+                {
+                    g->SetPoint(j, j, 20.0*std::log10(  raw_accumulated_spec[j] + eps  ) );
+                }
+                else 
+                {
+                    g->SetPoint(j, j*spec_res/1e6, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
+                }
                 output_freq.push_back(j*spec_res/1e6);
                 output_spectra.push_back(raw_accumulated_spec[j]);
             }
@@ -617,7 +626,17 @@ int main(int argc, char** argv)
                 double index = j;
                 double ref_index = referenceBinIndex;
                 double freq = (index - referenceBinIndex)*freqDeltaMHz + referenceBinCenterSkyFreqMHz;
-                g->SetPoint(j, freq, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
+
+
+                if(use_bin_numbers)
+                {
+                    g->SetPoint(j, index, 20.0*std::log10( raw_accumulated_spec[j] + eps  ) );
+                }
+                else 
+                {
+                    g->SetPoint(j, freq, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
+                }
+
                 output_freq.push_back(freq);
                 output_spectra.push_back(raw_accumulated_spec[j]);
             }
