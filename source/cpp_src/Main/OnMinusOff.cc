@@ -757,7 +757,14 @@ int main(int argc, char** argv)
     g1->Draw("ALP");
     g1->SetMarkerStyle(7);
     g1->SetTitle("ON" );
-    g1->GetXaxis()->SetTitle("Frequency (MHz)");
+    if(use_bin_numbers)
+    {
+        g1->GetXaxis()->SetTitle("Bin Number");
+    }
+    else 
+    {
+        g1->GetXaxis()->SetTitle("Frequency (MHz)");
+    }
     g1->GetYaxis()->SetTitle("ON   Power spectral density W/Hz");
     // g1->GetHistogram()->SetMaximum(100.0);
     // g1->GetHistogram()->SetMinimum(0.0);
@@ -784,7 +791,14 @@ int main(int argc, char** argv)
     g2->Draw("ALP");
     g2->SetMarkerStyle(7);
     g2->SetTitle("OFF" );
-    g2->GetXaxis()->SetTitle("Frequency (MHz)");
+    if(use_bin_numbers)
+    {
+        g2->GetXaxis()->SetTitle("Bin Number");
+    }
+    else 
+    {
+        g2->GetXaxis()->SetTitle("Frequency (MHz)");
+    }
     g2->GetYaxis()->SetTitle("OFF   Power spectral density W/Hz");
     // g1->GetHistogram()->SetMaximum(100.0);
     // g1->GetHistogram()->SetMinimum(0.0);
@@ -809,7 +823,14 @@ int main(int argc, char** argv)
     g3->Draw("ALP");
     g3->SetMarkerStyle(7);
     g3->SetTitle("ON-OFF" );
-    g3->GetXaxis()->SetTitle("Frequency (MHz)");
+    if(use_bin_numbers)
+    {
+        g3->GetXaxis()->SetTitle("Bin Number");
+    }
+    else 
+    {
+        g3->GetXaxis()->SetTitle("Frequency (MHz)");
+    }
     g3->GetYaxis()->SetTitle("ON-OFF   Power spectral density W/Hz");
     // g1->GetHistogram()->SetMaximum(100.0);
     // g1->GetHistogram()->SetMinimum(0.0);
@@ -835,7 +856,14 @@ int main(int argc, char** argv)
     g4->Draw("ALP");
     g4->SetMarkerStyle(7);
     g4->SetTitle("(ON-OFF)/OFF" );
-    g4->GetXaxis()->SetTitle("Frequency (MHz)");
+    if(use_bin_numbers)
+    {
+        g4->GetXaxis()->SetTitle("Bin Number");
+    }
+    else 
+    {
+        g4->GetXaxis()->SetTitle("Frequency (MHz)");
+    }
     g4->GetYaxis()->SetTitle("Ratio (ON-OFF)/OFF");
     // g1->GetHistogram()->SetMaximum(100.0);
     // g1->GetHistogram()->SetMinimum(0.0);

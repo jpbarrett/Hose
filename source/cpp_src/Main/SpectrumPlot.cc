@@ -698,7 +698,14 @@ int main(int argc, char** argv)
     g->Draw("ALP");
     g->SetMarkerStyle(7);
     g->SetTitle("Average Spectrum" );
-    g->GetXaxis()->SetTitle("Frequency (MHz)");
+    if(use_bin_numbers)
+    {
+        g->GetXaxis()->SetTitle("Bin Number");
+    }
+    else 
+    {
+        g->GetXaxis()->SetTitle("Frequency (MHz)");
+    }
     g->GetYaxis()->SetTitle("Relative Power (dB)");
     g->GetHistogram()->SetMaximum(100.0);
     g->GetHistogram()->SetMinimum(0.0);
