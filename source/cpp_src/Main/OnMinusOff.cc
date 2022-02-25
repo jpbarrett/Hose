@@ -430,7 +430,7 @@ bool ReadDataDirectory
 
 
 
-void RebinSpectra(bool toggle,
+int RebinSpectra(bool toggle,
                   double desired_spec_res, 
                   std::vector<double>& rebinned_spec, 
                   std::vector<double>& rebinned_freq_axis, 
@@ -472,6 +472,7 @@ void RebinSpectra(bool toggle,
         rebinned_spec[j] /= (double)n_to_merge;
         rebinned_freq_axis[j] /= (double)n_to_merge;
     }
+    return n_to_merge;
 }
 
 
@@ -526,11 +527,13 @@ int main(int argc, char** argv)
     "\t -f, --off-source-data-dir (path to the directory containing cold-load scan data, mandatory)\n"
     "\t -r, --resolution          (desired spectral resolution in MHz, if greater than the native spectral resolution, frequency bins will be averaged together)\n"
     "\t -d, --dump-output         (output text file to dump spectral data)\n"
+    "\t -b, --bins                (plot spectrum as function of bin number)\n"
     ;
 
     //set defaults
     bool have_data = false;
     bool rebin = false;
+    bool use_bin_numbers = false;
     double desired_spec_res = 1.0;
     std::string on_src_data_dir;
     std::string off_src_data_dir;
@@ -546,10 +549,11 @@ int main(int argc, char** argv)
         {"on-source-data-dir", required_argument, 0, 'o'},
         {"off-source-data-dir", required_argument, 0, 'f'},
         {"resolution", required_argument, 0, 'r'},
-        {"dump-output", required_argument, 0, 'd'}
+        {"dump-output", required_argument, 0, 'd'},
+        {"bins", no_argument, 0, 'b'}
     };
 
-    static const char *optString = "ho:f:r:d:";
+    static const char *optString = "ho:f:r:d:b";
 
     bool togggle_on_off = false;
     while(1)
@@ -574,7 +578,10 @@ int main(int argc, char** argv)
                 rebin = true;
             break;
             case('d'):
-            output_file = std::string(optarg);
+                output_file = std::string(optarg);
+            break;
+            case('b'):
+                use_bin_numbers = true;
             break;
             default:
                 std::cout<<usage<<std::endl;
@@ -656,8 +663,9 @@ int main(int argc, char** argv)
     std::vector<double> rebinned_off_freq_axis;
 
     //now we can re-bin the spectra if a different spectral resolution is desired 
-    RebinSpectra(rebin, desired_spec_res, rebinned_on_src_spec, rebinned_on_freq_axis, norm_on_src_spec, on_src_freq);
-    RebinSpectra(rebin, desired_spec_res, rebinned_off_src_spec, rebinned_off_freq_axis, norm_off_src_spec, off_src_freq);
+    int n_to_merge = 1;
+    n_to_merge = RebinSpectra(rebin, desired_spec_res, rebinned_on_src_spec, rebinned_on_freq_axis, norm_on_src_spec, on_src_freq);
+    n_to_merge = RebinSpectra(rebin, desired_spec_res, rebinned_off_src_spec, rebinned_off_freq_axis, norm_off_src_spec, off_src_freq);
 
     std::cout<<"rebinned off size = "<<rebinned_off_freq_axis.size()<<", "<<rebinned_off_src_spec.size()<<std::endl;
     std::cout<<"rebinned on size = "<<rebinned_on_freq_axis.size()<<", "<<rebinned_on_src_spec.size()<<std::endl;
@@ -691,7 +699,7 @@ int main(int argc, char** argv)
     //ROOT stuff for plots
 
     int fake_argc = 1;
-    char fake_argv[]="Tsys";
+    char fake_argv[]="OnMinusOff";
     char* tmp = &(fake_argv[0]);
 
     TApplication* App = new TApplication("OnMinusOff",&fake_argc,&tmp);
@@ -734,10 +742,17 @@ int main(int argc, char** argv)
     unsigned int count=0;
     for(unsigned int j=0; j<rebinned_on_freq_axis.size(); j++)
     {
-        g1->SetPoint(count, rebinned_on_freq_axis[j], rebinned_on_src_spec[j] );
+        //g1->SetPoint(count, rebinned_on_freq_axis[j], rebinned_on_src_spec[j] );
+        if(use_bin_numbers)
+        {
+            g1->SetPoint(j, j*n_to_merge, rebinned_on_src_spec[j] );
+        }
+        else 
+        {
+            g1->SetPoint(j, rebinned_on_freq_axis[j], rebinned_on_src_spec[j] );
+        }
         output_freq.push_back(rebinned_on_freq_axis[j]);
         output_on_spectra.push_back(rebinned_on_src_spec[j]);
-        count++;
     }
     g1->Draw("ALP");
     g1->SetMarkerStyle(7);
@@ -751,12 +766,20 @@ int main(int argc, char** argv)
 
     c->cd(2);
     TGraph* g2 = new TGraph();
-    count=0;
     for(unsigned int j=0; j<rebinned_off_freq_axis.size(); j++)
     {
-        g2->SetPoint(count, rebinned_off_freq_axis[j], rebinned_off_src_spec[j] );
+        //g2->SetPoint(count, rebinned_off_freq_axis[j], rebinned_off_src_spec[j] );
+
+        if(use_bin_numbers)
+        {
+            g2->SetPoint(j, j*n_to_merge, rebinned_off_src_spec[j] );
+        }
+        else 
+        {
+            g2->SetPoint(j, rebinned_off_freq_axis[j], rebinned_off_src_spec[j] );
+        }
+
         output_off_spectra.push_back(rebinned_off_src_spec[j]);
-        count++;
     }
     g2->Draw("ALP");
     g2->SetMarkerStyle(7);
@@ -770,12 +793,18 @@ int main(int argc, char** argv)
 
     c->cd(3);
     TGraph* g3 = new TGraph();
-    count=0;
     for(unsigned int j=0; j<rebinned_off_freq_axis.size(); j++)
     {
-        g3->SetPoint(count, rebinned_off_freq_axis[j], norm_diff_spec[j] );
+        if(use_bin_numbers)
+        {
+            g3->SetPoint(j, j*n_to_merge, norm_diff_spec[j] );
+        }
+        else 
+        {
+            g3->SetPoint(j, rebinned_off_freq_axis[j], norm_diff_spec[j] );
+        }
+        //g3->SetPoint(count, rebinned_off_freq_axis[j], norm_diff_spec[j] );
         output_absdiff_spectra.push_back(norm_diff_spec[j]);
-        count++;
     }
     g3->Draw("ALP");
     g3->SetMarkerStyle(7);
@@ -790,12 +819,18 @@ int main(int argc, char** argv)
 
     c->cd(4);
     TGraph* g4 = new TGraph();
-    count=0;
     for(unsigned int j=0; j<rebinned_off_freq_axis.size(); j++)
     {
-        g4->SetPoint(count,  rebinned_off_freq_axis[j], relative_diff_spec[j] );
+        if(use_bin_numbers)
+        {
+            g4->SetPoint(j, j*n_to_merge, relative_diff_spec[j] );
+        }
+        else 
+        {
+            g4->SetPoint(j,  rebinned_off_freq_axis[j], relative_diff_spec[j] );
+        }
+        //g4->SetPoint(count,  rebinned_off_freq_axis[j], relative_diff_spec[j] );
         output_reldiff_spectra.push_back(relative_diff_spec[j]);
-        count++;
     }
     g4->Draw("ALP");
     g4->SetMarkerStyle(7);
