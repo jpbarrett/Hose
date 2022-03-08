@@ -528,6 +528,7 @@ int main(int argc, char** argv)
     "\t -r, --resolution          (desired spectral resolution in MHz, if greater than the native spectral resolution, frequency bins will be averaged together)\n"
     "\t -d, --dump-output         (output text file to dump spectral data)\n"
     "\t -b, --bins                (plot spectrum as function of bin number)\n"
+    "\t -t, --temp                (rescale (on-off)/off y-axis by a (above-atmosphere) temperature (K))\n"
     ;
 
     //set defaults
@@ -542,6 +543,8 @@ int main(int argc, char** argv)
     std::string output_file = "";
 
     double sampling_rate = 1250*1e6;
+    double above_atm_temp = 1.0;
+    bool have_temp_set = false;
 
     static struct option longOptions[] =
     {
@@ -550,10 +553,11 @@ int main(int argc, char** argv)
         {"off-source-data-dir", required_argument, 0, 'f'},
         {"resolution", required_argument, 0, 'r'},
         {"dump-output", required_argument, 0, 'd'},
-        {"bins", no_argument, 0, 'b'}
+        {"bins", no_argument, 0, 'b'},
+        {"temp", no_argument, 0, 't'}
     };
 
-    static const char *optString = "ho:f:r:d:b";
+    static const char *optString = "ho:f:r:d:bt:";
 
     bool togggle_on_off = false;
     while(1)
@@ -582,6 +586,10 @@ int main(int argc, char** argv)
             break;
             case('b'):
                 use_bin_numbers = true;
+            break;
+            case('t'):
+                above_atm_temp = std::atof(optarg);
+                have_temp_set = true;
             break;
             default:
                 std::cout<<usage<<std::endl;
@@ -844,27 +852,25 @@ int main(int argc, char** argv)
     {
         if(use_bin_numbers)
         {
-            g4->SetPoint(j, j*n_to_merge, relative_diff_spec[j] );
+            g4->SetPoint(j, j*n_to_merge, above_atm_temp*relative_diff_spec[j] );
         }
         else 
         {
-            g4->SetPoint(j,  rebinned_off_freq_axis[j], relative_diff_spec[j] );
+            g4->SetPoint(j,  rebinned_off_freq_axis[j], above_atm_temp*relative_diff_spec[j] );
         }
         //g4->SetPoint(count,  rebinned_off_freq_axis[j], relative_diff_spec[j] );
-        output_reldiff_spectra.push_back(relative_diff_spec[j]);
+        output_reldiff_spectra.push_back(above_atm_temp*relative_diff_spec[j]);
     }
     g4->Draw("ALP");
     g4->SetMarkerStyle(7);
     g4->SetTitle("(ON-OFF)/OFF" );
-    if(use_bin_numbers)
-    {
-        g4->GetXaxis()->SetTitle("Bin Number");
-    }
-    else 
-    {
-        g4->GetXaxis()->SetTitle("Frequency (MHz)");
-    }
-    g4->GetYaxis()->SetTitle("Ratio (ON-OFF)/OFF");
+
+    if(use_bin_numbers){g4->GetXaxis()->SetTitle("Bin Number");}
+    else{g4->GetXaxis()->SetTitle("Frequency (MHz)");}
+
+    if(have_temp_set){g4->GetYaxis()->SetTitle("Temperature (K)");}
+    else{g4->GetYaxis()->SetTitle("Ratio (ON-OFF)/OFF");}
+
     // g1->GetHistogram()->SetMaximum(100.0);
     // g1->GetHistogram()->SetMinimum(0.0);
     g4->GetYaxis()->CenterTitle();
