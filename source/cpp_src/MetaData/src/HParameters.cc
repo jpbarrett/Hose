@@ -31,6 +31,7 @@ HParameters::~HParameters()
 
 }
 
+
 void
 HParameters::Initialize()
 {
@@ -41,12 +42,12 @@ HParameters::Initialize()
     fIntegerParam[std::string("enable_write_to_file")] = 1; //enable write data to file on disk (enable=1, disable=0)
 
     //configure noise power monitoring UDP messages
-    fStringParam[std::string("noise_power_ip_address")] = std::string("192.52.61.185"); //curie
+    fStringParam[std::string("noise_power_ip_address")] = std::string("192.52.63.48"); //odyssey
     fStringParam[std::string("noise_power_port")] = std::string("8181");
     fIntegerParam[std::string("noise_power_udp_skip_interval")] = 8; //will only send a noise power UDP packet every n-th buffer
     fIntegerParam[std::string("spectral_noise_power_bin_low")] = 0; //select bins to sum over for spectral noise power
     fIntegerParam[std::string("spectral_noise_power_bin_high")] = 0;
-    fIntegerParam[std::string("enable_noise_power_udp")] = 0; //enable noise power udp messages (enable=1, disable=0)
+    fIntegerParam[std::string("enable_noise_power_udp")] = 1; //enable noise power udp messages (enable=1, disable=0)
 
     //configure spectrum monitorying UDP messages
     fStringParam[std::string("spectrum_ip_address")] = std::string("192.52.63.48"); //odyssey
@@ -67,7 +68,7 @@ HParameters::Initialize()
     #endif
 
     #ifdef HOSE_USE_ADQ7
-    fIntegerParam[std::string("n_adq7_sample_skip")] = 2;
+    fIntegerParam[std::string("n_adq7_sample_skip")] = 4;
     fIntegerParam[std::string("n_ave_spectra_gpu")] = 16;
     fIntegerParam[std::string("n_ave_spectra_cpu")] = 32;
     fIntegerParam[std::string("n_fft_pts")] = 2097152;
