@@ -159,7 +159,7 @@ class hprompt(Cmd):
                 self.is_recording = True
                 time.sleep(int(duration)+1)
                 self.end_time_stamp = datetime.utcnow()
-                self.create_meta_data_file()
+                self.create_dummy_meta_data_file()
                 return 0
             else:
                 if( len(arg_list) >= 4 ):
@@ -186,7 +186,7 @@ class hprompt(Cmd):
                             self.is_recording = True
                             time.sleep(int(duration)+1)
                             self.end_time_stamp = datetime.utcnow()
-                            self.create_meta_data_file()
+                            self.create_dummy_meta_data_file()
                             return 0
                     if( len(arg_list) == 6): #start at a particular time, and run for a certain duration
                         start_time = arg_list[4]
@@ -210,7 +210,7 @@ class hprompt(Cmd):
             self.interface.SendRecieveMessage("record=off")
             time.sleep(1)
             self.end_time_stamp = datetime.utcnow()
-            self.create_meta_data_file()
+            self.create_dummy_meta_data_file()
             self.is_recording = False
             return 0
 
@@ -324,3 +324,76 @@ class hprompt(Cmd):
             for x in most_recent_antenna_position_info:
                 obj_list.append( json.dumps(x, indent=4, sort_keys=True) )
             dump_dict_list_to_json_file(obj_list, meta_data_filepath)
+
+
+    def create_dummy_meta_data_file(self):
+        dummy_meta_json_string = '[ '\
+        '{ '\
+            ' "fields": { '\
+                ' "n_digitizer_threads": "2", '\
+                ' "polarization": "X", '\
+                ' "sampling_frequency_Hz": "1.25e+09", '\
+                ' "sideband": "U" '\
+            ' }, '\
+            ' "measurement": "digitizer_config", '\
+            ' "time": "null" '\
+        ' }, '\
+        ' { '\
+            ' "fields": { '\
+                ' "fft_size": "2097152", '\
+                ' "n_averages": "16", '\
+                ' "n_spectrometer_threads": "2", '\
+                ' "n_writer_threads": "1", '\
+                ' "window_equivalent_noise_bandwidth_Hz": "1194.69", '\
+                ' "window_normalized_equivalent_noise_bandwidth": "2.00435", '\
+                ' "window_s1": "752353", '\
+                ' "window_s2": "540988", '\
+                ' "window_type": "blackman_harris" '\
+            ' }, '\
+            ' "measurement": "spectrometer_config", '\
+            ' "time": "null" '\
+        ' }, '\
+        ' { '\
+            ' "fields": { '\
+                ' "bin_delta": 1, '\
+                ' "frequency_delta_MHz": -0.0005960464477539062, '\
+                ' "reference_bin_center_sky_frequency_MHz": 1250, '\
+                ' "reference_bin_index": 0 '\
+            ' }, '\
+            ' "measurement": "frequency_map", '\
+            ' "time": "null" '\
+        ' } '\
+        ' ]' 
+
+        dummy_meta_obj = json.loads(dummy_meta_json_string);
+
+        time_now = datetime.now()
+        time_now_string = time_now.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+        for idx in range(0, len(dummy_meta_obj) ):
+            dummy_meta_obj[idx]["time"] = time_now_string
+
+        meta_data_filename = "meta_data.json"
+        meta_data_filepath = os.path.join(self.data_install_dir, self.current_experiment_name, self.current_scan_name, meta_data_filename)
+
+        with open(meta_data_filepath, 'w') as outfile:
+            outfile.write("[ \n") #open root element
+            n_obj = len(dummy_meta_obj)
+            for i in range(0, n_obj):
+
+                if (i == n_obj-1):
+                    x = json.dumps(dummy_meta_obj[i], indent=4, sort_keys=True)
+                    outfile.write(x + "\n") 
+                else:
+                    x = json.dumps(dummy_meta_obj[i], indent=4, sort_keys=True)
+                    outfile.write(x + ", \n") 
+            outfile.write("] \n") #close root element
+
+
+
+
+
+
+
+
+
+
