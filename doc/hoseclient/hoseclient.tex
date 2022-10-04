@@ -1,0 +1,77 @@
+\documentclass[a4paper,14pt]{article}
+\usepackage[utf8]{inputenc}
+
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tabularx}
+    \newcolumntype{L}{>{\raggedright\arraybackslash}X}
+
+
+
+\definecolor{light-gray}{gray}{0.92}
+
+\usepackage{listings}
+
+\lstset{
+basicstyle=\scriptsize\ttfamily,
+columns=flexible,
+breaklines=true,
+backgroundcolor = \color{light-gray}
+}
+
+
+\usepackage[margin=1.3in]{geometry}
+
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\@verbatim}
+  {\verbatim@font}
+  {\verbatim@font\small}
+  {}{}
+\makeatother
+
+\let\endtitlepage\relax
+
+% Title Page
+\title{Commands for hoseclient.py}
+\author{J. Barrett}
+
+
+\begin{document}
+\maketitle
+
+
+\section{Operation at the 37m}
+
+The command client software hoseclient.py allows the user to issue commands to the gpu-spectrometer via ZeroMQ TCP messages. Currently this software is hard-coded to be run directly on the gpu-spectrometer machine,
+as it communicates with the command server via the local-host IP:PORT of 127.0.0.1:12345. However, if the hoseclient.py code is installed on another machine the IP:PORT could be configured to send messages remotely to the server
+without first logging into the gpu-spectrometer by modifying the file hclient\_module.py.
+
+In the client interface provides the following commands for interactive sessions.
+\begin{enumerate}
+ \item Start a recording immediately for an unknown duration without specifying an experiment, source or scan name (the default values for the experiment and scan name will be: ExpX, and DDD-HHMMSS): \verb|record=on|.
+ \item Start a recording immediately for a specified duration (in seconds) without specifying an experiment, source or scan name (the default values: ExpX, SrcX, and DDD-HHMMSS will be used): e.g. for 30 seconds \verb|record=on:30|. Note: The command prompt
+ will only return after the recording is finished.
+ \item Start recording for an unknown duration and specify an experiment, source and scan name: \verb|record=on:experiment_name:source_name:scan_name|.
+ \item Start recording at a specific start time and duration and specify an experiment, source and scan name: \verb|record=on:experiment_name:source_name:scan_name:YYYYDDDHHMMSS:duration|. Duration must be given in seconds, and the time in UTC.
+ \item Stop a recording immediately: \verb|record=off|.
+ \item Get the current recording state (on/of): \verb|record?|.
+ \item Set the upper and lower bin numbers to be used when summing power in the spectrally binned power measurement: e.g. \verb|set_power_bins=65000:65100|. Valid bin numbers are between 0 and 1048576 in the default ADQ7 configuration. In order to determine
+ the appropriate bin numbers for a particular spectral feature it may be helpful to inspect some data from a test scan with the \verb|SpectrumPlot| with the \verb|-b| option enabled to plot the spectrum as a function of bin number.
+  \item DEPRECATED: Start the export of spectrometer log data to the InfluxDB database (applicable only to Westford setup): \verb|startlog2db|.
+ \item List available commands: \verb|help|.
+ \item Quit the client interface, but leave the spectrometer daemon running: \verb|quit|.
+ \item Quit the client interface and shutdown the spectrometer daemon entirely: \verb|shutdown|.
+ 
+\end{enumerate}
+
+All spectrometer data files are stored under the data directory: \verb|/media/oper/data/|, and unless specified scans will default to being saved under the default experiment directory \verb|/media/oper/data/ExpX|.
+
+
+\end{document}          
