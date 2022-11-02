@@ -880,6 +880,7 @@ int main(int argc, char** argv)
     {
         //if the output_file is defined, dump the spectra to file
         std::ofstream ofile;
+        ofile << std::setprecision(15);
         ofile.open(output_file.c_str());
         ofile << "bin \t" << "frequency \t" << "on_power \t" << "off_power \t" << "absdiff_power \t" << "reldiff_power \t" << std::endl;
         for(unsigned int j=0; j<output_freq.size(); j++)
