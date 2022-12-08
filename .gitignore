@@ -25,3 +25,7 @@ cmake_install.cmake
 *.pyc
 .ipynb_checkpoints/
 *.DS_Store
+*.aux
+*.log
+*.out
+*.gz
