@@ -174,6 +174,34 @@ void blackmann_harris(float* pOut, unsigned int num)
   }
 }
 
+
+/*
+  create a Hann window function
+ */
+void hann_window(float* pOut, unsigned int num)
+{
+  unsigned int idx    = 0;
+  while( idx < num )
+  {
+    pOut[idx] = 0.5 + 0.5*( cosf( (2.0f * M_PI * idx) / (num - 1) ) );
+    idx++;
+  }
+}
+
+/*
+create a Hamming window function
+*/
+void hamming_window(float* pOut, unsigned int num)
+{
+    unsigned int idx    = 0;
+    while( idx < num )
+    {
+      pOut[idx] = 0.53836 + 0.46164*( cosf( (2.0f * M_PI * idx) / (num - 1) ) );
+      idx++;
+    }
+}
+
+
 /*
   average spectra
  */
