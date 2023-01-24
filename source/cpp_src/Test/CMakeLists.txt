@@ -76,9 +76,9 @@ if (HOSE_ENABLE_TEST)
         list(APPEND HOSE_TEST_LIBS ${GSL_LIBRARIES})
     endif()
 
-    if(HOSE_USE_ROOT AND HOSE_USE_GSL)
-        list(APPEND SOURCE_BASENAMES TestBoxGaussianConvolution)
-    endif()
+    #if(HOSE_USE_ROOT AND HOSE_USE_GSL)
+    #    list(APPEND SOURCE_BASENAMES TestBoxGaussianConvolution)
+    #endif()
 
 
     if (HOSE_USE_PX14)

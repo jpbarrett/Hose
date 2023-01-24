@@ -12,6 +12,68 @@
 #include "noise_statistics_mbp_reduce.h"
 
 
+/*
+  create box-car (effectively no) window function
+ */
+void boxcar(float* pOut, unsigned int num)
+{
+
+  unsigned int idx    = 0;
+  while( idx < num )
+  {
+    pOut[idx] = 1.0;
+    idx++;
+  }
+}
+
+
+/*
+  create Blackmann-Harris window function
+ */
+void blackmann_harris(float* pOut, unsigned int num)
+{
+  const float a0      = 0.35875f;
+  const float a1      = 0.48829f;
+  const float a2      = 0.14128f;
+  const float a3      = 0.01168f;
+
+  unsigned int idx    = 0;
+  while( idx < num )
+  {
+    pOut[idx]   = a0 - (a1 * cosf( (2.0f * M_PI * idx) / (num - 1) )) + (a2 * cosf( (4.0f * M_PI * idx) / (num - 1) )) - (a3 * cosf( (6.0f * M_PI * idx) / (num - 1) ));
+    idx++;
+  }
+}
+
+
+/*
+  create a Hann window function
+ */
+void hann_window(float* pOut, unsigned int num)
+{
+  unsigned int idx    = 0;
+  while( idx < num )
+  {
+    pOut[idx] = 0.5 + 0.5*( cosf( (2.0f * M_PI * idx) / (num - 1) ) );
+    idx++;
+  }
+}
+
+/*
+create a Hamming window function
+*/
+void hamming_window(float* pOut, unsigned int num)
+{
+    unsigned int idx    = 0;
+    while( idx < num )
+    {
+      pOut[idx] = 0.53836 + 0.46164*( cosf( (2.0f * M_PI * idx) / (num - 1) ) );
+      idx++;
+    }
+}
+
+
+
 void cuda_alloc_pinned_memory( void** ptr, size_t s)
 {
     int code = cudaMallocHost(ptr, s);
@@ -74,7 +136,8 @@ extern "C" spectrometer_data *new_spectrometer_data(int data_length, int spectru
     d->spectrum_length = spectrum_length;
     d->n_spectra = n_spectra;
     d->window = (float*) malloc(spectrum_length*sizeof(float));
-    blackmann_harris(d->window,spectrum_length);
+    boxcar(d->window,spectrum_length);
+    // blackmann_harris(d->window,spectrum_length);
 
     // allocating device memory to the above pointers
     // reserve extra for +1 in place transforms
@@ -153,52 +216,6 @@ extern "C" void free_spectrometer_data(spectrometer_data *d)
     }
 
     free(d);
-}
-
-
-/*
-  create Blackmann-Harris window function
- */
-void blackmann_harris(float* pOut, unsigned int num)
-{
-  const float a0      = 0.35875f;
-  const float a1      = 0.48829f;
-  const float a2      = 0.14128f;
-  const float a3      = 0.01168f;
-
-  unsigned int idx    = 0;
-  while( idx < num )
-  {
-    pOut[idx]   = a0 - (a1 * cosf( (2.0f * M_PI * idx) / (num - 1) )) + (a2 * cosf( (4.0f * M_PI * idx) / (num - 1) )) - (a3 * cosf( (6.0f * M_PI * idx) / (num - 1) ));
-    idx++;
-  }
-}
-
-
-/*
-  create a Hann window function
- */
-void hann_window(float* pOut, unsigned int num)
-{
-  unsigned int idx    = 0;
-  while( idx < num )
-  {
-    pOut[idx] = 0.5 + 0.5*( cosf( (2.0f * M_PI * idx) / (num - 1) ) );
-    idx++;
-  }
-}
-
-/*
-create a Hamming window function
-*/
-void hamming_window(float* pOut, unsigned int num)
-{
-    unsigned int idx    = 0;
-    while( idx < num )
-    {
-      pOut[idx] = 0.53836 + 0.46164*( cosf( (2.0f * M_PI * idx) / (num - 1) ) );
-      idx++;
-    }
 }
 
 
