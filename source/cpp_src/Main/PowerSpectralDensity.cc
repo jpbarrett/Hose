@@ -288,7 +288,7 @@ bool ReadDataDirectory(std::string data_dir, bool toggle_diode,  MetaDataContain
     }
 
 
-    if(!map_to_sky_frequency || ! source_info || !recording_status_info)
+    if(!map_to_sky_frequency) // || ! source_info || !recording_status_info)
     {
         std::cout<<"Error: missing meta-data!"<<std::endl;
         return false;
