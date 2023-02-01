@@ -344,11 +344,11 @@ class hprompt(Cmd):
                 ' "n_averages": "16", '\
                 ' "n_spectrometer_threads": "2", '\
                 ' "n_writer_threads": "1", '\
-                ' "window_equivalent_noise_bandwidth_Hz": "1194.69", '\
-                ' "window_normalized_equivalent_noise_bandwidth": "2.00435", '\
-                ' "window_s1": "752353", '\
-                ' "window_s2": "540988", '\
-                ' "window_type": "blackman_harris" '\
+                ' "window_equivalent_noise_bandwidth_Hz": "596.046", '\
+                ' "window_normalized_equivalent_noise_bandwidth": "1", '\
+                ' "window_s1": "1", '\
+                ' "window_s2": "1", '\
+                ' "window_type": "none" '\
             ' }, '\
             ' "measurement": "spectrometer_config", '\
             ' "time": "null" '\
