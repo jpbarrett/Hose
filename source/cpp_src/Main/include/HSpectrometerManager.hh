@@ -199,10 +199,10 @@ class HSpectrometerManager: public HApplicationBackend
                     fIP = fParameters.GetStringParameter("command_server_ip_address");
                     fEnableWriteToFile = fParameters.GetIntegerParameter("enable_write_to_file");
 
-                    std::string fWindowName = fParameters.GetStringParameter("window_type");
-                    if(fWindowName == "none"){fWindowFlag = NO_WIN;}
-                    if(fWindowName == "blackman_harris"){fWindowFlag = BH_WIN;}
-                    if(fWindowName == "hann"){fWindowFlag = HANN_WIN;}
+                    std::string aWindowName = fParameters.GetStringParameter("window_type");
+                    if(aWindowName == "none"){fWindowFlag = NO_WIN;}
+                    if(aWindowName == "blackman_harris"){fWindowFlag = BH_WIN;}
+                    if(aWindowName == "hann"){fWindowFlag = HANN_WIN;}
 
                     fUDPNoisePowerPort = fParameters.GetStringParameter("noise_power_port");
                     fUDPNoisePowerIP = fParameters.GetStringParameter("noise_power_ip_address");
@@ -372,22 +372,44 @@ class HSpectrometerManager: public HApplicationBackend
                         double s1 = 0;
                         double s2 = 0;
                         pOut.resize(fFFTSize);
-                        double a0 = 0.35875f;
-                        double a1 = 0.48829f;
-                        double a2 = 0.14128f;
-                        double a3 = 0.01168f;
-                        unsigned int idx = 0;
-                        while( idx < fFFTSize )
+
+
+                        if(fWindowFlag == NO_WIN)
                         {
-                            pOut[idx]   = a0 - (a1 * std::cos( (2.0f * M_PI * idx) / (fFFTSize- 1) )) + (a2 * std::cos( (4.0f * M_PI * idx) / (fFFTSize- 1) )) - (a3 * std::cos( (6.0f * M_PI * idx) / (fFFTSize - 1) ));
-                            s1 += pOut[idx];
-                            s2 += pOut[idx]*pOut[idx];
-                            idx++;
+                            s1 = fFFTSize;
+                            f2 = fFFTSize;
                         }
 
+                        if(fWindowFlag == BH_WIN)
+                        {
+                            double a0 = 0.35875f;
+                            double a1 = 0.48829f;
+                            double a2 = 0.14128f;
+                            double a3 = 0.01168f;
+                            unsigned int idx = 0;
+                            while( idx < fFFTSize )
+                            {
+                                pOut[idx]   = a0 - (a1 * std::cos( (2.0f * M_PI * idx) / (fFFTSize- 1) )) + (a2 * std::cos( (4.0f * M_PI * idx) / (fFFTSize- 1) )) - (a3 * std::cos( (6.0f * M_PI * idx) / (fFFTSize - 1) ));
+                                s1 += pOut[idx];
+                                s2 += pOut[idx]*pOut[idx];
+                                idx++;
+                            }
+                        }
+
+                        if(fWindowFlag == HANN_WIN)
+                        {
+                            unsigned int idx    = 0;
+                            while( idx < fFFTSize )
+                            {
+                                pOut[idx] = 0.5 + 0.5*( cosf( (2.0f * M_PI * idx) / (num - 1) ) );
+                                s1 += pOut[idx];
+                                s2 += pOut[idx]*pOut[idx];
+                                idx++;
+                            }
+                        }
 
                         std::stringstream wtss;
-                        wtss << "window_type=blackman_harris";
+                        wtss << "window_type=" << aWindowName; 
                         std::stringstream wts1ss;
                         wts1ss << "window_s1=";
                         wts1ss << s1;
