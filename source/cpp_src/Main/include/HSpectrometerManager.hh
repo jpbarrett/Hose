@@ -377,7 +377,7 @@ class HSpectrometerManager: public HApplicationBackend
                         if(fWindowFlag == NO_WIN)
                         {
                             s1 = fFFTSize;
-                            f2 = fFFTSize;
+                            s2 = fFFTSize;
                         }
 
                         if(fWindowFlag == BH_WIN)
@@ -401,7 +401,7 @@ class HSpectrometerManager: public HApplicationBackend
                             unsigned int idx    = 0;
                             while( idx < fFFTSize )
                             {
-                                pOut[idx] = 0.5 + 0.5*( cosf( (2.0f * M_PI * idx) / (num - 1) ) );
+                                pOut[idx] = 0.5 + 0.5*( std::cos( (2.0f * M_PI * idx) / (fFFTSize - 1) ) );
                                 s1 += pOut[idx];
                                 s2 += pOut[idx]*pOut[idx];
                                 idx++;
