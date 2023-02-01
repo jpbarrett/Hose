@@ -125,7 +125,7 @@ void wrapped_cuda_free(void* ptr)
     }
 }
 
-extern "C" spectrometer_data *new_spectrometer_data(int data_length, int spectrum_length, int window_flag=BLACKMAN_HARRIS_WIN)
+extern "C" spectrometer_data* new_spectrometer_data(int data_length, int spectrum_length, int window_flag)
 {
     spectrometer_data *d;
     int n_spectra;
