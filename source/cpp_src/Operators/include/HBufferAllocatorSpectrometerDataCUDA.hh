@@ -26,11 +26,14 @@ class HBufferAllocatorSpectrometerDataCUDA: public HBufferAllocatorBase< XBuffer
 
         HBufferAllocatorSpectrometerDataCUDA():
             HBufferAllocatorBase< XBufferItemType >(),
+            fWindowFlag(0),
             fSpectrumLength(2),
             fSampleArrayLength(3) //default values will fail on alloc
         {};
 
         virtual ~HBufferAllocatorSpectrometerDataCUDA(){};
+
+        void SetWindowFunction(int window_flag = 0){fWindowFlag = window_flag;}; //0 = none, 1 = blackman_harris, 2 = hann
 
         //must set the spectrum and array lengths
         void SetSpectrumLength(size_t spec_len){fSpectrumLength = spec_len;};
@@ -44,6 +47,7 @@ class HBufferAllocatorSpectrometerDataCUDA: public HBufferAllocatorBase< XBuffer
         virtual XBufferItemType* AllocateImpl(size_t size) override;
         virtual void DeallocateImpl(XBufferItemType* ptr, size_t size) override;
 
+        int fWindowFlag;
         size_t fSpectrumLength;
         size_t fSampleArrayLength;
 
@@ -68,7 +72,7 @@ HBufferAllocatorSpectrometerDataCUDA< spectrometer_data >::AllocateImpl(size_t s
     }
 
     spectrometer_data* ptr = nullptr;
-    ptr = new_spectrometer_data(fSampleArrayLength, fSpectrumLength);
+    ptr = new_spectrometer_data(fSampleArrayLength, fSpectrumLength, fWindowFlag);
     return ptr;
 }
 

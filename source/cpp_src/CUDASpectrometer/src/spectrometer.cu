@@ -12,6 +12,10 @@
 #include "noise_statistics_mbp_reduce.h"
 
 
+#define BOXCAR_WIN 0
+#define BLACKMAN_HARRIS_WIN 1
+#define HANN_WIN 2
+
 /*
   create box-car (effectively no) window function
  */
@@ -121,7 +125,7 @@ void wrapped_cuda_free(void* ptr)
     }
 }
 
-extern "C" spectrometer_data *new_spectrometer_data(int data_length, int spectrum_length)
+extern "C" spectrometer_data *new_spectrometer_data(int data_length, int spectrum_length, int window_flag=BLACKMAN_HARRIS_WIN)
 {
     spectrometer_data *d;
     int n_spectra;
@@ -136,8 +140,21 @@ extern "C" spectrometer_data *new_spectrometer_data(int data_length, int spectru
     d->spectrum_length = spectrum_length;
     d->n_spectra = n_spectra;
     d->window = (float*) malloc(spectrum_length*sizeof(float));
-    boxcar(d->window,spectrum_length);
-    // blackmann_harris(d->window,spectrum_length);
+
+    if(window_flag == BOXCAR_WIN)
+    {
+        boxcar(d->window,spectrum_length);
+    }
+
+    if(window_flag == BLACKMAN_HARRIS_WIN)
+    {
+        blackmann_harris(d->window,spectrum_length);
+    }
+    
+    if(window_flag == HANN_WIN)
+    {
+        hann_window(d->window,spectrum_length);
+    }
 
     // allocating device memory to the above pointers
     // reserve extra for +1 in place transforms

@@ -51,6 +51,10 @@ extern "C"
 #define SPECTRUM_TYPE spectrometer_data
 #define AVERAGER_TYPE HSpectrumAverager
 
+#define NO_WIN 0
+#define BH_WIN 1
+#define HANN_WIN 2
+
 #ifdef HOSE_USE_PX14
     #include "HPX14Digitizer.hh"
     #define DIGITIZER_TYPE HPX14Digitizer
@@ -142,6 +146,7 @@ class HSpectrometerManager: public HApplicationBackend
             #endif
         {
             fCannedStopCommand = "record=off";
+            fWindowFlag = NO_WIN;
             fParameters.Initialize();
         }
 
@@ -193,6 +198,11 @@ class HSpectrometerManager: public HApplicationBackend
                     fPort = fParameters.GetStringParameter("command_server_port");
                     fIP = fParameters.GetStringParameter("command_server_ip_address");
                     fEnableWriteToFile = fParameters.GetIntegerParameter("enable_write_to_file");
+
+                    std::string fWindowName = fParameters.GetStringParameter("window_type");
+                    if(fWindowName == "none"){fWindowFlag = NO_WIN;}
+                    if(fWindowName == "blackman_harris"){fWindowFlag = BH_WIN;}
+                    if(fWindowName == "hann"){fWindowFlag = HANN_WIN;}
 
                     fUDPNoisePowerPort = fParameters.GetStringParameter("noise_power_port");
                     fUDPNoisePowerIP = fParameters.GetStringParameter("noise_power_ip_address");
@@ -280,6 +290,7 @@ class HSpectrometerManager: public HApplicationBackend
                         fSpectrometerBufferAllocator = new HBufferAllocatorSpectrometerDataCUDA<SPECTRUM_TYPE>();
                         fSpectrometerBufferAllocator->SetSampleArrayLength(fNSpectrumAverages*fFFTSize);
                         fSpectrometerBufferAllocator->SetSpectrumLength(fFFTSize);
+                        fSpectrometerBufferAllocator->SetWindowFunction(fWindowFlag);
                         fSpectrometerSinkPool = new HBufferPool< SPECTRUM_TYPE >( fSpectrometerBufferAllocator );
                         fSpectrometerSinkPool->Allocate(fSpectrometerPoolSize, 1);
 
@@ -1145,6 +1156,7 @@ class HSpectrometerManager: public HApplicationBackend
         size_t fSpectrometerPoolSize;
         size_t fNDigitizerThreads;
         size_t fNSpectrometerThreads;
+        int fWindowFlag;
 
         size_t fNADQ7SampleSkip;
         size_t fNSpectrumAveragesCPU;
