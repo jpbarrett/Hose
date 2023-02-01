@@ -74,7 +74,7 @@ __global__ void apply_weights(float *df, float *w, int n_spectra, int spectrum_l
 __global__ void square_and_accumulate_sum(cufftComplex *z, float *spectrum);
 
 extern "C" void process_vector_no_output(SAMPLE_TYPE *d_in, spectrometer_data *d);
-extern "C" spectrometer_data *new_spectrometer_data(int data_length, int spectrum_length);
+extern "C" spectrometer_data *new_spectrometer_data(int data_length, int spectrum_length, int window_flag);
 extern "C" void free_spectrometer_data(spectrometer_data *d);
 
 extern "C" void blackmann_harris( float* pOut, unsigned int num );
