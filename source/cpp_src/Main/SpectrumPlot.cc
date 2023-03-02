@@ -611,11 +611,11 @@ int main(int argc, char** argv)
             {
                 if(use_bin_numbers)
                 {
-                    g->SetPoint(j, j, 20.0*std::log10(  raw_accumulated_spec[j] + eps  ) );
+                    g->SetPoint(j, j, 10.0*std::log10(  raw_accumulated_spec[j] + eps  ) );
                 }
                 else 
                 {
-                    g->SetPoint(j, j*spec_res/1e6, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
+                    g->SetPoint(j, j*spec_res/1e6, 10.0*std::log10( raw_accumulated_spec[j] + eps ) );
                 }
                 output_freq.push_back(j*spec_res/1e6);
                 output_spectra.push_back(raw_accumulated_spec[j]);
@@ -630,11 +630,11 @@ int main(int argc, char** argv)
 
                 if(use_bin_numbers)
                 {
-                    g->SetPoint(j, index, 20.0*std::log10( raw_accumulated_spec[j] + eps  ) );
+                    g->SetPoint(j, index, 10.0*std::log10( raw_accumulated_spec[j] + eps  ) );
                 }
                 else 
                 {
-                    g->SetPoint(j, freq, 20.0*std::log10( raw_accumulated_spec[j] + eps ) );
+                    g->SetPoint(j, freq, 10.0*std::log10( raw_accumulated_spec[j] + eps ) );
                 }
 
                 output_freq.push_back(freq);
@@ -652,11 +652,11 @@ int main(int argc, char** argv)
             {
                 if(use_bin_numbers)
                 {
-                    g->SetPoint(j, j*n_to_merge, 20.0*std::log10( rebinned_spec[j] + eps ) );
+                    g->SetPoint(j, j*n_to_merge, 10.0*std::log10( rebinned_spec[j] + eps ) );
                 }
                 else 
                 {
-                    g->SetPoint(j, j*new_spec_res/1e6, 20.0*std::log10( rebinned_spec[j] + eps ) );
+                    g->SetPoint(j, j*new_spec_res/1e6, 10.0*std::log10( rebinned_spec[j] + eps ) );
                 }
                 output_freq.push_back(j*spec_res/1e6);
                 output_spectra.push_back(rebinned_spec[j]);
@@ -669,11 +669,11 @@ int main(int argc, char** argv)
                 double freq = (index - referenceBinIndex)*(n_to_merge*freqDeltaMHz) + referenceBinCenterSkyFreqMHz;
                 if(use_bin_numbers)
                 {
-                    g->SetPoint(j, index*n_to_merge, 20.0*std::log10( rebinned_spec[j] + eps ) );
+                    g->SetPoint(j, index*n_to_merge, 10.0*std::log10( rebinned_spec[j] + eps ) );
                 }
                 else 
                 {
-                    g->SetPoint(j, freq, 20.0*std::log10( rebinned_spec[j] + eps ) );
+                    g->SetPoint(j, freq, 10.0*std::log10( rebinned_spec[j] + eps ) );
                 }
                 output_freq.push_back(freq);
                 output_spectra.push_back(rebinned_spec[j]);
