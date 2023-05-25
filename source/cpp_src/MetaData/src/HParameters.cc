@@ -39,7 +39,8 @@ HParameters::Initialize()
     fStringParam[std::string("command_server_ip_address")] = std::string("127.0.0.1");
     fStringParam[std::string("command_server_port")] = std::string("12345");
     fStringParam[std::string("window_type")] = std::string("blackman_harris");
-    fIntegerParam[std::string("enable_write_to_file")] = 1; //enable write data to file on disk (enable=1, disable=0)
+    fIntegerParam[std::string("enable_spectrum_write_to_file")] = 1; //enable write data to file on disk (enable=1, disable=0)
+    fIntegerParam[std::string("enable_noise_power_write_to_file")] = 1; //enable write data to file on disk (enable=1, disable=0)
 
     //configure noise power monitoring UDP messages
     fStringParam[std::string("noise_power_ip_address")] = std::string("192.52.63.48"); //odyssey
