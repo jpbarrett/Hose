@@ -39,8 +39,11 @@ class HAveragedMultiThreadedSpectrumDataWriter: public HConsumer< float, HConsum
         HAveragedMultiThreadedSpectrumDataWriter();
         virtual ~HAveragedMultiThreadedSpectrumDataWriter();
 
-        void EnableWriteToDisk(){fEnable = true;};
-        void DisableWriteToDisk(){fEnable = false;}
+        void EnableNoisePowerWriteToDisk(){fEnableNoisePower = true;};
+        void DisableNoisePowerWriteToDisk(){fEnableNoisePower = false;}
+        
+        void EnableSpectrumWriteToDisk(){fEnableSpectrum = true;};
+        void DisableSpectrumWriteToDisk(){fEnableSpectrum = false;}
 
     private:
 
@@ -48,7 +51,10 @@ class HAveragedMultiThreadedSpectrumDataWriter: public HConsumer< float, HConsum
         virtual bool WorkPresent() override;
         virtual void Idle() override;
 
-        bool fEnable;
+        //bool fEnable;
+        
+        bool fEnableSpectrum;
+        bool fEnableNoisePower;
 
 };
 

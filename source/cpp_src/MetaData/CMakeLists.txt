@@ -36,6 +36,9 @@ hose_install_libraries (HMeta)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/default_parameters_adq7.txt ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/default_parameters_adq7.txt DESTINATION ${CONFIG_INSTALL_DIR} )
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/nponly_parameters_adq7.txt ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/nponly_parameters_adq7.txt DESTINATION ${CONFIG_INSTALL_DIR} )
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/default_parameters_adq7_no_window.txt ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/default_parameters_adq7_no_window.txt DESTINATION ${CONFIG_INSTALL_DIR} )
 

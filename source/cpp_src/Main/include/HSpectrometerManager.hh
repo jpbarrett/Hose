@@ -148,6 +148,9 @@ class HSpectrometerManager: public HApplicationBackend
             fCannedStopCommand = "record=off";
             fWindowFlag = NO_WIN;
             fParameters.Initialize();
+            
+            fEnableSpectrumWriteToFile=1;
+            fEnableNoisePowerWriteToFile=0;
         }
 
         virtual ~HSpectrometerManager()
@@ -197,7 +200,8 @@ class HSpectrometerManager: public HApplicationBackend
                     //extract parameters from configuration
                     fPort = fParameters.GetStringParameter("command_server_port");
                     fIP = fParameters.GetStringParameter("command_server_ip_address");
-                    fEnableWriteToFile = fParameters.GetIntegerParameter("enable_write_to_file");
+                    fEnableSpectrumWriteToFile = fParameters.GetIntegerParameter("enable_spectrum_write_to_file");
+                    fEnableNoisePowerWriteToFile = fParameters.GetIntegerParameter("enable_noise_power_write_to_file");
 
                     std::string aWindowName = fParameters.GetStringParameter("window_type");
                     if(aWindowName == "none"){fWindowFlag = NO_WIN;}
@@ -321,8 +325,12 @@ class HSpectrometerManager: public HApplicationBackend
                         fAveragedSpectrumWriter = new HAveragedMultiThreadedSpectrumDataWriter();
                         fAveragedSpectrumWriter->SetBufferPool(fSpectrumAveragingBufferPool);
                         fAveragedSpectrumWriter->SetNThreads(1);
-                        if(fEnableWriteToFile){fAveragedSpectrumWriter->EnableWriteToDisk();}
-                        else{fAveragedSpectrumWriter->DisableWriteToDisk();}
+                        
+                        if(fEnableSpectrumWriteToFile){fAveragedSpectrumWriter->EnableSpectrumWriteToDisk();}
+                        else{fAveragedSpectrumWriter->DisableSpectrumWriteToDisk();}
+
+                        if(fEnableNoisePowerWriteToFile){fAveragedSpectrumWriter->EnableNoisePowerWriteToDisk();}
+                        else{fAveragedSpectrumWriter->DisableNoisePowerWriteToDisk();}
 
                         //create an itermittent raw data dumper
                         fDumper = new HRawDataDumper< typename XDigitizerType::sample_type >();
@@ -1157,7 +1165,8 @@ class HSpectrometerManager: public HApplicationBackend
         //this is for communication with hoseclient.py
         std::string fIP;
         std::string fPort; 
-        int fEnableWriteToFile; //control whether or not data is dumped to disk (may want to disable when only runnin as noise-power for pointing mode)
+        int fEnableSpectrumWriteToFile; //control whether or not data is dumped to disk (may want to disable when only runnin as noise-power for pointing mode)
+        int fEnableNoisePowerWriteToFile;
 
         //this is for UDP unicast of noise power data 
         std::string fUDPNoisePowerIP;
