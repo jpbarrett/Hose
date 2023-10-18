@@ -117,6 +117,7 @@ if(${CMAKE_VERSION} VERSION_GREATER "3.12.0")
       set( PYTHON_MODULE_INSTALL_DIR  "${CMAKE_INSTALL_PREFIX}/${PYTHON_SITE_PREFIX}")
 
       #now add the python source dir
+      set(PY_EXE "${Python3_EXECUTABLE}")
       add_subdirectory(${PYSOURCE})
   endif (Python3_EXECUTABLE)
 
@@ -141,6 +142,7 @@ else()
       set( PYTHON_MODULE_INSTALL_DIR  "${CMAKE_INSTALL_PREFIX}/${PYTHON_SITE_PREFIX}")
 
       #now add the python source dir
+      set(PY_EXE "${PYTHON_EXECUTABLE}")
       add_subdirectory(${PYSOURCE})
   endif (PYTHON_EXECUTABLE)
 

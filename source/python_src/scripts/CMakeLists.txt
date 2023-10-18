@@ -1,4 +1,4 @@
-if (PYTHON_EXECUTABLE)
+if (PY_EXE)
 
     #configure and install scripts
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/hoseclient.py.in" "${CMAKE_CURRENT_BINARY_DIR}/hoseclient.py" @ONLY)
@@ -34,4 +34,4 @@ if (PYTHON_EXECUTABLE)
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/check_luff.py.in" "${CMAKE_CURRENT_BINARY_DIR}/check_luff.py" @ONLY)
     install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/check_luff.py" DESTINATION ${BIN_INSTALL_DIR})
 
-endif (PYTHON_EXECUTABLE)
+endif (PY_EXE)

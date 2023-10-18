@@ -3,4 +3,8 @@
 #depending on platform and python version
 import os
 import sys
-print( os.path.join("lib", "python" + sys.version[:3],"site-packages") )
+
+version_str = str(sys.version_info.major) + "." + str(sys.version_info.minor)
+pyinstall_path = os.path.join("lib", "python" + version_str, "site-packages")
+print(pyinstall_path)
+#print( os.path.join("lib", "python" + sys.version[:3],"site-packages") )
