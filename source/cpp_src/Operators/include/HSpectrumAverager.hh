@@ -14,13 +14,12 @@ extern "C"
 
 
 #ifdef HOSE_USE_ZEROMQ
-#include <zmq.hpp>
-#include <string>
-#include <sstream>
+    #include <zmq.hpp>
+    #include <string>
+    #include <sstream>
+    #define ENABLE_SPECTRUM_UDP
 #endif
 
-
-#define ENABLE_SPECTRUM_UDP
 #define NBINS 256
 
 namespace hose
