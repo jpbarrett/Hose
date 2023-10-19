@@ -73,7 +73,10 @@ __global__ void short_to_float_s(int16_t *ds, float *df, int n_spectra, int spec
 __global__ void apply_weights(float *df, float *w, int n_spectra, int spectrum_length);
 __global__ void square_and_accumulate_sum(cufftComplex *z, float *spectrum);
 
+/* calculate spectra and pwr */
 extern "C" void process_vector_no_output(SAMPLE_TYPE *d_in, spectrometer_data *d);
+/* do_squared_pwr=1 also estimated power with \sum_n x_n**2 */
+extern "C" void process_vector_no_output_(SAMPLE_TYPE *d_in, spectrometer_data *d, int do_squared_pwr);
 extern "C" spectrometer_data *new_spectrometer_data(int data_length, int spectrum_length, int window_flag);
 extern "C" void free_spectrometer_data(spectrometer_data *d);
 

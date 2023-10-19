@@ -306,12 +306,16 @@ __global__ void apply_weights(float *df, float *w, int n_spectra, int spectrum_l
     }
 }
 
+void process_vector_no_output(SAMPLE_TYPE *d_in, spectrometer_data *d)
+{
+  process_vector_no_output_(d_in, d, 1);
+}
 
 /*
  transform and average signed data
 */
 
-void process_vector_no_output(SAMPLE_TYPE *d_in, spectrometer_data *d)
+void process_vector_no_output_(SAMPLE_TYPE *d_in, spectrometer_data *d, int do_squared_pwr)
 {
     int n_spectra, data_length, spectrum_length;
 
@@ -356,11 +360,13 @@ void process_vector_no_output(SAMPLE_TYPE *d_in, spectrometer_data *d)
     short_to_float<<< N_BLOCKS, N_THREADS >>>(d->ds_in, d->d_in, n_spectra, spectrum_length);
     #endif
 
-    //do the first pass parallel reduction of the data for the noise statistics
-    cuda_noise_statistics_mbp_reduce1<<< N_BLOCKS, N_THREADS>>>(d->d_in, d->d_out, d->d_out2, data_length);
+    if(do_squared_pwr == 1){    
+      //do the first pass parallel reduction of the data for the noise statistics
+      cuda_noise_statistics_mbp_reduce1<<< N_BLOCKS, N_THREADS>>>(d->d_in, d->d_out, d->d_out2, data_length);
 
-    //do the second pass parallel reduction of the data for the noise statistics
-    cuda_noise_statistics_mbp_reduce2<<<1, N_THREADS>>>(d->d_out, d->d_out2, d->f_out, d->f_out2, N_THREADS);
+      //do the second pass parallel reduction of the data for the noise statistics
+      cuda_noise_statistics_mbp_reduce2<<<1, N_THREADS>>>(d->d_out, d->d_out2, d->f_out, d->f_out2, N_THREADS);
+    }
 
     cudaDeviceSynchronize();
 
